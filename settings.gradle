@@ -1,0 +1,2 @@
+rootProject.name = "amazing-note"
+include ':app'
