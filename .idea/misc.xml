@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/drawable/custom_input.xml" value="0.2203125" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/layout/activity_main.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/layout/fragment_add.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/layout/fragment_list.xml" value="0.22" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/layout/fragment_update.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/menu/add_fragment_menu.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/menu/list_fragment_menu.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/menu/udpate_fragment_menu.xml" value="0.20416666666666666" />
+      </map>
+    </option>
+  </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="11" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
