@@ -46,5 +46,8 @@
             app:destination="@id/listFragment"
             app:enterAnim="@anim/from_left"
             app:exitAnim="@anim/to_right" />
+        <argument
+            android:name="currentNote"
+            app:argType="com.example.amazing_note.data.models.Note" />
     </fragment>
 </navigation>

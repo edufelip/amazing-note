@@ -13,6 +13,10 @@ class NoteRepository(private val noteDao: NoteDao): INoteRepository {
         noteDao.insertNote(note)
     }
 
+    override suspend fun updateNote(note: Note) {
+        noteDao.updateNote(note)
+    }
+
     override suspend fun deleteNote(note: Note) {
 
     }
