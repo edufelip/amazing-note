@@ -8,7 +8,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.amazing_note.R
 import com.example.amazing_note.databinding.FragmentAddBinding
-import com.example.amazing_note.models.Note
+import com.example.amazing_note.data.models.Note
 import com.example.amazing_note.ui.viewmodels.NoteViewModel
 import com.example.amazing_note.ui.viewmodels.SharedViewModel
 

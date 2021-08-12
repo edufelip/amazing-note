@@ -7,7 +7,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import com.example.amazing_note.R
-import com.example.amazing_note.models.Priority
+import com.example.amazing_note.data.models.Priority
 
 class SharedViewModel(application: Application): AndroidViewModel(application) {
     val listener: AdapterView.OnItemSelectedListener = object : AdapterView.OnItemSelectedListener {

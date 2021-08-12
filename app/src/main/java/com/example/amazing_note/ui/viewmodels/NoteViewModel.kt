@@ -5,9 +5,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import com.example.amazing_note.data.NoteDatabase
-import com.example.amazing_note.models.Note
-import com.example.amazing_note.repositories.INoteRepository
-import com.example.amazing_note.repositories.NoteRepository
+import com.example.amazing_note.data.models.Note
+import com.example.amazing_note.data.repositories.INoteRepository
+import com.example.amazing_note.data.repositories.NoteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 

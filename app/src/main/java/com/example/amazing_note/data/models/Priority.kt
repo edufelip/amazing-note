@@ -1,4 +1,4 @@
-package com.example.amazing_note.models
+package com.example.amazing_note.data.models
 
 enum class Priority {
     HIGH,

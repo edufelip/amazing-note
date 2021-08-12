@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.example.amazing_note.models.Note
+import com.example.amazing_note.data.models.Note
 
 @Database(entities = [Note::class], version = 1, exportSchema = false)
 @TypeConverters(Converter::class)

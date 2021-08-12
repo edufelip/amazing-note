@@ -5,7 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.amazing_note.models.Note
+import com.example.amazing_note.data.models.Note
 
 @Dao
 interface NoteDao {

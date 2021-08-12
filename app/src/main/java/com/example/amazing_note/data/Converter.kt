@@ -1,10 +1,9 @@
 package com.example.amazing_note.data
 
 import androidx.room.TypeConverter
-import com.example.amazing_note.models.Priority
+import com.example.amazing_note.data.models.Priority
 
 class Converter {
-
     @TypeConverter
     fun fromPriority(priority: Priority): String {
         return priority.name

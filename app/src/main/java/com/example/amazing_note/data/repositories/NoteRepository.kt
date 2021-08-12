@@ -1,8 +1,8 @@
-package com.example.amazing_note.repositories
+package com.example.amazing_note.data.repositories
 
 import androidx.lifecycle.LiveData
 import com.example.amazing_note.data.NoteDao
-import com.example.amazing_note.models.Note
+import com.example.amazing_note.data.models.Note
 
 class NoteRepository(private val noteDao: NoteDao): INoteRepository {
     override fun listNotes(): LiveData<List<Note>> {
@@ -14,7 +14,7 @@ class NoteRepository(private val noteDao: NoteDao): INoteRepository {
     }
 
     override suspend fun deleteNote(note: Note) {
-        
+
     }
 
 
