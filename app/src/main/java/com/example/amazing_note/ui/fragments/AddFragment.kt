@@ -57,4 +57,9 @@ class AddFragment : Fragment() {
         Toast.makeText(requireContext(), "Note successfully created", Toast.LENGTH_SHORT).show()
         findNavController().navigate(AddFragmentDirections.actionAddFragmentToListFragment())
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }

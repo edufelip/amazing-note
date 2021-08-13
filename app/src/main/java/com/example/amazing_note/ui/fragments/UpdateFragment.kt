@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.amazing_note.R
+import com.example.amazing_note.data.Converter
 import com.example.amazing_note.data.models.Note
 import com.example.amazing_note.data.models.Priority
 import com.example.amazing_note.databinding.FragmentUpdateBinding
@@ -28,15 +29,13 @@ class UpdateFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentUpdateBinding.inflate(inflater, container, false)
-        val view = binding.root
+        binding.note = args.currentNote
+
         setHasOptionsMenu(true)
 
-        binding.updateTitleEt.setText(args.currentNote.title)
-        binding.updateDescriptionEt.setText(args.currentNote.description)
-        binding.updatePrioritiesSpinner.setSelection(mSharedViewModel.parsePriorityToInt(args.currentNote.priority))
         binding.updatePrioritiesSpinner.onItemSelectedListener = mSharedViewModel.listener
 
-        return view
+        return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -77,5 +76,10 @@ class UpdateFragment : Fragment() {
         mNoteViewModel.updateNote(updatedNote)
         Toast.makeText(requireContext(), "Note Successfully Updated", Toast.LENGTH_SHORT).show()
         findNavController().navigate(UpdateFragmentDirections.actionUpdateFragmentToListFragment())
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
