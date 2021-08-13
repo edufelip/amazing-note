@@ -1,5 +1,6 @@
 package com.example.amazing_note.ui.fragments
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
@@ -43,10 +44,25 @@ class UpdateFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if(item.itemId == R.id.menu_save) {
-            updateItem()
+        when(item.itemId) {
+            R.id.menu_save -> updateItem()
+            R.id.menu_delete -> deleteItem()
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun deleteItem() {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setPositiveButton("Yes") { _, _ ->
+            mNoteViewModel.deleteNote(args.currentNote)
+            Toast.makeText(requireContext(), "Note Removed", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(UpdateFragmentDirections.actionUpdateFragmentToListFragment())
+        }
+        builder.setNegativeButton("No") { _, _ ->
+        }
+        builder.setTitle("Delete '${args.currentNote.title}'?")
+        builder.setMessage("Once deleted the note is lost permanently")
+        builder.create().show()
     }
 
     private fun updateItem() {
