@@ -1,4 +1,4 @@
-package com.example.amazing_note.data
+package com.example.amazing_note.data.db
 
 import android.content.Context
 import androidx.room.Database

@@ -9,9 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.amazing_note.R
-import com.example.amazing_note.data.Converter
 import com.example.amazing_note.data.models.Note
-import com.example.amazing_note.data.models.Priority
 import com.example.amazing_note.databinding.FragmentUpdateBinding
 import com.example.amazing_note.ui.viewmodels.NoteViewModel
 import com.example.amazing_note.ui.viewmodels.SharedViewModel

@@ -1,4 +1,4 @@
-package com.example.amazing_note.data
+package com.example.amazing_note.data.db
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
