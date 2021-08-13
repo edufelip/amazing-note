@@ -20,4 +20,8 @@ class NoteRepository(private val noteDao: NoteDao): INoteRepository {
     override suspend fun deleteNote(note: Note) {
         noteDao.deleteNote(note)
     }
+
+    override fun searchNote(searchQuery: String): LiveData<List<Note>> {
+        return noteDao.searchNote(searchQuery)
+    }
 }

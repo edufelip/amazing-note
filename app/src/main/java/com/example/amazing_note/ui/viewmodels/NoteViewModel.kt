@@ -39,4 +39,8 @@ class NoteViewModel(application: Application): AndroidViewModel(application) {
             repository.deleteNote(note)
         }
     }
+
+    fun searchNote(searchQuery: String): LiveData<List<Note>> {
+        return repository.searchNote(searchQuery)
+    }
 }

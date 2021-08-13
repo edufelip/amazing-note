@@ -2,8 +2,10 @@ package com.example.amazing_note.ui.fragments
 
 import android.os.Bundle
 import android.view.*
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,7 +19,7 @@ import com.example.amazing_note.ui.viewmodels.NoteViewModel
 import com.example.amazing_note.ui.viewmodels.SharedViewModel
 import com.google.android.material.snackbar.Snackbar
 
-class ListFragment : Fragment() {
+class ListFragment : Fragment(), SearchView.OnQueryTextListener {
     private var _binding: FragmentListBinding? = null
     private val binding get() = _binding!!
 
@@ -59,6 +61,30 @@ class ListFragment : Fragment() {
         swipeToDelete(recyclerView)
     }
 
+
+    override fun onQueryTextSubmit(query: String?): Boolean {
+        if(query != null) {
+            searchDatabase(query)
+        }
+        return true
+    }
+
+    override fun onQueryTextChange(query: String?): Boolean {
+        if(query != null) {
+            searchDatabase(query)
+        }
+        return true
+    }
+
+    private fun searchDatabase(query: String?) {
+        val searchQuery = "%${query}%"
+        mNoteViewModel.searchNote(searchQuery).observe(this, { list ->
+            list?.let {
+                adapter.setNotes(it)
+            }
+        })
+    }
+
     private fun swipeToDelete(recyclerView: RecyclerView) {
         val swipeToDeleteCallBack = object: SwipeToDelete() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
@@ -85,6 +111,11 @@ class ListFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.list_fragment_menu, menu)
+
+        val search = menu.findItem(R.id.menu_search)
+        val searchView = search.actionView as? SearchView
+        searchView?.isSubmitButtonEnabled = true
+        searchView?.setOnQueryTextListener(this)
     }
 
     override fun onDestroyView() {
