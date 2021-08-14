@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title">Título</string>
+    <string name="description">Descrição</string>
+    <string name="add_button">Botão de Adicionar</string>
+    <string name="note_removed">Nota Removida</string>
+    <string name="delete">Deletar</string>
+    <string name="once_deleted_permanent">Uma vez deletada a nota é perdida permanentemente</string>
+    <string name="fill_all_fields">Por favor preencha todos os campos</string>
+    <string name="note_updated">Nota atualizada com sucesso</string>
+    <string name="note_created">Nota criada com sucesso</string>
+    <string name="deleted">Apagado</string>
+    <string name="undo">Desfazer</string>
+</resources>
