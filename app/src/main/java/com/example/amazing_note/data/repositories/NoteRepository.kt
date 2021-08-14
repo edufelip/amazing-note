@@ -24,4 +24,12 @@ class NoteRepository(private val noteDao: NoteDao): INoteRepository {
     override fun searchNote(searchQuery: String): LiveData<List<Note>> {
         return noteDao.searchNote(searchQuery)
     }
+
+    override fun sortByPriorityAsc(): LiveData<List<Note>> {
+        return noteDao.sortByPriorityAsc()
+    }
+
+    override fun sortByPriorityDes(): LiveData<List<Note>> {
+        return noteDao.sortByPriorityDes()
+    }
 }

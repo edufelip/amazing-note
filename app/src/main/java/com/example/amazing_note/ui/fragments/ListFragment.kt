@@ -5,14 +5,11 @@ import android.view.*
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
-import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.*
 import com.example.amazing_note.R
 import com.example.amazing_note.data.models.Note
 import com.example.amazing_note.databinding.FragmentListBinding
+import com.example.amazing_note.helpers.hideKeyboard
 import com.example.amazing_note.ui.adapters.ListAdapter
 import com.example.amazing_note.ui.utils.SwipeToDelete
 import com.example.amazing_note.ui.viewmodels.NoteViewModel
@@ -44,11 +41,9 @@ class ListFragment : Fragment(), SearchView.OnQueryTextListener {
             adapter.setNotes(data)
         })
 
-        binding.listLayout.setOnClickListener {
-            findNavController().navigate(R.id.action_listFragment_to_updateFragment)
-        }
-
         setHasOptionsMenu(true)
+
+        hideKeyboard(requireActivity())
 
         return binding.root
     }
@@ -56,7 +51,7 @@ class ListFragment : Fragment(), SearchView.OnQueryTextListener {
     private fun setupRecyclerView() {
         val recyclerView = binding.listfragRecyclerView
         recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(requireActivity())
+        recyclerView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
 
         swipeToDelete(recyclerView)
     }
@@ -91,20 +86,19 @@ class ListFragment : Fragment(), SearchView.OnQueryTextListener {
                 val noteDelete = adapter.noteList[viewHolder.adapterPosition]
                 mNoteViewModel.deleteNote(noteDelete)
                 adapter.notifyItemRemoved(viewHolder.adapterPosition)
-                restoreDeletedNote(viewHolder.itemView, noteDelete, viewHolder.adapterPosition)
+                restoreDeletedNote(viewHolder.itemView, noteDelete)
             }
         }
         val itemTouchHelper = ItemTouchHelper(swipeToDeleteCallBack)
         itemTouchHelper.attachToRecyclerView(recyclerView)
     }
 
-    private fun restoreDeletedNote(view: View, deletedNote: Note, position: Int) {
+    private fun restoreDeletedNote(view: View, deletedNote: Note) {
         val snackBar = Snackbar.make(
-            view, "Deleted '${deletedNote.title}'", Snackbar.LENGTH_SHORT
+            view, this.getString(R.string.deleted) + " '${deletedNote.title}'", Snackbar.LENGTH_SHORT
         )
-        snackBar.setAction("Undo") {
+        snackBar.setAction(this.getString(R.string.undo)) {
             mNoteViewModel.insertNote(deletedNote)
-            adapter.notifyItemChanged(position)
         }
         snackBar.show()
     }
@@ -116,6 +110,18 @@ class ListFragment : Fragment(), SearchView.OnQueryTextListener {
         val searchView = search.actionView as? SearchView
         searchView?.isSubmitButtonEnabled = true
         searchView?.setOnQueryTextListener(this)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+            R.id.menu_priority_high -> mNoteViewModel.noteListAsc.observe(this, {
+                adapter.setNotes(it)
+            })
+            R.id.menu_priority_low -> mNoteViewModel.noteListDes.observe(this, {
+                adapter.setNotes(it)
+            })
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onDestroyView() {
