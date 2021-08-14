@@ -52,13 +52,13 @@ class UpdateFragment : Fragment() {
         val builder = AlertDialog.Builder(requireContext())
         builder.setPositiveButton("Yes") { _, _ ->
             mNoteViewModel.deleteNote(args.currentNote)
-            Toast.makeText(requireContext(), "Note Removed", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), this.getString(R.string.note_removed), Toast.LENGTH_SHORT).show()
             findNavController().navigate(UpdateFragmentDirections.actionUpdateFragmentToListFragment())
         }
         builder.setNegativeButton("No") { _, _ ->
         }
-        builder.setTitle("Delete '${args.currentNote.title}'?")
-        builder.setMessage("Once deleted the note is lost permanently")
+        builder.setTitle(this.getString(R.string.delete) + " '${args.currentNote.title}'?")
+        builder.setMessage(this.getString(R.string.once_deleted_permanent))
         builder.create().show()
     }
 
@@ -67,12 +67,12 @@ class UpdateFragment : Fragment() {
         val description = binding.updateDescriptionEt.text.toString()
         val priority = binding.updatePrioritiesSpinner.selectedItem.toString()
         if(mSharedViewModel.checkEmptyInputs(title, description)) {
-            Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), this.getString(R.string.fill_all_fields), Toast.LENGTH_SHORT).show()
             return
         }
         val updatedNote = Note(args.currentNote.id, title, mSharedViewModel.parsePriority(priority), description)
         mNoteViewModel.updateNote(updatedNote)
-        Toast.makeText(requireContext(), "Note Successfully Updated", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), this.getString(R.string.note_updated), Toast.LENGTH_SHORT).show()
         findNavController().navigate(UpdateFragmentDirections.actionUpdateFragmentToListFragment())
     }
 

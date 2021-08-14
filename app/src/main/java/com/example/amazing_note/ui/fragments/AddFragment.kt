@@ -49,12 +49,12 @@ class AddFragment : Fragment() {
         val priority = binding.prioritiesSpinner.selectedItem.toString()
         val description = binding.descriptionEt.text.toString()
         if(mSharedViewModel.checkEmptyInputs(title, description)) {
-            Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), this.getString(R.string.fill_all_fields), Toast.LENGTH_SHORT).show()
             return
         }
         val note = Note(0, title, mSharedViewModel.parsePriority(priority), description)
         mNoteViewModel.insertNote(note)
-        Toast.makeText(requireContext(), "Note successfully created", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), this.getString(R.string.note_created), Toast.LENGTH_SHORT).show()
         findNavController().navigate(AddFragmentDirections.actionAddFragmentToListFragment())
     }
 
