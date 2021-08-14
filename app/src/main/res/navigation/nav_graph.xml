@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/listFragment"
         android:name="com.example.amazing_note.ui.fragments.ListFragment"
-        android:label="fragment_list"
+        android:label="Notes"
         tools:layout="@layout/fragment_list" >
         <action
             android:id="@+id/action_listFragment_to_addFragment"
@@ -28,7 +28,7 @@
     <fragment
         android:id="@+id/addFragment"
         android:name="com.example.amazing_note.ui.fragments.AddFragment"
-        android:label="fragment_add"
+        android:label="Add Note"
         tools:layout="@layout/fragment_add" >
         <action
             android:id="@+id/action_addFragment_to_listFragment"
@@ -41,7 +41,7 @@
     <fragment
         android:id="@+id/updateFragment"
         android:name="com.example.amazing_note.ui.fragments.UpdateFragment"
-        android:label="fragment_update"
+        android:label="Update Note"
         tools:layout="@layout/fragment_update" >
         <action
             android:id="@+id/action_updateFragment_to_listFragment"

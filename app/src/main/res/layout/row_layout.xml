@@ -29,18 +29,19 @@
 
             <TextView
                 android:id="@+id/row_title"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="16dp"
-                android:textStyle="bold"
-                android:textSize="20sp"
-                android:maxLength="20"
-                android:textColor="@color/darkGray"
+                android:layout_marginEnd="16dp"
                 android:text="@{note.title}"
-                tools:text="Title"
+                android:textColor="@color/darkGray"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@+id/row_priority_indicator"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                tools:text="Title" />
 
             <TextView
                 android:id="@+id/row_description"
