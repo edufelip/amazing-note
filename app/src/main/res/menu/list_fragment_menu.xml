@@ -4,27 +4,24 @@
 
     <item
         android:id="@+id/menu_search"
-        android:title="Search"
+        android:title="@string/search"
         android:icon="@drawable/ic_search"
         android:iconTint="@color/white"
         app:showAsAction="ifRoom"
         app:actionViewClass="androidx.appcompat.widget.SearchView" />
 
-    <group android:checkableBehavior="single">
+    <group>
         <item
             android:id="@+id/menu_sortby"
-            android:title="Sort By">
+            android:title="@string/sort_by"
+            >
             <menu>
                 <item android:id="@+id/menu_priority_high"
-                    android:title="Priority High"/>
+                    android:title="@string/priority_high"/>
                 <item android:id="@+id/menu_priority_low"
-                    android:title="Priority Low" />
+                    android:title="@string/priority_low" />
             </menu>
         </item>
     </group>
 
-    <item
-        android:id="@+id/delete_all"
-        android:title="Delete All"
-        app:showAsAction="never" />
 </menu>

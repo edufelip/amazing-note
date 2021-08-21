@@ -11,4 +11,8 @@
     <string name="note_created">Nota criada com sucesso</string>
     <string name="deleted">Apagado</string>
     <string name="undo">Desfazer</string>
+    <string name="search">Procurar</string>
+    <string name="sort_by">Ordernar por</string>
+    <string name="priority_high">Prioridade Alta</string>
+    <string name="priority_low">Prioridade Baixa</string>
 </resources>
