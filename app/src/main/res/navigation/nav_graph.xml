@@ -33,8 +33,6 @@
         <action
             android:id="@+id/action_addFragment_to_listFragment"
             app:destination="@id/listFragment"
-            app:enterAnim="@anim/from_left"
-            app:exitAnim="@anim/to_right"
             app:popUpTo="@id/listFragment"
             app:popUpToInclusive="true" />
     </fragment>
@@ -46,8 +44,6 @@
         <action
             android:id="@+id/action_updateFragment_to_listFragment"
             app:destination="@id/listFragment"
-            app:enterAnim="@anim/from_left"
-            app:exitAnim="@anim/to_right"
             app:popUpTo="@id/listFragment"
             app:popUpToInclusive="true" />
         <argument
