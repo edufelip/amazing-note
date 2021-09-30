@@ -1,8 +1,13 @@
 package com.example.amazing_note.ui.fragments
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.*
-import androidx.appcompat.widget.SearchView
+import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.*
@@ -16,7 +21,7 @@ import com.example.amazing_note.ui.viewmodels.NoteViewModel
 import com.example.amazing_note.ui.viewmodels.SharedViewModel
 import com.google.android.material.snackbar.Snackbar
 
-class ListFragment : Fragment(), SearchView.OnQueryTextListener {
+class ListFragment : Fragment() {
     private var _binding: FragmentListBinding? = null
     private val binding get() = _binding!!
 
@@ -28,23 +33,24 @@ class ListFragment : Fragment(), SearchView.OnQueryTextListener {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // binding
         _binding = FragmentListBinding.inflate(inflater, container, false)
         binding.lifecycleOwner = viewLifecycleOwner
         binding.mSharedViewModel = mSharedViewModel
 
-        // set recyclerview
-        setupRecyclerView()
+        val toolbar = binding.mainToolbar
+        (activity as AppCompatActivity).setSupportActionBar(toolbar)
+        setHasOptionsMenu(true)
 
-        // observe livedata
+        setNavDrawer()
+        setupRecyclerView()
+        setListeners()
+
+
         mNoteViewModel.noteList.observe(viewLifecycleOwner, { data ->
             adapter.setNotes(data)
         })
 
-        setHasOptionsMenu(true)
-
         hideKeyboard(requireActivity())
-
         return binding.root
     }
 
@@ -52,23 +58,7 @@ class ListFragment : Fragment(), SearchView.OnQueryTextListener {
         val recyclerView = binding.listfragRecyclerView
         recyclerView.adapter = adapter
         recyclerView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-
         swipeToDelete(recyclerView)
-    }
-
-
-    override fun onQueryTextSubmit(query: String?): Boolean {
-        if(query != null) {
-            searchDatabase(query)
-        }
-        return true
-    }
-
-    override fun onQueryTextChange(query: String?): Boolean {
-        if(query != null) {
-            searchDatabase(query)
-        }
-        return true
     }
 
     private fun searchDatabase(query: String?) {
@@ -105,11 +95,6 @@ class ListFragment : Fragment(), SearchView.OnQueryTextListener {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.list_fragment_menu, menu)
-
-        val search = menu.findItem(R.id.menu_search)
-        val searchView = search.actionView as? SearchView
-        searchView?.isSubmitButtonEnabled = true
-        searchView?.setOnQueryTextListener(this)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -122,6 +107,36 @@ class ListFragment : Fragment(), SearchView.OnQueryTextListener {
             })
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun setListeners() {
+        binding.hambMenuBtn.setOnClickListener {
+            binding.drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        binding.searchView.findViewById<EditText>(R.id.search_input).addTextChangedListener(object: TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) = Unit
+
+            override fun onTextChanged(query: CharSequence?, p1: Int, p2: Int, p3: Int) = Unit
+
+            override fun afterTextChanged(query: Editable?) {
+                searchDatabase(query.toString())
+            }
+        })
+    }
+
+    private fun setNavDrawer() {
+        binding.navView.setNavigationItemSelectedListener {
+            when(it.itemId) {
+                R.id.menu_your_notes -> {
+                    true
+                }
+                R.id.menu_trash -> {
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
     override fun onDestroyView() {

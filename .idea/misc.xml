@@ -4,14 +4,25 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.2203125" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/drawable/amazing_note_bg.xml" value="0.2203125" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/drawable/custom_appbar_bg.xml" value="0.2203125" />
         <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/drawable/custom_input.xml" value="0.2203125" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/drawable/ic_google_pixel_2___1.xml" value="0.2203125" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/drawable/ic_menu.xml" value="0.2203125" />
         <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/drawable/item_background.xml" value="0.2203125" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/drawable/rounded_corner_bg.xml" value="0.1125" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/font-v26/roboto.xml" value="0.234375" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/font/roboto.xml" value="0.234375" />
         <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/layout/activity_main.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/layout/custom_appbar_bg.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/layout/fragment_add.xml" value="0.20416666666666666" />
-        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/layout/fragment_list.xml" value="0.22" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/layout/fragment_list.xml" value="0.25" />
         <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/layout/fragment_update.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/layout/hols.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/layout/row_layout.xml" value="0.33" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/layout/view_search.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/menu/add_fragment_menu.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/menu/drawer_menu.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/menu/list_fragment_menu.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/edu_f/Desktop/AndroidProjects/amazing-note/app/src/main/res/menu/udpate_fragment_menu.xml" value="0.20416666666666666" />
       </map>

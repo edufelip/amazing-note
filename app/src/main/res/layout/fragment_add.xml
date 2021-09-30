@@ -10,8 +10,42 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="24dp"
         tools:context=".ui.fragments.AddFragment">
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/app_bar"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            >
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:title=" "
+                    app:menu="@menu/add_fragment_menu" />
+
+                <ImageButton
+                    android:id="@+id/back_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="55dp"
+                    android:layout_gravity="start"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:backgroundTint="@android:color/transparent"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:src="@drawable/ic_arrow_left" />
+
+            </RelativeLayout>
+
+        </com.google.android.material.appbar.AppBarLayout>
 
 
         <EditText
@@ -27,7 +61,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/app_bar" />
 
         <Spinner
             android:id="@+id/priorities_spinner"

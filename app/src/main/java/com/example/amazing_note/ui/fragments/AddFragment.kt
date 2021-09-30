@@ -3,8 +3,10 @@ package com.example.amazing_note.ui.fragments
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.example.amazing_note.R
 import com.example.amazing_note.databinding.FragmentAddBinding
@@ -15,7 +17,6 @@ import com.example.amazing_note.ui.viewmodels.SharedViewModel
 class AddFragment : Fragment() {
     private var _binding: FragmentAddBinding? = null
     private val binding get() = _binding!!
-
     private val mNoteViewModel: NoteViewModel by viewModels()
     private val mSharedViewModel: SharedViewModel by viewModels()
 
@@ -24,13 +25,14 @@ class AddFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentAddBinding.inflate(inflater, container, false)
-        val view = binding.root
+        setClickListeners()
 
+        val toolbar = binding.toolbar
+        (activity as AppCompatActivity).setSupportActionBar(toolbar)
         setHasOptionsMenu(true)
 
         binding.prioritiesSpinner.onItemSelectedListener = mSharedViewModel.listener
-
-        return view
+        return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -42,6 +44,12 @@ class AddFragment : Fragment() {
             insertDataToDb()
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun setClickListeners() {
+        binding.backButton.setOnClickListener {
+            findNavController().navigateUp()
+        }
     }
 
     private fun insertDataToDb() {

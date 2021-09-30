@@ -4,42 +4,159 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="mSharedViewModel"
             type="com.example.amazing_note.ui.viewmodels.SharedViewModel" />
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/list_layout"
+    <androidx.drawerlayout.widget.DrawerLayout
+        android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".ui.fragments.ListFragment">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/listfrag_recyclerView"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:paddingTop="8dp"
-            android:clipToPadding="false"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/list_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/floatingActionButton"
+            <androidx.coordinatorlayout.widget.CoordinatorLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <com.google.android.material.appbar.AppBarLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/custom_appbar_bg"
+                    android:theme="@style/Theme.AmazingNote.AppBarLayout">
+
+                    <com.google.android.material.appbar.CollapsingToolbarLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="140dp"
+                            android:layout_gravity="top">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="85dp"
+                                android:layout_centerHorizontal="true"
+                                android:fontFamily="@font/roboto"
+                                android:gravity="center_vertical"
+                                android:letterSpacing="0.02"
+                                android:text="Suas notas"
+                                android:textFontWeight="800"
+                                android:textSize="22sp"
+                                android:typeface="sans" />
+
+                        </RelativeLayout>
+
+                        <androidx.appcompat.widget.Toolbar
+                            android:id="@+id/main_toolbar"
+                            android:layout_width="match_parent"
+                            android:layout_height="55dp"
+                            android:layout_gravity="bottom"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="8dp"
+                            app:contentInsetStart="0dp"
+                            app:menu="@menu/list_fragment_menu"
+                            app:popupTheme="@style/Theme.PopupOverlay.Menu"
+                            app:title=" ">
+
+                            <ImageButton
+                                android:id="@+id/hamb_menu_btn"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:backgroundTint="@android:color/transparent"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="8dp"
+                                android:src="@drawable/ic_menu" />
+
+                            <com.example.amazing_note.ui.customview.SearchView
+                                android:id="@+id/search_view"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent" />
+
+                        </androidx.appcompat.widget.Toolbar>
+
+                    </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+                </com.google.android.material.appbar.AppBarLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/listfrag_recyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingTop="8dp"
+                    app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior" />
+
+            </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/floatingActionButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="32dp"
+                android:layout_marginBottom="32dp"
+                android:clickable="true"
+                android:contentDescription="@string/add_button"
+                android:focusable="true"
+                android:navigateToAddFragment="@{true}"
+                android:src="@drawable/ic_add"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:tint="@color/white" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/navView"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="32dp"
-            android:layout_marginBottom="32dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:navigateToAddFragment="@{true}"
-            android:src="@drawable/ic_add"
-            android:contentDescription="@string/add_button"
-            app:tint="@color/white"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true"
+            android:layout_gravity="start"
+            android:paddingStart="4dp"
+            android:paddingTop="24dp"
+            android:paddingEnd="4dp"
+            app:menu="@menu/drawer_menu">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:background="@drawable/ic_sun" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:background="@drawable/ic_night" />
+
+            </LinearLayout>
+
+        </com.google.android.material.navigation.NavigationView>
+
+    </androidx.drawerlayout.widget.DrawerLayout>
 </layout>
