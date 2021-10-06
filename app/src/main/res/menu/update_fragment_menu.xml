@@ -5,8 +5,7 @@
     <item
         android:id="@+id/menu_save"
         android:title="Save"
-        android:icon="@drawable/ic_save"
-        android:iconTint="@color/white"
+        android:icon="@drawable/ic_check"
         app:showAsAction="ifRoom" />
 
     <item

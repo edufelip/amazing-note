@@ -24,6 +24,13 @@
             app:exitAnim="@anim/to_left"
             app:popEnterAnim="@anim/from_left"
             app:popExitAnim="@anim/to_right" />
+        <action
+            android:id="@+id/action_listFragment_to_trashFragment"
+            app:destination="@id/trashFragment"
+            app:enterAnim="@anim/from_right"
+            app:exitAnim="@anim/to_left"
+            app:popEnterAnim="@anim/from_left"
+            app:popExitAnim="@anim/to_right" />
     </fragment>
     <fragment
         android:id="@+id/addFragment"
@@ -46,6 +53,32 @@
             app:destination="@id/listFragment"
             app:popUpTo="@id/listFragment"
             app:popUpToInclusive="true" />
+        <argument
+            android:name="currentNote"
+            app:argType="com.example.amazing_note.data.models.Note" />
+    </fragment>
+    <fragment
+        android:id="@+id/trashFragment"
+        android:name="com.example.amazing_note.ui.fragments.TrashFragment"
+        android:label="TrashFragment" >
+        <action
+            android:id="@+id/action_trashFragment_to_listFragment"
+            app:destination="@id/listFragment" />
+        <action
+            android:id="@+id/action_trashFragment_to_trashNoteFragment"
+            app:destination="@id/trashNoteFragment"
+            app:enterAnim="@anim/from_right"
+            app:exitAnim="@anim/to_left"
+            app:popEnterAnim="@anim/from_left"
+            app:popExitAnim="@anim/to_right" />
+    </fragment>
+    <fragment
+        android:id="@+id/trashNoteFragment"
+        android:name="com.example.amazing_note.ui.fragments.TrashNoteFragment"
+        android:label="TrashNoteFragment" >
+        <action
+            android:id="@+id/action_trashNoteFragment_to_trashFragment"
+            app:destination="@id/trashFragment" />
         <argument
             android:name="currentNote"
             app:argType="com.example.amazing_note.data.models.Note" />

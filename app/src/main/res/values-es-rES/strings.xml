@@ -5,7 +5,7 @@
     <string name="add_button">Botón de agregar</string>
     <string name="note_removed">Nota Borrada</string>
     <string name="delete">Borrar</string>
-    <string name="once_deleted_permanent">Una vez borrada la nota no puede ser recuperada</string>
+    <string name="once_deleted_permanent">Una vez borrada la nota se moverá al bote de basura</string>
     <string name="fill_all_fields">Por favor llenar todos los campos</string>
     <string name="note_updated">Nota actualizada con éxito</string>
     <string name="deleted">Borrado</string>

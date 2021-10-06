@@ -23,7 +23,7 @@
             android:background="@drawable/item_background"
             android:backgroundTint="?attr/colorOnPrimary"
             android:elevation="4dp"
-            android:sendDataToUpdateFragment="@{note}"
+            android:sendDataToTrashNoteFragment="@{note}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"

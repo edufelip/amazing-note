@@ -5,69 +5,72 @@
 
     <data>
 
+        <variable
+            name="note"
+            type="com.example.amazing_note.data.models.Note" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.fragments.AddFragment">
+        tools:context=".ui.fragments.TrashNoteFragment">
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/app_bar"
             android:layout_width="match_parent"
-            android:layout_height="55dp"
+            android:layout_height="wrap_content"
             android:theme="@style/Theme.AmazingNote.AppBarLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <RelativeLayout
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/trash_note_toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="55dp"
+                android:layout_gravity="bottom"
+                android:paddingStart="0dp"
+                android:paddingEnd="16dp"
+                app:contentInsetStart="0dp"
+                app:menu="@menu/trash_note_fragment_menu"
+                app:popupTheme="@style/Theme.PopupOverlay.Menu"
+                app:title=" ">
 
-                <androidx.appcompat.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:layout_gravity="bottom"
-                    android:paddingStart="0dp"
-                    android:paddingEnd="12dp"
-                    app:contentInsetStart="0dp"
-                    app:menu="@menu/add_fragment_menu"
-                    app:title=" ">
+                <ImageButton
+                    android:id="@+id/back_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/custom_ripple_button"
+                    android:minWidth="48dp"
+                    android:minHeight="48dp"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_arrow_left"
+                    tools:ignore="SpeakableTextPresentCheck,SpeakableTextPresentCheck" />
 
-                    <ImageButton
-                        android:id="@+id/back_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/custom_ripple_button"
-                        android:padding="8dp"
-                        android:src="@drawable/ic_arrow_left" />
-
-                </androidx.appcompat.widget.Toolbar>
-
-            </RelativeLayout>
+            </androidx.appcompat.widget.Toolbar>
 
         </com.google.android.material.appbar.AppBarLayout>
 
-
         <EditText
-            android:id="@+id/title_et"
+            android:id="@+id/update_title_et"
             android:layout_width="0dp"
             android:layout_height="60dp"
-            android:background="@android:color/transparent"
+            android:background="@drawable/custom_input"
             android:ems="10"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
             android:hint="@string/title"
             android:inputType="textPersonName"
             android:paddingStart="24dp"
             android:paddingEnd="24dp"
+            android:text="@{note.title}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/app_bar" />
 
         <Spinner
-            android:id="@+id/priorities_spinner"
+            android:id="@+id/update_priorities_spinner"
             android:layout_width="0dp"
             android:layout_height="60dp"
             android:layout_marginTop="8dp"
@@ -75,29 +78,34 @@
             android:entries="@array/priorities"
             android:paddingStart="20dp"
             android:paddingEnd="20dp"
+            android:parsePriorityToInt="@{note.priority}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/title_et" />
+            app:layout_constraintTop_toBottomOf="@+id/update_title_et" />
 
         <EditText
-            android:id="@+id/description_et"
+            android:id="@+id/update_description_et"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginTop="8dp"
-            android:background="@android:color/transparent"
+            android:background="@drawable/custom_input"
             android:ems="10"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
             android:gravity="start|top"
             android:hint="@string/description"
             android:inputType="textMultiLine"
             android:paddingStart="24dp"
             android:paddingTop="16dp"
             android:paddingEnd="24dp"
+            android:text="@{note.description}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/priorities_spinner" />
+            app:layout_constraintTop_toBottomOf="@+id/update_priorities_spinner" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </layout>

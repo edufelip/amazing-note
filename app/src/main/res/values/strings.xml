@@ -1,11 +1,11 @@
 <resources>
-    <string name="app_name" translatable="false">amazing-note</string>
+    <string name="app_name" translatable="false">Amazing Note</string>
     <string name="title">Title</string>
     <string name="description">Description</string>
     <string name="add_button">Add Button</string>
     <string name="note_removed">Note Removed</string>
     <string name="delete">Delete</string>
-    <string name="once_deleted_permanent">Once deleted the note is lost permanently</string>
+    <string name="once_deleted_permanent">Once deleted the note will be moved to the trash can</string>
     <string name="fill_all_fields">Please fill all fields</string>
     <string name="note_updated">Note Successfully Updated</string>
     <string name="deleted">Deleted</string>

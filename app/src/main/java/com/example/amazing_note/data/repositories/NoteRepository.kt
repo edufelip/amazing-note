@@ -9,6 +9,10 @@ class NoteRepository(private val noteDao: NoteDao): INoteRepository {
         return noteDao.getAllNotes()
     }
 
+    override fun listDeletedNotes(): LiveData<List<Note>> {
+        return noteDao.getDeletedNotes()
+    }
+
     override suspend fun insertNote(note: Note) {
         noteDao.insertNote(note)
     }

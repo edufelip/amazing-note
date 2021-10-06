@@ -1,7 +1,7 @@
 package com.example.amazing_note.ui.adapters
 
+import android.widget.LinearLayout
 import android.widget.Spinner
-import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.databinding.BindingAdapter
@@ -10,6 +10,7 @@ import com.example.amazing_note.R
 import com.example.amazing_note.data.models.Note
 import com.example.amazing_note.data.models.Priority
 import com.example.amazing_note.ui.fragments.ListFragmentDirections
+import com.example.amazing_note.ui.fragments.TrashFragmentDirections
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 object BindingAdapters {
@@ -35,11 +36,11 @@ object BindingAdapters {
 
     @BindingAdapter("android:parsePriorityColor")
     @JvmStatic
-    fun parsePriorityColor(cardView: CardView, priority: Priority) {
+    fun parsePriorityColor(statusBar: LinearLayout, priority: Priority) {
        when(priority) {
-            Priority.HIGH -> { cardView.setCardBackgroundColor(ContextCompat.getColor(cardView.context, R.color.red)) }
-            Priority.MEDIUM -> { cardView.setCardBackgroundColor(ContextCompat.getColor(cardView.context, R.color.yellow)) }
-            Priority.LOW -> { cardView.setCardBackgroundColor(ContextCompat.getColor(cardView.context, R.color.green)) }
+            Priority.HIGH -> { statusBar.background.setTint(ContextCompat.getColor(statusBar.context, R.color.red)) }
+            Priority.MEDIUM -> { statusBar.background.setTint(ContextCompat.getColor(statusBar.context, R.color.yellow)) }
+            Priority.LOW -> { statusBar.background.setTint(ContextCompat.getColor(statusBar.context, R.color.green)) }
         }
     }
 
@@ -48,6 +49,15 @@ object BindingAdapters {
     fun sendDataToUpdateFragment(view: ConstraintLayout, currentNote: Note) {
         view.setOnClickListener {
             val action = ListFragmentDirections.actionListFragmentToUpdateFragment(currentNote)
+            view.findNavController().navigate(action)
+        }
+    }
+
+    @BindingAdapter("android:sendDataToTrashNoteFragment")
+    @JvmStatic
+    fun sendDataToTrashNoteFragment(view: ConstraintLayout, currentNote: Note) {
+        view.setOnClickListener {
+            val action = TrashFragmentDirections.actionTrashFragmentToTrashNoteFragment(currentNote)
             view.findNavController().navigate(action)
         }
     }

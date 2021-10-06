@@ -5,18 +5,17 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.*
 import android.widget.EditText
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.*
 import com.example.amazing_note.R
 import com.example.amazing_note.data.models.Note
 import com.example.amazing_note.databinding.FragmentListBinding
 import com.example.amazing_note.helpers.hideKeyboard
 import com.example.amazing_note.ui.adapters.ListAdapter
-import com.example.amazing_note.ui.utils.SwipeToDelete
 import com.example.amazing_note.ui.viewmodels.NoteViewModel
 import com.example.amazing_note.ui.viewmodels.SharedViewModel
 import com.google.android.material.snackbar.Snackbar
@@ -45,7 +44,6 @@ class ListFragment : Fragment() {
         setupRecyclerView()
         setListeners()
 
-
         mNoteViewModel.noteList.observe(viewLifecycleOwner, { data ->
             adapter.setNotes(data)
         })
@@ -54,11 +52,15 @@ class ListFragment : Fragment() {
         return binding.root
     }
 
+    override fun onStart() {
+        super.onStart()
+        binding.navView.menu.getItem(0).isChecked = true
+    }
+
     private fun setupRecyclerView() {
         val recyclerView = binding.listfragRecyclerView
         recyclerView.adapter = adapter
         recyclerView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-        swipeToDelete(recyclerView)
     }
 
     private fun searchDatabase(query: String?) {
@@ -68,19 +70,6 @@ class ListFragment : Fragment() {
                 adapter.setNotes(it)
             }
         })
-    }
-
-    private fun swipeToDelete(recyclerView: RecyclerView) {
-        val swipeToDeleteCallBack = object: SwipeToDelete() {
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val noteDelete = adapter.noteList[viewHolder.adapterPosition]
-                mNoteViewModel.deleteNote(noteDelete)
-                adapter.notifyItemRemoved(viewHolder.adapterPosition)
-                restoreDeletedNote(viewHolder.itemView, noteDelete)
-            }
-        }
-        val itemTouchHelper = ItemTouchHelper(swipeToDeleteCallBack)
-        itemTouchHelper.attachToRecyclerView(recyclerView)
     }
 
     private fun restoreDeletedNote(view: View, deletedNote: Note) {
@@ -95,6 +84,8 @@ class ListFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.list_fragment_menu, menu)
+        val menuMore = menu.findItem(R.id.menu_sortby)
+        menuMore?.subMenu?.clearHeader()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -129,9 +120,12 @@ class ListFragment : Fragment() {
         binding.navView.setNavigationItemSelectedListener {
             when(it.itemId) {
                 R.id.menu_your_notes -> {
+                    binding.drawerLayout.closeDrawer(GravityCompat.START)
                     true
                 }
                 R.id.menu_trash -> {
+                    binding.drawerLayout.closeDrawer(GravityCompat.START)
+                    findNavController().navigate(ListFragmentDirections.actionListFragmentToTrashFragment())
                     true
                 }
                 else -> false

@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <group>
-        <item
-            android:id="@+id/menu_sortby"
-            android:title="@string/sort_by" >
-            <menu>
-                <item android:id="@+id/menu_priority_high"
-                    android:title="@string/priority_high"/>
-                <item android:id="@+id/menu_priority_low"
-                    android:title="@string/priority_low" />
-            </menu>
-        </item>
-    </group>
-
+    <item
+        android:id="@+id/menu_sortby"
+        android:title="@string/sort_by" >
+        <menu>
+            <item android:id="@+id/menu_priority_high"
+                android:title="@string/priority_high"/>
+            <item android:id="@+id/menu_priority_low"
+                android:title="@string/priority_low" />
+        </menu>
+    </item>
 </menu>

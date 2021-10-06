@@ -10,34 +10,30 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.amazing_note.R
-import com.example.amazing_note.data.models.Note
-import com.example.amazing_note.databinding.FragmentUpdateBinding
-import com.example.amazing_note.ui.viewmodels.NoteViewModel
-import com.example.amazing_note.ui.viewmodels.SharedViewModel
+import com.example.amazing_note.databinding.FragmentTrashNoteBinding
+import com.example.amazing_note.ui.viewmodels.TrashViewModel
 
-class UpdateFragment : Fragment() {
-    private var _binding: FragmentUpdateBinding? = null
+class TrashNoteFragment : Fragment() {
+    private var _binding: FragmentTrashNoteBinding? = null
     private val binding get() = _binding!!
 
     private val args by navArgs<UpdateFragmentArgs>()
-    private val mSharedViewModel: SharedViewModel by viewModels()
-    private val mNoteViewModel: NoteViewModel by viewModels()
+    private val mTrashViewModel: TrashViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentUpdateBinding.inflate(inflater, container, false)
+        _binding = FragmentTrashNoteBinding.inflate(inflater, container, false)
         binding.note = args.currentNote
 
-        val toolbar = binding.toolbar
+        val toolbar = binding.trashNoteToolbar
         (activity as AppCompatActivity).setSupportActionBar(toolbar)
         setHasOptionsMenu(true)
 
         setListeners()
 
-        binding.updatePrioritiesSpinner.onItemSelectedListener = mSharedViewModel.listener
-
+        binding.updatePrioritiesSpinner.isEnabled = false
         return binding.root
     }
 
@@ -48,24 +44,22 @@ class UpdateFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.update_fragment_menu, menu)
+        inflater.inflate(R.menu.trash_note_fragment_menu, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId) {
-            R.id.menu_save -> updateItem()
-            R.id.menu_delete -> deleteItem()
+            R.id.menu_recover -> recoverItem()
+            R.id.menu_delete_perm -> permaDeleteItem()
         }
         return super.onOptionsItemSelected(item)
     }
 
-    private fun deleteItem() {
+    private fun permaDeleteItem() {
         val builder = AlertDialog.Builder(requireContext(), R.style.MyCustomDialog)
         builder.setPositiveButton("Yes") { _, _ ->
-            val updateNote = args.currentNote
-            updateNote.deleted = true
-            mNoteViewModel.updateNote(updateNote)
-            Toast.makeText(requireContext(), this.getString(R.string.note_removed), Toast.LENGTH_SHORT).show()
+            mTrashViewModel.deleteNote(args.currentNote)
+            Toast.makeText(requireContext(), "Note permanently deleted", Toast.LENGTH_SHORT).show()
             findNavController().navigateUp()
         }
         builder.setNegativeButton("No") { _, _ ->
@@ -75,16 +69,10 @@ class UpdateFragment : Fragment() {
         builder.create().show()
     }
 
-    private fun updateItem() {
-        val title = binding.updateTitleEt.text.toString()
-        val description = binding.updateDescriptionEt.text.toString()
-        val priority = binding.updatePrioritiesSpinner.selectedItem.toString()
-        if(mSharedViewModel.checkEmptyInputs(title, description)) {
-            Toast.makeText(requireContext(), this.getString(R.string.fill_all_fields), Toast.LENGTH_SHORT).show()
-            return
-        }
-        val updatedNote = Note(args.currentNote.id, title, mSharedViewModel.parsePriority(priority), description, false)
-        mNoteViewModel.updateNote(updatedNote)
+    private fun recoverItem() {
+        val updatedNote = args.currentNote
+        updatedNote.deleted = false
+        mTrashViewModel.recoverNote(updatedNote)
         Toast.makeText(requireContext(), this.getString(R.string.note_updated), Toast.LENGTH_SHORT).show()
         findNavController().navigateUp()
     }

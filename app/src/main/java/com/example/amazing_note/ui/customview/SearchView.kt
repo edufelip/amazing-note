@@ -1,16 +1,12 @@
 package com.example.amazing_note.ui.customview
 
 import android.animation.Animator
-import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewAnimationUtils
-import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import android.widget.FrameLayout
-import android.widget.RelativeLayout
 import com.example.amazing_note.R
 import com.example.amazing_note.databinding.ViewSearchBinding
 import com.example.amazing_note.helpers.hideKeyboard

@@ -1,16 +1,18 @@
 package com.example.amazing_note.ui.adapters
 
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ItemTouchHelper
-import com.example.amazing_note.data.models.Note
 import androidx.recyclerview.widget.RecyclerView
-import com.example.amazing_note.databinding.RowLayoutBinding
+import com.example.amazing_note.data.models.Note
+import com.example.amazing_note.databinding.TrashRowLayoutBinding
 
-class ListAdapter: RecyclerView.Adapter<ListAdapter.MyViewHolder>() {
+class TrashAdapter: RecyclerView.Adapter<TrashAdapter.MyViewHolder>() {
     var noteList = mutableListOf<Note>()
 
-    class MyViewHolder(private val binding: RowLayoutBinding): RecyclerView.ViewHolder(binding.root) {
+    class MyViewHolder(private val binding: TrashRowLayoutBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(note: Note) {
             binding.note = note
             binding.executePendingBindings()
@@ -19,7 +21,7 @@ class ListAdapter: RecyclerView.Adapter<ListAdapter.MyViewHolder>() {
         companion object {
             fun from(parent: ViewGroup): MyViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
-                val binding = RowLayoutBinding.inflate(layoutInflater, parent, false)
+                val binding = TrashRowLayoutBinding.inflate(layoutInflater, parent, false)
                 return MyViewHolder(binding)
             }
         }

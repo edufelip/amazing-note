@@ -5,7 +5,7 @@
     <string name="add_button">Botão de Adicionar</string>
     <string name="note_removed">Nota Removida</string>
     <string name="delete">Deletar</string>
-    <string name="once_deleted_permanent">Uma vez deletada a nota é perdida permanentemente</string>
+    <string name="once_deleted_permanent">Uma vez deletada a nota será movida para a lixeira</string>
     <string name="fill_all_fields">Por favor preencha todos os campos</string>
     <string name="note_updated">Nota atualizada com sucesso</string>
     <string name="note_created">Nota criada com sucesso</string>

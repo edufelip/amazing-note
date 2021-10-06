@@ -60,7 +60,7 @@ class AddFragment : Fragment() {
             Toast.makeText(requireContext(), this.getString(R.string.fill_all_fields), Toast.LENGTH_SHORT).show()
             return
         }
-        val note = Note(0, title, mSharedViewModel.parsePriority(priority), description)
+        val note = Note(0, title, mSharedViewModel.parsePriority(priority), description,false)
         mNoteViewModel.insertNote(note)
         Toast.makeText(requireContext(), this.getString(R.string.note_created), Toast.LENGTH_SHORT).show()
         findNavController().navigate(AddFragmentDirections.actionAddFragmentToListFragment())

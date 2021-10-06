@@ -12,5 +12,6 @@ data class Note (
     var id: Int,
     var title: String,
     var priority: Priority,
-    var description: String
+    var description: String,
+    var deleted: Boolean
 ): Parcelable

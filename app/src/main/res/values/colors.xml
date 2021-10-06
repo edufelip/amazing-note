@@ -7,7 +7,9 @@
     <color name="white">#FFFFFFFF</color>
     <color name="lightGray">#E6E6E6</color>
     <color name="darkGray">#4B4B4B</color>
-    <color name="red">#FF4646</color>
-    <color name="yellow">#FFC114</color>
-    <color name="green">#00C980</color>
+    <color name="default_black">#3b3b3b</color>
+
+    <color name="red">#ff8f8f</color>
+    <color name="yellow">#edc353</color>
+    <color name="green">#76c2a7</color>
 </resources>

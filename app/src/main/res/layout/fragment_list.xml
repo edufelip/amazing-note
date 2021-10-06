@@ -67,17 +67,18 @@
                             android:paddingStart="8dp"
                             android:paddingEnd="8dp"
                             app:contentInsetStart="0dp"
-                            app:menu="@menu/list_fragment_menu"
                             app:popupTheme="@style/Theme.PopupOverlay.Menu"
-                            app:title=" ">
+                            app:title=" "
+                            app:menu="@menu/list_fragment_menu"
+                            >
 
                             <ImageButton
                                 android:id="@+id/hamb_menu_btn"
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
-                                android:backgroundTint="@android:color/transparent"
                                 android:paddingStart="8dp"
                                 android:paddingEnd="8dp"
+                                android:backgroundTint="@android:color/transparent"
                                 android:src="@drawable/ic_menu" />
 
                             <com.example.amazing_note.ui.customview.SearchView
@@ -120,10 +121,10 @@
 
         <com.google.android.material.navigation.NavigationView
             android:id="@+id/navView"
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/navigation_drawer_width"
             android:layout_height="match_parent"
-            android:fitsSystemWindows="true"
             android:layout_gravity="start"
+            android:background="@drawable/custom_navdrawer_bg"
             android:paddingStart="4dp"
             android:paddingTop="24dp"
             android:paddingEnd="4dp"
