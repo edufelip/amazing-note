@@ -84,7 +84,9 @@
                             <com.example.amazing_note.ui.customview.SearchView
                                 android:id="@+id/search_view"
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent" />
+                                android:layout_height="match_parent"
+                                android:layout_marginTop="2dp"
+                                android:layout_marginBottom="2dp" />
 
                         </androidx.appcompat.widget.Toolbar>
 
@@ -144,6 +146,7 @@
                     android:background="@drawable/ic_sun" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/light_dark_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"

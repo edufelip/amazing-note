@@ -1,16 +1,35 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Theme.Amazingnote" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/main_pink</item>
-        <item name="colorPrimaryVariant">@color/dark_pink</item>
+        <item name="colorPrimary">@color/main_dark</item>
+        <item name="colorPrimaryVariant">@color/main_pink_dark</item>
         <item name="colorOnPrimary">@color/white</item>
-        <!-- Secondary brand color. -->
+
         <item name="colorSecondary">@color/main_pink</item>
-        <item name="colorSecondaryVariant">@color/dark_pink</item>
-        <item name="colorOnSecondary">@color/white</item>
-        <!-- Status bar color. -->
-        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
-        <!-- Customize your theme here. -->
+        <item name="colorOnSecondary">@color/purple_night</item>
+
+        <item name="colorSurface">@color/main_dark</item>
+
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <item name="android:colorBackground">@color/purple_night</item>
+        <item name="colorOnBackground">@color/white</item>
+        <item name="rowBgColor">@color/main_dark</item>
+
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimary</item>
+        <item name="android:navigationBarColor">?attr/colorPrimary</item>
+        <item name="floatingActionButtonStyle">@style/MyFloatingActionButton</item>
+        <item name="navigationViewStyle">@style/MyNavView</item>
+        <item name="actionOverflowMenuStyle">@style/popupOverflowMenu</item>
+    </style>
+
+    <style name="Theme.Amazingnote.Launcher" parent="Theme.Amazingnote">
+        <item name="android:windowBackground">@drawable/amazing_note_bg</item>
+    </style>
+
+    <style name="Theme.AmazingNote.AppBarLayout" parent="Theme.Amazingnote">
+        <item name="imageButtonStyle">@style/ImageButton</item>
+        <item name="actionOverflowButtonStyle">@style/MyOverflowButton</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="actionMenuTextColor">@color/white</item>
+        <item name="android:textColorSecondary">@color/white</item>
     </style>
 </resources>
