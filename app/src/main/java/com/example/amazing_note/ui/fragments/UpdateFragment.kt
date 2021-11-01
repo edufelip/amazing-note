@@ -14,7 +14,9 @@ import com.example.amazing_note.data.models.Note
 import com.example.amazing_note.databinding.FragmentUpdateBinding
 import com.example.amazing_note.ui.viewmodels.NoteViewModel
 import com.example.amazing_note.ui.viewmodels.SharedViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class UpdateFragment : Fragment() {
     private var _binding: FragmentUpdateBinding? = null
     private val binding get() = _binding!!

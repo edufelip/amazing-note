@@ -6,8 +6,11 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import com.example.amazing_note.data.models.Note
 import androidx.recyclerview.widget.RecyclerView
 import com.example.amazing_note.databinding.RowLayoutBinding
+import javax.inject.Inject
 
-class ListAdapter: RecyclerView.Adapter<ListAdapter.MyViewHolder>() {
+class ListAdapter @Inject constructor(
+
+): RecyclerView.Adapter<ListAdapter.MyViewHolder>() {
     var noteList = mutableListOf<Note>()
 
     class MyViewHolder(private val binding: RowLayoutBinding): RecyclerView.ViewHolder(binding.root) {

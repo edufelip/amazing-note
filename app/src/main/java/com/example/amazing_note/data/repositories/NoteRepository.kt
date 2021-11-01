@@ -3,8 +3,13 @@ package com.example.amazing_note.data.repositories
 import androidx.lifecycle.LiveData
 import com.example.amazing_note.data.db.NoteDao
 import com.example.amazing_note.data.models.Note
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class NoteRepository(private val noteDao: NoteDao): INoteRepository {
+@Singleton
+class NoteRepository @Inject constructor(
+    private val noteDao: NoteDao
+): INoteRepository {
     override fun listNotes(): LiveData<List<Note>> {
         return noteDao.getAllNotes()
     }

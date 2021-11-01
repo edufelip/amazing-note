@@ -11,14 +11,18 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.amazing_note.R
 import com.example.amazing_note.databinding.FragmentTrashNoteBinding
+import com.example.amazing_note.ui.viewmodels.SharedViewModel
 import com.example.amazing_note.ui.viewmodels.TrashViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class TrashNoteFragment : Fragment() {
     private var _binding: FragmentTrashNoteBinding? = null
     private val binding get() = _binding!!
 
     private val args by navArgs<UpdateFragmentArgs>()
     private val mTrashViewModel: TrashViewModel by viewModels()
+    private val mSharedViewModel: SharedViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,7 +37,8 @@ class TrashNoteFragment : Fragment() {
 
         setListeners()
 
-        binding.updatePrioritiesSpinner.isEnabled = false
+        binding.prioritiesSpinner.onItemSelectedListener = mSharedViewModel.listener
+        binding.prioritiesSpinner.isEnabled = false
         return binding.root
     }
 

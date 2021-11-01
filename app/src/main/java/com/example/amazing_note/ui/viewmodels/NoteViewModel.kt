@@ -1,30 +1,22 @@
 package com.example.amazing_note.ui.viewmodels
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.amazing_note.data.db.NoteDatabase
 import com.example.amazing_note.data.models.Note
-import com.example.amazing_note.data.repositories.INoteRepository
 import com.example.amazing_note.data.repositories.NoteRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class NoteViewModel(application: Application): AndroidViewModel(application) {
-    private val noteDao = NoteDatabase.getDatabase(application).noteDao()
-    private val repository: INoteRepository
-
-    val noteList: LiveData<List<Note>>
-    val noteListAsc: LiveData<List<Note>>
-    val noteListDes: LiveData<List<Note>>
-
-    init {
-        repository = NoteRepository(noteDao)
-        noteList = repository.listNotes()
-        noteListAsc = repository.sortByPriorityAsc()
-        noteListDes = repository.sortByPriorityDes()
-    }
+@HiltViewModel
+class NoteViewModel @Inject constructor(
+    private val repository: NoteRepository
+): ViewModel() {
+    val noteList: LiveData<List<Note>> = repository.listNotes()
+    val noteListAsc: LiveData<List<Note>> = repository.sortByPriorityAsc()
+    val noteListDes: LiveData<List<Note>> = repository.sortByPriorityDes()
 
     fun insertNote(note: Note) {
         viewModelScope.launch(Dispatchers.IO) {

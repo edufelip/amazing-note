@@ -2,16 +2,24 @@ package com.example.amazing_note.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.navigation.NavController
-import androidx.navigation.findNavController
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.setupActionBarWithNavController
 import com.example.amazing_note.R
+import com.example.amazing_note.ui.fragments.MainFragmentFactory
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import javax.inject.Inject
 
-class MainActivity : AppCompatActivity() {
+@ExperimentalCoroutinesApi
+@AndroidEntryPoint
+class MainActivity : AppCompatActivity(){
+    @Inject
+    lateinit var fragmentFactory: MainFragmentFactory
+
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.Theme_Amazingnote)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        supportFragmentManager.fragmentFactory = fragmentFactory
+        supportFragmentManager.beginTransaction().commit()
     }
 }

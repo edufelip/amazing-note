@@ -8,8 +8,11 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.amazing_note.data.models.Note
 import com.example.amazing_note.databinding.TrashRowLayoutBinding
+import javax.inject.Inject
 
-class TrashAdapter: RecyclerView.Adapter<TrashAdapter.MyViewHolder>() {
+class TrashAdapter @Inject constructor(
+
+): RecyclerView.Adapter<TrashAdapter.MyViewHolder>() {
     var noteList = mutableListOf<Note>()
 
     class MyViewHolder(private val binding: TrashRowLayoutBinding): RecyclerView.ViewHolder(binding.root) {

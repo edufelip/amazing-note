@@ -12,12 +12,15 @@ import com.example.amazing_note.databinding.FragmentTrashBinding
 import com.example.amazing_note.ui.adapters.ListAdapter
 import com.example.amazing_note.ui.adapters.TrashAdapter
 import com.example.amazing_note.ui.viewmodels.TrashViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
-class TrashFragment : Fragment() {
+@AndroidEntryPoint
+class TrashFragment @Inject constructor(
+    private val adapter: TrashAdapter
+) : Fragment() {
     private var _binding: FragmentTrashBinding? = null
     private val binding get() = _binding!!
-
-    private val adapter: TrashAdapter by lazy { TrashAdapter() }
     private val mTrashViewModel: TrashViewModel by viewModels()
 
     override fun onCreateView(

@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.amazing_note.data.models.Note
+import com.example.amazing_note.others.Constants.DATABASE_NAME
 
 @Database(entities = [Note::class], version = 1, exportSchema = false)
 @TypeConverters(Converter::class)
@@ -26,7 +27,7 @@ abstract class NoteDatabase: RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     NoteDatabase::class.java,
-                    "note_database"
+                    DATABASE_NAME
                 ).build()
                 INSTANCE = instance
                 return instance

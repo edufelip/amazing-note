@@ -71,7 +71,7 @@
             app:layout_constraintTop_toBottomOf="@id/app_bar" />
 
         <Spinner
-            android:id="@+id/update_priorities_spinner"
+            android:id="@+id/priorities_spinner"
             android:layout_width="0dp"
             android:layout_height="60dp"
             android:layout_marginTop="8dp"
@@ -105,7 +105,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/update_priorities_spinner" />
+            app:layout_constraintTop_toBottomOf="@+id/priorities_spinner" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

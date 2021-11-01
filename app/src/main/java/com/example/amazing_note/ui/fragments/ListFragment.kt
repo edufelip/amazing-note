@@ -11,27 +11,26 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.app.ActivityCompat.recreate
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.*
 import com.example.amazing_note.R
-import com.example.amazing_note.data.models.Note
 import com.example.amazing_note.databinding.FragmentListBinding
 import com.example.amazing_note.helpers.hideKeyboard
-import com.example.amazing_note.ui.MainActivity
 import com.example.amazing_note.ui.adapters.ListAdapter
 import com.example.amazing_note.ui.viewmodels.NoteViewModel
 import com.example.amazing_note.ui.viewmodels.SharedViewModel
-import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
-class ListFragment : Fragment() {
+@AndroidEntryPoint
+class ListFragment @Inject constructor(
+    private val adapter: ListAdapter
+) : Fragment() {
     private var _binding: FragmentListBinding? = null
     private val binding get() = _binding!!
-
-    private val adapter: ListAdapter by lazy { ListAdapter() }
     private val mNoteViewModel: NoteViewModel by viewModels()
     private val mSharedViewModel: SharedViewModel by viewModels()
 
