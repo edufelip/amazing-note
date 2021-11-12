@@ -1,12 +1,12 @@
 package com.example.amazing_note.ui.fragments
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.filters.MediumTest
@@ -15,13 +15,12 @@ import com.example.amazing_note.DataBindingIdlingResource
 import com.example.amazing_note.R
 import com.example.amazing_note.data.models.Note
 import com.example.amazing_note.data.models.Priority
-import com.example.amazing_note.data.repositories.FakeNoteRepositoryAndroidTest
 import com.example.amazing_note.getOrAwaitValue
 import com.example.amazing_note.launchFragmentInHiltContainer
+import com.example.amazing_note.others.Status
 import com.example.amazing_note.ui.MainActivity
 import com.example.amazing_note.ui.TestMainFragmentFactory
-import com.example.amazing_note.ui.adapters.ListAdapter
-import com.example.amazing_note.ui.viewmodels.NoteViewModel
+import com.example.amazing_note.ui.viewmodels.TrashViewModel
 import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -30,14 +29,14 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mockito.mock
+import org.mockito.Mockito
 import org.mockito.Mockito.verify
 import javax.inject.Inject
 
 @MediumTest
 @HiltAndroidTest
 @ExperimentalCoroutinesApi
-class ListFragmentTest {
+class TrashNoteFragmentTest {
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
 
@@ -64,59 +63,54 @@ class ListFragmentTest {
     }
 
     @Test
-    fun clickOnNote_navigateToUpdateFragment() {
-        val navController = mock(NavController::class.java)
-        val note = Note(0, "random title", Priority.HIGH, "random description", false)
-        var testViewModel: NoteViewModel? = null
+    fun clickOnBackButton_navigateBack() {
+        val navController = Mockito.mock(NavController::class.java)
+        val note = Note(0, "random title", Priority.HIGH, "random description", true)
 
-        launchFragmentInHiltContainer<ListFragment> (fragmentFactory = testFragmentFactory) {
-            Navigation.setViewNavController(requireView(), navController)
-            adapter.noteList = mutableListOf(note)
-            testViewModel = mNoteViewModel
-        }
-
-        onView(withId(R.id.listfrag_recyclerView)).perform(
-            RecyclerViewActions.actionOnItemAtPosition<ListAdapter.MyViewHolder>(
-                0,
-                click()
-            )
-        )
-
-        verify(navController).navigate(ListFragmentDirections.actionListFragmentToUpdateFragment(note))
-    }
-
-    @Test
-    fun clickAddNoteButton_navigateToAddFragment() {
-        val navController = mock(NavController::class.java)
-
-        launchFragmentInHiltContainer<ListFragment> (
+        launchFragmentInHiltContainer<TrashNoteFragment> (
+            fragmentArgs = bundleOf(Pair("currentNote", note)),
             fragmentFactory = testFragmentFactory
         ) {
             Navigation.setViewNavController(requireView(), navController)
         }
 
-        onView(withId(R.id.floatingActionButton)).perform(click())
-
-        verify(navController).navigate(
-            ListFragmentDirections.actionListFragmentToAddFragment()
-        )
+        onView(withId(R.id.back_button)).perform(click())
+        verify(navController).navigateUp()
     }
 
     @Test
-    fun clickTrashButton_navigateToTrashFragment() {
-        val navController = mock(NavController::class.java)
+    fun clickOnRecoverButton_successfullyRecover() {
+        val navController = Mockito.mock(NavController::class.java)
+        val note = Note(0, "random title", Priority.HIGH, "random description", true)
+        var testViewModel: TrashViewModel? = null
 
-        launchFragmentInHiltContainer<ListFragment> (
-            fragmentFactory = testFragmentFactory
-        ) {
+        launchFragmentInHiltContainer<TrashNoteFragment> (fragmentArgs = bundleOf(Pair("currentNote", note)), fragmentFactory = testFragmentFactory) {
             Navigation.setViewNavController(requireView(), navController)
+            testViewModel = mTrashViewModel
         }
 
-        onView(withId(R.id.hamb_menu_btn)).perform(click())
-        onView(withText(R.string.trash)).perform(click())
+        onView(withId(R.id.action_more)).perform(click())
+        onView(withText(R.string.recover)).perform(click())
+        verify(navController).navigateUp()
+        val value = testViewModel?.recoverNoteStatus?.getOrAwaitValue()
+        assertThat(value?.peekContent()?.status).isEqualTo(Status.SUCCESS)
+    }
 
-        verify(navController).navigate(
-            ListFragmentDirections.actionListFragmentToTrashFragment()
-        )
+    @Test
+    fun clickOnDeleteButton_successfullyRemove() {
+        val navController = Mockito.mock(NavController::class.java)
+        val note = Note(0, "random title", Priority.HIGH, "random description", true)
+        var testViewModel: TrashViewModel? = null
+
+        launchFragmentInHiltContainer<TrashNoteFragment> (fragmentArgs = bundleOf(Pair("currentNote", note)), fragmentFactory = testFragmentFactory) {
+            Navigation.setViewNavController(requireView(), navController)
+            testViewModel = mTrashViewModel
+        }
+
+        onView(withId(R.id.action_more)).perform(click())
+        onView(withText(R.string.delete)).perform(click())
+        onView(withText(R.string.yes)).perform(click())
+        val value = testViewModel?.deleteNoteStatus?.getOrAwaitValue()
+        assertThat(value?.peekContent()?.status).isEqualTo(Status.SUCCESS)
     }
 }

@@ -48,12 +48,17 @@ class FakeNoteRepositoryAndroidTest : INoteRepository {
 
     override suspend fun updateNote(note: Note) {
         val foundNote = notes.find { it.id == note.id }
-        notes[notes.indexOf(foundNote)] = note
-        refreshLiveData()
+        if(foundNote != null) {
+            notes[notes.indexOf(foundNote)] = note
+            refreshLiveData()
+        }
     }
 
     override suspend fun deleteNote(note: Note) {
-        notes.removeAt(notes.indexOf(note))
+        val foundNote = notes.find { it.id == note.id }
+        if(foundNote != null) {
+            notes.removeAt(notes.indexOf(note))
+        }
     }
 
     override fun searchNote(searchQuery: String): LiveData<List<Note>> {

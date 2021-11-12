@@ -1,6 +1,7 @@
 package com.example.amazing_note.data.db
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.test.filters.SmallTest
 import com.example.amazing_note.data.models.Note
 import com.example.amazing_note.data.models.Priority
@@ -21,6 +22,8 @@ import javax.inject.Named
 @SmallTest
 @HiltAndroidTest
 class NoteDaoTest {
+    private val defaultNote = Note(1, "random title", Priority.HIGH, "random description", false)
+
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
 
@@ -39,34 +42,78 @@ class NoteDaoTest {
     }
 
     @After
-    fun finalize() {
+    fun tearDown() {
         database.close()
     }
 
     @Test
-    fun insertNote()  = runBlockingTest {
-        val note = Note(1, "test title", Priority.MEDIUM, "test description", false)
-        dao.insertNote(note)
+    fun getAllNotes() = runBlockingTest {
+        val supNote = Note(0, "another note", Priority.MEDIUM, "another description", false)
+        dao.insertNote(defaultNote)
+        dao.insertNote(supNote)
         val allNotes = dao.getAllNotes().getOrAwaitValue()
-        assertThat(allNotes).contains(note)
+        assertThat(allNotes).hasSize(2)
     }
 
     @Test
-    fun deleteNote() = runBlockingTest {
-        val note = Note(1, "test title", Priority.MEDIUM, "test description", false)
-        dao.insertNote(note)
-        dao.deleteNote(note)
+    fun getDeletedNotes() = runBlockingTest {
+        val supNote = defaultNote
+        supNote.deleted = true
+        dao.insertNote(defaultNote)
+        dao.updateNote(supNote)
+        val allDeletedNotes = dao.getDeletedNotes().getOrAwaitValue()
+        assertThat(allDeletedNotes).hasSize(1)
+    }
+
+    @Test
+    fun insertNote() = runBlockingTest {
+        dao.insertNote(defaultNote)
         val allNotes = dao.getAllNotes().getOrAwaitValue()
-        assertThat(allNotes).doesNotContain(note)
+        assertThat(allNotes).contains(defaultNote)
     }
 
     @Test
     fun updateNote() = runBlockingTest {
-        val note = Note(1, "test title", Priority.MEDIUM, "test description", false)
-        dao.insertNote(note)
-        note.title = "new title"
-        dao.updateNote(note)
+        val supNote = defaultNote
+        dao.insertNote(supNote)
+        supNote.description = "another description"
+        dao.updateNote(supNote)
         val allNotes = dao.getAllNotes().getOrAwaitValue()
-        assertThat(allNotes).contains(note)
+        assertThat(allNotes).contains(supNote)
+    }
+
+    @Test
+    fun deleteNote() = runBlockingTest {
+        dao.insertNote(defaultNote)
+        dao.deleteNote(defaultNote)
+        val allNotes = dao.getAllNotes().getOrAwaitValue()
+        assertThat(allNotes).isEmpty()
+    }
+
+    @Test
+    fun searchNote() = runBlockingTest {
+        dao.insertNote(defaultNote)
+        val searchNote = dao.searchNote(defaultNote.title).getOrAwaitValue()
+        assertThat(searchNote[0]).isEqualTo(defaultNote)
+    }
+
+    @Test
+    fun sortPriorityAsc() = runBlockingTest {
+        val supNote = Note(0, "another note", Priority.LOW, "another description", false)
+        dao.insertNote(defaultNote)
+        dao.insertNote(supNote)
+        val notesAsc = dao.sortByPriorityAsc().getOrAwaitValue()
+        assertThat(notesAsc[0].priority).isEqualTo(Priority.HIGH)
+        assertThat(notesAsc[1].priority).isEqualTo(Priority.LOW)
+    }
+
+    @Test
+    fun sortPriorityDes() = runBlockingTest {
+        val supNote = Note(0, "another note", Priority.LOW, "another description", false)
+        dao.insertNote(defaultNote)
+        dao.insertNote(supNote)
+        val notesAsc = dao.sortByPriorityDes().getOrAwaitValue()
+        assertThat(notesAsc[0].priority).isEqualTo(Priority.LOW)
+        assertThat(notesAsc[1].priority).isEqualTo(Priority.HIGH)
     }
 }

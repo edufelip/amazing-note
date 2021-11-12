@@ -2,6 +2,7 @@ package com.example.amazing_note.ui.viewmodels
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.example.amazing_note.MainCoroutineRule
+import com.example.amazing_note.data.models.Note
 import com.example.amazing_note.data.models.Priority
 import com.example.amazing_note.data.repositories.FakeNoteRepository
 import com.example.amazing_note.getOrAwaitValueTest
@@ -78,6 +79,65 @@ class NoteViewModelTest {
         viewModel.insertNote(fakeTitle, fakePriority, fakeDescription)
 
         val value = viewModel.insertNoteStatus.getOrAwaitValueTest()
+        assertThat(value.getContentIfNotHandled()?.status).isEqualTo(Status.SUCCESS)
+    }
+
+    @Test
+    fun `Should NOT update note with empty title`() {
+        viewModel.updateNote(0 , "", Priority.HIGH, "random description", false)
+
+        val value = viewModel.updateNoteStatus.getOrAwaitValueTest()
+        assertThat(value.getContentIfNotHandled()?.status).isEqualTo(Status.ERROR)
+    }
+
+    @Test
+    fun `Should NOT update note with empty description`() {
+        viewModel.updateNote(0 , "random title", Priority.HIGH, "", false)
+
+        val value = viewModel.updateNoteStatus.getOrAwaitValueTest()
+        assertThat(value.getContentIfNotHandled()?.status).isEqualTo(Status.ERROR)
+    }
+
+    @Test
+    fun `Should NOT update note with title too long`() {
+        val longTitle = buildString {
+            for(i in 1..Constants.MAX_TITLE_LENGTH + 1) {
+                append(i)
+            }
+        }
+        viewModel.updateNote(0, longTitle, Priority.HIGH, "random description", false)
+
+        val value = viewModel.updateNoteStatus.getOrAwaitValueTest()
+        assertThat(value.getContentIfNotHandled()?.status).isEqualTo(Status.ERROR)
+    }
+
+    @Test
+    fun `Should NOT update note with description too long`() {
+        val longDescription = buildString {
+            for(i in 1..Constants.MAX_DESCRIPTION_LENGTH + 1) {
+                append(1)
+            }
+        }
+        viewModel.updateNote(0, "random title", Priority.HIGH, longDescription, false)
+
+        val value = viewModel.updateNoteStatus.getOrAwaitValueTest()
+        assertThat(value.getContentIfNotHandled()?.status).isEqualTo(Status.ERROR)
+    }
+
+    @Test
+    fun `Should successfully update a note`() {
+        viewModel.updateNote(0, "random title", Priority.HIGH, "random description", false)
+
+        val value = viewModel.updateNoteStatus.getOrAwaitValueTest()
+        assertThat(value.getContentIfNotHandled()?.status).isEqualTo(Status.SUCCESS)
+    }
+
+    @Test
+    fun `Should successfully delete a note`() {
+        val note = Note(0, "random title", Priority.HIGH, "random description", false)
+        viewModel.deleteNote(note, true)
+
+        val value = viewModel.deleteNoteStatus.getOrAwaitValueTest()
         assertThat(value.getContentIfNotHandled()?.status).isEqualTo(Status.SUCCESS)
     }
 }

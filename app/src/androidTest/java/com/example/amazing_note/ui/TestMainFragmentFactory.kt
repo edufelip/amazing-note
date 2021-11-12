@@ -5,9 +5,9 @@ import androidx.fragment.app.FragmentFactory
 import com.example.amazing_note.data.repositories.FakeNoteRepositoryAndroidTest
 import com.example.amazing_note.ui.adapters.ListAdapter
 import com.example.amazing_note.ui.adapters.TrashAdapter
-import com.example.amazing_note.ui.fragments.ListFragment
-import com.example.amazing_note.ui.fragments.TrashFragment
+import com.example.amazing_note.ui.fragments.*
 import com.example.amazing_note.ui.viewmodels.NoteViewModel
+import com.example.amazing_note.ui.viewmodels.TrashViewModel
 import javax.inject.Inject
 
 class TestMainFragmentFactory @Inject constructor(
@@ -19,8 +19,17 @@ class TestMainFragmentFactory @Inject constructor(
             ListFragment::class.java.name -> {
                 ListFragment(listAdapter, NoteViewModel(FakeNoteRepositoryAndroidTest()))
             }
+            AddFragment::class.java.name -> {
+                AddFragment(listAdapter, NoteViewModel(FakeNoteRepositoryAndroidTest()))
+            }
             TrashFragment::class.java.name -> {
-                TrashFragment(trashAdapter)
+                TrashFragment(trashAdapter, TrashViewModel(FakeNoteRepositoryAndroidTest()))
+            }
+            TrashNoteFragment::class.java.name -> {
+                TrashNoteFragment(listAdapter, TrashViewModel(FakeNoteRepositoryAndroidTest()))
+            }
+            UpdateFragment::class.java.name -> {
+                UpdateFragment(listAdapter, NoteViewModel(FakeNoteRepositoryAndroidTest()))
             }
             else -> super.instantiate(classLoader, className)
         }
