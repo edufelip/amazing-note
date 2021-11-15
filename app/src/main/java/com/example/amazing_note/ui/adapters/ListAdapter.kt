@@ -2,7 +2,6 @@ package com.example.amazing_note.ui.adapters
 
 import android.view.*
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ItemTouchHelper
 import com.example.amazing_note.data.models.Note
 import androidx.recyclerview.widget.RecyclerView
 import com.example.amazing_note.databinding.RowLayoutBinding

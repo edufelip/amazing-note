@@ -6,33 +6,29 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.*
-import android.widget.CompoundButton
 import android.widget.EditText
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.*
 import com.example.amazing_note.R
 import com.example.amazing_note.databinding.FragmentListBinding
-import com.example.amazing_note.helpers.hideKeyboard
+import com.example.amazing_note.others.hideKeyboard
 import com.example.amazing_note.ui.adapters.ListAdapter
 import com.example.amazing_note.ui.viewmodels.NoteViewModel
-import com.example.amazing_note.ui.viewmodels.SharedViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class ListFragment @Inject constructor(
-    private val adapter: ListAdapter
+    val adapter: ListAdapter,
+    var mNoteViewModel: NoteViewModel? = null
 ) : Fragment() {
     private var _binding: FragmentListBinding? = null
     private val binding get() = _binding!!
-    private val mNoteViewModel: NoteViewModel by viewModels()
-    private val mSharedViewModel: SharedViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,23 +36,29 @@ class ListFragment @Inject constructor(
     ): View {
         _binding = FragmentListBinding.inflate(inflater, container, false)
         binding.lifecycleOwner = viewLifecycleOwner
-        binding.mSharedViewModel = mSharedViewModel
 
+        mNoteViewModel = mNoteViewModel ?: ViewModelProvider(requireActivity()).get(NoteViewModel::class.java)
+        getThemePreferences()
+        setNavDrawer()
+        setToolbar()
+        subscribeObservers()
+        setupRecyclerView()
+        setListeners()
+        hideKeyboard(requireActivity())
+
+        return binding.root
+    }
+
+    private fun subscribeObservers() {
+        mNoteViewModel?.noteList?.observe(viewLifecycleOwner, { data ->
+            adapter.setNotes(data)
+        })
+    }
+
+    private fun setToolbar() {
         val toolbar = binding.mainToolbar
         (activity as AppCompatActivity).setSupportActionBar(toolbar)
         setHasOptionsMenu(true)
-
-        getThemePreferences()
-        setNavDrawer()
-        setupRecyclerView()
-        setListeners()
-
-        mNoteViewModel.noteList.observe(viewLifecycleOwner, { data ->
-            adapter.setNotes(data)
-        })
-
-        hideKeyboard(requireActivity())
-        return binding.root
     }
 
     override fun onStart() {
@@ -72,7 +74,7 @@ class ListFragment @Inject constructor(
 
     private fun searchDatabase(query: String?) {
         val searchQuery = "%${query}%"
-        mNoteViewModel.searchNote(searchQuery).observe(this, { list ->
+        mNoteViewModel?.searchNote(searchQuery)?.observe(this, { list ->
             list?.let {
                 adapter.setNotes(it)
             }
@@ -87,10 +89,10 @@ class ListFragment @Inject constructor(
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId) {
-            R.id.menu_priority_high -> mNoteViewModel.noteListAsc.observe(this, {
+            R.id.menu_priority_high -> mNoteViewModel?.noteListAsc?.observe(this, {
                 adapter.setNotes(it)
             })
-            R.id.menu_priority_low -> mNoteViewModel.noteListDes.observe(this, {
+            R.id.menu_priority_low -> mNoteViewModel?.noteListDes?.observe(this, {
                 adapter.setNotes(it)
             })
         }

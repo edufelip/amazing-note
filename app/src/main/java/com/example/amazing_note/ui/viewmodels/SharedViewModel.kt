@@ -7,7 +7,6 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import com.example.amazing_note.R
-import com.example.amazing_note.data.models.Priority
 
 class SharedViewModel(application: Application): AndroidViewModel(application) {
     val listener: AdapterView.OnItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -26,22 +25,6 @@ class SharedViewModel(application: Application): AndroidViewModel(application) {
         }
 
         override fun onNothingSelected(p0: AdapterView<*>?) {
-        }
-    }
-
-    fun checkEmptyInputs(title: String, description: String): Boolean {
-        return (title.isEmpty() || description.isEmpty())
-    }
-
-    fun parsePriority(priority: String): Priority {
-        return when(priority) {
-            "High Priority" -> {
-                Priority.HIGH}
-            "Medium Priority" -> {
-                Priority.MEDIUM}
-            "Low Priority" -> {
-                Priority.LOW}
-            else -> Priority.LOW
         }
     }
 }

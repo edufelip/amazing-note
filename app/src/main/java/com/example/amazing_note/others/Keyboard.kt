@@ -1,4 +1,4 @@
-package com.example.amazing_note.helpers
+package com.example.amazing_note.others
 
 import android.app.Activity
 import android.content.Context

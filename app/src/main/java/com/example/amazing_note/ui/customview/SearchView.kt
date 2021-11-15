@@ -9,8 +9,8 @@ import android.view.ViewAnimationUtils
 import android.widget.FrameLayout
 import com.example.amazing_note.R
 import com.example.amazing_note.databinding.ViewSearchBinding
-import com.example.amazing_note.helpers.hideKeyboard
-import com.example.amazing_note.helpers.showKeyboard
+import com.example.amazing_note.others.hideKeyboard
+import com.example.amazing_note.others.showKeyboard
 
 class SearchView(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs) {
     private val binding = ViewSearchBinding.inflate(LayoutInflater.from(context), this, true)

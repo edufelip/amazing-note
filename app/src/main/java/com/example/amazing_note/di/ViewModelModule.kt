@@ -1,6 +1,7 @@
 package com.example.amazing_note.di
 
 import com.example.amazing_note.data.db.NoteDao
+import com.example.amazing_note.data.repositories.INoteRepository
 import com.example.amazing_note.data.repositories.NoteRepository
 import dagger.Module
 import dagger.Provides
@@ -15,5 +16,5 @@ object ViewModelModule {
     @ViewModelScoped
     fun provideNoteRepository(
         dao: NoteDao
-    ) = NoteRepository(dao)
+    ): INoteRepository = NoteRepository(dao)
 }

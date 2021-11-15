@@ -1,9 +1,10 @@
-package com.example.amazing_note.ui.fragments
+package com.example.amazing_note.ui
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import com.example.amazing_note.ui.adapters.ListAdapter
 import com.example.amazing_note.ui.adapters.TrashAdapter
+import com.example.amazing_note.ui.fragments.*
 import javax.inject.Inject
 
 class MainFragmentFactory @Inject constructor(
@@ -17,6 +18,15 @@ class MainFragmentFactory @Inject constructor(
             }
             TrashFragment::class.java.name -> {
                 TrashFragment(trashAdapter)
+            }
+            TrashNoteFragment::class.java.name -> {
+                TrashNoteFragment(listAdapter)
+            }
+            UpdateFragment::class.java.name -> {
+                UpdateFragment(listAdapter)
+            }
+            AddFragment::class.java.name -> {
+                AddFragment(listAdapter)
             }
             else -> super.instantiate(classLoader, className)
         }

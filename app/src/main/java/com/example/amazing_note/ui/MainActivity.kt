@@ -3,7 +3,6 @@ package com.example.amazing_note.ui
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.amazing_note.R
-import com.example.amazing_note.ui.fragments.MainFragmentFactory
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject

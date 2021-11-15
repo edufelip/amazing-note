@@ -5,6 +5,7 @@ plugins {
     id 'androidx.navigation.safeargs'
     id 'kotlin-parcelize'
     id 'dagger.hilt.android.plugin'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -17,13 +18,10 @@ android {
         targetSdkVersion 31
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner "com.example.amazing_note.HiltTestRunner"
     }
     kapt {
         javacOptions {
-            // These options are normally set automatically via the Hilt Gradle plugin, but we
-            // set them manually to workaround a bug in the Kotlin 1.5.20
             option("-Adagger.fastInit=ENABLED")
             option("-Adagger.hilt.android.internal.disableAndroidSuperclassValidation=true")
         }
@@ -44,8 +42,8 @@ android {
         jvmTarget = '1.8'
     }
     buildFeatures {
-        dataBinding true
         viewBinding true
+        dataBinding true
     }
 
     packagingOptions {
