@@ -15,14 +15,11 @@ import com.example.amazing_note.DataBindingIdlingResource
 import com.example.amazing_note.R
 import com.example.amazing_note.data.models.Note
 import com.example.amazing_note.data.models.Priority
-import com.example.amazing_note.data.repositories.FakeNoteRepositoryAndroidTest
-import com.example.amazing_note.getOrAwaitValue
 import com.example.amazing_note.launchFragmentInHiltContainer
 import com.example.amazing_note.ui.MainActivity
 import com.example.amazing_note.ui.TestMainFragmentFactory
 import com.example.amazing_note.ui.adapters.ListAdapter
 import com.example.amazing_note.ui.viewmodels.NoteViewModel
-import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi

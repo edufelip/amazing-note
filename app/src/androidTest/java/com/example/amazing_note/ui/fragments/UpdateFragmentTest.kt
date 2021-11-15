@@ -22,7 +22,6 @@ import com.example.amazing_note.others.Status
 import com.example.amazing_note.ui.MainActivity
 import com.example.amazing_note.ui.TestMainFragmentFactory
 import com.example.amazing_note.ui.viewmodels.NoteViewModel
-import com.example.amazing_note.ui.viewmodels.TrashViewModel
 import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest

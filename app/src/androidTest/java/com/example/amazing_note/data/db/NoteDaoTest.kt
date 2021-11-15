@@ -1,7 +1,6 @@
 package com.example.amazing_note.data.db
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.test.filters.SmallTest
 import com.example.amazing_note.data.models.Note
 import com.example.amazing_note.data.models.Priority
