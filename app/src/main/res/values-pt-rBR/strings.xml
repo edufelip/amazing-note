@@ -15,4 +15,13 @@
     <string name="sort_by">Ordernar por</string>
     <string name="priority_high">Prioridade Alta</string>
     <string name="priority_low">Prioridade Baixa</string>
+    <string name="trash">Lixeira</string>
+    <string name="your_notes">Suas notas</string>
+    <string name="add">Adicionar Nota</string>
+    <string name="note_recovered">Nota recuperada com sucesso</string>
+    <string name="recover">Recuperar</string>
+    <string name="yes">Sim</string>
+    <string name="no">Não</string>
+    <string name="save">Salvar</string>
+    <string name="perma_deleted">Nota deletada permanentemente</string>
 </resources>

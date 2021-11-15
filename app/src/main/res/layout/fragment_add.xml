@@ -3,10 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <data>
-
-    </data>
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -42,6 +38,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@drawable/custom_ripple_button"
+                        android:contentDescription="@string/back_button"
+                        android:minWidth="48dp"
+                        android:minHeight="48dp"
                         android:padding="8dp"
                         android:src="@drawable/ic_arrow_left" />
 
@@ -59,7 +58,9 @@
             android:background="@android:color/transparent"
             android:ems="10"
             android:hint="@string/title"
+            android:importantForAutofill="no"
             android:inputType="textPersonName"
+            android:maxLength="50"
             android:paddingStart="24dp"
             android:paddingEnd="24dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -90,6 +91,7 @@
             android:ems="10"
             android:gravity="start|top"
             android:hint="@string/description"
+            android:importantForAutofill="no"
             android:inputType="textMultiLine"
             android:paddingStart="24dp"
             android:paddingTop="16dp"

@@ -52,9 +52,9 @@
                                 android:fontFamily="@font/roboto"
                                 android:gravity="center_vertical"
                                 android:letterSpacing="0.02"
-                                android:text="Suas notas"
-                                android:textFontWeight="800"
+                                android:text="@string/your_notes"
                                 android:textSize="22sp"
+                                android:textStyle="bold"
                                 android:typeface="sans" />
 
                         </RelativeLayout>
@@ -67,19 +67,20 @@
                             android:paddingStart="8dp"
                             android:paddingEnd="8dp"
                             app:contentInsetStart="0dp"
-                            app:popupTheme="@style/Theme.PopupOverlay.Menu"
-                            app:title=" "
                             app:menu="@menu/list_fragment_menu"
-                            >
+                            app:popupTheme="@style/Theme.PopupOverlay.Menu"
+                            app:title=" ">
 
                             <ImageButton
                                 android:id="@+id/hamb_menu_btn"
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
-                                android:paddingStart="8dp"
-                                android:paddingEnd="8dp"
                                 android:backgroundTint="@android:color/transparent"
-                                android:src="@drawable/ic_menu" />
+                                android:contentDescription="@string/hamburguer_menu_button"
+                                android:paddingStart="12dp"
+                                android:paddingEnd="12dp"
+                                android:src="@drawable/ic_menu"
+                                tools:ignore="RedundantDescriptionCheck" />
 
                             <com.example.amazing_note.ui.customview.SearchView
                                 android:id="@+id/search_view"
@@ -117,7 +118,8 @@
                 android:src="@drawable/ic_add"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:tint="@color/white" />
+                app:tint="@color/white"
+                tools:ignore="RedundantDescriptionCheck" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -143,7 +145,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:background="@drawable/ic_sun" />
+                    android:background="@drawable/ic_sun"
+                    android:contentDescription="@string/day_icon" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/light_dark_switch"
@@ -156,7 +159,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:background="@drawable/ic_night" />
+                    android:background="@drawable/ic_night"
+                    android:contentDescription="@string/night_icon" />
 
             </LinearLayout>
 

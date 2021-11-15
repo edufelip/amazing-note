@@ -38,15 +38,18 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/custom_ripple_button"
+                    android:minWidth="48dp"
+                    android:minHeight="48dp"
                     android:padding="8dp"
-                    android:src="@drawable/ic_arrow_left" />
+                    android:src="@drawable/ic_arrow_left"
+                    android:contentDescription="@string/back_button" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="18sp"
                     android:layout_marginStart="8dp"
-                    android:text="Trash" />
+                    android:text="@string/trash" />
 
             </androidx.appcompat.widget.Toolbar>
 

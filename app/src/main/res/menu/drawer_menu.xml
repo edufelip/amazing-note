@@ -5,7 +5,7 @@
         android:id="@+id/menu_your_notes"
         android:checkable="true"
         android:icon="@drawable/ic_books"
-        android:title="Your Notes"
+        android:title="@string/your_notes"
         android:checked="true"
         app:showAsAction="withText" />
 
@@ -13,6 +13,6 @@
         android:id="@+id/menu_trash"
         android:checkable="true"
         android:icon="@drawable/ic_trash"
-        android:title="Lixeira"
+        android:title="@string/trash"
         app:showAsAction="withText" />
 </menu>

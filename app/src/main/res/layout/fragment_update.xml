@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="note"
             type="com.example.amazing_note.data.models.Note" />
@@ -45,6 +46,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@drawable/custom_ripple_button"
+                        android:contentDescription="@string/back_button"
+                        android:minWidth="48dp"
+                        android:minHeight="48dp"
                         android:padding="8dp"
                         android:src="@drawable/ic_arrow_left" />
 
@@ -56,12 +60,14 @@
 
         <EditText
             android:id="@+id/update_title_et"
-            android:background="@drawable/custom_input"
             android:layout_width="0dp"
             android:layout_height="60dp"
+            android:background="@drawable/custom_input"
             android:ems="10"
-            android:inputType="textPersonName"
             android:hint="@string/title"
+            android:importantForAutofill="no"
+            android:inputType="textPersonName"
+            android:maxLength="50"
             android:paddingStart="24dp"
             android:paddingEnd="24dp"
             android:text="@{note.title}"
@@ -87,17 +93,18 @@
 
         <EditText
             android:id="@+id/update_description_et"
-            android:background="@drawable/custom_input"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginTop="8dp"
+            android:background="@drawable/custom_input"
             android:ems="10"
-            android:hint="@string/description"
             android:gravity="start|top"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
-            android:paddingTop="16dp"
+            android:hint="@string/description"
+            android:importantForAutofill="no"
             android:inputType="textMultiLine"
+            android:paddingStart="24dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="24dp"
             android:text="@{note.description}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

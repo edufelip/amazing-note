@@ -96,6 +96,7 @@
             android:focusableInTouchMode="false"
             android:gravity="start|top"
             android:hint="@string/description"
+            android:importantForAutofill="no"
             android:inputType="textMultiLine"
             android:paddingStart="24dp"
             android:paddingTop="16dp"
