@@ -1,13 +1,13 @@
-package com.example.amazing_note.ui
+package com.edufelipe.amazing_note.ui
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
-import com.example.amazing_note.data.repositories.FakeNoteRepositoryAndroidTest
-import com.example.amazing_note.ui.adapters.ListAdapter
-import com.example.amazing_note.ui.adapters.TrashAdapter
-import com.example.amazing_note.ui.fragments.*
-import com.example.amazing_note.ui.viewmodels.NoteViewModel
-import com.example.amazing_note.ui.viewmodels.TrashViewModel
+import com.edufelipe.amazing_note.data.repositories.FakeNoteRepositoryAndroidTest
+import com.edufelipe.amazing_note.ui.adapters.ListAdapter
+import com.edufelipe.amazing_note.ui.adapters.TrashAdapter
+import com.edufelipe.amazing_note.ui.fragments.*
+import com.edufelipe.amazing_note.ui.viewmodels.NoteViewModel
+import com.edufelipe.amazing_note.ui.viewmodels.TrashViewModel
 import javax.inject.Inject
 
 class TestMainFragmentFactory @Inject constructor(

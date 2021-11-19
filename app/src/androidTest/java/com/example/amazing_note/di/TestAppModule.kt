@@ -1,8 +1,8 @@
-package com.example.amazing_note.di
+package com.edufelipe.amazing_note.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.amazing_note.data.db.NoteDatabase
+import com.edufelipe.amazing_note.data.db.NoteDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

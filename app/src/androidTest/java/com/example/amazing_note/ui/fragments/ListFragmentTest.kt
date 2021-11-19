@@ -1,4 +1,4 @@
-package com.example.amazing_note.ui.fragments
+package com.edufelipe.amazing_note.ui.fragments
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.navigation.NavController
@@ -11,15 +11,15 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.filters.MediumTest
 import androidx.test.rule.ActivityTestRule
-import com.example.amazing_note.DataBindingIdlingResource
-import com.example.amazing_note.R
-import com.example.amazing_note.data.models.Note
-import com.example.amazing_note.data.models.Priority
-import com.example.amazing_note.launchFragmentInHiltContainer
-import com.example.amazing_note.ui.MainActivity
-import com.example.amazing_note.ui.TestMainFragmentFactory
-import com.example.amazing_note.ui.adapters.ListAdapter
-import com.example.amazing_note.ui.viewmodels.NoteViewModel
+import com.edufelipe.amazing_note.DataBindingIdlingResource
+import com.edufelipe.amazing_note.R
+import com.edufelipe.amazing_note.data.models.Note
+import com.edufelipe.amazing_note.data.models.Priority
+import com.edufelipe.amazing_note.launchFragmentInHiltContainer
+import com.edufelipe.amazing_note.ui.MainActivity
+import com.edufelipe.amazing_note.ui.TestMainFragmentFactory
+import com.edufelipe.amazing_note.ui.adapters.ListAdapter
+import com.edufelipe.amazing_note.ui.viewmodels.NoteViewModel
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi

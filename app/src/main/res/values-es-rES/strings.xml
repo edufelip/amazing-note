@@ -24,4 +24,10 @@
     <string name="no">No</string>
     <string name="save">Guardar</string>
     <string name="perma_deleted">Nota eliminada permanentemente</string>
+
+    <string-array name="priorities">
+        <item>Alta Prioridad</item>
+        <item>Media Prioridad</item>
+        <item>Baja Prioridad</item>
+    </string-array>
 </resources>

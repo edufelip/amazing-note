@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.amazing_note">
+    package="com.edufelipe.amazing_note">
 
     <application
-        android:name=".ItemApplication"
+        android:name="com.edufelipe.amazing_note.ItemApplication"
         android:allowBackup="true"
         android:fullBackupOnly="true"
         android:icon="@mipmap/ic_launcher"
@@ -11,7 +11,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Amazingnote">
-        <activity android:name=".ui.MainActivity"
+        <activity android:name="com.edufelipe.amazing_note.ui.MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustPan"
             android:theme="@style/Theme.Amazingnote.Launcher">

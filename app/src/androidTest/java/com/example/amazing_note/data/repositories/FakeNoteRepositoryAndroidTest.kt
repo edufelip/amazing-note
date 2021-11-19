@@ -1,9 +1,9 @@
-package com.example.amazing_note.data.repositories
+package com.edufelipe.amazing_note.data.repositories
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.amazing_note.data.models.Note
-import com.example.amazing_note.data.models.Priority
+import com.edufelipe.amazing_note.data.models.Note
+import com.edufelipe.amazing_note.data.models.Priority
 
 class FakeNoteRepositoryAndroidTest : INoteRepository {
     private val notes = mutableListOf<Note>()

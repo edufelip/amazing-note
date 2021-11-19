@@ -9,16 +9,24 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        release {
+            storeFile file('C:\\Users\\edu_f\\Desktop\\Key\\mykey.jks')
+            storePassword 'mykeystore'
+            keyAlias 'finnkey0'
+            keyPassword 'mykeystore'
+        }
+    }
     compileSdkVersion 31
     buildToolsVersion "30.0.3"
 
     defaultConfig {
-        applicationId "com.example.amazing_note"
+        applicationId "com.edufelipe.amazing_note"
         minSdkVersion 22
         targetSdkVersion 31
-        versionCode 1
-        versionName "1.0"
-        testInstrumentationRunner "com.example.amazing_note.HiltTestRunner"
+        versionCode 2
+        versionName "1.1"
+        testInstrumentationRunner "com.edufelipe.amazing_note.HiltTestRunner"
     }
     kapt {
         javacOptions {
@@ -30,8 +38,11 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            debuggable false
+            signingConfig signingConfigs.release
         }
     }
     compileOptions {

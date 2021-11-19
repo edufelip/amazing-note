@@ -1,4 +1,4 @@
-package com.example.amazing_note
+package com.edufelipe.amazing_note
 
 import android.content.ComponentName
 import android.content.Intent

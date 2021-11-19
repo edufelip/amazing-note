@@ -1,10 +1,10 @@
-package com.example.amazing_note.data.db
+package com.edufelipe.amazing_note.data.db
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.filters.SmallTest
-import com.example.amazing_note.data.models.Note
-import com.example.amazing_note.data.models.Priority
-import com.example.amazing_note.getOrAwaitValue
+import com.edufelipe.amazing_note.data.models.Note
+import com.edufelipe.amazing_note.data.models.Priority
+import com.edufelipe.amazing_note.getOrAwaitValue
 import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest

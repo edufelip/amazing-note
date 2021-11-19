@@ -1,4 +1,4 @@
-package com.example.amazing_note
+package com.edufelipe.amazing_note
 
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LiveData
