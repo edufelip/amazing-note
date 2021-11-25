@@ -5,9 +5,9 @@
         android:title="@string/sort_by" >
         <menu>
             <item android:id="@+id/menu_priority_high"
-                android:title="@string/priority_high"/>
+                android:title="@string/high_priority"/>
             <item android:id="@+id/menu_priority_low"
-                android:title="@string/priority_low" />
+                android:title="@string/low_priority" />
         </menu>
     </item>
 </menu>

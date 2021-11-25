@@ -13,7 +13,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.edufelipe.amazing_note.R
 import com.edufelipe.amazing_note.databinding.FragmentUpdateBinding
-import com.edufelipe.amazing_note.others.parsePriority
 import com.edufelipe.amazing_note.others.Status
 import com.edufelipe.amazing_note.ui.adapters.ListAdapter
 import com.edufelipe.amazing_note.ui.viewmodels.NoteViewModel
@@ -119,7 +118,7 @@ class UpdateFragment @Inject constructor(
         val title = binding.updateTitleEt.text.toString()
         val description = binding.updateDescriptionEt.text.toString()
         val priority = binding.updatePrioritiesSpinner.selectedItem.toString()
-        mNoteViewModel?.updateNote(args.currentNote.id, title, parsePriority(priority), description, false)
+        mNoteViewModel?.updateNote(args.currentNote.id, title, mSharedViewModel.parsePriority(priority), description, false)
     }
 
     override fun onDestroyView() {

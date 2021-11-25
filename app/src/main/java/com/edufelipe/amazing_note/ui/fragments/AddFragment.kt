@@ -11,7 +11,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.edufelipe.amazing_note.R
 import com.edufelipe.amazing_note.databinding.FragmentAddBinding
-import com.edufelipe.amazing_note.others.parsePriority
 import com.edufelipe.amazing_note.others.Status
 import com.edufelipe.amazing_note.ui.adapters.ListAdapter
 import com.edufelipe.amazing_note.ui.viewmodels.NoteViewModel
@@ -70,7 +69,7 @@ class AddFragment @Inject constructor(
         val title = binding.titleEt.text.toString()
         val priority = binding.prioritiesSpinner.selectedItem.toString()
         val description = binding.descriptionEt.text.toString()
-        mNoteViewModel?.insertNote(title, parsePriority(priority), description)
+        mNoteViewModel?.insertNote(title, mSharedViewModel.parsePriority(priority), description)
     }
 
     private fun subscribeObservers() {

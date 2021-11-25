@@ -1,12 +1,14 @@
 package com.edufelipe.amazing_note.ui.viewmodels
 
 import android.app.Application
+import android.content.res.Resources
 import android.view.View
 import android.widget.AdapterView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import com.edufelipe.amazing_note.R
+import com.edufelipe.amazing_note.data.models.Priority
 
 class SharedViewModel(application: Application): AndroidViewModel(application) {
     val listener: AdapterView.OnItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -25,6 +27,18 @@ class SharedViewModel(application: Application): AndroidViewModel(application) {
         }
 
         override fun onNothingSelected(p0: AdapterView<*>?) {
+        }
+    }
+
+    fun parsePriority(priority: String): Priority {
+        return when(priority) {
+            getApplication<Application>().resources.getString(R.string.high_priority) -> {
+                Priority.HIGH}
+            getApplication<Application>().resources.getString(R.string.medium_priority) -> {
+                Priority.MEDIUM}
+            getApplication<Application>().resources.getString(R.string.low_priority) -> {
+                Priority.LOW}
+            else -> Priority.LOW
         }
     }
 }

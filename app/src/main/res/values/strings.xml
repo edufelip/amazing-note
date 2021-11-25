@@ -13,8 +13,9 @@
     <string name="note_created">Note successfully created</string>
     <string name="search">Search</string>
     <string name="sort_by">Sort By</string>
-    <string name="priority_high">Priority High</string>
-    <string name="priority_low">Priority Low</string>
+    <string name="high_priority">High Priority</string>
+    <string name="medium_priority">Medium Priority</string>
+    <string name="low_priority">Low Priority</string>
     <string name="trash">Trash</string>
     <string name="your_notes">Your Notes</string>
     <string name="add">Add Note</string>

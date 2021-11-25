@@ -1,4 +1,6 @@
 package com.edufelipe.amazing_note.others
+import android.content.res.Resources
+import com.edufelipe.amazing_note.R
 import com.edufelipe.amazing_note.data.models.Priority
 
 fun checkEmptyInput(vararg inputs: String): Boolean {
@@ -10,16 +12,4 @@ fun checkEmptyInput(vararg inputs: String): Boolean {
 
 fun checkTooLong(input: String, limit: Int): Boolean {
     return input.length > limit
-}
-
-fun parsePriority(priority: String): Priority {
-    return when(priority) {
-        "High Priority" -> {
-            Priority.HIGH}
-        "Medium Priority" -> {
-            Priority.MEDIUM}
-        "Low Priority" -> {
-            Priority.LOW}
-        else -> Priority.LOW
-    }
 }
