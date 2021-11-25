@@ -18,6 +18,8 @@
 
     <style name="Theme.Amazingnote.Launcher" parent="Theme.Amazingnote">
         <item name="android:windowBackground">@drawable/amazing_note_bg</item>
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimary</item>
+        <item name="android:navigationBarColor">?attr/colorPrimary</item>
     </style>
 
     <style name="Theme.AmazingNote.AppBarLayout" parent="Theme.Amazingnote">

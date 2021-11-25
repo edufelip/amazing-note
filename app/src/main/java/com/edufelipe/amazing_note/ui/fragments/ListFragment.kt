@@ -2,6 +2,7 @@ package com.edufelipe.amazing_note.ui.fragments
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -151,7 +152,23 @@ class ListFragment @Inject constructor(
     private fun getThemePreferences() {
         val sharedPreferences = requireContext().getSharedPreferences("Theme", Context.MODE_PRIVATE)
         val theme = sharedPreferences.getString("Theme", "Default")
-        if(theme.isNullOrEmpty()) return
+        if(theme.isNullOrEmpty() || theme == "Default") {
+            val nightModeFlags = context!!.resources.configuration.uiMode and
+                    Configuration.UI_MODE_NIGHT_MASK
+            when (nightModeFlags) {
+                Configuration.UI_MODE_NIGHT_YES -> {
+                    setTheme("Dark")
+                    return
+                }
+                Configuration.UI_MODE_NIGHT_NO -> {
+                    setTheme("Light")
+                    return
+                }
+                Configuration.UI_MODE_NIGHT_UNDEFINED -> Unit
+            }
+            return
+        }
+
         setTheme(theme)
     }
 
