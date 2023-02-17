@@ -9,14 +9,6 @@ plugins {
 }
 
 android {
-    signingConfigs {
-        release {
-            storeFile file('C:\\Users\\edu_f\\Desktop\\Key\\mykey.jks')
-            storePassword 'mykeystore'
-            keyAlias 'finnkey0'
-            keyPassword 'mykeystore'
-        }
-    }
     compileSdkVersion 31
     buildToolsVersion "30.0.3"
 
@@ -42,7 +34,6 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             debuggable false
-            signingConfig signingConfigs.release
         }
     }
     compileOptions {
