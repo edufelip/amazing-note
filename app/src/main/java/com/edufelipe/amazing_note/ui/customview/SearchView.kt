@@ -55,10 +55,10 @@ class SearchView(context: Context, attrs: AttributeSet) : FrameLayout(context, a
         circularConceal.duration = 150
         circularConceal.start()
         circularConceal.addListener(object : Animator.AnimatorListener {
-            override fun onAnimationStart(p0: Animator?) = Unit
-            override fun onAnimationRepeat(p0: Animator?) = Unit
-            override fun onAnimationCancel(p0: Animator?) = Unit
-            override fun onAnimationEnd(p0: Animator?) {
+            override fun onAnimationStart(p0: Animator) = Unit
+            override fun onAnimationRepeat(p0: Animator) = Unit
+            override fun onAnimationCancel(p0: Animator) = Unit
+            override fun onAnimationEnd(p0: Animator) {
                 binding.searchOpenedView.visibility = View.INVISIBLE
                 binding.searchInput.text.clear()
                 circularConceal.removeAllListeners()
