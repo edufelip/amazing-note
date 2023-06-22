@@ -16,8 +16,8 @@ android {
         applicationId "com.edufelip.amazing_note"
         minSdkVersion 24
         targetSdkVersion 33
-        versionCode 3
-        versionName "1.12"
+        versionCode 1
+        versionName "1.0"
         testInstrumentationRunner "com.edufelip.amazing_note.HiltTestRunner"
     }
     kapt {
