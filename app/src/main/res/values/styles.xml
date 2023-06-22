@@ -44,7 +44,7 @@
     </style>
 
     <style name="DialogButtonStyle">
-        <item name="android:textColor">@color/main_pink</item>
+        <item name="android:textColor">@color/main_color</item>
         <item name="android:backgroundTint">@android:color/transparent</item>
         <item name="android:stateListAnimator">@null</item>
     </style>

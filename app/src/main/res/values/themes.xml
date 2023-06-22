@@ -1,7 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.Amazingnote" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/main_pink</item>
-        <item name="colorPrimaryVariant">@color/dark_pink</item>
+    <style name="Theme.AquaNote" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/main_color</item>
+        <item name="colorPrimaryVariant">@color/main_color</item>
         <item name="colorOnPrimary">@color/white</item>
 
         <item name="colorOnSecondary">@color/lightGray</item>
@@ -10,19 +10,19 @@
         <item name="colorOnBackground">@color/default_black</item>
         <item name="rowBgColor">@color/white</item>
 
-        <item name="android:statusBarColor" tools:targetApi="l">@color/main_pink</item>
+        <item name="android:statusBarColor" tools:targetApi="l">@color/main_color</item>
         <item name="floatingActionButtonStyle">@style/MyFloatingActionButton</item>
         <item name="navigationViewStyle">@style/MyNavView</item>
         <item name="actionOverflowMenuStyle">@style/popupOverflowMenu</item>
     </style>
 
-    <style name="Theme.Amazingnote.Launcher" parent="Theme.Amazingnote">
-        <item name="android:windowBackground">@drawable/amazing_note_bg</item>
+    <style name="Theme.AquaNote.Launcher" parent="Theme.AquaNote">
+        <item name="android:windowBackground">@drawable/aqua_note_bg</item>
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimary</item>
         <item name="android:navigationBarColor">?attr/colorPrimary</item>
     </style>
 
-    <style name="Theme.AmazingNote.AppBarLayout" parent="Theme.Amazingnote">
+    <style name="Theme.AquaNote.AppBarLayout" parent="Theme.AquaNote">
         <item name="imageButtonStyle">@style/ImageButton</item>
         <item name="actionOverflowButtonStyle">@style/MyOverflowButton</item>
         <item name="android:textColor">@color/white</item>

@@ -5,7 +5,7 @@
     android:id="@+id/nav_host_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:name="com.edufelipe.amazing_note.ui.fragments.MainNavHostFragment"
+    android:name="com.edufelip.aqua_note.ui.fragments.MainNavHostFragment"
     app:defaultNavHost="true"
     app:navGraph="@navigation/nav_graph" >
 

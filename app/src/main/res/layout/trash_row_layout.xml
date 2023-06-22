@@ -7,7 +7,7 @@
 
         <variable
             name="note"
-            type="com.edufelipe.amazing_note.data.models.Note" />
+            type="com.edufelip.aqua_note.data.models.Note" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
