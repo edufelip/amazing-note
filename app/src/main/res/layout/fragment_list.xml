@@ -7,7 +7,7 @@
 
         <variable
             name="mSharedViewModel"
-            type="com.edufelip.aqua_note.ui.viewmodels.SharedViewModel" />
+            type="com.edufelip.amazing_note.ui.viewmodels.SharedViewModel" />
     </data>
 
     <androidx.drawerlayout.widget.DrawerLayout
@@ -33,7 +33,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/custom_appbar_bg"
-                    android:theme="@style/Theme.AquaNote.AppBarLayout">
+                    android:theme="@style/Theme.AmazingNote.AppBarLayout">
 
                     <com.google.android.material.appbar.CollapsingToolbarLayout
                         android:layout_width="match_parent"
@@ -82,7 +82,7 @@
                                 android:src="@drawable/ic_menu"
                                 tools:ignore="RedundantDescriptionCheck" />
 
-                            <com.edufelip.aqua_note.ui.customview.SearchView
+                            <com.edufelip.amazing_note.ui.customview.SearchView
                                 android:id="@+id/search_view"
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"

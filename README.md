@@ -1,8 +1,8 @@
-# Aqua Note
+# Amazing Note
 [![Author](https://img.shields.io/static/v1?label=@author&message=Eduardo%20Santos&color=navy)](https://github.com/edufelip)
 [![LinkedIn](https://img.shields.io/static/v1?label=@linkedin&message=@edu_santos&color=blue)](https://www.linkedin.com/in/eduardo-felipe-dev/)
 
-Aqua Note is a note-taking app designed to collect and organize text!
+Amazing Note is a note-taking app designed to collect and organize text!
 
 This project uses:
 * MVVM Architecture and LiveData
@@ -15,7 +15,7 @@ This project uses:
 ## Installation
 Clone this repository and import into **Android Studio**
 ```bash
-https://github.com/edufelip/aqua-note.git
+https://github.com/edufelip/amazing-note.git
 ```
 
 ## Layouts

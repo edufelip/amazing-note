@@ -13,12 +13,12 @@ android {
     buildToolsVersion "30.0.3"
 
     defaultConfig {
-        applicationId "com.edufelip.aqua_note"
+        applicationId "com.edufelip.amazing_note"
         minSdkVersion 24
         targetSdkVersion 33
         versionCode 3
         versionName "1.12"
-        testInstrumentationRunner "com.edufelip.aqua_note.HiltTestRunner"
+        testInstrumentationRunner "com.edufelip.amazing_note.HiltTestRunner"
     }
     kapt {
         javacOptions {
@@ -57,7 +57,7 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
-    namespace 'com.edufelip.aqua_note'
+    namespace 'com.edufelip.amazing_note'
 }
 
 dependencies {

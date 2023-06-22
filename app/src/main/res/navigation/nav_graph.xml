@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/listFragment"
-        android:name="com.edufelip.aqua_note.ui.fragments.ListFragment"
+        android:name="com.edufelip.amazing_note.ui.fragments.ListFragment"
         android:label="Notes"
         tools:layout="@layout/fragment_list" >
         <action
@@ -34,7 +34,7 @@
     </fragment>
     <fragment
         android:id="@+id/addFragment"
-        android:name="com.edufelip.aqua_note.ui.fragments.AddFragment"
+        android:name="com.edufelip.amazing_note.ui.fragments.AddFragment"
         android:label="Add Note"
         tools:layout="@layout/fragment_add" >
         <action
@@ -45,7 +45,7 @@
     </fragment>
     <fragment
         android:id="@+id/updateFragment"
-        android:name="com.edufelip.aqua_note.ui.fragments.UpdateFragment"
+        android:name="com.edufelip.amazing_note.ui.fragments.UpdateFragment"
         android:label="Update Note"
         tools:layout="@layout/fragment_update" >
         <action
@@ -55,11 +55,11 @@
             app:popUpToInclusive="true" />
         <argument
             android:name="currentNote"
-            app:argType="com.edufelip.aqua_note.data.models.Note" />
+            app:argType="com.edufelip.amazing_note.data.models.Note" />
     </fragment>
     <fragment
         android:id="@+id/trashFragment"
-        android:name="com.edufelip.aqua_note.ui.fragments.TrashFragment"
+        android:name="com.edufelip.amazing_note.ui.fragments.TrashFragment"
         android:label="TrashFragment" >
         <action
             android:id="@+id/action_trashFragment_to_listFragment"
@@ -74,13 +74,13 @@
     </fragment>
     <fragment
         android:id="@+id/trashNoteFragment"
-        android:name="com.edufelip.aqua_note.ui.fragments.TrashNoteFragment"
+        android:name="com.edufelip.amazing_note.ui.fragments.TrashNoteFragment"
         android:label="TrashNoteFragment" >
         <action
             android:id="@+id/action_trashNoteFragment_to_trashFragment"
             app:destination="@id/trashFragment" />
         <argument
             android:name="currentNote"
-            app:argType="com.edufelip.aqua_note.data.models.Note" />
+            app:argType="com.edufelip.amazing_note.data.models.Note" />
     </fragment>
 </navigation>

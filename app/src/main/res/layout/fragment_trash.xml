@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/custom_appbar_bg"
-            android:theme="@style/Theme.AquaNote.AppBarLayout"
+            android:theme="@style/Theme.AmazingNote.AppBarLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">

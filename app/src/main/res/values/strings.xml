@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Aqua Note</string>
+    <string name="app_name" translatable="false">Amazing Note</string>
     <string name="title">Title</string>
     <string name="description">Description</string>
     <string name="add_button">Add Button</string>
