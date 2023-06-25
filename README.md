@@ -2,10 +2,11 @@
 
 <p align="center">
   <a href="https://android-arsenal.com/api?level=24"><img alt="API" src="https://img.shields.io/badge/API-24%2B-brightgreen.svg?style=flat"/></a>
-  <a href="https://github.com/skydoves/Pokedex/actions"><img alt="Build Status" src="https://github.com/edufelip/amazing-note/assets/34727187/fb130185-05e9-4c68-9f9c-a0d41fcae499"/></a>
+  <a href="https://github.com/edufelip"><img alt="Build Status" src="https://github.com/edufelip/amazing-note/assets/34727187/fb130185-05e9-4c68-9f9c-a0d41fcae499"/></a>
   <a href="https://medium.com/@eduardofelipi"><img alt="Medium" src="https://github.com/edufelip/amazing-note/assets/34727187/494b0020-1436-4bd4-bfef-7123815cf3cb"/></a> <br>
   <a href="https://www.youtube.com/channel/UCYcwwX7nDU_U0FP-TsXMwVg"><img alt="Profile" src="https://github.com/edufelip/amazing-note/assets/34727187/5700e2c9-dac0-4215-8a73-5ed4573cf83c"/></a> 
   <a href="https://github.com/edufelip"><img alt="Profile" src="https://github.com/edufelip/amazing-note/assets/34727187/bcdd0cf0-bafa-4e90-b910-f438304dc169"/></a> 
+  <a href="https://www.linkedin.com/in/eduardo-felipe-dev/"><img alt="Linkedin" src="https://img.shields.io/static/v1?label=@linkedin&message=@edu_santos&color=blue"/></a> 
 </p>
 
 <p align="center">  
