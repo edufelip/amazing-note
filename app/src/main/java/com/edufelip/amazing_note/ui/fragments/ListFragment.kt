@@ -1,12 +1,19 @@
 package com.edufelip.amazing_note.ui.fragments
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -14,14 +21,16 @@ import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.*
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.edufelip.amazing_note.R
 import com.edufelip.amazing_note.databinding.FragmentListBinding
+import com.edufelip.amazing_note.others.Constants.PRIVACY_POLICY_URL
 import com.edufelip.amazing_note.others.hideKeyboard
 import com.edufelip.amazing_note.ui.adapters.ListAdapter
 import com.edufelip.amazing_note.ui.viewmodels.NoteViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class ListFragment @Inject constructor(
@@ -136,6 +145,15 @@ class ListFragment @Inject constructor(
                     findNavController().navigate(ListFragmentDirections.actionListFragmentToTrashFragment())
                     true
                 }
+                R.id.menu_privacy_policy -> {
+                    binding.drawerLayout.closeDrawer(GravityCompat.START)
+                    startActivity(
+                        Intent(Intent.ACTION_VIEW).apply {
+                            data = Uri.parse(PRIVACY_POLICY_URL)
+                        }
+                    )
+                    true
+                }
                 else -> false
             }
         }
@@ -153,7 +171,7 @@ class ListFragment @Inject constructor(
         val sharedPreferences = requireContext().getSharedPreferences("Theme", Context.MODE_PRIVATE)
         val theme = sharedPreferences.getString("Theme", "Default")
         if(theme.isNullOrEmpty() || theme == "Default") {
-            val nightModeFlags = context!!.resources.configuration.uiMode and
+            val nightModeFlags = requireContext().resources.configuration.uiMode and
                     Configuration.UI_MODE_NIGHT_MASK
             when (nightModeFlags) {
                 Configuration.UI_MODE_NIGHT_YES -> {
