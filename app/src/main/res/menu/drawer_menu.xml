@@ -15,4 +15,12 @@
         android:icon="@drawable/ic_trash"
         android:title="@string/trash"
         app:showAsAction="withText" />
+
+    <item
+        android:id="@+id/menu_privacy_policy"
+        android:checkable="true"
+        android:icon="@drawable/ic_security"
+        android:title="@string/privacy_policy"
+        app:showAsAction="withText" />
+
 </menu>
