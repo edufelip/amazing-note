@@ -9,7 +9,7 @@ import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -46,7 +46,7 @@ class NoteDaoTest {
     }
 
     @Test
-    fun getAllNotes() = runBlockingTest {
+    fun getAllNotes() = runTest {
         val supNote = Note(0, "another note", Priority.MEDIUM, "another description", false)
         dao.insertNote(defaultNote)
         dao.insertNote(supNote)
@@ -55,7 +55,7 @@ class NoteDaoTest {
     }
 
     @Test
-    fun getDeletedNotes() = runBlockingTest {
+    fun getDeletedNotes() = runTest {
         val supNote = defaultNote
         supNote.deleted = true
         dao.insertNote(defaultNote)
@@ -65,14 +65,14 @@ class NoteDaoTest {
     }
 
     @Test
-    fun insertNote() = runBlockingTest {
+    fun insertNote() = runTest {
         dao.insertNote(defaultNote)
         val allNotes = dao.getAllNotes().getOrAwaitValue()
         assertThat(allNotes).contains(defaultNote)
     }
 
     @Test
-    fun updateNote() = runBlockingTest {
+    fun updateNote() = runTest {
         val supNote = defaultNote
         dao.insertNote(supNote)
         supNote.description = "another description"
@@ -82,7 +82,7 @@ class NoteDaoTest {
     }
 
     @Test
-    fun deleteNote() = runBlockingTest {
+    fun deleteNote() = runTest {
         dao.insertNote(defaultNote)
         dao.deleteNote(defaultNote)
         val allNotes = dao.getAllNotes().getOrAwaitValue()
@@ -90,14 +90,14 @@ class NoteDaoTest {
     }
 
     @Test
-    fun searchNote() = runBlockingTest {
+    fun searchNote() = runTest {
         dao.insertNote(defaultNote)
         val searchNote = dao.searchNote(defaultNote.title).getOrAwaitValue()
         assertThat(searchNote[0]).isEqualTo(defaultNote)
     }
 
     @Test
-    fun sortPriorityAsc() = runBlockingTest {
+    fun sortPriorityAsc() = runTest {
         val supNote = Note(0, "another note", Priority.LOW, "another description", false)
         dao.insertNote(defaultNote)
         dao.insertNote(supNote)
@@ -107,7 +107,7 @@ class NoteDaoTest {
     }
 
     @Test
-    fun sortPriorityDes() = runBlockingTest {
+    fun sortPriorityDes() = runTest {
         val supNote = Note(0, "another note", Priority.LOW, "another description", false)
         dao.insertNote(defaultNote)
         dao.insertNote(supNote)
