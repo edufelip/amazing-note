@@ -13,14 +13,13 @@ buildscript {
     }
 }
 
+plugins {
+    id 'com.google.devtools.ksp' version '2.2.10-2.0.2' apply false
+}
 
 allprojects {
     repositories {
         google()
         mavenCentral()
     }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }
