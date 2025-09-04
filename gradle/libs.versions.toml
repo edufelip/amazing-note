@@ -1,0 +1,71 @@
+[versions]
+activity = "1.10.1"
+appcompat = "1.7.1"
+constraintlayout = "2.2.1"
+core = "2.2.0"
+core-ktx = "1.17.0"
+coroutines = "1.10.2"
+dexmaker = "2.28.6"
+espresso = "3.7.0"
+fragment = "1.8.9"
+gradle-plugin = "8.13.0"
+hilt = "2.57.1"
+hilt-compiler = "1.2.0"
+junit = "4.13.2"
+kotlin = "2.2.10"
+ksp = "2.2.10-2.0.2"
+legacy-support = "1.0.0"
+lifecycle = "2.9.3"
+material = "1.13.0"
+mockito = "5.19.0"
+room = "2.7.2"
+test = "1.7.0"
+truth = "1.4.4"
+
+[libraries]
+activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activity" }
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
+androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hilt-compiler" }
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "core" }
+constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+dexmaker-mockito = { group = "com.linkedin.dexmaker", name = "dexmaker-mockito", version.ref = "dexmaker" }
+espresso-contrib = { group = "androidx.test.espresso", name = "espresso-contrib", version.ref = "espresso" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+fragment-testing = { group = "androidx.fragment", name = "fragment-testing", version.ref = "fragment" }
+gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "gradle-plugin" }
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-android-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+hilt-android-gradle-plugin = { group = "com.google.dagger", name = "hilt-android-gradle-plugin", version.ref = "hilt" }
+hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+kotlin-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlin-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlin-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacy-support" }
+lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
+lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
+lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
+navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "lifecycle" }
+navigation-safe-args-gradle-plugin = { group = "androidx.navigation", name = "navigation-safe-args-gradle-plugin", version.ref = "lifecycle" }
+navigation-testing = { group = "androidx.navigation", name = "navigation-testing", version.ref = "lifecycle" }
+navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "lifecycle" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+test-core = { group = "androidx.test", name = "core", version.ref = "test" }
+test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junit" }
+test-rules = { group = "androidx.test", name = "rules", version.ref = "test" }
+truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
+
+[plugins]
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+android-application = { id = "com.android.application" }
+kotlin-android = { id = "org.jetbrains.kotlin.android" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt" }
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize" }
+hilt-android = { id = "com.google.dagger.hilt.android" }
+navigation-safeargs = { id = "androidx.navigation.safeargs.kotlin" }
