@@ -14,3 +14,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "amazing-note"
 include(":app")
+include(":shared")

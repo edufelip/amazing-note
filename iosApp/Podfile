@@ -1,0 +1,8 @@
+platform :ios, '14.0'
+use_frameworks! :linkage => :static
+
+target 'iosApp' do
+  inhibit_all_warnings!
+  pod 'shared', :path => '../shared'
+end
+

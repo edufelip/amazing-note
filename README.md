@@ -39,6 +39,50 @@ or
 git clone git@github.com:edufelip/amazing-note.git
 ```
 
+## Build & Run
+
+Android
+- Requirements: JDK 17, Android SDK
+- Commands:
+  - Build debug APK: `./gradlew :app:assembleDebug`
+  - Install on device: `./gradlew :app:installDebug`
+  - Unit tests: `./gradlew :app:testDebugUnitTest`
+  - Lint: `./gradlew :app:lintDebug`
+
+iOS (CocoaPods + Compose Multiplatform)
+- Requirements: Xcode, CocoaPods, JDK 17
+- Bootstrap (generates KMP framework + installs Pods):
+  - `chmod +x scripts/ios_bootstrap.sh && ./scripts/ios_bootstrap.sh`
+- Open workspace in Xcode:
+  - `open iosApp/iosApp.xcworkspace`
+
+## CI Hints
+Minimal CI steps you can copy into your pipeline:
+
+- Android (GitHub Actions job snippet)
+```
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '17'
+    - name: Build Debug APK
+      run: ./gradlew :app:assembleDebug --stacktrace
+```
+
+- iOS (macOS runner) – CocoaPods + KMP
+```
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '17'
+    - name: Bootstrap iOS (Pods + KMP framework)
+      run: |
+        chmod +x scripts/ios_bootstrap.sh
+        ./scripts/ios_bootstrap.sh
+```
+
 ## Layouts
 <br>
   <p align="left">

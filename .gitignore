@@ -8,3 +8,23 @@
 .externalNativeBuild
 .cxx
 local.properties
+ 
+# Gradle build outputs (all modules)
+**/build/
+
+# Native/NDK build directories (all modules)
+**/.externalNativeBuild/
+**/.cxx/
+
+# Android Studio captures (all modules)
+**/captures/
+
+# iOS / CocoaPods
+iosApp/Pods/
+iosApp/*.xcworkspace
+iosApp/DerivedData/
+**/xcuserdata/
+*.xcuserstate
+
+# Generated podspec from KMP
+shared/*.podspec

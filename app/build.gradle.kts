@@ -160,4 +160,10 @@ dependencies {
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.compose.ui.test.junit4)
     debugImplementation(libs.compose.ui.tooling.preview)
+
+    // Shared KMP module
+    implementation(project(":shared"))
+
+    // Compose interop with LiveData
+    implementation("androidx.compose.runtime:runtime-livedata")
 }

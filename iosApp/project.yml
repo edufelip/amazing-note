@@ -1,0 +1,25 @@
+name: iosApp
+options:
+  minimumXcodeGenVersion: 2.37.0
+  objectVersion: 60
+configs:
+  Debug: debug
+  Release: release
+settings:
+  IPHONEOS_DEPLOYMENT_TARGET: 14.0
+  SWIFT_VERSION: 5.0
+targets:
+  iosApp:
+    type: application
+    platform: iOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: iosApp
+        excludes:
+          - "**/*.plist"
+    settings:
+      INFOPLIST_FILE: iosApp/Info.plist
+      PRODUCT_BUNDLE_IDENTIFIER: com.edufelip.amazingnote.iosApp
+    scheme:
+      testTargets: []
+      gatherCoverageData: false
