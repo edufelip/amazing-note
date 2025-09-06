@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewAnimationUtils
 import android.widget.FrameLayout
-import com.edufelip.amazing_note.R
 import com.edufelip.amazing_note.databinding.ViewSearchBinding
 import com.edufelip.amazing_note.others.hideKeyboard
 import com.edufelip.amazing_note.others.showKeyboard
@@ -16,8 +15,6 @@ class SearchView(context: Context, attrs: AttributeSet) : FrameLayout(context, a
     private val binding = ViewSearchBinding.inflate(LayoutInflater.from(context), this, true)
 
     init {
-        LayoutInflater.from(context).inflate(R.layout.view_search, this, true)
-
         binding.openSearchButton.setOnClickListener {
             openSearch()
         }

@@ -14,11 +14,5 @@ buildscript {
 
 plugins {
     alias(libs.plugins.ksp) apply false
-}
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
+    alias(libs.plugins.kotlin.compose) apply false
 }

@@ -1,7 +1,6 @@
 [versions]
 activity = "1.10.1"
 appcompat = "1.7.1"
-constraintlayout = "2.2.1"
 core = "2.2.0"
 core-ktx = "1.17.0"
 coroutines = "1.10.2"
@@ -22,6 +21,11 @@ mockito = "5.19.0"
 room = "2.7.2"
 test = "1.7.0"
 truth = "1.4.4"
+compose-bom = "2025.08.01"
+compose-compiler = "1.5.14"
+navigation-compose = "2.9.3"
+activity-compose = "1.10.1"
+navigation3Ui = "1.0.0-alpha08"
 
 [libraries]
 activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activity" }
@@ -29,7 +33,6 @@ androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx
 androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hilt-compiler" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "core" }
-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 dexmaker-mockito = { group = "com.linkedin.dexmaker", name = "dexmaker-mockito", version.ref = "dexmaker" }
 espresso-contrib = { group = "androidx.test.espresso", name = "espresso-contrib", version.ref = "espresso" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
@@ -61,6 +64,15 @@ test-core = { group = "androidx.test", name = "core", version.ref = "test" }
 test-ext-junit = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junit-ktx" }
 test-rules = { group = "androidx.test", name = "rules", version.ref = "test" }
 truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
+compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+compose-ui = { group = "androidx.compose.ui", name = "ui" }
+compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
+navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation-compose" }
+compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3Ui" }
 
 [plugins]
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
@@ -70,3 +82,4 @@ kotlin-kapt = { id = "org.jetbrains.kotlin.kapt" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize" }
 hilt-android = { id = "com.google.dagger.hilt.android" }
 navigation-safeargs = { id = "androidx.navigation.safeargs.kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

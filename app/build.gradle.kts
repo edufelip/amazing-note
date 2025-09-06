@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.hilt.android)
@@ -39,13 +40,21 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
     }
 
     buildFeatures {
-        viewBinding = true
+        compose = true
         dataBinding = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
 
     packaging {
@@ -74,7 +83,15 @@ android {
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.appcompat)
-    implementation(libs.constraintlayout)
+
+    // Compose
+    implementation(platform(libs.compose.bom))
+    implementation(libs.compose.ui)
+    implementation(libs.compose.ui.graphics)
+    implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.compose.material3)
+    implementation(libs.activity.compose)
+    implementation(libs.navigation.compose)
 
     // Material Design
     implementation(libs.material)
@@ -106,6 +123,7 @@ dependencies {
     // Navigation Components
     implementation(libs.navigation.fragment.ktx)
     implementation(libs.navigation.ui.ktx)
+    implementation(libs.androidx.navigation3.ui)
 
     // Activity KTX for viewModels()
     implementation(libs.activity.ktx)
@@ -137,4 +155,9 @@ dependencies {
     runtimeOnly(libs.test.ext.junit)
     kspAndroidTest(libs.hilt.android.compiler)
     debugImplementation(libs.fragment.testing)
+
+    // Compose Testing
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    debugImplementation(libs.compose.ui.tooling.preview)
 }
