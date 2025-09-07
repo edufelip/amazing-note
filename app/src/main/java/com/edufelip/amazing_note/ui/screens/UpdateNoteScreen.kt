@@ -28,7 +28,7 @@ import com.edufelip.amazing_note.data.models.Priority
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddNoteScreen(
+fun UpdateNoteScreen(
     title: String,
     onTitleChange: (String) -> Unit,
     priority: Priority,
@@ -37,7 +37,8 @@ fun AddNoteScreen(
     onDescriptionChange: (String) -> Unit,
     onBack: () -> Unit,
     onSave: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    readOnly: Boolean = false
 ) {
     Scaffold(
         topBar = {
@@ -67,10 +68,11 @@ fun AddNoteScreen(
                 onValueChange = onTitleChange,
                 modifier = Modifier.fillMaxSize().padding(top = 8.dp),
                 singleLine = true,
-                placeholder = { Text("Title") }
+                placeholder = { Text("Title") },
+                enabled = !readOnly
             )
             Spacer(Modifier.height(8.dp))
-            PriorityDropdown(priority = priority, onPriorityChange = onPriorityChange)
+            PriorityDropdownReadOnly(priority = priority, onPriorityChange = onPriorityChange, enabled = !readOnly)
             Spacer(Modifier.height(8.dp))
             TextField(
                 value = description,
@@ -78,7 +80,8 @@ fun AddNoteScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .weight(1f),
-                placeholder = { Text("Description") }
+                placeholder = { Text("Description") },
+                enabled = !readOnly
             )
         }
     }
@@ -86,20 +89,21 @@ fun AddNoteScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PriorityDropdown(
+private fun PriorityDropdownReadOnly(
     priority: Priority,
-    onPriorityChange: (Priority) -> Unit
+    onPriorityChange: (Priority) -> Unit,
+    enabled: Boolean
 ) {
     val priorities = listOf(Priority.HIGH, Priority.MEDIUM, Priority.LOW)
     val expanded = remember { mutableStateOf(false) }
-    ExposedDropdownMenuBox(expanded = expanded.value, onExpandedChange = { expanded.value = it }) {
+    ExposedDropdownMenuBox(expanded = expanded.value && enabled, onExpandedChange = { if (enabled) expanded.value = it }) {
         TextField(
             value = priority.name.lowercase().replaceFirstChar { it.uppercase() },
             onValueChange = {},
             readOnly = true,
+            enabled = enabled,
             modifier = Modifier.menuAnchor(),
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value) },
-            colors = ExposedDropdownMenuDefaults.textFieldColors()
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value) }
         )
         DropdownMenu(expanded = expanded.value, onDismissRequest = { expanded.value = false }) {
             priorities.forEach { item ->

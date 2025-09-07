@@ -10,8 +10,6 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
@@ -29,9 +27,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import com.edufelip.amazing_note.ui.nav.AppRoutes
-import com.edufelip.amazing_note.ui.screens.compose.AddNoteXmlScreen
-import com.edufelip.amazing_note.ui.screens.compose.ListXmlScreen
-import com.edufelip.amazing_note.ui.screens.compose.TrashXmlScreen
+import com.edufelip.amazing_note.ui.screens.AddNoteScreen
+import com.edufelip.amazing_note.ui.screens.ListScreen
+import com.edufelip.amazing_note.ui.screens.TrashScreen
 import com.edufelip.amazing_note.ui.theme.AmazingNoteTheme
 import com.edufelip.amazing_note.data.models.Note
 import com.edufelip.amazing_note.data.models.Priority
@@ -45,8 +43,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val noteViewModel by viewModels<com.edufelip.amazing_note.ui.viewmodels.NoteViewModel>()
-    private val trashViewModel by viewModels<com.edufelip.amazing_note.ui.viewmodels.TrashViewModel>()
+    private val noteViewModel by viewModels<NoteViewModel>()
+    private val trashViewModel by viewModels<TrashViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -69,7 +67,6 @@ fun AppNavigation(noteViewModel: NoteViewModel, trashViewModel: TrashViewModel) 
         entryProvider = { key ->
             entryProviderFactory(
                 key = key,
-                drawerState = drawerState,
                 backStack = backStack,
                 noteViewModel = noteViewModel,
                 trashViewModel = trashViewModel
@@ -93,7 +90,6 @@ fun AppNavigation(noteViewModel: NoteViewModel, trashViewModel: TrashViewModel) 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 fun entryProviderFactory(
     key: Any,
-    drawerState: DrawerState,
     backStack: SnapshotStateList<Any>,
     noteViewModel: NoteViewModel,
     trashViewModel: TrashViewModel
@@ -114,7 +110,7 @@ fun entryProviderFactory(
 
             val listToShow = if (query.isBlank()) notes else searchResults
 
-            ListXmlScreen(
+            ListScreen(
                 notes = listToShow,
                 onNoteClick = { note -> backStack.add(AppRoutes.NoteDetail(note.id.toString())) },
                 onAddClick = { backStack.add(AppRoutes.NoteDetail(null)) },
@@ -135,7 +131,7 @@ fun entryProviderFactory(
             var description by remember { mutableStateOf(editing?.description ?: "") }
             var priority by remember { mutableStateOf(editing?.priority ?: Priority.LOW) }
 
-            AddNoteXmlScreen(
+            AddNoteScreen(
                 title = title,
                 onTitleChange = { title = it },
                 priority = priority,
@@ -155,7 +151,7 @@ fun entryProviderFactory(
         }
         is AppRoutes.Trash -> NavEntry(key) {
             val trash by trashViewModel.deletedNoteList.observeAsState(emptyList())
-            TrashXmlScreen(
+            TrashScreen(
                 notes = trash,
                 onBack = { backStack.removeLastOrNull() },
                 onNoteClick = { /* Open detail if needed */ }
