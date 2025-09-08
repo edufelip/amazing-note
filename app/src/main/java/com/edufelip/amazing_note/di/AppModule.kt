@@ -1,9 +1,10 @@
 package com.edufelip.amazing_note.di
 
 import android.content.Context
-import androidx.room.Room
-import com.edufelip.amazing_note.data.db.NoteDatabase
-import com.edufelip.amazing_note.others.Constants.DATABASE_NAME
+import com.edufelip.shared.data.NoteRepository
+import com.edufelip.shared.data.SqlDelightNoteRepository
+import com.edufelip.shared.db.DatabaseDriverFactory
+import com.edufelip.shared.db.createDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,13 +17,11 @@ import javax.inject.Singleton
 object AppModule {
     @Singleton
     @Provides
-    fun provideNoteDatabase(
+    fun provideSharedNoteRepository(
         @ApplicationContext context: Context
-    ) = Room.databaseBuilder(context, NoteDatabase::class.java, DATABASE_NAME).build()
-
-    @Singleton
-    @Provides
-    fun provideNoteDao(
-        database: NoteDatabase
-    ) = database.noteDao()
+    ): NoteRepository {
+        com.edufelip.shared.db.AndroidContextHolder.appContext = context.applicationContext
+        val db = createDatabase(DatabaseDriverFactory())
+        return SqlDelightNoteRepository(db)
+    }
 }

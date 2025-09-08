@@ -1,8 +1,38 @@
 platform :ios, '14.0'
 use_frameworks! :linkage => :static
 
+install! 'cocoapods',
+disable_input_output_paths: true,
+warn_for_unused_master_specs_repo: false
+
 target 'iosApp' do
   inhibit_all_warnings!
   pod 'shared', :path => '../shared'
 end
 
+post_install do |installer|
+  # Ensure sqlite3 is linked for the app even when using static frameworks
+  installer.pods_project.targets.each do |target|
+    if target.name == 'shared'
+      target.build_configurations.each do |config|
+        flags = config.build_settings['OTHER_LDFLAGS'] || '$(inherited)'
+        unless flags.to_s.include?('-lsqlite3')
+          config.build_settings['OTHER_LDFLAGS'] = "#{flags} -lsqlite3"
+        end
+      end
+    end
+  end
+  installer.aggregate_targets.each do |agg|
+    if agg.name == 'Pods-iosApp'
+      agg.xcconfigs.each do |config_name, config|
+        flags = config.attributes['OTHER_LDFLAGS'] || '$(inherited)'
+        unless flags.to_s.include?('-lsqlite3')
+          config.attributes['OTHER_LDFLAGS'] = "#{flags} -lsqlite3"
+        end
+      end
+      agg.xcconfigs.each do |config_name, config|
+        agg.override_build_settings(config_name, config)
+      end
+    end
+  end
+end

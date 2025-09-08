@@ -20,7 +20,14 @@ if ! command -v pod >/dev/null 2>&1; then
   exit 1
 fi
 
+# Normalize Xcode project for older CocoaPods/xcodeproj gems
+if [ -f "iosApp.xcodeproj/project.pbxproj" ]; then
+  sed -i '' 's/objectVersion = 77;/objectVersion = 60;/' iosApp.xcodeproj/project.pbxproj || true
+  # Remove new attributes CocoaPods 1.13/xcodeproj <1.24 don't understand
+  sed -i '' '/minimizedProjectReferenceProxies/d' iosApp.xcodeproj/project.pbxproj || true
+  sed -i '' '/preferredProjectObjectVersion/d' iosApp.xcodeproj/project.pbxproj || true
+fi
+
 pod install
 
 echo "Done. Open iosApp/iosApp.xcworkspace in Xcode."
-

@@ -1,0 +1,42 @@
+CREATE TABLE note(
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  priority INTEGER NOT NULL,
+  description TEXT NOT NULL,
+  deleted INTEGER NOT NULL
+);
+
+selectAll:
+SELECT id, title, priority, description, deleted
+FROM note
+WHERE deleted = 0
+ORDER BY id;
+
+selectDeleted:
+SELECT id, title, priority, description, deleted
+FROM note
+WHERE deleted = 1
+ORDER BY id;
+
+selectById:
+SELECT id, title, priority, description, deleted
+FROM note
+WHERE id = ?;
+
+insertNote:
+INSERT INTO note(title, priority, description, deleted)
+VALUES (?, ?, ?, 0);
+
+insertWithId:
+INSERT INTO note(id, title, priority, description, deleted)
+VALUES (?, ?, ?, ?, ?);
+
+updateNote:
+UPDATE note SET title = ?, priority = ?, description = ?, deleted = ?
+WHERE id = ?;
+
+setDeleted:
+UPDATE note SET deleted = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM note WHERE id = ?;

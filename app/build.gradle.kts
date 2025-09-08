@@ -5,7 +5,6 @@ plugins {
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.hilt.android)
-    alias(libs.plugins.navigation.safeargs)
     alias(libs.plugins.ksp)
 }
 
@@ -19,7 +18,6 @@ android {
         targetSdk = 36
         versionCode = 8
         versionName = "1.1.0"
-        testInstrumentationRunner = "com.edufelip.amazing_note.HiltTestRunner"
     }
 
     buildTypes {
@@ -91,26 +89,16 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)
     implementation(libs.activity.compose)
-    implementation(libs.navigation.compose)
 
-    // Material Design
-    implementation(libs.material)
-
-    // Architectural Components
-    implementation(libs.lifecycle.viewmodel.ktx)
+    // Material Design (Compose Material3 is used)
 
     // Lifecycle
+    implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.lifecycle.runtime.ktx)
 
     // Room
-    implementation(libs.room.runtime)
-    implementation(libs.legacy.support.v4)
-    implementation(libs.navigation.testing)
-    ksp(libs.room.compiler)
-
-    // Kotlin Extensions and Coroutines support for Room
-    implementation(libs.room.ktx)
+    // Removed Room (migrated to SQLDelight)
 
     // Coroutines
     implementation(libs.kotlin.coroutines.core)
@@ -120,13 +108,9 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.lifecycle.runtime.ktx)
 
-    // Navigation Components
-    implementation(libs.navigation.fragment.ktx)
-    implementation(libs.navigation.ui.ktx)
-    implementation(libs.androidx.navigation3.ui)
+    // Navigation handled in shared UI
 
-    // Activity KTX for viewModels()
-    implementation(libs.activity.ktx)
+    // Activity KTX not required
 
     // Dagger - Hilt
     implementation(libs.hilt.android)
@@ -134,36 +118,18 @@ dependencies {
     ksp(libs.androidx.hilt.compiler)
 
     // Local Unit Tests
-    implementation(libs.test.core)
     testImplementation(libs.junit)
     testImplementation(libs.arch.core.testing)
     testImplementation(libs.kotlin.coroutines.test)
     testImplementation(libs.truth)
-    testImplementation(libs.mockito.core)
 
-    // Instrumented Unit Tests
-    androidTestImplementation(libs.junit)
-    androidTestImplementation(libs.dexmaker.mockito)
-    androidTestImplementation(libs.kotlin.coroutines.test)
-    androidTestImplementation(libs.arch.core.testing)
-    androidTestImplementation(libs.truth)
-    androidTestImplementation(libs.espresso.core)
-    androidTestImplementation(libs.mockito.core)
-    androidTestImplementation(libs.espresso.contrib)
-    androidTestImplementation(libs.hilt.android.testing)
-    androidTestImplementation(libs.test.rules)
-    runtimeOnly(libs.test.ext.junit)
-    kspAndroidTest(libs.hilt.android.compiler)
-    debugImplementation(libs.fragment.testing)
+    // Instrumented Unit Tests removed
 
-    // Compose Testing
-    androidTestImplementation(platform(libs.compose.bom))
-    androidTestImplementation(libs.compose.ui.test.junit4)
+    // Compose Preview
     debugImplementation(libs.compose.ui.tooling.preview)
 
     // Shared KMP module
     implementation(project(":shared"))
 
-    // Compose interop with LiveData
-    implementation("androidx.compose.runtime:runtime-livedata")
+    // Removed Compose runtime-livedata and Custom Tabs
 }

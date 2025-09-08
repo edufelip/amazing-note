@@ -28,3 +28,4 @@ iosApp/DerivedData/
 
 # Generated podspec from KMP
 shared/*.podspec
+/.kotlin

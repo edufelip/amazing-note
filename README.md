@@ -21,12 +21,11 @@
 Go to [Google Play](https://play.google.com/store/apps/details?id=com.edufelip.amazing_note) to download the latest App version.
 
 ## This project uses
-* MVVM Architecture and LiveData
+* Compose Multiplatform UI (shared Android/iOS)
+* SQLDelight (shared persistence)
 * Kotlin Coroutines
-* RoomDB
-* Navigation Component
-* Dagger Hilt
-* JUnit, Mockito and Espresso for Testing
+* Dagger Hilt (Android DI)
+* JUnit and Mockito for unit tests
 
 ## Installation
 Clone this repository and import into **Android Studio**
@@ -82,6 +81,27 @@ Minimal CI steps you can copy into your pipeline:
         chmod +x scripts/ios_bootstrap.sh
         ./scripts/ios_bootstrap.sh
 ```
+
+## Android DI (Hilt + SQLDelight)
+
+The Android app injects the shared KMP repository (`com.edufelip.shared.data.NoteRepository`) with Hilt.
+
+- Provider: see `app/src/main/java/com/edufelip/amazing_note/di/AppModule.kt`
+- Usage example in an Activity:
+
+```kotlin
+@AndroidEntryPoint
+class SomeActivity : ComponentActivity() {
+    @Inject lateinit var noteRepository: com.edufelip.shared.data.NoteRepository
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent { com.edufelip.shared.ui.AmazingNoteApp(noteRepository) }
+    }
+}
+```
+
+KmpActivity already follows this pattern and is the app launcher.
 
 ## Layouts
 <br>

@@ -1,8 +1,8 @@
 package com.edufelip.amazing_note.di
 
-import com.edufelip.amazing_note.data.db.NoteDao
 import com.edufelip.amazing_note.data.repositories.INoteRepository
-import com.edufelip.amazing_note.data.repositories.NoteRepository
+import com.edufelip.amazing_note.data.repositories.KmpAndroidNoteRepository
+import com.edufelip.shared.data.NoteRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,6 +15,6 @@ object ViewModelModule {
     @Provides
     @ViewModelScoped
     fun provideNoteRepository(
-        dao: NoteDao
-    ): INoteRepository = NoteRepository(dao)
+        sharedRepo: NoteRepository
+    ): INoteRepository = KmpAndroidNoteRepository(sharedRepo)
 }

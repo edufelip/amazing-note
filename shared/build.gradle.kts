@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.compose.multiplatform)
     id("org.jetbrains.kotlin.native.cocoapods")
+    alias(libs.plugins.sqldelight)
 }
 
 kotlin {
@@ -21,6 +22,9 @@ kotlin {
         summary = "Shared KMP module for Amazing Note"
         homepage = "https://example.com/amazing-note"
         ios.deploymentTarget = "14.0"
+        // Ensure CocoaPods links sqlite3 when integrating the shared framework
+        // Value is injected verbatim into the podspec, so include quotes/array.
+        extraSpecAttributes["libraries"] = "['sqlite3']"
         framework {
             // The name your iOS app will import
             baseName = "shared"
@@ -36,6 +40,9 @@ kotlin {
                 implementation(compose.foundation)
                 implementation(compose.material3)
                 implementation(compose.ui)
+                implementation(compose.materialIconsExtended)
+                implementation(libs.sqldelight.runtime)
+                implementation(libs.sqldelight.coroutines)
             }
         }
         commonTest {
@@ -44,9 +51,22 @@ kotlin {
             }
         }
         androidMain {
+            dependencies {
+                implementation(libs.sqldelight.android.driver)
+            }
         }
         iosMain {
+            dependencies {
+                implementation(libs.sqldelight.native.driver)
+            }
         }
+    }
+}
+
+// Ensure all Kotlin/Native iOS binaries link with SQLite3
+kotlin.targets.withType(org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget::class.java).configureEach {
+    binaries.all {
+        linkerOpts("-lsqlite3")
     }
 }
 
@@ -59,5 +79,13 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
+sqldelight {
+    databases {
+        create("NoteDatabase") {
+            packageName.set("com.edufelip.shared.db")
+        }
     }
 }
