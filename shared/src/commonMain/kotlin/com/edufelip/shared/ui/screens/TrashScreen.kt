@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.model.Note
 import com.edufelip.shared.ui.gadgets.DismissibleNoteRow
+import com.edufelip.shared.i18n.Str
+import com.edufelip.shared.i18n.string
 
 @ExperimentalMaterial3Api
 @Composable
@@ -32,10 +34,10 @@ fun TrashScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Trash", color = MaterialTheme.colorScheme.onPrimary) },
+                title = { Text(string(Str.Trash), color = MaterialTheme.colorScheme.onPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = string(Str.CdBack), tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

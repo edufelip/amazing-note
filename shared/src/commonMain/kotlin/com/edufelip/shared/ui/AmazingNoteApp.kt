@@ -13,7 +13,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import com.edufelip.shared.data.NoteRepository
+import com.edufelip.shared.presentation.NoteUiViewModel
+import com.edufelip.shared.domain.validation.NoteActionResult
+import com.edufelip.shared.domain.validation.NoteValidationError.DescriptionTooLong
+import com.edufelip.shared.domain.validation.NoteValidationError.EmptyDescription
+import com.edufelip.shared.domain.validation.NoteValidationError.EmptyTitle
+import com.edufelip.shared.domain.validation.NoteValidationError.TitleTooLong
+import com.edufelip.shared.i18n.Str
+import com.edufelip.shared.i18n.string
 import com.edufelip.shared.model.Note
 import com.edufelip.shared.model.Priority
 import com.edufelip.shared.ui.gadgets.DrawerContent
@@ -26,13 +33,13 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AmazingNoteApp(noteRepository: NoteRepository) {
+fun AmazingNoteApp(viewModel: NoteUiViewModel) {
     var darkTheme by rememberSaveable { mutableStateOf(false) }
     val backStack = remember { mutableStateListOf<AppRoutes>(AppRoutes.Home) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
-    val notes by noteRepository.notes().collectAsState(initial = emptyList())
-    val trash by noteRepository.trash().collectAsState(initial = emptyList())
+    val notes by viewModel.notes.collectAsState(initial = emptyList())
+    val trash by viewModel.trash.collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
 
     AmazingNoteTheme(darkTheme = darkTheme) {
@@ -45,7 +52,7 @@ fun AmazingNoteApp(noteRepository: NoteRepository) {
                 onOpenTrash = { backStack.add(AppRoutes.Trash) },
                 onOpenNote = { note -> backStack.add(AppRoutes.NoteDetail(note.id)) },
                 onAdd = { backStack.add(AppRoutes.NoteDetail(null)) },
-                onDelete = { note -> scope.launch { noteRepository.setDeleted(note.id, true) } }
+                onDelete = { note -> scope.launch { viewModel.setDeleted(note.id, true) } }
             )
             is AppRoutes.NoteDetail -> {
                 val editing = current.id?.let { id ->
@@ -55,22 +62,19 @@ fun AmazingNoteApp(noteRepository: NoteRepository) {
                 id = current.id,
                 editing = editing,
                 onBack = { backStack.removeLastOrNull() },
-                onSave = { id, title, priority, description ->
-                    if (id == null) {
-                        scope.launch { noteRepository.insert(title, priority, description) }
-                    } else {
-                        scope.launch { noteRepository.update(id, title, priority, description, false) }
-                    }
+                saveAndValidate = { id, title, priority, description ->
+                    if (id == null) viewModel.insert(title, priority, description)
+                    else viewModel.update(id, title, priority, description, false)
                 },
                 onDelete = { idToDelete ->
-                    scope.launch { noteRepository.setDeleted(idToDelete, true) }
+                    scope.launch { viewModel.setDeleted(idToDelete, true) }
                 }
             ) }
             is AppRoutes.Trash -> TrashRoute(
                 notes = trash,
                 onBack = { backStack.removeLastOrNull() },
                 onRestore = { note ->
-                    scope.launch { noteRepository.setDeleted(note.id, false) }
+                    scope.launch { viewModel.setDeleted(note.id, false) }
                 }
             )
         }
@@ -122,26 +126,56 @@ private fun NoteDetailRoute(
     id: Int?,
     editing: Note?,
     onBack: () -> Unit,
-    onSave: (id: Int?, title: String, priority: Priority, description: String) -> Unit,
+    saveAndValidate: suspend (id: Int?, title: String, priority: Priority, description: String) -> NoteActionResult,
     onDelete: (id: Int) -> Unit
 ) {
     var title by remember { mutableStateOf(editing?.title ?: "") }
     var description by remember { mutableStateOf(editing?.description ?: "") }
     var priority by remember { mutableStateOf(editing?.priority ?: Priority.LOW) }
+    var titleError by remember { mutableStateOf<String?>(null) }
+    var descriptionError by remember { mutableStateOf<String?>(null) }
 
     AddNoteScreen(
         title = title,
-        onTitleChange = { title = it },
+        onTitleChange = { title = it; titleError = null },
         priority = priority,
         onPriorityChange = { priority = it },
         description = description,
-        onDescriptionChange = { description = it },
+        onDescriptionChange = { description = it; descriptionError = null },
         onBack = onBack,
         onSave = {
-            onSave(id, title, priority, description)
-            onBack()
+            val result = kotlinx.coroutines.runBlocking {
+                saveAndValidate(id, title, priority, description)
+            }
+            when (result) {
+                is NoteActionResult.Success -> onBack()
+                is NoteActionResult.Invalid -> {
+                    titleError = result.errors.firstOrNull {
+                        it is EmptyTitle ||
+                        it is TitleTooLong
+                    }?.let {
+                        when (it) {
+                            is EmptyTitle -> string(Str.ErrorTitleRequired)
+                            is TitleTooLong -> string(Str.ErrorTitleTooLong, it.max)
+                            else -> null
+                        }
+                    }
+                    descriptionError = result.errors.firstOrNull {
+                        it is EmptyDescription ||
+                        it is DescriptionTooLong
+                    }?.let {
+                        when (it) {
+                            is EmptyDescription -> string(Str.ErrorDescriptionRequired)
+                            is DescriptionTooLong -> string(Str.ErrorDescriptionTooLong, it.max)
+                            else -> null
+                        }
+                    }
+                }
+            }
         },
-        onDelete = id?.let { noteId -> { onDelete(noteId); onBack() } }
+        onDelete = id?.let { noteId -> { onDelete(noteId); onBack() } },
+        titleError = titleError,
+        descriptionError = descriptionError
     )
 }
 

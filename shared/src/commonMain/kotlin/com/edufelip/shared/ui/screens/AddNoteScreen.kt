@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -30,6 +29,9 @@ import androidx.compose.ui.unit.dp
 import com.edufelip.shared.model.Priority
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
+import com.edufelip.shared.i18n.Str
+import com.edufelip.shared.i18n.string
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +45,9 @@ fun AddNoteScreen(
     onBack: () -> Unit,
     onSave: () -> Unit,
     onDelete: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    titleError: String? = null,
+    descriptionError: String? = null
 ) {
     Scaffold(
         topBar = {
@@ -51,16 +55,16 @@ fun AddNoteScreen(
                 title = { Text("") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = string(Str.CdBack), tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 },
                 actions = {
                     IconButton(onClick = onSave) {
-                        Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
+                        Icon(imageVector = Icons.Default.Check, contentDescription = string(Str.CdSave), tint = MaterialTheme.colorScheme.onPrimary)
                     }
                     if (onDelete != null) {
                         IconButton(onClick = onDelete) {
-                            Icon(imageVector = Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
+                            Icon(imageVector = Icons.Filled.Delete, contentDescription = string(Str.CdDelete), tint = MaterialTheme.colorScheme.onPrimary)
                         }
                     }
                 },
@@ -86,7 +90,11 @@ fun AddNoteScreen(
                     .fillMaxSize()
                     .padding(top = 8.dp),
                 singleLine = true,
-                placeholder = { Text("Title") }
+                isError = titleError != null,
+                placeholder = { Text(string(Str.Title)) },
+                supportingText = {
+                    if (titleError != null) Text(titleError)
+                }
             )
             Spacer(Modifier.height(8.dp))
             PriorityDropdown(priority = priority, onPriorityChange = onPriorityChange)
@@ -97,7 +105,11 @@ fun AddNoteScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .weight(1f),
-                placeholder = { Text("Description") }
+                isError = descriptionError != null,
+                placeholder = { Text(string(Str.Description)) },
+                supportingText = {
+                    if (descriptionError != null) Text(descriptionError)
+                }
             )
         }
     }
@@ -112,17 +124,27 @@ private fun PriorityDropdown(
     val priorities = listOf(Priority.HIGH, Priority.MEDIUM, Priority.LOW)
     val expanded = remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = expanded.value, onExpandedChange = { expanded.value = it }) {
+        val label = when (priority) {
+            Priority.HIGH -> string(Str.HighPriority)
+            Priority.MEDIUM -> string(Str.MediumPriority)
+            Priority.LOW -> string(Str.LowPriority)
+        }
         TextField(
-            value = priority.name.lowercase().replaceFirstChar { it.uppercase() },
+            value = label,
             onValueChange = {},
             readOnly = true,
-            modifier = Modifier.menuAnchor(),
+            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value) },
             colors = ExposedDropdownMenuDefaults.textFieldColors()
         )
         DropdownMenu(expanded = expanded.value, onDismissRequest = { expanded.value = false }) {
             priorities.forEach { item ->
-                DropdownMenuItem(text = { Text(item.name.lowercase().replaceFirstChar { it.uppercase() }) }, onClick = {
+                val itemLabel = when (item) {
+                    Priority.HIGH -> string(Str.HighPriority)
+                    Priority.MEDIUM -> string(Str.MediumPriority)
+                    Priority.LOW -> string(Str.LowPriority)
+                }
+                DropdownMenuItem(text = { Text(itemLabel) }, onClick = {
                     onPriorityChange(item)
                     expanded.value = false
                 })

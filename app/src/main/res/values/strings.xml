@@ -13,9 +13,6 @@
     <string name="note_created">Note successfully created</string>
     <string name="search">Search</string>
     <string name="sort_by">Sort By</string>
-    <string name="high_priority">High Priority</string>
-    <string name="medium_priority">Medium Priority</string>
-    <string name="low_priority">Low Priority</string>
     <string name="trash">Trash</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="your_notes">Your Notes</string>
@@ -31,6 +28,10 @@
     <string name="day_icon" translatable="false">Day icon</string>
     <string name="hamburguer_menu_button" translatable="false">Hamburguer menu button</string>
     <string name="perma_deleted">Note deleted permanently</string>
+    <string name="error_title_required">Title is required</string>
+    <string name="error_description_required">Description is required</string>
+    <string name="error_title_too_long">Title too long (max %1$d)</string>
+    <string name="error_description_too_long">Description too long (max %1$d)</string>
 
     <string-array name="priorities">
         <item>High Priority</item>

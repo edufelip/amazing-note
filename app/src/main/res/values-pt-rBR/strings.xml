@@ -13,9 +13,6 @@
     <string name="undo">Desfazer</string>
     <string name="search">Procurar</string>
     <string name="sort_by">Ordernar por</string>
-    <string name="high_priority">Alta Prioridade</string>
-    <string name="medium_priority">Média Prioridade</string>
-    <string name="low_priority">Baixa Prioridade</string>
     <string name="trash">Lixeira</string>
     <string name="privacy_policy">Política de Privacidade</string>
     <string name="your_notes">Suas notas</string>
@@ -26,6 +23,10 @@
     <string name="no">Não</string>
     <string name="save">Salvar</string>
     <string name="perma_deleted">Nota deletada permanentemente</string>
+    <string name="error_title_required">Título é obrigatório</string>
+    <string name="error_description_required">Descrição é obrigatória</string>
+    <string name="error_title_too_long">Título muito longo (máx. %1$d)</string>
+    <string name="error_description_too_long">Descrição muito longa (máx. %1$d)</string>
 
     <string-array name="priorities">
         <item>Alta Prioridade</item>

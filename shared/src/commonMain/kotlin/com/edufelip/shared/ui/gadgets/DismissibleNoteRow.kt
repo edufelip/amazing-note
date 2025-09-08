@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.model.Note
+import com.edufelip.shared.i18n.Str
+import com.edufelip.shared.i18n.string
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,7 +55,7 @@ fun DismissibleNoteRow(
             ) {
                 Icon(
                     imageVector = if (isRestore) Icons.Filled.Restore else Icons.Filled.Delete,
-                    contentDescription = null,
+                    contentDescription = if (isRestore) string(Str.CdRestore) else string(Str.CdDelete),
                     tint = Color.White,
                     modifier = Modifier.align(Alignment.Center)
                 )
@@ -64,4 +66,3 @@ fun DismissibleNoteRow(
         }
     )
 }
-

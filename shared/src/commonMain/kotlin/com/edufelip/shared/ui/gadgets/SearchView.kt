@@ -31,6 +31,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
+import com.edufelip.shared.i18n.Str
+import com.edufelip.shared.i18n.string
 
 @Composable
 fun SearchView(
@@ -51,7 +53,7 @@ fun SearchView(
             AnimatedVisibility(visible = open, enter = fadeIn(), exit = fadeOut()) {
                 Icon(
                     imageVector = Icons.Default.Search,
-                    contentDescription = null,
+                    contentDescription = string(Str.CdSearch),
                     modifier = Modifier
                         .padding(end = 8.dp)
                         .clickable { open = true }
@@ -63,15 +65,15 @@ fun SearchView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester),
-                placeholder = { Text("Search") }
+                placeholder = { Text(string(Str.Search)) }
             )
             if (query.isNotEmpty()) {
                 IconButton(onClick = { onQueryChange("") }) {
-                    Icon(imageVector = Icons.Default.Close, contentDescription = null)
+                    Icon(imageVector = Icons.Default.Close, contentDescription = string(Str.CdClearSearch))
                 }
             }
             IconButton(onClick = { open = false }) {
-                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
+                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = string(Str.CdBack))
             }
         }
 
@@ -80,4 +82,3 @@ fun SearchView(
         }
     }
 }
-

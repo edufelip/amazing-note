@@ -53,6 +53,8 @@ kotlin {
         androidMain {
             dependencies {
                 implementation(libs.sqldelight.android.driver)
+                implementation(compose.preview)
+                implementation(compose.uiTooling)
             }
         }
         iosMain {

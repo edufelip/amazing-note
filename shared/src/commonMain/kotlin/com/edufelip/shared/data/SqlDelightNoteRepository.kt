@@ -3,6 +3,7 @@ package com.edufelip.shared.data
 import com.edufelip.shared.db.NoteDatabase
 import com.edufelip.shared.model.Note
 import com.edufelip.shared.model.Priority
+import com.edufelip.shared.domain.repository.NoteRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

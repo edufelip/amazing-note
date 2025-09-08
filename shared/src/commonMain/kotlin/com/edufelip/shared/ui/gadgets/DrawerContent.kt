@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
+import com.edufelip.shared.i18n.Str
+import com.edufelip.shared.i18n.string
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,22 +35,22 @@ fun DrawerContent(
 ) {
     ModalDrawerSheet {
         NavigationDrawerItem(
-            label = { Text("Your Notes") },
+            label = { Text(string(Str.YourNotes)) },
             selected = selectedHome,
             onClick = onYourNotesClick,
-            icon = { Icon(Icons.Default.Book, contentDescription = null) }
+            icon = { Icon(Icons.Default.Book, contentDescription = string(Str.YourNotes)) }
         )
         NavigationDrawerItem(
-            label = { Text("Trash") },
+            label = { Text(string(Str.Trash)) },
             selected = selectedTrash,
             onClick = onTrashClick,
-            icon = { Icon(Icons.Default.Delete, contentDescription = null) }
+            icon = { Icon(Icons.Default.Delete, contentDescription = string(Str.Trash)) }
         )
         NavigationDrawerItem(
-            label = { Text("Privacy Policy") },
+            label = { Text(string(Str.PrivacyPolicy)) },
             selected = false,
             onClick = { onPrivacyClick?.invoke() },
-            icon = { Icon(Icons.Default.Book, contentDescription = null) }
+            icon = { Icon(Icons.Default.Book, contentDescription = string(Str.PrivacyPolicy)) }
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -59,7 +61,7 @@ fun DrawerContent(
         ) {
             Icon(
                 imageVector = if (darkTheme) Icons.Default.DarkMode else Icons.Default.LightMode,
-                contentDescription = null,
+                contentDescription = string(Str.CdToggleDarkTheme),
                 tint = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.weight(1f))
@@ -70,4 +72,3 @@ fun DrawerContent(
         }
     }
 }
-

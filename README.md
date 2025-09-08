@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://android-arsenal.com/api?level=24"><img alt="API" src="https://img.shields.io/badge/API-24%2B-brightgreen.svg?style=flat"/></a>
-  <a href="https://github.com/edufelip"><img alt="Build Status" src="https://img.shields.io/static/v1?label=Android CI&message=passing&color=green&logo=android"/></a>
+  <a href="https://github.com/edufelip"><img alt="Build Status" src="https://img.shields.io/static/v1?label=Android%20CI&message=passing&color=green&logo=android"/></a>
   <a href="https://medium.com/@eduardofelipi"><img alt="Medium" src="https://img.shields.io/static/v1?label=Medium&message=@edu_santos&color=gray&logo=medium"/></a> <br>
   <a href="https://www.youtube.com/channel/UCYcwwX7nDU_U0FP-TsXMwVg"><img alt="Profile" src="https://img.shields.io/static/v1?label=Youtube&message=edu_santos&color=red&logo=youtube"/></a> 
   <a href="https://github.com/edufelip"><img alt="Profile" src="https://img.shields.io/static/v1?label=Github&message=edufelip&color=white&logo=github"/></a> 
@@ -84,7 +84,14 @@ Minimal CI steps you can copy into your pipeline:
 
 ## Android DI (Hilt + SQLDelight)
 
-The Android app injects the shared KMP repository (`com.edufelip.shared.data.NoteRepository`) with Hilt.
+Architecture (Clean): UI → ViewModel → UseCases → Repository → Data Source
+
+- UI (shared Compose in `shared/ui`) now consumes a platform ViewModel via a shared interface `com.edufelip.shared.presentation.NoteUiViewModel`.
+- ViewModel (Android: `KmpNoteViewModel`) depends on `NoteUseCases`.
+- UseCases depend on the domain `NoteRepository`.
+- Data layer (`SqlDelightNoteRepository`) implements the domain repository and talks to SQLDelight.
+
+The Android app injects `NoteUseCases` and exposes `KmpNoteViewModel` to the shared UI, keeping the layering intact.
 
 - Provider: see `app/src/main/java/com/edufelip/amazing_note/di/AppModule.kt`
 - Usage example in an Activity:
@@ -92,16 +99,36 @@ The Android app injects the shared KMP repository (`com.edufelip.shared.data.Not
 ```kotlin
 @AndroidEntryPoint
 class SomeActivity : ComponentActivity() {
-    @Inject lateinit var noteRepository: com.edufelip.shared.data.NoteRepository
+    // Android ViewModel exposed to shared UI
+    private val vm: KmpNoteViewModel by viewModels()
+
+    setContent {
+        ProvideAndroidStrings {
+            AmazingNoteApp(viewModel = vm)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { com.edufelip.shared.ui.AmazingNoteApp(noteRepository) }
+        setContent { /* see above */ }
     }
 }
 ```
 
-KmpActivity already follows this pattern and is the app launcher.
+MainActivity follows this pattern and is the app launcher.
+
+## Localization
+- Shared UI uses a common string key set (`shared/i18n/Strings.kt`) and CompositionLocal `LocalStrings`.
+- Android provider: `shared/androidMain/.../AndroidStrings.kt` maps keys to `R.string.*` using your existing `values` + translated `values-es-rES` and `values-pt-rBR`.
+- iOS provider: `shared/iosMain/.../IosStrings.kt` fetches localized strings from `Localizable.strings`.
+- iOS localizations are stored under:
+  - `iosApp/amazingnote/en.lproj/Localizable.strings`
+  - `iosApp/amazingnote/es.lproj/Localizable.strings`
+  - `iosApp/amazingnote/pt-BR.lproj/Localizable.strings`
+
+Usage:
+- Android `KmpActivity`: wraps content with `ProvideAndroidStrings { ... }`.
+- iOS `MainViewController`: wraps content with `ProvideIosStrings { ... }`.
 
 ## Layouts
 <br>

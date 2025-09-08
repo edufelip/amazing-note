@@ -43,6 +43,8 @@ import com.edufelip.shared.model.Note
 import com.edufelip.shared.ui.gadgets.DismissibleNoteRow
 import com.edufelip.shared.ui.gadgets.SearchView
 import kotlinx.coroutines.launch
+import com.edufelip.shared.i18n.Str
+import com.edufelip.shared.i18n.string
 
 @ExperimentalMaterial3Api
 @Composable
@@ -92,7 +94,7 @@ fun ListScreen(
                             )
                         }
                         Text(
-                            text = "Your Notes",
+                            text = string(Str.YourNotes),
                             color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold
@@ -111,7 +113,7 @@ fun ListScreen(
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(
                                 imageVector = Icons.Default.Menu,
-                                contentDescription = null,
+                                contentDescription = string(Str.CdOpenDrawer),
                                 tint = MaterialTheme.colorScheme.onPrimary
                             )
                         }
@@ -135,7 +137,7 @@ fun ListScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = null,
+                        contentDescription = string(Str.CdAdd),
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
