@@ -13,7 +13,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.edufelip.shared.data.NoteRepository
 import com.edufelip.shared.model.Note
 import com.edufelip.shared.model.Priority
@@ -56,11 +55,11 @@ fun AmazingNoteApp(noteRepository: NoteRepository) {
                 id = current.id,
                 editing = editing,
                 onBack = { backStack.removeLastOrNull() },
-                onSave = { idOrNull, title, priority, description ->
-                    if (idOrNull == null) {
+                onSave = { id, title, priority, description ->
+                    if (id == null) {
                         scope.launch { noteRepository.insert(title, priority, description) }
                     } else {
-                        scope.launch { noteRepository.update(idOrNull, title, priority, description, false) }
+                        scope.launch { noteRepository.update(id, title, priority, description, false) }
                     }
                 },
                 onDelete = { idToDelete ->
@@ -159,5 +158,3 @@ private fun TrashRoute(
         onRestore = onRestore
     )
 }
-
-// No-op saver now that persistence is handled via SQLDelight
