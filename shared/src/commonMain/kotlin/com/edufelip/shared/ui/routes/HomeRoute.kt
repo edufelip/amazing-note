@@ -23,7 +23,7 @@ fun HomeRoute(
     onAdd: () -> Unit,
     onDelete: (Note) -> Unit
 ) {
-    var query = remember { mutableStateOf("") }
+    val query = remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     val closeDrawer = { scope.launch { drawerState.close() } }
 
@@ -47,7 +47,9 @@ fun HomeRoute(
                 onPrivacyClick = null
             )
         },
-        onDelete = onDelete
+        onDelete = onDelete,
+        darkTheme = darkTheme,
+        onToggleDarkTheme = onToggleDarkTheme,
+        onOpenTrash = onOpenTrash
     )
 }
-

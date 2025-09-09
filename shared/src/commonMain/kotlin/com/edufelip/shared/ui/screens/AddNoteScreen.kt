@@ -3,6 +3,7 @@ package com.edufelip.shared.ui.screens
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -19,7 +20,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -51,28 +52,28 @@ fun AddNoteScreen(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = { Text("") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = string(Str.CdBack), tint = MaterialTheme.colorScheme.onPrimary)
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = string(Str.CdBack), tint = MaterialTheme.colorScheme.onSurface)
                     }
                 },
                 actions = {
                     IconButton(onClick = onSave) {
-                        Icon(imageVector = Icons.Default.Check, contentDescription = string(Str.CdSave), tint = MaterialTheme.colorScheme.onPrimary)
+                        Icon(imageVector = Icons.Default.Check, contentDescription = string(Str.CdSave), tint = MaterialTheme.colorScheme.onSurface)
                     }
                     if (onDelete != null) {
                         IconButton(onClick = onDelete) {
-                            Icon(imageVector = Icons.Filled.Delete, contentDescription = string(Str.CdDelete), tint = MaterialTheme.colorScheme.onPrimary)
+                            Icon(imageVector = Icons.Filled.Delete, contentDescription = string(Str.CdDelete), tint = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
@@ -87,11 +88,11 @@ fun AddNoteScreen(
                 value = title,
                 onValueChange = onTitleChange,
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .padding(top = 8.dp),
                 singleLine = true,
                 isError = titleError != null,
-                placeholder = { Text(string(Str.Title)) },
+                label = { Text(string(Str.Title)) },
                 supportingText = {
                     if (titleError != null) Text(titleError)
                 }
@@ -103,10 +104,10 @@ fun AddNoteScreen(
                 value = description,
                 onValueChange = onDescriptionChange,
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .weight(1f),
                 isError = descriptionError != null,
-                placeholder = { Text(string(Str.Description)) },
+                label = { Text(string(Str.Description)) },
                 supportingText = {
                     if (descriptionError != null) Text(descriptionError)
                 }

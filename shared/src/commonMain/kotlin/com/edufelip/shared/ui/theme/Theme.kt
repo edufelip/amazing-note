@@ -2,9 +2,12 @@ package com.edufelip.shared.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -85,12 +88,26 @@ private val darkScheme = darkColorScheme(
 @Composable
 fun AmazingNoteTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    useDynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) darkScheme else lightScheme
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    val platformScheme = rememberPlatformColorScheme(darkTheme, useDynamicColor)
+    val colorScheme = platformScheme ?: if (darkTheme) darkScheme else lightScheme
+    val dynamicActive = platformScheme != null && useDynamicColor
+    CompositionLocalProvider(LocalDynamicColorActive provides dynamicActive) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }
+
+@Composable
+expect fun rememberPlatformColorScheme(
+    darkTheme: Boolean,
+    useDynamicColor: Boolean
+): ColorScheme?
+
+// Expose whether dynamic color is active on the current platform
+val LocalDynamicColorActive = staticCompositionLocalOf { false }

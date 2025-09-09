@@ -33,39 +33,44 @@ fun AmazingNoteApp(viewModel: NoteUiViewModel) {
 
     AmazingNoteTheme(darkTheme = darkTheme) {
         when (val current = backStack.last()) {
-            is AppRoutes.Home -> HomeRoute(
-                notes = notes,
-                drawerState = drawerState,
-                darkTheme = darkTheme,
-                onToggleDarkTheme = { darkTheme = it },
-                onOpenTrash = { backStack.add(AppRoutes.Trash) },
-                onOpenNote = { note -> backStack.add(AppRoutes.NoteDetail(note.id)) },
-                onAdd = { backStack.add(AppRoutes.NoteDetail(null)) },
-                onDelete = { note -> scope.launch { viewModel.setDeleted(note.id, true) } }
-            )
+            is AppRoutes.Home -> {
+                HomeRoute(
+                    notes = notes,
+                    drawerState = drawerState,
+                    darkTheme = darkTheme,
+                    onToggleDarkTheme = { darkTheme = it },
+                    onOpenTrash = { backStack.add(AppRoutes.Trash) },
+                    onOpenNote = { note -> backStack.add(AppRoutes.NoteDetail(note.id)) },
+                    onAdd = { backStack.add(AppRoutes.NoteDetail(null)) },
+                    onDelete = { note -> scope.launch { viewModel.setDeleted(note.id, true) } }
+                )
+            }
             is AppRoutes.NoteDetail -> {
                 val editing = current.id?.let { id ->
                     notes.firstOrNull { it.id == id } ?: trash.firstOrNull { it.id == id }
                 }
                 NoteDetailRoute(
-                id = current.id,
-                editing = editing,
-                onBack = { backStack.removeLastOrNull() },
-                saveAndValidate = { id, title, priority, description ->
-                    if (id == null) viewModel.insert(title, priority, description)
-                    else viewModel.update(id, title, priority, description, false)
-                },
-                onDelete = { idToDelete ->
-                    scope.launch { viewModel.setDeleted(idToDelete, true) }
-                }
-            ) }
-            is AppRoutes.Trash -> TrashRoute(
-                notes = trash,
-                onBack = { backStack.removeLastOrNull() },
-                onRestore = { note ->
-                    scope.launch { viewModel.setDeleted(note.id, false) }
-                }
-            )
+                    id = current.id,
+                    editing = editing,
+                    onBack = { backStack.removeLastOrNull() },
+                    saveAndValidate = { id, title, priority, description ->
+                        if (id == null) viewModel.insert(title, priority, description)
+                        else viewModel.update(id, title, priority, description, false)
+                    },
+                    onDelete = { idToDelete ->
+                        scope.launch { viewModel.setDeleted(idToDelete, true) }
+                    }
+                )
+            }
+            is AppRoutes.Trash -> {
+                TrashRoute(
+                    notes = trash,
+                    onBack = { backStack.removeLastOrNull() },
+                    onRestore = { note ->
+                        scope.launch { viewModel.setDeleted(note.id, false) }
+                    }
+                )
+            }
         }
     }
 }

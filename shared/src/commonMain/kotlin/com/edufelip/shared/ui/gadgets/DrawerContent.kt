@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.i18n.Str
 import com.edufelip.shared.i18n.string
+import com.edufelip.shared.ui.theme.LocalDynamicColorActive
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,20 +56,23 @@ fun DrawerContent(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = if (darkTheme) Icons.Default.DarkMode else Icons.Default.LightMode,
-                contentDescription = string(Str.CdToggleDarkTheme),
-                tint = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Switch(
-                checked = darkTheme,
-                onCheckedChange = onToggleDarkTheme
-            )
+        val dynamicActive = LocalDynamicColorActive.current
+        if (!dynamicActive) {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = if (darkTheme) Icons.Default.DarkMode else Icons.Default.LightMode,
+                    contentDescription = string(Str.CdToggleDarkTheme),
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Switch(
+                    checked = darkTheme,
+                    onCheckedChange = onToggleDarkTheme
+                )
+            }
         }
     }
 }
