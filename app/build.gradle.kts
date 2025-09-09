@@ -114,7 +114,6 @@ dependencies {
     // Dagger - Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
-    ksp(libs.androidx.hilt.compiler)
 
     // Local Unit Tests
     testImplementation(libs.junit)
