@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -90,14 +91,9 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.activity.compose)
 
-    // Material Design (Compose Material3 is used)
-
     // Lifecycle
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.lifecycle.runtime.ktx)
-
-    // Room
-    // Removed Room (migrated to SQLDelight)
 
     // Coroutines
     implementation(libs.kotlin.coroutines.core)
@@ -106,10 +102,6 @@ dependencies {
     // Coroutine Lifecycle Scopes
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.lifecycle.runtime.ktx)
-
-    // Navigation handled in shared UI
-
-    // Activity KTX not required
 
     // Dagger - Hilt
     implementation(libs.hilt.android)
@@ -121,13 +113,12 @@ dependencies {
     testImplementation(libs.kotlin.coroutines.test)
     testImplementation(libs.truth)
 
-    // Instrumented Unit Tests removed
-
     // Compose Preview
     debugImplementation(libs.compose.ui.tooling.preview)
 
+    // Firebase BoM (use with individual Firebase libs)
+    implementation(platform(libs.firebase.bom))
+
     // Shared KMP module
     implementation(project(":shared"))
-
-    // Removed Compose runtime-livedata and Custom Tabs
 }

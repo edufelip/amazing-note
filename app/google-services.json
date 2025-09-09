@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "77317364066",
+    "project_id": "amazing-note-7eb16",
+    "storage_bucket": "amazing-note-7eb16.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:77317364066:android:62e9e435792c2bd8f6b43b",
+        "android_client_info": {
+          "package_name": "com.edufelip.amazing_note"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoCOXabZGx98anWyipX4HY2is7Aqyqq-Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
