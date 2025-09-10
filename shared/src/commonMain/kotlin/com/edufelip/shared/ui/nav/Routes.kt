@@ -4,5 +4,5 @@ sealed interface AppRoutes {
     data object Home : AppRoutes
     data class NoteDetail(val id: Int? = null) : AppRoutes
     data object Trash : AppRoutes
+    data object Login : AppRoutes
 }
-

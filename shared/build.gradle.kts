@@ -22,6 +22,10 @@ kotlin {
         summary = "Shared KMP module for Amazing Note"
         homepage = "https://example.com/amazing-note"
         ios.deploymentTarget = "14.0"
+        // Firebase Auth for iOS
+        pod("FirebaseAuth")
+        // Google Sign-In for iOS (used by iosMain Kotlin)
+        pod("GoogleSignIn")
         // Ensure CocoaPods links sqlite3 when integrating the shared framework
         // Value is injected verbatim into the podspec, so include quotes/array.
         extraSpecAttributes["libraries"] = "['sqlite3']"

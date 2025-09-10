@@ -13,16 +13,24 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.edufelip.shared.presentation.NoteUiViewModel
+import com.edufelip.shared.auth.AuthController
+import com.edufelip.shared.auth.AuthService
+import com.edufelip.shared.auth.NoAuthService
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.routes.HomeRoute
 import com.edufelip.shared.ui.routes.NoteDetailRoute
 import com.edufelip.shared.ui.routes.TrashRoute
+import com.edufelip.shared.ui.screens.LoginScreen
 import com.edufelip.shared.ui.theme.AmazingNoteTheme
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AmazingNoteApp(viewModel: NoteUiViewModel) {
+fun AmazingNoteApp(
+    viewModel: NoteUiViewModel,
+    authService: AuthService = NoAuthService,
+    onRequestGoogleSignIn: (((Boolean, String?) -> Unit) -> Unit)? = null,
+) {
     var darkTheme by rememberSaveable { mutableStateOf(false) }
     val backStack = remember { mutableStateListOf<AppRoutes>(AppRoutes.Home) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -30,6 +38,7 @@ fun AmazingNoteApp(viewModel: NoteUiViewModel) {
     val notes by viewModel.notes.collectAsState(initial = emptyList())
     val trash by viewModel.trash.collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
+    val auth = remember(authService) { AuthController(authService, scope) }
 
     AmazingNoteTheme(darkTheme = darkTheme) {
         when (val current = backStack.last()) {
@@ -42,7 +51,10 @@ fun AmazingNoteApp(viewModel: NoteUiViewModel) {
                     onOpenTrash = { backStack.add(AppRoutes.Trash) },
                     onOpenNote = { note -> backStack.add(AppRoutes.NoteDetail(note.id)) },
                     onAdd = { backStack.add(AppRoutes.NoteDetail(null)) },
-                    onDelete = { note -> scope.launch { viewModel.setDeleted(note.id, true) } }
+                    onDelete = { note -> scope.launch { viewModel.setDeleted(note.id, true) } },
+                    auth = auth,
+                    onOpenLogin = { backStack.add(AppRoutes.Login) },
+                    onNavigate = { route -> backStack.add(route) }
                 )
             }
             is AppRoutes.NoteDetail -> {
@@ -69,6 +81,13 @@ fun AmazingNoteApp(viewModel: NoteUiViewModel) {
                     onRestore = { note ->
                         scope.launch { viewModel.setDeleted(note.id, false) }
                     }
+                )
+            }
+            is AppRoutes.Login -> {
+                LoginScreen(
+                    auth = auth,
+                    onBack = { backStack.removeLastOrNull() },
+                    onRequestGoogleSignIn = onRequestGoogleSignIn
                 )
             }
         }

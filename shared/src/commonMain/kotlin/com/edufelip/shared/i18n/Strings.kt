@@ -7,6 +7,21 @@ enum class Str {
     YourNotes,
     Trash,
     PrivacyPolicy,
+    Login,
+    Logout,
+    GoogleSignIn,
+    LoginTitle,
+    Email,
+    Password,
+    ForgotPassword,
+    SignUp,
+    ResetEmailSent,
+    SignUpSuccess,
+    SignOutSuccess,
+    LoginSuccess,
+    GoogleSignInCanceled,
+    LogoutCanceled,
+    WelcomeUser,
     Title,
     Description,
     Search,
@@ -39,6 +54,21 @@ val LocalStrings = staticCompositionLocalOf<Strings> {
             Str.YourNotes -> "Your Notes"
             Str.Trash -> "Trash"
             Str.PrivacyPolicy -> "Privacy Policy"
+            Str.Login -> "Login"
+            Str.Logout -> "Logout"
+            Str.GoogleSignIn -> "Sign in with Google"
+            Str.LoginTitle -> "Login to your account"
+            Str.Email -> "Email"
+            Str.Password -> "Password"
+            Str.ForgotPassword -> "Forgot Password?"
+            Str.SignUp -> "Sign Up"
+            Str.ResetEmailSent -> "Password reset email sent"
+            Str.SignUpSuccess -> "Account created successfully"
+            Str.SignOutSuccess -> "Signed out"
+            Str.LoginSuccess -> "Logged in"
+            Str.GoogleSignInCanceled -> "Google sign-in canceled"
+            Str.LogoutCanceled -> "Logout canceled"
+            Str.WelcomeUser -> "Welcome, ${args.firstOrNull() ?: ""}"
             Str.Title -> "Title"
             Str.Description -> "Description"
             Str.Search -> "Search"

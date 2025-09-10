@@ -33,6 +33,12 @@ fun DrawerContent(
     selectedHome: Boolean,
     selectedTrash: Boolean,
     onPrivacyClick: (() -> Unit)? = null,
+    // Auth-related
+    userName: String? = null,
+    userEmail: String? = null,
+    onLoginClick: (() -> Unit)? = null,
+    onGoogleSignInClick: (() -> Unit)? = null,
+    onLogoutClick: (() -> Unit)? = null,
 ) {
     ModalDrawerSheet {
         NavigationDrawerItem(
@@ -55,6 +61,39 @@ fun DrawerContent(
         )
 
         Spacer(modifier = Modifier.weight(1f))
+
+        // Auth block
+        if (onLoginClick != null || onLogoutClick != null) {
+            Spacer(modifier = Modifier.padding(vertical = 4.dp))
+            if (userEmail == null) {
+                // Not authenticated: show Login + Google
+                NavigationDrawerItem(
+                    label = { Text(string(Str.Login)) },
+                    selected = false,
+                    onClick = { onLoginClick?.invoke() },
+                    icon = { Icon(Icons.Default.Book, contentDescription = string(Str.Login)) }
+                )
+                NavigationDrawerItem(
+                    label = { Text(string(Str.GoogleSignIn)) },
+                    selected = false,
+                    onClick = { onGoogleSignInClick?.invoke() },
+                    icon = { Icon(Icons.Default.Book, contentDescription = string(Str.GoogleSignIn)) }
+                )
+            } else {
+                NavigationDrawerItem(
+                    label = { Text(userName ?: userEmail) },
+                    selected = false,
+                    onClick = {},
+                    icon = { Icon(Icons.Default.Book, contentDescription = userName ?: userEmail) }
+                )
+                NavigationDrawerItem(
+                    label = { Text(string(Str.Logout)) },
+                    selected = false,
+                    onClick = { onLogoutClick?.invoke() },
+                    icon = { Icon(Icons.Default.Delete, contentDescription = string(Str.Logout)) }
+                )
+            }
+        }
 
         val dynamicActive = LocalDynamicColorActive.current
         if (!dynamicActive) {

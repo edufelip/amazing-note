@@ -1,41 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Amazing Note</string>
-    <string name="title">Title</string>
-    <string name="description">Description</string>
-    <string name="add_button">Add Button</string>
-    <string name="note_removed">Note Removed</string>
-    <string name="delete">Delete</string>
-    <string name="once_deleted_permanent">Once deleted the note will be moved to the trash can</string>
-    <string name="fill_all_fields">Please fill all fields</string>
-    <string name="note_updated">Note Successfully Updated</string>
-    <string name="deleted">Deleted</string>
-    <string name="undo">Undo</string>
-    <string name="note_created">Note successfully created</string>
-    <string name="search">Search</string>
-    <string name="sort_by">Sort By</string>
-    <string name="trash">Trash</string>
-    <string name="privacy_policy">Privacy Policy</string>
-    <string name="your_notes">Your Notes</string>
-    <string name="add">Add Note</string>
-    <string name="recover">Recover</string>
-    <string name="note_recovered">Note successfully recovered</string>
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
-    <string name="more" translatable="false">more</string>
-    <string name="save">Save</string>
-    <string name="back_button" translatable="false">Back Button</string>
-    <string name="night_icon" translatable="false">Night icon</string>
-    <string name="day_icon" translatable="false">Day icon</string>
-    <string name="hamburguer_menu_button" translatable="false">Hamburguer menu button</string>
-    <string name="perma_deleted">Note deleted permanently</string>
-    <string name="error_title_required">Title is required</string>
-    <string name="error_description_required">Description is required</string>
-    <string name="error_title_too_long">Title too long (max %1$d)</string>
-    <string name="error_description_too_long">Description too long (max %1$d)</string>
-
-    <string-array name="priorities">
-        <item>High Priority</item>
-        <item>Medium Priority</item>
-        <item>Low Priority</item>
-    </string-array>
+    <string name="default_web_client_id">77317364066-hdqlh82g64a8s6ccdup06gmmfn8c6ik6.apps.googleusercontent.com</string>
 </resources>

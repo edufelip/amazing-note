@@ -22,6 +22,8 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -52,7 +54,8 @@ fun ListScreen(
     // For large screens with NavigationRail
     darkTheme: Boolean = false,
     onToggleDarkTheme: (Boolean) -> Unit = {},
-    onOpenTrash: (() -> Unit)? = null
+    onOpenTrash: (() -> Unit)? = null,
+    snackbarHostState: SnackbarHostState? = null
 ) {
     val scope = rememberCoroutineScope()
 
@@ -64,6 +67,9 @@ fun ListScreen(
         fun ContentScaffold(showNavIcon: Boolean) {
             Scaffold(
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                snackbarHost = {
+                    if (snackbarHostState != null) SnackbarHost(snackbarHostState)
+                },
                 topBar = {
                     LargeTopAppBar(
                         title = { Text(text = string(Str.YourNotes)) },

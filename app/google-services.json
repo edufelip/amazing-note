@@ -12,7 +12,20 @@
           "package_name": "com.edufelip.amazing_note"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "77317364066-11c6tmm087u2h1go3v85oo2t1oho4dbo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.edufelip.amazing_note",
+            "certificate_hash": "a0d32e970db3efec780c3e32330151ddd5abd3f0"
+          }
+        },
+        {
+          "client_id": "77317364066-hdqlh82g64a8s6ccdup06gmmfn8c6ik6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAoCOXabZGx98anWyipX4HY2is7Aqyqq-Q"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "77317364066-hdqlh82g64a8s6ccdup06gmmfn8c6ik6.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "77317364066-1l2l9nnovcgvfn7pnfn5e35ltk7ron6j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.edufelip.amazingnote"
+              }
+            }
+          ]
         }
       }
     }

@@ -9,6 +9,8 @@ import com.edufelip.shared.domain.validation.NoteValidationRules
 import com.edufelip.shared.presentation.DefaultNoteUiViewModel
 import com.edufelip.shared.i18n.ProvideIosStrings
 import com.edufelip.shared.ui.AmazingNoteApp
+import com.edufelip.shared.auth.IosFirebaseAuthService
+import com.edufelip.shared.auth.IosGoogleSignIn
 import platform.UIKit.UIViewController
 
 fun MainViewController(): UIViewController = ComposeUIViewController {
@@ -17,6 +19,10 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
     val useCases = buildNoteUseCases(repo, NoteValidationRules())
     val vm = DefaultNoteUiViewModel(useCases)
     ProvideIosStrings {
-        AmazingNoteApp(viewModel = vm)
+        AmazingNoteApp(
+            viewModel = vm,
+            authService = IosFirebaseAuthService(),
+            onRequestGoogleSignIn = { cb -> IosGoogleSignIn.requestSignIn { success, err -> cb(success, err) } }
+        )
     }
 }

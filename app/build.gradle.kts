@@ -118,6 +118,10 @@ dependencies {
 
     // Firebase BoM (use with individual Firebase libs)
     implementation(platform(libs.firebase.bom))
+    // Firebase Auth (Android)
+    implementation("com.google.firebase:firebase-auth-ktx")
+    // Google Sign-In (optional; used for Google auth)
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
 
     // Shared KMP module
     implementation(project(":shared"))
