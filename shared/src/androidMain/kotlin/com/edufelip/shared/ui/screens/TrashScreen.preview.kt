@@ -4,8 +4,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import com.edufelip.shared.model.Note
 import com.edufelip.shared.model.Priority
+import com.edufelip.shared.ui.preview.PreviewLocalized
 import com.edufelip.shared.ui.preview.ScreenPreviewsDarkLight
-import com.edufelip.shared.ui.theme.AmazingNoteTheme
 
 private fun sampleNotes(): List<Note> = List(6) { index ->
     Note(
@@ -17,7 +17,9 @@ private fun sampleNotes(): List<Note> = List(6) { index ->
             else -> Priority.LOW
         },
         description = "Deleted note sample for preview.",
-        deleted = true
+        deleted = true,
+        createdAt = 1_700_100_000_000L + index * 3_600_000L,
+        updatedAt = 1_700_100_000_000L + index * 3_600_000L,
     )
 }
 
@@ -25,12 +27,10 @@ private fun sampleNotes(): List<Note> = List(6) { index ->
 @ScreenPreviewsDarkLight
 @Composable
 fun TrashScreen_Previews() {
-    AmazingNoteTheme {
+    PreviewLocalized {
         TrashScreen(
             notes = sampleNotes(),
-            onBack = {},
-            onRestore = {}
+            onRestore = {},
         )
     }
 }
-

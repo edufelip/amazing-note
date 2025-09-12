@@ -5,6 +5,7 @@ data class Note(
     val title: String,
     val priority: Priority,
     val description: String,
-    val deleted: Boolean
+    val deleted: Boolean,
+    val createdAt: Long,
+    val updatedAt: Long,
 )
-

@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -16,11 +18,12 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -28,11 +31,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.model.Priority
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
-import com.edufelip.shared.i18n.Str
-import com.edufelip.shared.i18n.string
+import com.edufelip.shared.resources.Res
+import com.edufelip.shared.resources.cd_back
+import com.edufelip.shared.resources.cd_delete
+import com.edufelip.shared.resources.cd_save
+import com.edufelip.shared.resources.description
+import com.edufelip.shared.resources.high_priority
+import com.edufelip.shared.resources.low_priority
+import com.edufelip.shared.resources.medium_priority
+import com.edufelip.shared.resources.title
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +56,7 @@ fun AddNoteScreen(
     onDelete: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     titleError: String? = null,
-    descriptionError: String? = null
+    descriptionError: String? = null,
 ) {
     Scaffold(
         topBar = {
@@ -56,16 +64,16 @@ fun AddNoteScreen(
                 title = { Text("") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = string(Str.CdBack), tint = MaterialTheme.colorScheme.onSurface)
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.cd_back), tint = MaterialTheme.colorScheme.onSurface)
                     }
                 },
                 actions = {
                     IconButton(onClick = onSave) {
-                        Icon(imageVector = Icons.Default.Check, contentDescription = string(Str.CdSave), tint = MaterialTheme.colorScheme.onSurface)
+                        Icon(imageVector = Icons.Default.Check, contentDescription = stringResource(Res.string.cd_save), tint = MaterialTheme.colorScheme.onSurface)
                     }
                     if (onDelete != null) {
                         IconButton(onClick = onDelete) {
-                            Icon(imageVector = Icons.Filled.Delete, contentDescription = string(Str.CdDelete), tint = MaterialTheme.colorScheme.onSurface)
+                            Icon(imageVector = Icons.Filled.Delete, contentDescription = stringResource(Res.string.cd_delete), tint = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 },
@@ -73,16 +81,16 @@ fun AddNoteScreen(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
-                )
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+                ),
             )
-        }
+        },
     ) { padding ->
         Column(
             modifier = modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp),
         ) {
             OutlinedTextField(
                 value = title,
@@ -92,10 +100,10 @@ fun AddNoteScreen(
                     .padding(top = 8.dp),
                 singleLine = true,
                 isError = titleError != null,
-                label = { Text(string(Str.Title)) },
+                label = { Text(stringResource(Res.string.title)) },
                 supportingText = {
                     if (titleError != null) Text(titleError)
-                }
+                },
             )
             Spacer(Modifier.height(8.dp))
             PriorityDropdown(priority = priority, onPriorityChange = onPriorityChange)
@@ -107,10 +115,10 @@ fun AddNoteScreen(
                     .fillMaxWidth()
                     .weight(1f),
                 isError = descriptionError != null,
-                label = { Text(string(Str.Description)) },
+                label = { Text(stringResource(Res.string.description)) },
                 supportingText = {
                     if (descriptionError != null) Text(descriptionError)
-                }
+                },
             )
         }
     }
@@ -120,15 +128,15 @@ fun AddNoteScreen(
 @Composable
 private fun PriorityDropdown(
     priority: Priority,
-    onPriorityChange: (Priority) -> Unit
+    onPriorityChange: (Priority) -> Unit,
 ) {
     val priorities = listOf(Priority.HIGH, Priority.MEDIUM, Priority.LOW)
     val expanded = remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = expanded.value, onExpandedChange = { expanded.value = it }) {
         val label = when (priority) {
-            Priority.HIGH -> string(Str.HighPriority)
-            Priority.MEDIUM -> string(Str.MediumPriority)
-            Priority.LOW -> string(Str.LowPriority)
+            Priority.HIGH -> stringResource(Res.string.high_priority)
+            Priority.MEDIUM -> stringResource(Res.string.medium_priority)
+            Priority.LOW -> stringResource(Res.string.low_priority)
         }
         TextField(
             value = label,
@@ -136,14 +144,14 @@ private fun PriorityDropdown(
             readOnly = true,
             modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value) },
-            colors = ExposedDropdownMenuDefaults.textFieldColors()
+            colors = ExposedDropdownMenuDefaults.textFieldColors(),
         )
         DropdownMenu(expanded = expanded.value, onDismissRequest = { expanded.value = false }) {
             priorities.forEach { item ->
                 val itemLabel = when (item) {
-                    Priority.HIGH -> string(Str.HighPriority)
-                    Priority.MEDIUM -> string(Str.MediumPriority)
-                    Priority.LOW -> string(Str.LowPriority)
+                    Priority.HIGH -> stringResource(Res.string.high_priority)
+                    Priority.MEDIUM -> stringResource(Res.string.medium_priority)
+                    Priority.LOW -> stringResource(Res.string.low_priority)
                 }
                 DropdownMenuItem(text = { Text(itemLabel) }, onClick = {
                     onPriorityChange(item)

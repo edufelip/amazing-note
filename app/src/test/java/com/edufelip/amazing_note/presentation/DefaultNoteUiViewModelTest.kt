@@ -21,7 +21,8 @@ class DefaultNoteUiViewModelTest {
     @get:Rule val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    @get:Rule val mainCoroutineRule = MainCoroutineRule()
+    @get:Rule
+    val mainCoroutineRule = MainCoroutineRule()
 
     private lateinit var vm: DefaultNoteUiViewModel
 
@@ -30,7 +31,7 @@ class DefaultNoteUiViewModelTest {
         val repo = FakeDomainRepository()
         val useCases = buildNoteUseCases(
             repo,
-            NoteValidationRules(Constants.MAX_TITLE_LENGTH, Constants.MAX_DESCRIPTION_LENGTH)
+            NoteValidationRules(Constants.MAX_TITLE_LENGTH, Constants.MAX_DESCRIPTION_LENGTH),
         )
         vm = DefaultNoteUiViewModel(useCases)
     }
@@ -71,4 +72,3 @@ class DefaultNoteUiViewModelTest {
         assertThat(trash2.map { it.id }).doesNotContain(note.id)
     }
 }
-

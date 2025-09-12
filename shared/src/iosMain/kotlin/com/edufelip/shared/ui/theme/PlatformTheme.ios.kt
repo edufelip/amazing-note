@@ -6,6 +6,5 @@ import androidx.compose.runtime.Composable
 @Composable
 actual fun rememberPlatformColorScheme(
     darkTheme: Boolean,
-    useDynamicColor: Boolean
+    useDynamicColor: Boolean,
 ): ColorScheme? = null
-

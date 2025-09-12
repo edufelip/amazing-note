@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 class AuthController(
     private val service: AuthService,
-    private val scope: CoroutineScope
+    private val scope: CoroutineScope,
 ) {
     private val _user = MutableStateFlow<AuthUser?>(null)
     val user: StateFlow<AuthUser?> = _user.asStateFlow()
@@ -31,8 +31,12 @@ class AuthController(
             .launchIn(scope)
     }
 
-    fun clearError() { _error.value = null }
-    fun clearMessage() { _message.value = null }
+    fun clearError() {
+        _error.value = null
+    }
+    fun clearMessage() {
+        _message.value = null
+    }
 
     fun loginWithEmail(email: String, password: String) {
         if (_loading.value) return
@@ -53,7 +57,9 @@ class AuthController(
     fun logout() {
         if (_loading.value) return
         scope.launch(Dispatchers.Main) {
-            try { service.signOut() } catch (_: Exception) {}
+            try {
+                service.signOut()
+            } catch (_: Exception) {}
         }
     }
 

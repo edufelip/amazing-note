@@ -3,40 +3,42 @@ CREATE TABLE note(
   title TEXT NOT NULL,
   priority INTEGER NOT NULL,
   description TEXT NOT NULL,
-  deleted INTEGER NOT NULL
+  deleted INTEGER NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
 );
 
 selectAll:
-SELECT id, title, priority, description, deleted
+SELECT id, title, priority, description, deleted, created_at, updated_at
 FROM note
 WHERE deleted = 0
-ORDER BY id;
+ORDER BY updated_at DESC, id DESC;
 
 selectDeleted:
-SELECT id, title, priority, description, deleted
+SELECT id, title, priority, description, deleted, created_at, updated_at
 FROM note
 WHERE deleted = 1
-ORDER BY id;
+ORDER BY updated_at DESC, id DESC;
 
 selectById:
-SELECT id, title, priority, description, deleted
+SELECT id, title, priority, description, deleted, created_at, updated_at
 FROM note
 WHERE id = ?;
 
 insertNote:
-INSERT INTO note(title, priority, description, deleted)
-VALUES (?, ?, ?, 0);
+INSERT INTO note(title, priority, description, deleted, created_at, updated_at)
+VALUES (?, ?, ?, 0, ?, ?);
 
 insertWithId:
-INSERT INTO note(id, title, priority, description, deleted)
-VALUES (?, ?, ?, ?, ?);
+INSERT INTO note(id, title, priority, description, deleted, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 updateNote:
-UPDATE note SET title = ?, priority = ?, description = ?, deleted = ?
+UPDATE note SET title = ?, priority = ?, description = ?, deleted = ?, updated_at = ?
 WHERE id = ?;
 
 setDeleted:
-UPDATE note SET deleted = ? WHERE id = ?;
+UPDATE note SET deleted = ?, updated_at = ? WHERE id = ?;
 
 deleteById:
 DELETE FROM note WHERE id = ?;

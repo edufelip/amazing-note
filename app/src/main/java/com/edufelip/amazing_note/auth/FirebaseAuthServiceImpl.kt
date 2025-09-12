@@ -6,7 +6,6 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -16,24 +15,28 @@ class FirebaseAuthServiceImpl : AuthService {
 
     override val currentUser: Flow<AuthUser?> = callbackFlow {
         val listener = FirebaseAuth.AuthStateListener { auth ->
-            trySend(auth.currentUser?.let { u ->
+            trySend(
+                auth.currentUser?.let { u ->
+                    AuthUser(
+                        uid = u.uid,
+                        displayName = u.displayName,
+                        email = u.email,
+                        photoUrl = u.photoUrl?.toString(),
+                    )
+                },
+            )
+        }
+        firebaseAuth.addAuthStateListener(listener)
+        trySend(
+            firebaseAuth.currentUser?.let { u ->
                 AuthUser(
                     uid = u.uid,
                     displayName = u.displayName,
                     email = u.email,
-                    photoUrl = u.photoUrl?.toString()
+                    photoUrl = u.photoUrl?.toString(),
                 )
-            })
-        }
-        firebaseAuth.addAuthStateListener(listener)
-        trySend(firebaseAuth.currentUser?.let { u ->
-            AuthUser(
-                uid = u.uid,
-                displayName = u.displayName,
-                email = u.email,
-                photoUrl = u.photoUrl?.toString()
-            )
-        })
+            },
+        )
         awaitClose { firebaseAuth.removeAuthStateListener(listener) }
     }
 

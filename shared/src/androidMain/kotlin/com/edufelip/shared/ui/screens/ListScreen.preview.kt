@@ -6,8 +6,8 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import com.edufelip.shared.model.Note
 import com.edufelip.shared.model.Priority
+import com.edufelip.shared.ui.preview.PreviewLocalized
 import com.edufelip.shared.ui.preview.ScreenPreviewsDarkLight
-import com.edufelip.shared.ui.theme.AmazingNoteTheme
 
 private fun sampleNotes(): List<Note> = List(10) { index ->
     Note(
@@ -19,7 +19,9 @@ private fun sampleNotes(): List<Note> = List(10) { index ->
             else -> Priority.LOW
         },
         description = "This is a sample note to preview different layouts and sizes.",
-        deleted = false
+        deleted = false,
+        createdAt = 1_700_000_000_000L + index * 3_600_000L,
+        updatedAt = 1_700_000_000_000L + index * 3_600_000L,
     )
 }
 
@@ -27,7 +29,7 @@ private fun sampleNotes(): List<Note> = List(10) { index ->
 @ScreenPreviewsDarkLight
 @Composable
 fun ListScreen_Previews() {
-    AmazingNoteTheme {
+    PreviewLocalized {
         ListScreen(
             notes = sampleNotes(),
             onNoteClick = {},
@@ -36,8 +38,7 @@ fun ListScreen_Previews() {
             onSearchQueryChange = {},
             drawerState = rememberDrawerState(DrawerValue.Closed),
             drawerContent = null,
-            onDelete = {}
+            onDelete = {},
         )
     }
 }
-

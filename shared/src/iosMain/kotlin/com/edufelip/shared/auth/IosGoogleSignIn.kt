@@ -3,7 +3,6 @@ package com.edufelip.shared.auth
 import cocoapods.FirebaseAuth.FIRAuth
 import cocoapods.FirebaseAuth.FIRGoogleAuthProvider
 import cocoapods.GoogleSignIn.GIDSignIn
-import kotlinx.cinterop.ObjCAction
 import platform.Foundation.NSError
 import platform.UIKit.UIApplication
 import platform.UIKit.UIViewController
@@ -39,10 +38,12 @@ object IosGoogleSignIn {
             val credential = FIRGoogleAuthProvider.credentialWithIDToken(idToken, accessToken)
             val auth = FIRAuth.auth()
             auth?.signInWithCredential(credential) { _, err: NSError? ->
-                if (err != null) onComplete(false, err.localizedDescription)
-                else onComplete(true, null)
+                if (err != null) {
+                    onComplete(false, err.localizedDescription)
+                } else {
+                    onComplete(true, null)
+                }
             }
         }
     }
 }
-

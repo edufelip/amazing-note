@@ -17,7 +17,8 @@ class FakeDomainRepository : NoteRepository {
 
     override suspend fun insert(title: String, priority: Priority, description: String) {
         val nextId = (notes.maxOfOrNull { it.id } ?: 0) + 1
-        notes += Note(nextId, title, priority, description, false)
+        val now = System.currentTimeMillis()
+        notes += Note(nextId, title, priority, description, false, createdAt = now, updatedAt = now)
         state.value = notes.toList()
     }
 
@@ -26,16 +27,24 @@ class FakeDomainRepository : NoteRepository {
         title: String,
         priority: Priority,
         description: String,
-        deleted: Boolean
+        deleted: Boolean,
     ) {
         val idx = notes.indexOfFirst { it.id == id }.takeIf { it >= 0 } ?: return
-        notes[idx] = notes[idx].copy(title = title, priority = priority, description = description, deleted = deleted)
+        val now = System.currentTimeMillis()
+        notes[idx] = notes[idx].copy(
+            title = title,
+            priority = priority,
+            description = description,
+            deleted = deleted,
+            updatedAt = now,
+        )
         state.value = notes.toList()
     }
 
     override suspend fun setDeleted(id: Int, deleted: Boolean) {
         val idx = notes.indexOfFirst { it.id == id }.takeIf { it >= 0 } ?: return
-        notes[idx] = notes[idx].copy(deleted = deleted)
+        val now = System.currentTimeMillis()
+        notes[idx] = notes[idx].copy(deleted = deleted, updatedAt = now)
         state.value = notes.toList()
     }
 
@@ -45,4 +54,3 @@ class FakeDomainRepository : NoteRepository {
         state.value = notes.toList()
     }
 }
-

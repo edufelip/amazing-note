@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 rootProject.name = "amazing-note"
 include(":app")
 include(":shared")
+// Desktop module and toolchain resolver removed per request

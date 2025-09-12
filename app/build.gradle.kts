@@ -32,7 +32,7 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
             isDebuggable = false
         }
@@ -43,34 +43,26 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     buildFeatures {
         compose = true
-        dataBinding = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
 
     packaging {
         resources {
-            excludes += setOf(
-                "META-INF/DEPENDENCIES",
-                "META-INF/LICENSE",
-                "META-INF/LICENSE.txt",
-                "META-INF/license.txt",
-                "META-INF/NOTICE",
-                "META-INF/NOTICE.txt",
-                "META-INF/notice.txt",
-                "META-INF/ASL2.0",
-                "META-INF/AL2.0",
-                "META-INF/LGPL2.1",
-                "META-INF/*.kotlin_module"
-            )
+            excludes +=
+                setOf(
+                    "META-INF/DEPENDENCIES",
+                    "META-INF/LICENSE",
+                    "META-INF/LICENSE.txt",
+                    "META-INF/license.txt",
+                    "META-INF/NOTICE",
+                    "META-INF/NOTICE.txt",
+                    "META-INF/notice.txt",
+                    "META-INF/ASL2.0",
+                    "META-INF/AL2.0",
+                    "META-INF/LGPL2.1",
+                    "META-INF/*.kotlin_module",
+                )
         }
     }
 
@@ -116,13 +108,20 @@ dependencies {
     // Compose Preview
     debugImplementation(libs.compose.ui.tooling.preview)
 
-    // Firebase BoM (use with individual Firebase libs)
+    // Firebase Auth (Android) via BoM
     implementation(platform(libs.firebase.bom))
-    // Firebase Auth (Android)
-    implementation("com.google.firebase:firebase-auth-ktx")
-    // Google Sign-In (optional; used for Google auth)
-    implementation("com.google.android.gms:play-services-auth:21.2.0")
+    implementation(libs.firebase.auth.ktx)
+    // Google Identity Services (Credential Manager + Google ID)
+    implementation(libs.credentials.core)
+    implementation(libs.credentials.play.services)
+    implementation(libs.googleid)
 
     // Shared KMP module
     implementation(project(":shared"))
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
 }

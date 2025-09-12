@@ -1,6 +1,7 @@
 package com.edufelip.amazing_note.di
 
 import android.content.Context
+import com.edufelip.amazing_note.others.AndroidSettings
 import com.edufelip.shared.data.SqlDelightNoteRepository
 import com.edufelip.shared.db.AndroidContextHolder
 import com.edufelip.shared.db.DatabaseDriverFactory
@@ -9,6 +10,9 @@ import com.edufelip.shared.domain.repository.NoteRepository
 import com.edufelip.shared.domain.usecase.NoteUseCases
 import com.edufelip.shared.domain.usecase.buildNoteUseCases
 import com.edufelip.shared.domain.validation.NoteValidationRules
+import com.edufelip.shared.ui.settings.AppPreferences
+import com.edufelip.shared.ui.settings.DefaultAppPreferences
+import com.edufelip.shared.ui.settings.Settings
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,7 +26,7 @@ object AppModule {
     @Singleton
     @Provides
     fun provideSharedNoteRepository(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
     ): NoteRepository {
         AndroidContextHolder.appContext = context.applicationContext
         val db = createDatabase(DatabaseDriverFactory())
@@ -31,6 +35,17 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideNoteUseCases(repository: NoteRepository): NoteUseCases =
-        buildNoteUseCases(repository, NoteValidationRules())
+    fun provideNoteUseCases(repository: NoteRepository): NoteUseCases = buildNoteUseCases(repository, NoteValidationRules())
+
+    @Singleton
+    @Provides
+    fun provideSettings(
+        @ApplicationContext context: Context,
+    ): Settings = AndroidSettings(context)
+
+    @Singleton
+    @Provides
+    fun provideAppPreferences(
+        settings: Settings,
+    ): AppPreferences = DefaultAppPreferences(settings)
 }

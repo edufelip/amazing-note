@@ -2,15 +2,15 @@ package com.edufelip.shared.auth
 
 import cocoapods.FirebaseAuth.FIRAuth
 import cocoapods.FirebaseAuth.FIRUser
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.cinterop.ObjCObjectVar
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.Foundation.NSError
 
 class IosFirebaseAuthService : AuthService {
@@ -19,7 +19,7 @@ class IosFirebaseAuthService : AuthService {
             uid = it.uid,
             displayName = it.displayName,
             email = it.email,
-            photoUrl = it.photoURL?.absoluteString
+            photoUrl = it.photoURL?.absoluteString,
         )
     }
 
@@ -41,8 +41,11 @@ class IosFirebaseAuthService : AuthService {
         val auth = FIRAuth.auth() ?: error("FIRAuth not available")
         suspendCancellableCoroutine { cont ->
             auth.signInWithEmail(email = email, password = password) { _, error: NSError? ->
-                if (error != null) cont.resumeWith(Result.failure(Exception(error.localizedDescription)))
-                else cont.resumeWith(Result.success(Unit))
+                if (error != null) {
+                    cont.resumeWith(Result.failure(Exception(error.localizedDescription)))
+                } else {
+                    cont.resumeWith(Result.success(Unit))
+                }
             }
         }
     }
@@ -51,8 +54,11 @@ class IosFirebaseAuthService : AuthService {
         val auth = FIRAuth.auth() ?: error("FIRAuth not available")
         suspendCancellableCoroutine { cont ->
             auth.createUserWithEmail(email = email, password = password) { _, error: NSError? ->
-                if (error != null) cont.resumeWith(Result.failure(Exception(error.localizedDescription)))
-                else cont.resumeWith(Result.success(Unit))
+                if (error != null) {
+                    cont.resumeWith(Result.failure(Exception(error.localizedDescription)))
+                } else {
+                    cont.resumeWith(Result.success(Unit))
+                }
             }
         }
     }
@@ -61,8 +67,11 @@ class IosFirebaseAuthService : AuthService {
         val auth = FIRAuth.auth() ?: error("FIRAuth not available")
         suspendCancellableCoroutine { cont ->
             auth.sendPasswordResetWithEmail(email = email) { error: NSError? ->
-                if (error != null) cont.resumeWith(Result.failure(Exception(error.localizedDescription)))
-                else cont.resumeWith(Result.success(Unit))
+                if (error != null) {
+                    cont.resumeWith(Result.failure(Exception(error.localizedDescription)))
+                } else {
+                    cont.resumeWith(Result.success(Unit))
+                }
             }
         }
     }
@@ -83,4 +92,3 @@ class IosFirebaseAuthService : AuthService {
         }
     }
 }
-

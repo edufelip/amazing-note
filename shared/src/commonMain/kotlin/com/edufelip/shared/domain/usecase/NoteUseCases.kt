@@ -18,7 +18,7 @@ class ObserveTrash(private val repository: NoteRepository) {
 
 class InsertNote(
     private val repository: NoteRepository,
-    private val rules: NoteValidationRules
+    private val rules: NoteValidationRules,
 ) {
     suspend operator fun invoke(title: String, priority: Priority, description: String): NoteActionResult {
         val errors = validateNoteInput(title, description, rules)
@@ -30,7 +30,7 @@ class InsertNote(
 
 class UpdateNote(
     private val repository: NoteRepository,
-    private val rules: NoteValidationRules
+    private val rules: NoteValidationRules,
 ) {
     suspend operator fun invoke(id: Int, title: String, priority: Priority, description: String, deleted: Boolean): NoteActionResult {
         val errors = validateNoteInput(title, description, rules)
@@ -54,17 +54,17 @@ data class NoteUseCases(
     val insertNote: InsertNote,
     val updateNote: UpdateNote,
     val setDeleted: SetDeleted,
-    val deleteNote: DeleteNote
+    val deleteNote: DeleteNote,
 )
 
 fun buildNoteUseCases(
     repository: NoteRepository,
-    rules: NoteValidationRules = NoteValidationRules()
+    rules: NoteValidationRules = NoteValidationRules(),
 ): NoteUseCases = NoteUseCases(
     observeNotes = ObserveNotes(repository),
     observeTrash = ObserveTrash(repository),
     insertNote = InsertNote(repository, rules),
     updateNote = UpdateNote(repository, rules),
     setDeleted = SetDeleted(repository),
-    deleteNote = DeleteNote(repository)
+    deleteNote = DeleteNote(repository),
 )

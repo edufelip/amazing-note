@@ -9,13 +9,10 @@ import com.edufelip.shared.ui.screens.TrashScreen
 @Composable
 fun TrashRoute(
     notes: List<Note>,
-    onBack: () -> Unit,
-    onRestore: (Note) -> Unit
+    onRestore: (Note) -> Unit,
 ) {
     TrashScreen(
         notes = notes,
-        onBack = onBack,
-        onRestore = onRestore
+        onRestore = onRestore,
     )
 }
-

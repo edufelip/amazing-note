@@ -2,7 +2,7 @@ package com.edufelip.shared.domain.validation
 
 data class NoteValidationRules(
     val maxTitleLength: Int = 50,
-    val maxDescriptionLength: Int = 500
+    val maxDescriptionLength: Int = 500,
 )
 
 sealed class NoteValidationError {
@@ -15,7 +15,7 @@ sealed class NoteValidationError {
 fun validateNoteInput(
     title: String,
     description: String,
-    rules: NoteValidationRules = NoteValidationRules()
+    rules: NoteValidationRules = NoteValidationRules(),
 ): List<NoteValidationError> {
     val errors = mutableListOf<NoteValidationError>()
     if (title.isBlank()) errors += NoteValidationError.EmptyTitle
@@ -29,4 +29,3 @@ sealed class NoteActionResult {
     data object Success : NoteActionResult()
     data class Invalid(val errors: List<NoteValidationError>) : NoteActionResult()
 }
-

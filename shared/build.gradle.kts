@@ -1,9 +1,9 @@
 plugins {
-    kotlin("multiplatform")
     id("com.android.library")
+    id("org.jetbrains.kotlin.native.cocoapods")
+    alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.compose.multiplatform)
-    id("org.jetbrains.kotlin.native.cocoapods")
     alias(libs.plugins.sqldelight)
 }
 
@@ -44,6 +44,11 @@ kotlin {
                 implementation(compose.foundation)
                 implementation(compose.material3)
                 implementation(compose.ui)
+                // Compose Multiplatform Resources
+                implementation(compose.components.resources)
+                // Coil 3 multiplatform
+                implementation(libs.coil3.compose)
+                implementation(libs.coil3.network.ktor3)
                 implementation(compose.materialIconsExtended)
                 implementation(libs.sqldelight.runtime)
                 implementation(libs.sqldelight.coroutines)
@@ -59,15 +64,38 @@ kotlin {
                 implementation(libs.sqldelight.android.driver)
                 implementation(compose.preview)
                 implementation(compose.uiTooling)
+                implementation(compose.components.resources)
+                implementation(libs.activity.compose)
+                implementation(libs.ktor.client.okhttp)
             }
         }
         iosMain {
             dependencies {
                 implementation(libs.sqldelight.native.driver)
+                implementation(libs.ktor.client.darwin)
+                implementation(compose.components.resources)
             }
         }
     }
 }
+
+compose {
+    resources {
+        packageOfResClass = "com.edufelip.shared.resources"
+    }
+}
+
+// Ensure compose resource accessors are generated before Kotlin compilation for all targets
+tasks.matching { it.name.startsWith("compile") && it.name.contains("Kotlin") && it.project.path == ":shared" }
+    .configureEach {
+        dependsOn(tasks.named("generateComposeResClass"))
+    }
+
+// Ensure Android target compiles after common metadata so generated accessors are available
+tasks.matching { it.name == "compileDebugKotlinAndroid" || it.name == "compileReleaseKotlinAndroid" }
+    .configureEach {
+        dependsOn(tasks.named("compileKotlinMetadata"))
+    }
 
 // Ensure all Kotlin/Native iOS binaries link with SQLite3
 kotlin.targets.withType(org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget::class.java).configureEach {

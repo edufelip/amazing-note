@@ -1,17 +1,14 @@
 package com.edufelip.shared.ui.gadgets
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
@@ -22,8 +19,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.model.Note
-import com.edufelip.shared.i18n.Str
-import com.edufelip.shared.i18n.string
+import com.edufelip.shared.resources.Res
+import com.edufelip.shared.resources.cd_delete
+import com.edufelip.shared.resources.cd_restore
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,15 +31,18 @@ fun DismissibleNoteRow(
     onClick: (Note) -> Unit,
     onDismiss: (Note) -> Unit,
     isRestore: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showUpdated: Boolean = true,
 ) {
     val state = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
             if (value != SwipeToDismissBoxValue.Settled) {
                 onDismiss(note)
                 false
-            } else true
-        }
+            } else {
+                true
+            }
+        },
     )
 
     SwipeToDismissBox(
@@ -51,18 +53,18 @@ fun DismissibleNoteRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(72.dp)
-                    .background(color)
+                    .background(color),
             ) {
                 Icon(
                     imageVector = if (isRestore) Icons.Filled.Restore else Icons.Filled.Delete,
-                    contentDescription = if (isRestore) string(Str.CdRestore) else string(Str.CdDelete),
+                    contentDescription = if (isRestore) stringResource(Res.string.cd_restore) else stringResource(Res.string.cd_delete),
                     tint = Color.White,
-                    modifier = Modifier.align(Alignment.Center)
+                    modifier = Modifier.align(Alignment.Center),
                 )
             }
         },
         content = {
-            NoteRow(note = note, modifier = modifier, onClick = onClick)
-        }
+            NoteRow(note = note, modifier = modifier, onClick = onClick, showUpdated = showUpdated)
+        },
     )
 }

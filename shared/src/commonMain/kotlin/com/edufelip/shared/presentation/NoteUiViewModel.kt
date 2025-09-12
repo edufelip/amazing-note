@@ -14,4 +14,3 @@ interface NoteUiViewModel {
     suspend fun setDeleted(id: Int, deleted: Boolean)
     suspend fun delete(id: Int)
 }
-

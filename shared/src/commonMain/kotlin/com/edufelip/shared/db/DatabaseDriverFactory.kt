@@ -6,7 +6,4 @@ expect class DatabaseDriverFactory {
     fun createDriver(): SqlDriver
 }
 
-fun createDatabase(factory: DatabaseDriverFactory): NoteDatabase {
-    return NoteDatabase(factory.createDriver())
-}
-
+fun createDatabase(factory: DatabaseDriverFactory): NoteDatabase = NoteDatabase(factory.createDriver())

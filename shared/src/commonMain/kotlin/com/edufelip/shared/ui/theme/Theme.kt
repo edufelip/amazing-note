@@ -1,8 +1,8 @@
 package com.edufelip.shared.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
@@ -89,7 +89,7 @@ private val darkScheme = darkColorScheme(
 fun AmazingNoteTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     useDynamicColor: Boolean = true,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val platformScheme = rememberPlatformColorScheme(darkTheme, useDynamicColor)
     val colorScheme = platformScheme ?: if (darkTheme) darkScheme else lightScheme
@@ -98,7 +98,7 @@ fun AmazingNoteTheme(
         MaterialTheme(
             colorScheme = colorScheme,
             typography = Typography,
-            content = content
+            content = content,
         )
     }
 }
@@ -106,7 +106,7 @@ fun AmazingNoteTheme(
 @Composable
 expect fun rememberPlatformColorScheme(
     darkTheme: Boolean,
-    useDynamicColor: Boolean
+    useDynamicColor: Boolean,
 ): ColorScheme?
 
 // Expose whether dynamic color is active on the current platform
