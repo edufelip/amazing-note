@@ -1,4 +1,4 @@
-package com.edufelip.shared.ui.screens
+package com.edufelip.shared.ui.nav.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -7,10 +7,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.Center
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -39,6 +41,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -68,6 +71,7 @@ import com.edufelip.shared.resources.your_notes
 import com.edufelip.shared.ui.gadgets.DismissibleNoteRow
 import com.edufelip.shared.ui.gadgets.MaterialSearchBar
 import com.edufelip.shared.ui.gadgets.RailContent
+import com.edufelip.shared.ui.settings.LocalAppPreferences
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
@@ -93,9 +97,9 @@ fun ListScreen(
     showTopAppBar: Boolean = true,
 ) {
     val scope = rememberCoroutineScope()
-    val appPrefs = com.edufelip.shared.ui.settings.LocalAppPreferences.current
+    val appPrefs = LocalAppPreferences.current
     val selectedFilter =
-        androidx.compose.runtime.remember { mutableStateOf(appPrefs.getPriorityFilter()) }
+        remember { mutableStateOf(appPrefs.getPriorityFilter()) }
     var showFilters by rememberSaveable { mutableStateOf(false) }
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
@@ -155,7 +159,7 @@ fun ListScreen(
                         else -> notes.filter { it.priority == f }
                     }
                     if (filtered.isEmpty()) {
-                        androidx.compose.foundation.layout.Column(
+                        Column(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(horizontal = 24.dp),
@@ -167,7 +171,7 @@ fun ListScreen(
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
-                            androidx.compose.foundation.layout.Spacer(modifier = Modifier.padding(4.dp))
+                            Spacer(modifier = Modifier.padding(4.dp))
                             Text(
                                 text = stringResource(Res.string.empty_notes_hint),
                                 style = MaterialTheme.typography.bodyMedium,
@@ -178,7 +182,7 @@ fun ListScreen(
                     }
 
                     val useUpdated =
-                        androidx.compose.runtime.remember { mutableStateOf(appPrefs.isDateModeUpdated()) }
+                        remember { mutableStateOf(appPrefs.isDateModeUpdated()) }
                     val now =
                         filtered.maxOfOrNull { if (useUpdated.value) it.updatedAt else it.createdAt }
                             ?: 0L
@@ -206,7 +210,7 @@ fun ListScreen(
                                 tonalElevation = 3.dp,
                                 shadowElevation = 1.dp,
                             ) {
-                                androidx.compose.foundation.layout.Column(
+                                Column(
                                     modifier = Modifier.fillMaxWidth(),
                                 ) {
                                     Box(
@@ -226,7 +230,7 @@ fun ListScreen(
                                         enter = expandVertically(),
                                         exit = shrinkVertically(),
                                     ) {
-                                        androidx.compose.foundation.layout.Column(modifier = Modifier.fillMaxWidth()) {
+                                        Column(modifier = Modifier.fillMaxWidth()) {
                                             // Label for order mode
                                             Text(
                                                 text = stringResource(Res.string.order_by),

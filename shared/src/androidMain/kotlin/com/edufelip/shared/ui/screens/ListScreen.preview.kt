@@ -6,6 +6,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import com.edufelip.shared.model.Note
 import com.edufelip.shared.model.Priority
+import com.edufelip.shared.ui.nav.screens.ListScreen
 import com.edufelip.shared.ui.preview.PreviewLocalized
 import com.edufelip.shared.ui.preview.ScreenPreviewsDarkLight
 

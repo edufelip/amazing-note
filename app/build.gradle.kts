@@ -2,8 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.kotlin.kapt)
-    alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.google.services)
@@ -73,7 +71,6 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
-    implementation(libs.appcompat)
 
     // Compose
     implementation(platform(libs.compose.bom))
@@ -91,10 +88,6 @@ dependencies {
     implementation(libs.kotlin.coroutines.core)
     implementation(libs.kotlin.coroutines.android)
 
-    // Coroutine Lifecycle Scopes
-    implementation(libs.lifecycle.viewmodel.ktx)
-    implementation(libs.lifecycle.runtime.ktx)
-
     // Dagger - Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
@@ -104,9 +97,6 @@ dependencies {
     testImplementation(libs.arch.core.testing)
     testImplementation(libs.kotlin.coroutines.test)
     testImplementation(libs.truth)
-
-    // Compose Preview
-    debugImplementation(libs.compose.ui.tooling.preview)
 
     // Firebase Auth (Android) via BoM
     implementation(platform(libs.firebase.bom))

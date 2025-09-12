@@ -86,13 +86,15 @@ compose {
 }
 
 // Ensure compose resource accessors are generated before Kotlin compilation for all targets
-tasks.matching { it.name.startsWith("compile") && it.name.contains("Kotlin") && it.project.path == ":shared" }
+tasks
+    .matching { it.name.startsWith("compile") && it.name.contains("Kotlin") && it.project.path == ":shared" }
     .configureEach {
         dependsOn(tasks.named("generateComposeResClass"))
     }
 
 // Ensure Android target compiles after common metadata so generated accessors are available
-tasks.matching { it.name == "compileDebugKotlinAndroid" || it.name == "compileReleaseKotlinAndroid" }
+tasks
+    .matching { it.name == "compileDebugKotlinAndroid" || it.name == "compileReleaseKotlinAndroid" }
     .configureEach {
         dependsOn(tasks.named("compileKotlinMetadata"))
     }

@@ -1,4 +1,4 @@
-package com.edufelip.shared.ui.screens
+package com.edufelip.shared.ui.nav.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

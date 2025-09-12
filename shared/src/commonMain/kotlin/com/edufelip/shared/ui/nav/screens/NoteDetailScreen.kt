@@ -1,4 +1,4 @@
-package com.edufelip.shared.ui.routes
+package com.edufelip.shared.ui.nav.screens
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
@@ -17,13 +17,12 @@ import com.edufelip.shared.resources.error_description_required
 import com.edufelip.shared.resources.error_description_too_long
 import com.edufelip.shared.resources.error_title_required
 import com.edufelip.shared.resources.error_title_too_long
-import com.edufelip.shared.ui.screens.AddNoteScreen
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NoteDetailRoute(
+fun NoteDetailScreen(
     id: Int?,
     editing: Note?,
     onBack: () -> Unit,

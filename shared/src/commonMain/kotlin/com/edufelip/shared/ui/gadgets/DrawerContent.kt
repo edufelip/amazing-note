@@ -7,10 +7,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Login
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.outlined.Book
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Policy
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -46,12 +50,10 @@ fun DrawerContent(
     selectedHome: Boolean,
     selectedTrash: Boolean,
     onPrivacyClick: (() -> Unit)? = null,
-    // Auth-related
     userName: String? = null,
     userEmail: String? = null,
     userPhotoUrl: String? = null,
     onLoginClick: (() -> Unit)? = null,
-    onGoogleSignInClick: (() -> Unit)? = null,
     onLogoutClick: (() -> Unit)? = null,
 ) {
     ModalDrawerSheet {
@@ -82,39 +84,31 @@ fun DrawerContent(
                 label = { Text(stringResource(Res.string.your_notes)) },
                 selected = selectedHome,
                 onClick = onYourNotesClick,
-                icon = { Icon(Icons.Default.Book, contentDescription = stringResource(Res.string.your_notes)) },
+                icon = { Icon(Icons.Outlined.Book, contentDescription = stringResource(Res.string.your_notes)) },
             )
             NavigationDrawerItem(
                 label = { Text(stringResource(Res.string.trash)) },
                 selected = selectedTrash,
                 onClick = onTrashClick,
-                icon = { Icon(Icons.Default.Delete, contentDescription = stringResource(Res.string.trash)) },
+                icon = { Icon(Icons.Outlined.Delete, contentDescription = stringResource(Res.string.trash)) },
             )
             NavigationDrawerItem(
                 label = { Text(stringResource(Res.string.privacy_policy)) },
                 selected = false,
                 onClick = { onPrivacyClick?.invoke() },
-                icon = { Icon(Icons.Default.Book, contentDescription = stringResource(Res.string.privacy_policy)) },
+                icon = { Icon(Icons.Outlined.Policy, contentDescription = stringResource(Res.string.privacy_policy)) },
             )
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Auth block
             if (onLoginClick != null || onLogoutClick != null) {
                 Spacer(modifier = Modifier.padding(vertical = 4.dp))
                 if (userEmail == null) {
-                    // Not authenticated: show Login + Google
                     NavigationDrawerItem(
                         label = { Text(stringResource(Res.string.login)) },
                         selected = false,
                         onClick = { onLoginClick?.invoke() },
-                        icon = { Icon(Icons.Default.Book, contentDescription = stringResource(Res.string.login)) },
-                    )
-                    NavigationDrawerItem(
-                        label = { Text(stringResource(Res.string.google_sign_in)) },
-                        selected = false,
-                        onClick = { onGoogleSignInClick?.invoke() },
-                        icon = { Icon(Icons.Default.Book, contentDescription = stringResource(Res.string.google_sign_in)) },
+                        icon = { Icon(Icons.AutoMirrored.Outlined.Login, contentDescription = stringResource(Res.string.login)) },
                     )
                 } else {
                     NavigationDrawerItem(

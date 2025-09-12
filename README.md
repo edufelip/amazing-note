@@ -112,6 +112,14 @@ Minimal CI steps you can copy into your pipeline:
   - `PreviewLocalized { /* your composable */ }`
   - See: `shared/src/androidMain/kotlin/com/edufelip/shared/ui/preview/PreviewWrappers.kt`
 
+## Navigation Helpers (shared UI)
+- In-memory navigation for the shared UI uses a simple back stack of `AppRoutes`.
+- Reusable helpers live in `shared/src/commonMain/kotlin/com/edufelip/shared/ui/nav/BackStackHelpers.kt`:
+  - `backStack.navigate(AppRoutes.SomeRoute)` – push (singleTop by default)
+  - `backStack.goBack()` – pop if possible, returns `true` if popped
+  - `backStack.popToRoot()` – clear to root
+  - Prefer these over direct `add/remove` to keep behavior consistent.
+
 ## Android DI (Hilt + SQLDelight)
 
 Architecture (Clean): UI → ViewModel → UseCases → Repository → Data Source

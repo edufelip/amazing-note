@@ -1,22 +1,14 @@
 package com.edufelip.shared.ui
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.with
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.animation.togetherWith
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -35,18 +27,16 @@ import com.edufelip.shared.auth.AuthController
 import com.edufelip.shared.auth.AuthService
 import com.edufelip.shared.auth.NoAuthService
 import com.edufelip.shared.presentation.NoteUiViewModel
-import com.edufelip.shared.resources.Res
-import com.edufelip.shared.resources.privacy_policy
-import com.edufelip.shared.resources.trash
-import com.edufelip.shared.resources.your_notes
-import com.edufelip.shared.ui.gadgets.DrawerContent
 import com.edufelip.shared.ui.images.platformConfigImageLoader
 import com.edufelip.shared.ui.nav.AppRoutes
-import com.edufelip.shared.ui.routes.HomeRoute
-import com.edufelip.shared.ui.routes.NoteDetailRoute
-import com.edufelip.shared.ui.routes.PrivacyRoute
-import com.edufelip.shared.ui.routes.TrashRoute
-import com.edufelip.shared.ui.screens.LoginScreen
+import com.edufelip.shared.ui.nav.goBack
+import com.edufelip.shared.ui.nav.navigate
+import com.edufelip.shared.ui.nav.popToRoot
+import com.edufelip.shared.ui.nav.screens.HomeScreen
+import com.edufelip.shared.ui.nav.screens.LoginScreen
+import com.edufelip.shared.ui.nav.screens.NoteDetailScreen
+import com.edufelip.shared.ui.nav.screens.PrivacyScreen
+import com.edufelip.shared.ui.nav.screens.TrashScreen
 import com.edufelip.shared.ui.settings.AppPreferences
 import com.edufelip.shared.ui.settings.DefaultAppPreferences
 import com.edufelip.shared.ui.settings.InMemorySettings
@@ -56,7 +46,6 @@ import com.edufelip.shared.ui.settings.Settings
 import com.edufelip.shared.ui.theme.AmazingNoteTheme
 import com.edufelip.shared.ui.util.OnSystemBack
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.animation.ExperimentalAnimationApi::class)
 @Composable
@@ -67,7 +56,6 @@ fun AmazingNoteApp(
     settings: Settings = InMemorySettings(),
     appPreferences: AppPreferences = DefaultAppPreferences(settings),
 ) {
-    // Provide a global ImageLoader for Coil 3
     setSingletonImageLoaderFactory { context ->
         val base = ImageLoader.Builder(context).crossfade(true)
         platformConfigImageLoader(base, context).build()
@@ -80,7 +68,6 @@ fun AmazingNoteApp(
     val trash by viewModel.trash.collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
     val auth = remember(authService) { AuthController(authService, scope) }
-    // Privacy is shown as a standalone route (not a dialog)
 
     CompositionLocalProvider(
         LocalSettings provides settings,
@@ -88,13 +75,11 @@ fun AmazingNoteApp(
     ) {
         AmazingNoteTheme(darkTheme = darkTheme) {
             val current = backStack.last()
-
-            // Handle system back: close drawer if open; else pop in-app back stack if possible
             OnSystemBack {
                 if (drawerState.isOpen) {
                     scope.launch { drawerState.close() }
                 } else if (backStack.size > 1) {
-                    backStack.removeLastOrNull()
+                    backStack.goBack()
                 }
             }
             AnimatedContent(
@@ -102,97 +87,59 @@ fun AmazingNoteApp(
                 transitionSpec = {
                     val duration = 250
                     if (initialState !is AppRoutes.NoteDetail && targetState is AppRoutes.NoteDetail) {
-                        // Push to detail: slide in from right
-                        slideInHorizontally(animationSpec = tween(duration)) { it } with
-                            slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
+                        slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith
+                                slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
                     } else if (initialState is AppRoutes.NoteDetail && targetState !is AppRoutes.NoteDetail) {
-                        // Pop from detail: slide out to right
-                        slideInHorizontally(animationSpec = tween(duration)) { -it / 3 } with
-                            slideOutHorizontally(animationSpec = tween(duration)) { it }
+                        slideInHorizontally(animationSpec = tween(duration)) { -it / 3 } togetherWith
+                                slideOutHorizontally(animationSpec = tween(duration)) { it }
                     } else {
-                        // Default: no-op (instant)
-                        androidx.compose.animation.EnterTransition.None with androidx.compose.animation.ExitTransition.None
+                        EnterTransition.None togetherWith ExitTransition.None
                     }
                 },
             ) { state ->
                 when (state) {
                     is AppRoutes.Home -> {
-                        ModalNavigationDrawer(
+                        HomeScreen(
+                            notes = notes,
                             drawerState = drawerState,
-                            drawerContent = {
-                                DrawerContent(
-                                    onYourNotesClick = { scope.launch { drawerState.close() } },
-                                    onTrashClick = {
-                                        scope.launch {
-                                            drawerState.close()
-                                            backStack.add(AppRoutes.Trash)
-                                        }
-                                    },
-                                    darkTheme = darkTheme,
-                                    onToggleDarkTheme = { value ->
-                                        darkTheme = value
-                                        appPreferences.setDarkTheme(value)
-                                    },
-                                    selectedHome = true,
-                                    selectedTrash = false,
-                                    onPrivacyClick = {
-                                        scope.launch {
-                                            drawerState.close()
-                                            backStack.add(AppRoutes.Privacy)
-                                        }
-                                    },
-                                    userName = auth.user.value?.displayName,
-                                    userEmail = auth.user.value?.email,
-                                    userPhotoUrl = auth.user.value?.photoUrl,
-                                    onLoginClick = { backStack.add(AppRoutes.Login) },
-                                    onGoogleSignInClick = { backStack.add(AppRoutes.Login) },
-                                    onLogoutClick = null,
-                                )
+                            darkTheme = darkTheme,
+                            onToggleDarkTheme = { value ->
+                                darkTheme = value
+                                appPreferences.setDarkTheme(value)
                             },
-                        ) {
-                            Scaffold(
-                                topBar = {
-                                    TopAppBar(
-                                        title = { Text(text = stringResource(Res.string.your_notes)) },
-                                        navigationIcon = {
-                                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                                Icon(imageVector = Icons.Default.Menu, contentDescription = null)
-                                            }
-                                        },
-                                    )
-                                },
-                            ) { padding ->
-                                Box(modifier = androidx.compose.ui.Modifier.padding(padding)) {
-                                    HomeRoute(
-                                        notes = notes,
-                                        drawerState = drawerState,
-                                        darkTheme = darkTheme,
-                                        onToggleDarkTheme = { value ->
-                                            darkTheme = value
-                                            appPreferences.setDarkTheme(value)
-                                        },
-                                        onOpenTrash = { backStack.add(AppRoutes.Trash) },
-                                        onOpenNote = { note -> backStack.add(AppRoutes.NoteDetail(note.id)) },
-                                        onAdd = { backStack.add(AppRoutes.NoteDetail(null)) },
-                                        onDelete = { note -> scope.launch { viewModel.setDeleted(note.id, true) } },
-                                        auth = auth,
-                                        onOpenLogin = { backStack.add(AppRoutes.Login) },
-                                        onNavigate = { route -> backStack.add(route) },
-                                        onOpenPrivacy = { backStack.add(AppRoutes.Privacy) },
+                            auth = auth,
+                            onOpenLogin = { backStack.navigate(AppRoutes.Login) },
+                            onOpenDrawer = { scope.launch { drawerState.open() } },
+                            onNavigateToTrash = {
+                                backStack.navigate(AppRoutes.Trash)
+                                scope.launch { drawerState.close() }
+                            },
+                            onNavigateToPrivacy = {
+                                backStack.navigate(AppRoutes.Privacy)
+                                scope.launch { drawerState.close() }
+                            },
+                            onOpenNote = { note -> backStack.navigate(AppRoutes.NoteDetail(note.id)) },
+                            onAdd = { backStack.navigate(AppRoutes.NoteDetail(null)) },
+                            onDelete = { note ->
+                                scope.launch {
+                                    viewModel.setDeleted(
+                                        note.id,
+                                        true
                                     )
                                 }
-                            }
-                        }
+                            },
+                            onLogout = { auth.logout() },
+                        )
                     }
 
                     is AppRoutes.NoteDetail -> {
                         val editing = state.id?.let { id ->
                             notes.firstOrNull { it.id == id } ?: trash.firstOrNull { it.id == id }
                         }
-                        NoteDetailRoute(
+                        NoteDetailScreen(
                             id = state.id,
                             editing = editing,
-                            onBack = { backStack.removeLastOrNull() },
+                            onBack = { backStack.goBack() },
                             saveAndValidate = { id, title, priority, description ->
                                 if (id == null) {
                                     viewModel.insert(title, priority, description)
@@ -207,118 +154,68 @@ fun AmazingNoteApp(
                     }
 
                     is AppRoutes.Trash -> {
-                        ModalNavigationDrawer(
+                        TrashScreen(
+                            notes = trash,
                             drawerState = drawerState,
-                            drawerContent = {
-                                DrawerContent(
-                                    onYourNotesClick = {
-                                        backStack.removeLastOrNull()
-                                        scope.launch { drawerState.close() }
-                                    },
-                                    onTrashClick = { scope.launch { drawerState.close() } },
-                                    darkTheme = darkTheme,
-                                    onToggleDarkTheme = { value ->
-                                        darkTheme = value
-                                        appPreferences.setDarkTheme(value)
-                                    },
-                                    selectedHome = false,
-                                    selectedTrash = true,
-                                    onPrivacyClick = {
-                                        scope.launch { drawerState.close() }
-                                        backStack.add(AppRoutes.Privacy)
-                                    },
-                                    userName = auth.user.value?.displayName,
-                                    userEmail = auth.user.value?.email,
-                                    userPhotoUrl = auth.user.value?.photoUrl,
-                                    onLoginClick = null,
-                                    onGoogleSignInClick = null,
-                                    onLogoutClick = null,
-                                )
+                            darkTheme = darkTheme,
+                            onToggleDarkTheme = { value ->
+                                darkTheme = value
+                                appPreferences.setDarkTheme(value)
                             },
-                        ) {
-                            Scaffold(
-                                topBar = {
-                                    TopAppBar(
-                                        title = { Text(text = stringResource(Res.string.trash)) },
-                                        navigationIcon = {
-                                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Menu,
-                                                    contentDescription = null,
-                                                )
-                                            }
-                                        },
-                                    )
-                                },
-                            ) { padding ->
-                                Box(modifier = androidx.compose.ui.Modifier.padding(padding)) {
-                                    TrashRoute(
-                                        notes = trash,
-                                        onRestore = { note ->
-                                            scope.launch { viewModel.setDeleted(note.id, false) }
-                                        },
+                            auth = auth,
+                            onOpenLogin = { backStack.navigate(AppRoutes.Login) },
+                            onOpenDrawer = { scope.launch { drawerState.open() } },
+                            onNavigateToHome = {
+                                backStack.popToRoot()
+                                scope.launch { drawerState.close() }
+                            },
+                            onNavigateToPrivacy = {
+                                scope.launch {
+                                    drawerState.close()
+                                    backStack.navigate(AppRoutes.Privacy)
+                                }
+                            },
+                            onRestore = { note ->
+                                scope.launch {
+                                    viewModel.setDeleted(
+                                        note.id,
+                                        false
                                     )
                                 }
-                            }
-                        }
+                            },
+                            onLogout = { auth.logout() },
+                        )
                     }
 
                     is AppRoutes.Privacy -> {
-                        ModalNavigationDrawer(
+                        PrivacyScreen(
                             drawerState = drawerState,
-                            drawerContent = {
-                                DrawerContent(
-                                    onYourNotesClick = {
-                                        backStack.removeLastOrNull()
-                                        scope.launch { drawerState.close() }
-                                    },
-                                    onTrashClick = {
-                                        backStack.add(AppRoutes.Trash)
-                                        scope.launch { drawerState.close() }
-                                    },
-                                    darkTheme = darkTheme,
-                                    onToggleDarkTheme = { value ->
-                                        darkTheme = value
-                                        appPreferences.setDarkTheme(value)
-                                    },
-                                    selectedHome = false,
-                                    selectedTrash = false,
-                                    onPrivacyClick = { scope.launch { drawerState.close() } },
-                                    userName = auth.user.value?.displayName,
-                                    userEmail = auth.user.value?.email,
-                                    userPhotoUrl = auth.user.value?.photoUrl,
-                                    onLoginClick = null,
-                                    onGoogleSignInClick = null,
-                                    onLogoutClick = null,
-                                )
+                            darkTheme = darkTheme,
+                            onToggleDarkTheme = { value ->
+                                darkTheme = value
+                                appPreferences.setDarkTheme(value)
                             },
-                        ) {
-                            Scaffold(
-                                topBar = {
-                                    TopAppBar(
-                                        title = { Text(text = stringResource(Res.string.privacy_policy)) },
-                                        navigationIcon = {
-                                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Menu,
-                                                    contentDescription = null,
-                                                )
-                                            }
-                                        },
-                                    )
-                                },
-                            ) { padding ->
-                                Box(modifier = androidx.compose.ui.Modifier.padding(padding)) {
-                                    PrivacyRoute()
+                            auth = auth,
+                            onOpenLogin = { backStack.navigate(AppRoutes.Login) },
+                            onOpenDrawer = { scope.launch { drawerState.open() } },
+                            onNavigateToHome = {
+                                backStack.popToRoot()
+                                scope.launch { drawerState.close() }
+                            },
+                            onNavigateToTrash = {
+                                scope.launch {
+                                    drawerState.close()
+                                    backStack.navigate(AppRoutes.Trash)
                                 }
-                            }
-                        }
+                            },
+                            onLogout = { auth.logout() },
+                        )
                     }
 
                     is AppRoutes.Login -> {
                         LoginScreen(
                             auth = auth,
-                            onBack = { backStack.removeLastOrNull() },
+                            onBack = { backStack.goBack() },
                             onRequestGoogleSignIn = onRequestGoogleSignIn,
                         )
                     }
