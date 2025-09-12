@@ -36,7 +36,6 @@ fun NoteDetailScreen(
     val descriptionError = remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
-    // Prefetch error message templates in composition (avoid calling stringResource inside coroutine)
     val errorTitleRequiredTpl = stringResource(Res.string.error_title_required)
     val errorTitleTooLongTpl = stringResource(Res.string.error_title_too_long)
     val errorDescriptionRequiredTpl = stringResource(Res.string.error_description_required)

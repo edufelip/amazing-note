@@ -105,10 +105,9 @@ fun AddNoteScreen(
                     if (titleError != null) Text(titleError)
                 },
             )
-            Spacer(Modifier.height(8.dp))
             PriorityDropdown(priority = priority, onPriorityChange = onPriorityChange)
             Spacer(Modifier.height(8.dp))
-            TextField(
+            OutlinedTextField(
                 value = description,
                 onValueChange = onDescriptionChange,
                 modifier = Modifier
@@ -138,13 +137,12 @@ private fun PriorityDropdown(
             Priority.MEDIUM -> stringResource(Res.string.medium_priority)
             Priority.LOW -> stringResource(Res.string.low_priority)
         }
-        TextField(
+        OutlinedTextField(
             value = label,
             onValueChange = {},
             readOnly = true,
             modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value) },
-            colors = ExposedDropdownMenuDefaults.textFieldColors(),
         )
         DropdownMenu(expanded = expanded.value, onDismissRequest = { expanded.value = false }) {
             priorities.forEach { item ->

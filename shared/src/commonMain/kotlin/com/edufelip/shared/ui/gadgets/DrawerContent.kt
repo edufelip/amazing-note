@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_toggle_dark_theme
-import com.edufelip.shared.resources.google_sign_in
 import com.edufelip.shared.resources.guest
 import com.edufelip.shared.resources.login
 import com.edufelip.shared.resources.logout

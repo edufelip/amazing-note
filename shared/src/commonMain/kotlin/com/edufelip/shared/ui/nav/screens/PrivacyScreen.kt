@@ -13,6 +13,7 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -68,6 +69,11 @@ fun PrivacyScreen(
                                 Icon(imageVector = Icons.Default.Menu, contentDescription = null)
                             }
                         },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer,
+                            navigationIconContentColor = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer,
+                            titleContentColor = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer,
+                        ),
                     )
                 }
             },

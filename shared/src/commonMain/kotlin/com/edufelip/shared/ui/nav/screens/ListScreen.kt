@@ -61,6 +61,8 @@ import com.edufelip.shared.resources.empty_notes_title
 import com.edufelip.shared.resources.high_priority
 import com.edufelip.shared.resources.low_priority
 import com.edufelip.shared.resources.medium_priority
+import com.edufelip.shared.resources.no_notes_match_filter
+import com.edufelip.shared.resources.no_notes_match_search
 import com.edufelip.shared.resources.order_by
 import com.edufelip.shared.resources.priority
 import com.edufelip.shared.resources.this_month
@@ -95,6 +97,7 @@ fun ListScreen(
     snackbarHostState: SnackbarHostState? = null,
     managedByShell: Boolean = false,
     showTopAppBar: Boolean = true,
+    hasAnyNotes: Boolean = true,
 ) {
     val scope = rememberCoroutineScope()
     val appPrefs = LocalAppPreferences.current
@@ -128,6 +131,11 @@ fun ListScreen(
                                         }
                                     }
                                 },
+                                colors = TopAppBarDefaults.largeTopAppBarColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    navigationIconContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    titleContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                ),
                                 scrollBehavior = scrollBehavior,
                             )
                         }
@@ -158,7 +166,8 @@ fun ListScreen(
                         null -> notes
                         else -> notes.filter { it.priority == f }
                     }
-                    if (filtered.isEmpty()) {
+                    // Only show empty state if user truly has no notes at all
+                    if (selectedFilter.value == null && !hasAnyNotes) {
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -216,7 +225,7 @@ fun ListScreen(
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                                            .padding(horizontal = 12.dp, vertical = 8.dp),
                                     ) {
                                         MaterialSearchBar(
                                             query = searchQuery,
@@ -318,6 +327,44 @@ fun ListScreen(
                                 }
                             }
                         }
+
+                        // If search is active and nothing matches, show a search-specific message.
+                        if (searchQuery.isNotBlank() && filtered.isEmpty()) {
+                            item {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                                    verticalArrangement = Center,
+                                    horizontalAlignment = CenterHorizontally,
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.no_notes_match_search),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                }
+                            }
+                        } else if (selectedFilter.value != null && filtered.isEmpty()) {
+                            // If a specific priority filter is selected and nothing matches,
+                            // show the empty message without hiding the header/filters.
+                            item {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                                    verticalArrangement = Center,
+                                    horizontalAlignment = CenterHorizontally,
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.no_notes_match_filter),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                }
+                            }
+                        }
+
                         grouped.forEach { (section, itemsInGroup) ->
                             stickyHeader {
                                 Surface(tonalElevation = 2.dp) {

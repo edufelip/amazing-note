@@ -5,6 +5,7 @@
     <string name="login">Entrar</string>
     <string name="logout">Sair</string>
     <string name="google_sign_in">Entrar com o Google</string>
+    <string name="continue_with_google">Continuar com o Google</string>
     <string name="login_title">Entre na sua conta</string>
     <string name="email">E-mail</string>
     <string name="password">Senha</string>
@@ -55,5 +56,7 @@
     <string name="filters">Filtros</string>
     <string name="empty_notes_title">Sem notas ainda</string>
     <string name="empty_notes_hint">Toque no botão + para criar sua primeira nota</string>
+    <string name="no_notes_match_filter">Nenhuma nota corresponde a este filtro</string>
+    <string name="no_notes_match_search">Nenhuma nota corresponde à sua pesquisa</string>
     <string name="guest">Convidado</string>
 </resources>

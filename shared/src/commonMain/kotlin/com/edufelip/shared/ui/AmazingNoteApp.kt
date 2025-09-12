@@ -3,6 +3,8 @@ package com.edufelip.shared.ui
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -92,6 +94,9 @@ fun AmazingNoteApp(
                     } else if (initialState is AppRoutes.NoteDetail && targetState !is AppRoutes.NoteDetail) {
                         slideInHorizontally(animationSpec = tween(duration)) { -it / 3 } togetherWith
                                 slideOutHorizontally(animationSpec = tween(duration)) { it }
+                    } else if (targetState is AppRoutes.Login || initialState is AppRoutes.Login) {
+                        // Subtle fade for Login transitions
+                        fadeIn(animationSpec = tween(duration)) togetherWith fadeOut(animationSpec = tween(duration))
                     } else {
                         EnterTransition.None togetherWith ExitTransition.None
                     }

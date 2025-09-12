@@ -4,7 +4,8 @@
     <string name="privacy_policy">Privacy Policy</string>
     <string name="login">Login</string>
     <string name="logout">Logout</string>
-    <string name="google_sign_in">Sign in with Google</string>
+  <string name="google_sign_in">Sign in with Google</string>
+  <string name="continue_with_google">Continue with Google</string>
     <string name="login_title">Login to your account</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
@@ -57,5 +58,7 @@
     <string name="empty_notes_hint">Tap the + button to create your first note</string>
     <string name="empty_trash_title">Trash is empty</string>
     <string name="empty_trash_hint">Notes you delete will appear here</string>
+    <string name="no_notes_match_filter">No notes match this filter</string>
+    <string name="no_notes_match_search">No notes match your search</string>
     <string name="guest">Guest</string>
 </resources>
