@@ -25,10 +25,12 @@ import androidx.compose.runtime.setValue
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.request.crossfade
-import com.edufelip.shared.auth.AuthController
 import com.edufelip.shared.auth.AuthService
 import com.edufelip.shared.auth.NoAuthService
+import com.edufelip.shared.data.DefaultAuthRepository
+import com.edufelip.shared.domain.usecase.buildAuthUseCases
 import com.edufelip.shared.presentation.NoteUiViewModel
+import com.edufelip.shared.presentation.AuthViewModel
 import com.edufelip.shared.ui.images.platformConfigImageLoader
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.nav.goBack
@@ -39,6 +41,7 @@ import com.edufelip.shared.ui.nav.screens.LoginScreen
 import com.edufelip.shared.ui.nav.screens.NoteDetailScreen
 import com.edufelip.shared.ui.nav.screens.PrivacyScreen
 import com.edufelip.shared.ui.nav.screens.TrashScreen
+import com.edufelip.shared.ui.nav.screens.SignUpScreen
 import com.edufelip.shared.ui.settings.AppPreferences
 import com.edufelip.shared.ui.settings.DefaultAppPreferences
 import com.edufelip.shared.ui.settings.InMemorySettings
@@ -69,7 +72,9 @@ fun AmazingNoteApp(
     val notes by viewModel.notes.collectAsState(initial = emptyList())
     val trash by viewModel.trash.collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
-    val auth = remember(authService) { AuthController(authService, scope) }
+    val authRepository = remember(authService) { DefaultAuthRepository(authService) }
+    val authUseCases = remember(authRepository) { buildAuthUseCases(authRepository) }
+    val authViewModel = remember(authUseCases) { AuthViewModel(authUseCases, scope) }
 
     CompositionLocalProvider(
         LocalSettings provides settings,
@@ -94,7 +99,10 @@ fun AmazingNoteApp(
                     } else if (initialState is AppRoutes.NoteDetail && targetState !is AppRoutes.NoteDetail) {
                         slideInHorizontally(animationSpec = tween(duration)) { -it / 3 } togetherWith
                                 slideOutHorizontally(animationSpec = tween(duration)) { it }
-                    } else if (targetState is AppRoutes.Login || initialState is AppRoutes.Login) {
+                    } else if (
+                        targetState is AppRoutes.Login || initialState is AppRoutes.Login ||
+                        targetState is AppRoutes.SignUp || initialState is AppRoutes.SignUp
+                    ) {
                         // Subtle fade for Login transitions
                         fadeIn(animationSpec = tween(duration)) togetherWith fadeOut(animationSpec = tween(duration))
                     } else {
@@ -112,7 +120,7 @@ fun AmazingNoteApp(
                                 darkTheme = value
                                 appPreferences.setDarkTheme(value)
                             },
-                            auth = auth,
+                            auth = authViewModel,
                             onOpenLogin = { backStack.navigate(AppRoutes.Login) },
                             onOpenDrawer = { scope.launch { drawerState.open() } },
                             onNavigateToTrash = {
@@ -133,7 +141,7 @@ fun AmazingNoteApp(
                                     )
                                 }
                             },
-                            onLogout = { auth.logout() },
+                            onLogout = { authViewModel.logout() },
                         )
                     }
 
@@ -167,7 +175,7 @@ fun AmazingNoteApp(
                                 darkTheme = value
                                 appPreferences.setDarkTheme(value)
                             },
-                            auth = auth,
+                            auth = authViewModel,
                             onOpenLogin = { backStack.navigate(AppRoutes.Login) },
                             onOpenDrawer = { scope.launch { drawerState.open() } },
                             onNavigateToHome = {
@@ -188,7 +196,7 @@ fun AmazingNoteApp(
                                     )
                                 }
                             },
-                            onLogout = { auth.logout() },
+                            onLogout = { authViewModel.logout() },
                         )
                     }
 
@@ -200,7 +208,7 @@ fun AmazingNoteApp(
                                 darkTheme = value
                                 appPreferences.setDarkTheme(value)
                             },
-                            auth = auth,
+                            auth = authViewModel,
                             onOpenLogin = { backStack.navigate(AppRoutes.Login) },
                             onOpenDrawer = { scope.launch { drawerState.open() } },
                             onNavigateToHome = {
@@ -213,15 +221,29 @@ fun AmazingNoteApp(
                                     backStack.navigate(AppRoutes.Trash)
                                 }
                             },
-                            onLogout = { auth.logout() },
+                            onLogout = { authViewModel.logout() },
                         )
                     }
 
                     is AppRoutes.Login -> {
                         LoginScreen(
-                            auth = auth,
+                            auth = authViewModel,
                             onBack = { backStack.goBack() },
                             onRequestGoogleSignIn = onRequestGoogleSignIn,
+                            onOpenSignUp = { backStack.navigate(AppRoutes.SignUp) },
+                            onLoginSuccess = { backStack.popToRoot() },
+                            showLocalSuccessSnackbar = true,
+                        )
+                    }
+
+                    is AppRoutes.SignUp -> {
+                        SignUpScreen(
+                            onBack = { backStack.goBack() },
+                            onSubmit = { email, password ->
+                                authViewModel.signUp(email, password)
+                                backStack.popToRoot()
+                            },
+                            loading = authViewModel.loading.collectAsState().value,
                         )
                     }
                 }

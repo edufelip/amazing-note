@@ -5,5 +5,6 @@ sealed interface AppRoutes {
     data class NoteDetail(val id: Int? = null) : AppRoutes
     data object Trash : AppRoutes
     data object Login : AppRoutes
+    data object SignUp : AppRoutes
     data object Privacy : AppRoutes
 }

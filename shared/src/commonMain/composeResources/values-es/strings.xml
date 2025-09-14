@@ -1,7 +1,10 @@
 <resources>
+    <!-- Navegación -->
     <string name="your_notes">Notas</string>
     <string name="trash">Basura</string>
     <string name="privacy_policy">Política de Privacidad</string>
+
+    <!-- Autenticación - General -->
     <string name="login">Iniciar sesión</string>
     <string name="logout">Cerrar sesión</string>
     <string name="google_sign_in">Iniciar con Google</string>
@@ -17,6 +20,29 @@
     <string name="login_success">Sesión iniciada</string>
     <string name="google_sign_in_canceled">Inicio de sesión con Google cancelado</string>
     <string name="logout_canceled">Cierre de sesión cancelado</string>
+    <string name="welcome_user">Bienvenido, %1$s</string>
+    <string name="guest">Invitado</string>
+
+    <!-- Notas - Lista y Filtros -->
+    <string name="order_by">Ordenar por</string>
+    <string name="priority">Prioridad</string>
+    <string name="filters">Filtros</string>
+    <string name="search">Buscar</string>
+    <string name="high_priority">Alta Prioridad</string>
+    <string name="medium_priority">Media Prioridad</string>
+    <string name="low_priority">Baja Prioridad</string>
+
+    <!-- Notas - Campos -->
+    <string name="title">Título</string>
+    <string name="description">Descripción</string>
+
+    <!-- Notas - Estados vacíos -->
+    <string name="empty_notes_title">Aún no hay notas</string>
+    <string name="empty_notes_hint">Toca el botón + para crear tu primera nota</string>
+    <string name="no_notes_match_filter">Ninguna nota coincide con este filtro</string>
+    <string name="no_notes_match_search">Ninguna nota coincide con tu búsqueda</string>
+
+    <!-- Tiempo y Actividad -->
     <string name="today">Hoy</string>
     <string name="this_week">Esta semana</string>
     <string name="this_month">Este mes</string>
@@ -31,13 +57,8 @@
     <string name="created_minutes_ago">Creado hace %1$d minutos</string>
     <string name="created_hours_ago">Creado hace %1$d horas</string>
     <string name="created_days_ago">Creado hace %1$d días</string>
-    <string name="welcome_user">Bienvenido, %1$s</string>
-    <string name="title">Título</string>
-    <string name="description">Descripción</string>
-    <string name="search">Buscar</string>
-    <string name="high_priority">Alta Prioridad</string>
-    <string name="medium_priority">Media Prioridad</string>
-    <string name="low_priority">Baja Prioridad</string>
+
+    <!-- Descripciones de contenido (a11y) -->
     <string name="cd_open_drawer">Abrir menú de navegación</string>
     <string name="cd_add">Agregar</string>
     <string name="cd_back">Atrás</string>
@@ -47,16 +68,17 @@
     <string name="cd_search">Buscar</string>
     <string name="cd_clear_search">Limpiar búsqueda</string>
     <string name="cd_toggle_dark_theme">Alternar tema oscuro</string>
+
+    <!-- Errores y Validación -->
     <string name="error_title_required">El título es obligatorio</string>
     <string name="error_description_required">La descripción es obligatoria</string>
     <string name="error_title_too_long">Título demasiado largo (máx. %1$d)</string>
     <string name="error_description_too_long">Descripción demasiado larga (máx. %1$d)</string>
-    <string name="order_by">Ordenar por</string>
-    <string name="priority">Prioridad</string>
-    <string name="filters">Filtros</string>
-    <string name="empty_notes_title">Aún no hay notas</string>
-    <string name="empty_notes_hint">Toca el botón + para crear tu primera nota</string>
-    <string name="no_notes_match_filter">Ninguna nota coincide con este filtro</string>
-    <string name="no_notes_match_search">Ninguna nota coincide con tu búsqueda</string>
-    <string name="guest">Invitado</string>
+
+    <!-- Autenticación - Diálogos de cierre de sesión -->
+    <string name="logout_confirm_title">Confirmar cierre de sesión</string>
+    <string name="logout_confirm_message">¿Estás seguro de que quieres cerrar sesión?</string>
+    <string name="yes">Sí</string>
+    <string name="no">No</string>
+    <string name="signing_out">Cerrando sesión</string>
 </resources>

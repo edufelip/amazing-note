@@ -94,7 +94,7 @@ fun ListScreen(
     darkTheme: Boolean = false,
     onToggleDarkTheme: (Boolean) -> Unit = {},
     onOpenTrash: (() -> Unit)? = null,
-    snackbarHostState: SnackbarHostState? = null,
+    snackBarHostState: SnackbarHostState? = null,
     managedByShell: Boolean = false,
     showTopAppBar: Boolean = true,
     hasAnyNotes: Boolean = true,
@@ -114,7 +114,7 @@ fun ListScreen(
             Scaffold(
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 snackbarHost = {
-                    if (snackbarHostState != null) SnackbarHost(snackbarHostState)
+                    if (snackBarHostState != null) SnackbarHost(snackBarHostState)
                 },
                 topBar = if (showTopAppBar) {
                     (

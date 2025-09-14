@@ -15,9 +15,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -25,6 +31,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -39,7 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.edufelip.shared.auth.AuthController
+import com.edufelip.shared.presentation.AuthViewModel
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.continue_with_google
 import com.edufelip.shared.resources.email
@@ -53,16 +60,21 @@ import com.edufelip.shared.resources.password
 import com.edufelip.shared.resources.reset_email_sent
 import com.edufelip.shared.resources.sign_up
 import com.edufelip.shared.resources.sign_up_success
+import com.edufelip.shared.resources.cd_back
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    auth: AuthController,
+    auth: AuthViewModel,
     onBack: () -> Unit,
     onRequestGoogleSignIn: (((Boolean, String?) -> Unit) -> Unit)? = null,
+    onOpenSignUp: () -> Unit,
+    onLoginSuccess: () -> Unit = onBack,
+    showLocalSuccessSnackbar: Boolean = true,
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -72,15 +84,20 @@ fun LoginScreen(
     val message by auth.message.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val loginSuccessText = stringResource(Res.string.login_success)
+
     LaunchedEffect(user) {
         if (user != null) {
-            snackbarHostState.showSnackbar(loginSuccessText)
-            delay(400)
-            onBack()
+            if (showLocalSuccessSnackbar) {
+                snackbarHostState.showSnackbar(loginSuccessText)
+                delay(400)
+            }
+            onLoginSuccess()
         }
     }
+
     val resetEmailSentText = stringResource(Res.string.reset_email_sent)
     val signUpSuccessText = stringResource(Res.string.sign_up_success)
+
     LaunchedEffect(message) {
         when (message) {
             "RESET_EMAIL_SENT" -> {
@@ -95,7 +112,33 @@ fun LoginScreen(
         }
     }
 
+    LaunchedEffect(error) {
+        if (error != null) {
+            snackbarHostState.showSnackbar(error ?: "")
+            auth.clearError()
+        }
+    }
+
     Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(Res.string.cd_back),
+                            tint = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                ),
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
@@ -126,14 +169,6 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(12.dp))
-
-            LaunchedEffect(error) {
-                if (error != null) {
-                    snackbarHostState.showSnackbar(error ?: "")
-                    auth.clearError()
-                }
-            }
-
             Button(
                 onClick = { auth.loginWithEmail(email.trim(), password) },
                 enabled = email.isNotBlank() && password.isNotBlank() && !loading,
@@ -149,12 +184,10 @@ fun LoginScreen(
 
             val scope = rememberCoroutineScope()
             val googleCanceledText = stringResource(Res.string.google_sign_in_canceled)
-                // Google sign-in button (white background, centered text)
                 Button(
                 onClick = {
                     onRequestGoogleSignIn?.invoke { success, err ->
                         if (!success) {
-                            // Show Google sign-in error or cancellation
                             val msg = err ?: googleCanceledText
                             scope.launch { snackbarHostState.showSnackbar(msg) }
                         }
@@ -213,9 +246,8 @@ fun LoginScreen(
             TextButton(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
-                    if (email.isNotBlank() && password.isNotBlank()) auth.signUp(email.trim(), password)
-                },
-                enabled = !loading
+                    onOpenSignUp()
+                }
             ) {
                 Box(Modifier.fillMaxWidth()) {
                     Text(

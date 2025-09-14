@@ -15,10 +15,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import com.edufelip.shared.Constants
-import com.edufelip.shared.auth.AuthController
+import com.edufelip.shared.presentation.AuthViewModel
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.privacy_policy
 import com.edufelip.shared.ui.gadgets.DrawerContent
@@ -33,13 +35,16 @@ fun PrivacyScreen(
     drawerState: DrawerState,
     darkTheme: Boolean,
     onToggleDarkTheme: (Boolean) -> Unit,
-    auth: AuthController?,
+    auth: AuthViewModel?,
     onOpenLogin: () -> Unit,
     onOpenDrawer: () -> Unit,
     onNavigateToHome: () -> Unit,
     onNavigateToTrash: () -> Unit,
     onLogout: () -> Unit,
 ) {
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val currentUserForDrawer = if (auth != null) auth.user.collectAsState().value else null
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -51,11 +56,14 @@ fun PrivacyScreen(
                 selectedHome = false,
                 selectedTrash = false,
                 onPrivacyClick = onOpenDrawer,
-                userName = auth?.user?.value?.displayName,
-                userEmail = auth?.user?.value?.email,
-                userPhotoUrl = auth?.user?.value?.photoUrl,
+                userName = currentUserForDrawer?.displayName,
+                userEmail = currentUserForDrawer?.email,
+                userPhotoUrl = currentUserForDrawer?.photoUrl,
                 onLoginClick = onOpenLogin,
-                onLogoutClick = onLogout,
+                onLogoutClick = {
+                    scope.launch { drawerState.close() }
+                    onLogout()
+                },
             )
         },
     ) {

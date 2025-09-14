@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -14,7 +13,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -26,20 +24,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.edufelip.shared.auth.AuthController
+import kotlinx.coroutines.launch
 import com.edufelip.shared.auth.AuthUser
 import com.edufelip.shared.model.Note
+import com.edufelip.shared.presentation.AuthViewModel
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.login_success
-import com.edufelip.shared.resources.logout_canceled
-import com.edufelip.shared.resources.sign_out_success
 import com.edufelip.shared.resources.welcome_user
 import com.edufelip.shared.resources.your_notes
 import com.edufelip.shared.ui.gadgets.DrawerContent
-import com.edufelip.shared.ui.nav.AppRoutes
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +42,7 @@ fun HomeScreen(
     drawerState: DrawerState,
     darkTheme: Boolean,
     onToggleDarkTheme: (Boolean) -> Unit,
-    auth: AuthController?,
+    auth: AuthViewModel?,
     onOpenLogin: () -> Unit,
     onOpenDrawer: () -> Unit,
     onNavigateToTrash: () -> Unit,
@@ -58,6 +52,9 @@ fun HomeScreen(
     onDelete: (Note) -> Unit,
     onLogout: () -> Unit,
 ) {
+    val scope = rememberCoroutineScope()
+    val currentUserForDrawer = auth?.user?.collectAsState()?.value
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -69,11 +66,14 @@ fun HomeScreen(
                 selectedHome = true,
                 selectedTrash = false,
                 onPrivacyClick = onNavigateToPrivacy,
-                userName = auth?.user?.value?.displayName,
-                userEmail = auth?.user?.value?.email,
-                userPhotoUrl = auth?.user?.value?.photoUrl,
+                userName = currentUserForDrawer?.displayName,
+                userEmail = currentUserForDrawer?.email,
+                userPhotoUrl = currentUserForDrawer?.photoUrl,
                 onLoginClick = onOpenLogin,
-                onLogoutClick = onLogout,
+                onLogoutClick = {
+                    scope.launch { drawerState.close() }
+                    onLogout()
+                },
             )
         },
     ) {
@@ -107,9 +107,6 @@ fun HomeScreen(
                     onAdd = onAdd,
                     onDelete = onDelete,
                     auth = auth,
-                    onOpenLogin = onOpenLogin,
-                    onNavigate = { /* unused */ },
-                    onOpenPrivacy = onNavigateToPrivacy,
                 )
             }
         }
@@ -127,36 +124,10 @@ fun HomeContent(
     onOpenNote: (Note) -> Unit,
     onAdd: () -> Unit,
     onDelete: (Note) -> Unit,
-    auth: AuthController?,
-    onOpenLogin: () -> Unit,
-    onNavigate: (AppRoutes) -> Unit,
-    onOpenPrivacy: () -> Unit = {},
+    auth: AuthViewModel?,
 ) {
     val query = remember { mutableStateOf("") }
-    val scope = rememberCoroutineScope()
-    val closeDrawer = { scope.launch { drawerState.close() } }
-    val showLogout = remember { mutableStateOf(false) }
-    val snackbarHostState = remember { SnackbarHostState() }
-    val signOutSuccessText = stringResource(Res.string.sign_out_success)
-    val logoutCanceledText = stringResource(Res.string.logout_canceled)
-
-    if (auth != null) {
-        val currentUser by auth.user.collectAsState()
-        val previousUser = remember { mutableStateOf<AuthUser?>(null) }
-        val nameOrEmail = currentUser?.displayName?.takeIf { it.isNotBlank() }
-            ?: currentUser?.email?.takeIf { it.isNotBlank() }
-        val loginSuccessText = if (nameOrEmail != null) stringResource(
-            Res.string.welcome_user,
-            nameOrEmail
-        ) else stringResource(Res.string.login_success)
-        LaunchedEffect(currentUser) {
-            val cu = currentUser
-            if (previousUser.value == null && cu != null) {
-                snackbarHostState.showSnackbar(loginSuccessText)
-            }
-            previousUser.value = cu
-        }
-    }
+    val snackBarHostState = remember { SnackbarHostState() }
 
     ListScreen(
         notes = if (query.value.isBlank()) {
@@ -179,30 +150,11 @@ fun HomeContent(
         darkTheme = darkTheme,
         onToggleDarkTheme = onToggleDarkTheme,
         onOpenTrash = onOpenTrash,
-        snackbarHostState = snackbarHostState,
+        snackBarHostState = snackBarHostState,
         managedByShell = true,
         showTopAppBar = false,
         hasAnyNotes = notes.isNotEmpty(),
     )
 
-    if (showLogout.value) {
-        AlertDialog(
-            onDismissRequest = { showLogout.value = false },
-            title = { Text("Confirm Logout") },
-            text = { Text("Are you sure you want to log out?") },
-            confirmButton = {
-                TextButton(onClick = {
-                    showLogout.value = false
-                    auth?.logout()
-                    scope.launch { snackbarHostState.showSnackbar(signOutSuccessText) }
-                }) { Text("Confirm") }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    showLogout.value = false
-                    scope.launch { snackbarHostState.showSnackbar(logoutCanceledText) }
-                }) { Text("Cancel") }
-            },
-        )
-    }
+    // Logout confirmation and loading are handled centrally in AppDrawerScaffold
 }

@@ -1,11 +1,14 @@
 <resources>
+    <!-- Navigation -->
     <string name="your_notes">Your Notes</string>
     <string name="trash">Trash</string>
     <string name="privacy_policy">Privacy Policy</string>
+
+    <!-- Authentication - General -->
     <string name="login">Login</string>
     <string name="logout">Logout</string>
-  <string name="google_sign_in">Sign in with Google</string>
-  <string name="continue_with_google">Continue with Google</string>
+    <string name="google_sign_in">Sign in with Google</string>
+    <string name="continue_with_google">Continue with Google</string>
     <string name="login_title">Login to your account</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
@@ -17,6 +20,47 @@
     <string name="login_success">Logged in</string>
     <string name="google_sign_in_canceled">Google sign-in canceled</string>
     <string name="logout_canceled">Logout canceled</string>
+    <string name="welcome_user">Welcome, %1$s</string>
+    <string name="guest">Guest</string>
+
+    <!-- Authentication - Sign Up Screen -->
+    <string name="sign_up_title">Create your account</string>
+    <string name="name">Name</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="password_requirements">Min 8 chars, upper, lower, digit, symbol</string>
+    <string name="passwords_do_not_match">Passwords do not match</string>
+    <string name="cd_hide_password">Hide password</string>
+    <string name="cd_show_password">Show password</string>
+
+    <!-- Authentication - Logout Dialogs -->
+    <string name="logout_confirm_title">Confirm Logout</string>
+    <string name="logout_confirm_message">Are you sure you want to log out?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="signing_out">Signing out</string>
+
+    <!-- Notes - List & Filters -->
+    <string name="order_by">Order By</string>
+    <string name="priority">Priority</string>
+    <string name="filters">Filters</string>
+    <string name="search">Search</string>
+    <string name="high_priority">High Priority</string>
+    <string name="medium_priority">Medium Priority</string>
+    <string name="low_priority">Low Priority</string>
+
+    <!-- Notes - Fields -->
+    <string name="title">Title</string>
+    <string name="description">Description</string>
+
+    <!-- Notes - Empty States -->
+    <string name="empty_notes_title">No notes yet</string>
+    <string name="empty_notes_hint">Tap the + button to create your first note</string>
+    <string name="empty_trash_title">Trash is empty</string>
+    <string name="empty_trash_hint">Notes you delete will appear here</string>
+    <string name="no_notes_match_filter">No notes match this filter</string>
+    <string name="no_notes_match_search">No notes match your search</string>
+
+    <!-- Time & Activity -->
     <string name="today">Today</string>
     <string name="this_week">This week</string>
     <string name="this_month">This month</string>
@@ -31,13 +75,8 @@
     <string name="created_minutes_ago">Created %1$d minutes ago</string>
     <string name="created_hours_ago">Created %1$d hours ago</string>
     <string name="created_days_ago">Created %1$d days ago</string>
-    <string name="welcome_user">Welcome, %1$s</string>
-    <string name="title">Title</string>
-    <string name="description">Description</string>
-    <string name="search">Search</string>
-    <string name="high_priority">High Priority</string>
-    <string name="medium_priority">Medium Priority</string>
-    <string name="low_priority">Low Priority</string>
+
+    <!-- Content Descriptions (a11y) -->
     <string name="cd_open_drawer">Open navigation drawer</string>
     <string name="cd_add">Add</string>
     <string name="cd_back">Back</string>
@@ -47,18 +86,10 @@
     <string name="cd_search">Search</string>
     <string name="cd_clear_search">Clear search</string>
     <string name="cd_toggle_dark_theme">Toggle dark theme</string>
+
+    <!-- Errors & Validation -->
     <string name="error_title_required">Title is required</string>
     <string name="error_description_required">Description is required</string>
     <string name="error_title_too_long">Title too long (max %1$d)</string>
     <string name="error_description_too_long">Description too long (max %1$d)</string>
-    <string name="order_by">Order By</string>
-    <string name="priority">Priority</string>
-    <string name="filters">Filters</string>
-    <string name="empty_notes_title">No notes yet</string>
-    <string name="empty_notes_hint">Tap the + button to create your first note</string>
-    <string name="empty_trash_title">Trash is empty</string>
-    <string name="empty_trash_hint">Notes you delete will appear here</string>
-    <string name="no_notes_match_filter">No notes match this filter</string>
-    <string name="no_notes_match_search">No notes match your search</string>
-    <string name="guest">Guest</string>
 </resources>
