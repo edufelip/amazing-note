@@ -31,6 +31,10 @@ import com.edufelip.shared.data.DefaultAuthRepository
 import com.edufelip.shared.domain.usecase.buildAuthUseCases
 import com.edufelip.shared.presentation.NoteUiViewModel
 import com.edufelip.shared.presentation.AuthViewModel
+import com.edufelip.shared.db.createDatabase
+import com.edufelip.shared.db.DatabaseDriverFactory
+import com.edufelip.shared.sync.NotesSyncManager
+import com.edufelip.shared.sync.LocalNotesSyncManager
 import com.edufelip.shared.ui.images.platformConfigImageLoader
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.nav.goBack
@@ -51,6 +55,8 @@ import com.edufelip.shared.ui.settings.Settings
 import com.edufelip.shared.ui.theme.AmazingNoteTheme
 import com.edufelip.shared.ui.util.OnSystemBack
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.LaunchedEffect
+import com.edufelip.shared.db.NoteDatabase
 
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.animation.ExperimentalAnimationApi::class)
 @Composable
@@ -60,6 +66,7 @@ fun AmazingNoteApp(
     onRequestGoogleSignIn: (((Boolean, String?) -> Unit) -> Unit)? = null,
     settings: Settings = InMemorySettings(),
     appPreferences: AppPreferences = DefaultAppPreferences(settings),
+    noteDatabase: NoteDatabase? = null,
 ) {
     setSingletonImageLoaderFactory { context ->
         val base = ImageLoader.Builder(context).crossfade(true)
@@ -75,10 +82,30 @@ fun AmazingNoteApp(
     val authRepository = remember(authService) { DefaultAuthRepository(authService) }
     val authUseCases = remember(authRepository) { buildAuthUseCases(authRepository) }
     val authViewModel = remember(authUseCases) { AuthViewModel(authUseCases, scope) }
+    // Create a sync manager to keep local DB and cloud in sync (two-way)
+    val noteDb = remember(noteDatabase) { noteDatabase ?: createDatabase(DatabaseDriverFactory()) }
+    val syncManager = remember { NotesSyncManager(noteDb, scope) }
+    LaunchedEffect(Unit) { syncManager.start() }
+    // One-time migration push on first login
+    val settingsProvider = settings
+    val user by authViewModel.user.collectAsState()
+    LaunchedEffect(user) {
+        val uid = user?.uid
+        if (uid != null) {
+            syncManager.migrateLocalToCloudOnce(
+                uid = uid,
+                isMigrated = { key -> settingsProvider.getBool(key, false) },
+                setMigrated = { key -> settingsProvider.setBool(key, true) },
+            )
+            // Force an immediate one-shot sync so remote notes populate Home right after login
+            syncManager.syncNow()
+        }
+    }
 
     CompositionLocalProvider(
         LocalSettings provides settings,
         LocalAppPreferences provides appPreferences,
+        LocalNotesSyncManager provides syncManager,
     ) {
         AmazingNoteTheme(darkTheme = darkTheme) {
             val current = backStack.last()
@@ -139,6 +166,7 @@ fun AmazingNoteApp(
                                         note.id,
                                         true
                                     )
+                                    syncManager.syncNow()
                                 }
                             },
                             onLogout = { authViewModel.logout() },
@@ -155,9 +183,13 @@ fun AmazingNoteApp(
                             onBack = { backStack.goBack() },
                             saveAndValidate = { id, title, priority, description ->
                                 if (id == null) {
-                                    viewModel.insert(title, priority, description)
+                                    val res = viewModel.insert(title, priority, description)
+                                    syncManager.syncNow()
+                                    res
                                 } else {
-                                    viewModel.update(id, title, priority, description, false)
+                                    val res = viewModel.update(id, title, priority, description, false)
+                                    syncManager.syncNow()
+                                    res
                                 }
                             },
                             onDelete = { idToDelete ->
@@ -194,6 +226,7 @@ fun AmazingNoteApp(
                                         note.id,
                                         false
                                     )
+                                    syncManager.syncNow()
                                 }
                             },
                             onLogout = { authViewModel.logout() },

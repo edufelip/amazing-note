@@ -6,6 +6,7 @@ import com.edufelip.shared.data.SqlDelightNoteRepository
 import com.edufelip.shared.db.AndroidContextHolder
 import com.edufelip.shared.db.DatabaseDriverFactory
 import com.edufelip.shared.db.createDatabase
+import com.edufelip.shared.db.NoteDatabase
 import com.edufelip.shared.domain.repository.NoteRepository
 import com.edufelip.shared.domain.usecase.NoteUseCases
 import com.edufelip.shared.domain.usecase.buildNoteUseCases
@@ -25,13 +26,18 @@ import javax.inject.Singleton
 object AppModule {
     @Singleton
     @Provides
-    fun provideSharedNoteRepository(
+    fun provideNoteDatabase(
         @ApplicationContext context: Context,
-    ): NoteRepository {
+    ): NoteDatabase {
         AndroidContextHolder.appContext = context.applicationContext
-        val db = createDatabase(DatabaseDriverFactory())
-        return SqlDelightNoteRepository(db)
+        return createDatabase(DatabaseDriverFactory())
     }
+
+    @Singleton
+    @Provides
+    fun provideSharedNoteRepository(
+        db: NoteDatabase,
+    ): NoteRepository = SqlDelightNoteRepository(db)
 
     @Singleton
     @Provides

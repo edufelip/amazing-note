@@ -48,13 +48,7 @@ fun DismissibleNoteRow(
     SwipeToDismissBox(
         state = state,
         backgroundContent = {
-            val color = if (isRestore) Color(0xFF2E7D32) else Color(0xFFC62828)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(72.dp)
-                    .background(color),
-            ) {
+            Box {
                 Icon(
                     imageVector = if (isRestore) Icons.Filled.Restore else Icons.Filled.Delete,
                     contentDescription = if (isRestore) stringResource(Res.string.cd_restore) else stringResource(Res.string.cd_delete),

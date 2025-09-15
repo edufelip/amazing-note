@@ -101,6 +101,10 @@ dependencies {
     // Firebase Auth (Android) via BoM
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth.ktx)
+
+    // Firestore (version managed by Firebase BoM)
+    implementation(libs.google.firebase.firestore.ktx)
+
     // Google Identity Services (Credential Manager + Google ID)
     implementation(libs.credentials.core)
     implementation(libs.credentials.play.services)

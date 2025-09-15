@@ -44,5 +44,6 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
         onRequestGoogleSignIn = { cb -> IosGoogleSignIn.requestSignIn { success, err -> cb(success, err) } },
         settings = IosSettings(),
         appPreferences = DefaultAppPreferences(IosSettings()),
+        noteDatabase = db,
     )
 }

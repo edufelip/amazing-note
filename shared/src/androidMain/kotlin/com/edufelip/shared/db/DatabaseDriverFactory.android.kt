@@ -8,6 +8,6 @@ object AndroidContextHolder {
     lateinit var appContext: Context
 }
 
-actual class DatabaseDriverFactory {
+actual class DatabaseDriverFactory actual constructor() {
     actual fun createDriver(): SqlDriver = AndroidSqliteDriver(NoteDatabase.Schema, AndroidContextHolder.appContext, "notes.db")
 }

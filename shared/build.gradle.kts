@@ -24,6 +24,8 @@ kotlin {
         ios.deploymentTarget = "14.0"
         // Firebase Auth for iOS
         pod("FirebaseAuth")
+        // Firestore for iOS
+        pod("FirebaseFirestore")
         // Google Sign-In for iOS (used by iosMain Kotlin)
         pod("GoogleSignIn")
         // Ensure CocoaPods links sqlite3 when integrating the shared framework
@@ -67,6 +69,8 @@ kotlin {
                 implementation(compose.components.resources)
                 implementation(libs.activity.compose)
                 implementation(libs.ktor.client.okhttp)
+                implementation(libs.firebase.auth.ktx)
+                implementation(libs.firebase.firestore.ktx)
             }
         }
         iosMain {

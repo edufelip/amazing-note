@@ -19,6 +19,7 @@ google-services = "4.4.3"
 credentials = "1.5.0"
 googleid = "1.1.1"
 firebase-auth = "23.2.1"
+firebase-firestore = "25.1.4"
 coil3 = "3.3.0"
 ktor = "3.3.0"
 coil = "2.7.0"
@@ -30,6 +31,7 @@ androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "core" }
  
+google-firebase-firestore-ktx = { module = "com.google.firebase:firebase-firestore-ktx" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-android-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
  
@@ -55,6 +57,7 @@ sqldelight-native-driver = { module = "app.cash.sqldelight:native-driver", versi
 
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebase-auth" }
+firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebase-firestore" }
 credentials-core = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 credentials-play-services = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }

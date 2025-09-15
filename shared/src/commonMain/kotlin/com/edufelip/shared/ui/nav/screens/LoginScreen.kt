@@ -54,7 +54,6 @@ import com.edufelip.shared.resources.forgot_password
 import com.edufelip.shared.resources.google_sign_in_canceled
 import com.edufelip.shared.resources.ic_google
 import com.edufelip.shared.resources.login
-import com.edufelip.shared.resources.login_success
 import com.edufelip.shared.resources.login_title
 import com.edufelip.shared.resources.password
 import com.edufelip.shared.resources.reset_email_sent
@@ -83,14 +82,9 @@ fun LoginScreen(
     val user by auth.user.collectAsState()
     val message by auth.message.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val loginSuccessText = stringResource(Res.string.login_success)
 
     LaunchedEffect(user) {
         if (user != null) {
-            if (showLocalSuccessSnackbar) {
-                snackbarHostState.showSnackbar(loginSuccessText)
-                delay(400)
-            }
             onLoginSuccess()
         }
     }

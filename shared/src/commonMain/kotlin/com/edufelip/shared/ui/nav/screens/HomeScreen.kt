@@ -1,6 +1,7 @@
 package com.edufelip.shared.ui.nav.screens
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -9,6 +10,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -18,21 +20,22 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
-import com.edufelip.shared.auth.AuthUser
 import com.edufelip.shared.model.Note
 import com.edufelip.shared.presentation.AuthViewModel
 import com.edufelip.shared.resources.Res
-import com.edufelip.shared.resources.login_success
-import com.edufelip.shared.resources.welcome_user
+import com.edufelip.shared.resources.cloud_updates_applied
 import com.edufelip.shared.resources.your_notes
+import com.edufelip.shared.sync.LocalNotesSyncManager
+import com.edufelip.shared.sync.SyncEvent
 import com.edufelip.shared.ui.gadgets.DrawerContent
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,6 +57,23 @@ fun HomeScreen(
 ) {
     val scope = rememberCoroutineScope()
     val currentUserForDrawer = auth?.user?.collectAsState()?.value
+    val currentUid = currentUserForDrawer?.uid
+    val syncManager = LocalNotesSyncManager.current
+    var syncing by remember(currentUid, syncManager) { mutableStateOf(currentUid != null) }
+
+    LaunchedEffect(currentUid, syncManager) {
+        // When user logs in, show a brief sync indicator until first SyncCompleted
+        syncing = currentUid != null
+        if (currentUid != null && syncManager != null) {
+            syncManager.events.collect { ev ->
+                if (ev is SyncEvent.SyncCompleted) {
+                    syncing = false
+                }
+            }
+        } else {
+            syncing = false
+        }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -97,6 +117,9 @@ fun HomeScreen(
             },
         ) { padding ->
             Box(modifier = Modifier.padding(padding)) {
+                if (syncing) {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                }
                 HomeContent(
                     notes = notes,
                     drawerState = drawerState,
@@ -106,7 +129,6 @@ fun HomeScreen(
                     onOpenNote = onOpenNote,
                     onAdd = onAdd,
                     onDelete = onDelete,
-                    auth = auth,
                 )
             }
         }
@@ -124,10 +146,19 @@ fun HomeContent(
     onOpenNote: (Note) -> Unit,
     onAdd: () -> Unit,
     onDelete: (Note) -> Unit,
-    auth: AuthViewModel?,
 ) {
     val query = remember { mutableStateOf("") }
     val snackBarHostState = remember { SnackbarHostState() }
+    val syncManager = LocalNotesSyncManager.current
+    val cloudMsg = stringResource(Res.string.cloud_updates_applied)
+    LaunchedEffect(syncManager, cloudMsg) {
+        syncManager?.events?.collect { ev ->
+            when (ev) {
+                is SyncEvent.OverwritesApplied -> snackBarHostState.showSnackbar(cloudMsg)
+                is SyncEvent.SyncCompleted -> {}
+            }
+        }
+    }
 
     ListScreen(
         notes = if (query.value.isBlank()) {

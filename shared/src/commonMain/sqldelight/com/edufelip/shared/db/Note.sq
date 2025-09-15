@@ -42,3 +42,6 @@ UPDATE note SET deleted = ?, updated_at = ? WHERE id = ?;
 
 deleteById:
 DELETE FROM note WHERE id = ?;
+
+deleteAll:
+DELETE FROM note;

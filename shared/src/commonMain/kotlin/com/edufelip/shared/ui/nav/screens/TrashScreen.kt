@@ -54,7 +54,7 @@ fun TrashScreen(
     onLogout: () -> Unit
 ) {
     val scope = androidx.compose.runtime.rememberCoroutineScope()
-    val currentUserForDrawer = if (auth != null) auth.user.collectAsState().value else null
+    val currentUserForDrawer = auth?.user?.collectAsState()?.value
 
     ModalNavigationDrawer(
         drawerState = drawerState,
