@@ -23,6 +23,8 @@ private fun sampleNotes(): List<Note> = List(10) { index ->
         deleted = false,
         createdAt = 1_700_000_000_000L + index * 3_600_000L,
         updatedAt = 1_700_000_000_000L + index * 3_600_000L,
+        dirty = false,
+        localUpdatedAt = 1_700_000_000_000L + index * 3_600_000L
     )
 }
 

@@ -4,7 +4,6 @@
     <string name="trash">Basura</string>
     <string name="privacy_policy">Política de Privacidad</string>
     <string name="sync_now">Sincronizar ahora</string>
-    <string name="cloud_updates_applied">Actualizaciones de la nube aplicadas</string>
 
     <!-- Autenticación - General -->
     <string name="login">Iniciar sesión</string>

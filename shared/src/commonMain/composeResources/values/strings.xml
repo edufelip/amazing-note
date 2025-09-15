@@ -4,7 +4,6 @@
     <string name="trash">Trash</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="sync_now">Sync now</string>
-    <string name="cloud_updates_applied">Cloud updates applied</string>
 
     <!-- Authentication - General -->
     <string name="login">Login</string>

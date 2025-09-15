@@ -21,41 +21,47 @@ class SqlDelightNoteRepository(
 
     private fun currentTimeMillis(): Long = nowEpochMs()
 
-    override fun notes(): Flow<List<Note>> = queries.selectAll().asFlow().mapToList(dispatcher).map { rows ->
-        rows.map { row ->
-            Note(
-                id = row.id.toInt(),
-                title = row.title,
-                priority = when (row.priority.toInt()) {
-                    0 -> Priority.HIGH
-                    1 -> Priority.MEDIUM
-                    else -> Priority.LOW
-                },
-                description = row.description,
-                deleted = row.deleted != 0L,
-                createdAt = row.created_at,
-                updatedAt = row.updated_at,
-            )
+    override fun notes(): Flow<List<Note>> =
+        queries.selectAll().asFlow().mapToList(dispatcher).map { rows ->
+            rows.map { row ->
+                Note(
+                    id = row.id.toInt(),
+                    title = row.title,
+                    priority = when (row.priority.toInt()) {
+                        0 -> Priority.HIGH
+                        1 -> Priority.MEDIUM
+                        else -> Priority.LOW
+                    },
+                    description = row.description,
+                    deleted = row.deleted != 0L,
+                    createdAt = row.created_at,
+                    updatedAt = row.updated_at,
+                    dirty = row.local_dirty != 0L,
+                    localUpdatedAt = row.local_updated_at,
+                )
+            }
         }
-    }
 
-    override fun trash(): Flow<List<Note>> = queries.selectDeleted().asFlow().mapToList(dispatcher).map { rows ->
-        rows.map { row ->
-            Note(
-                id = row.id.toInt(),
-                title = row.title,
-                priority = when (row.priority.toInt()) {
-                    0 -> Priority.HIGH
-                    1 -> Priority.MEDIUM
-                    else -> Priority.LOW
-                },
-                description = row.description,
-                deleted = row.deleted != 0L,
-                createdAt = row.created_at,
-                updatedAt = row.updated_at,
-            )
+    override fun trash(): Flow<List<Note>> =
+        queries.selectDeleted().asFlow().mapToList(dispatcher).map { rows ->
+            rows.map { row ->
+                Note(
+                    id = row.id.toInt(),
+                    title = row.title,
+                    priority = when (row.priority.toInt()) {
+                        0 -> Priority.HIGH
+                        1 -> Priority.MEDIUM
+                        else -> Priority.LOW
+                    },
+                    description = row.description,
+                    deleted = row.deleted != 0L,
+                    createdAt = row.created_at,
+                    updatedAt = row.updated_at,
+                    dirty = row.local_dirty != 0L,
+                    localUpdatedAt = row.local_updated_at,
+                )
+            }
         }
-    }
 
     override suspend fun insert(title: String, priority: Priority, description: String) {
         val now = currentTimeMillis()
@@ -69,6 +75,7 @@ class SqlDelightNoteRepository(
             description = description,
             created_at = now,
             updated_at = now,
+            local_updated_at = now,
         )
     }
 
@@ -90,6 +97,7 @@ class SqlDelightNoteRepository(
             description = description,
             deleted = if (deleted) 1 else 0,
             updated_at = now,
+            local_updated_at = now,
             id = id.toLong(),
         )
     }
@@ -99,6 +107,7 @@ class SqlDelightNoteRepository(
         queries.setDeleted(
             deleted = if (deleted) 1 else 0,
             updated_at = now,
+            local_updated_at = now,
             id = id.toLong(),
         )
     }

@@ -3,9 +3,9 @@ package com.edufelip.shared.ui
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -14,6 +14,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -28,13 +29,14 @@ import coil3.request.crossfade
 import com.edufelip.shared.auth.AuthService
 import com.edufelip.shared.auth.NoAuthService
 import com.edufelip.shared.data.DefaultAuthRepository
-import com.edufelip.shared.domain.usecase.buildAuthUseCases
-import com.edufelip.shared.presentation.NoteUiViewModel
-import com.edufelip.shared.presentation.AuthViewModel
-import com.edufelip.shared.db.createDatabase
 import com.edufelip.shared.db.DatabaseDriverFactory
-import com.edufelip.shared.sync.NotesSyncManager
+import com.edufelip.shared.db.NoteDatabase
+import com.edufelip.shared.db.createDatabase
+import com.edufelip.shared.domain.usecase.buildAuthUseCases
+import com.edufelip.shared.presentation.AuthViewModel
+import com.edufelip.shared.presentation.NoteUiViewModel
 import com.edufelip.shared.sync.LocalNotesSyncManager
+import com.edufelip.shared.sync.NotesSyncManager
 import com.edufelip.shared.ui.images.platformConfigImageLoader
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.nav.goBack
@@ -44,8 +46,8 @@ import com.edufelip.shared.ui.nav.screens.HomeScreen
 import com.edufelip.shared.ui.nav.screens.LoginScreen
 import com.edufelip.shared.ui.nav.screens.NoteDetailScreen
 import com.edufelip.shared.ui.nav.screens.PrivacyScreen
-import com.edufelip.shared.ui.nav.screens.TrashScreen
 import com.edufelip.shared.ui.nav.screens.SignUpScreen
+import com.edufelip.shared.ui.nav.screens.TrashScreen
 import com.edufelip.shared.ui.settings.AppPreferences
 import com.edufelip.shared.ui.settings.DefaultAppPreferences
 import com.edufelip.shared.ui.settings.InMemorySettings
@@ -55,8 +57,6 @@ import com.edufelip.shared.ui.settings.Settings
 import com.edufelip.shared.ui.theme.AmazingNoteTheme
 import com.edufelip.shared.ui.util.OnSystemBack
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.LaunchedEffect
-import com.edufelip.shared.db.NoteDatabase
 
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.animation.ExperimentalAnimationApi::class)
 @Composable
@@ -84,20 +84,13 @@ fun AmazingNoteApp(
     val authViewModel = remember(authUseCases) { AuthViewModel(authUseCases, scope) }
     // Create a sync manager to keep local DB and cloud in sync (two-way)
     val noteDb = remember(noteDatabase) { noteDatabase ?: createDatabase(DatabaseDriverFactory()) }
-    val syncManager = remember { NotesSyncManager(noteDb, scope) }
+    val syncManager = remember(settings) { NotesSyncManager(noteDb, scope) }
     LaunchedEffect(Unit) { syncManager.start() }
-    // One-time migration push on first login
-    val settingsProvider = settings
+    // On login, trigger an immediate one-shot sync so remote notes populate Home right away
     val user by authViewModel.user.collectAsState()
     LaunchedEffect(user) {
         val uid = user?.uid
         if (uid != null) {
-            syncManager.migrateLocalToCloudOnce(
-                uid = uid,
-                isMigrated = { key -> settingsProvider.getBool(key, false) },
-                setMigrated = { key -> settingsProvider.setBool(key, true) },
-            )
-            // Force an immediate one-shot sync so remote notes populate Home right after login
             syncManager.syncNow()
         }
     }
@@ -131,7 +124,11 @@ fun AmazingNoteApp(
                         targetState is AppRoutes.SignUp || initialState is AppRoutes.SignUp
                     ) {
                         // Subtle fade for Login transitions
-                        fadeIn(animationSpec = tween(duration)) togetherWith fadeOut(animationSpec = tween(duration))
+                        fadeIn(animationSpec = tween(duration)) togetherWith fadeOut(
+                            animationSpec = tween(
+                                duration
+                            )
+                        )
                     } else {
                         EnterTransition.None togetherWith ExitTransition.None
                     }
@@ -166,7 +163,8 @@ fun AmazingNoteApp(
                                         note.id,
                                         true
                                     )
-                                    syncManager.syncNow()
+                                    // Push-only: update remote from local without pulling
+                                    syncManager.syncLocalToRemoteOnly()
                                 }
                             },
                             onLogout = { authViewModel.logout() },
@@ -184,16 +182,20 @@ fun AmazingNoteApp(
                             saveAndValidate = { id, title, priority, description ->
                                 if (id == null) {
                                     val res = viewModel.insert(title, priority, description)
-                                    syncManager.syncNow()
+                                    syncManager.syncLocalToRemoteOnly()
                                     res
                                 } else {
-                                    val res = viewModel.update(id, title, priority, description, false)
-                                    syncManager.syncNow()
+                                    val res =
+                                        viewModel.update(id, title, priority, description, false)
+                                    syncManager.syncLocalToRemoteOnly()
                                     res
                                 }
                             },
                             onDelete = { idToDelete ->
-                                scope.launch { viewModel.setDeleted(idToDelete, true) }
+                                scope.launch {
+                                    viewModel.setDeleted(idToDelete, true)
+                                    syncManager.syncLocalToRemoteOnly()
+                                }
                             },
                         )
                     }
@@ -226,7 +228,7 @@ fun AmazingNoteApp(
                                         note.id,
                                         false
                                     )
-                                    syncManager.syncNow()
+                                    syncManager.syncLocalToRemoteOnly()
                                 }
                             },
                             onLogout = { authViewModel.logout() },

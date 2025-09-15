@@ -8,4 +8,6 @@ data class Note(
     val deleted: Boolean,
     val createdAt: Long,
     val updatedAt: Long,
+    val dirty: Boolean = false,
+    val localUpdatedAt: Long = 0L,
 )

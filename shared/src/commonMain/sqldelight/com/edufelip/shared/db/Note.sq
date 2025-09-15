@@ -5,43 +5,57 @@ CREATE TABLE note(
   description TEXT NOT NULL,
   deleted INTEGER NOT NULL,
   created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL
+  updated_at INTEGER NOT NULL,
+  local_dirty INTEGER NOT NULL DEFAULT 0,
+  local_updated_at INTEGER NOT NULL DEFAULT 0
 );
 
 selectAll:
-SELECT id, title, priority, description, deleted, created_at, updated_at
+SELECT *
 FROM note
 WHERE deleted = 0
 ORDER BY updated_at DESC, id DESC;
 
 selectDeleted:
-SELECT id, title, priority, description, deleted, created_at, updated_at
+SELECT *
 FROM note
 WHERE deleted = 1
 ORDER BY updated_at DESC, id DESC;
 
 selectById:
-SELECT id, title, priority, description, deleted, created_at, updated_at
+SELECT *
 FROM note
 WHERE id = ?;
 
 insertNote:
-INSERT INTO note(title, priority, description, deleted, created_at, updated_at)
-VALUES (?, ?, ?, 0, ?, ?);
+INSERT INTO note(title, priority, description, deleted, created_at, updated_at, local_dirty, local_updated_at)
+VALUES (?, ?, ?, 0, ?, ?, 1, ?);
 
 insertWithId:
 INSERT INTO note(id, title, priority, description, deleted, created_at, updated_at)
 VALUES (?, ?, ?, ?, ?, ?, ?);
 
 updateNote:
-UPDATE note SET title = ?, priority = ?, description = ?, deleted = ?, updated_at = ?
+UPDATE note SET title = ?, priority = ?, description = ?, deleted = ?, updated_at = ?, local_dirty = 1, local_updated_at = ?
 WHERE id = ?;
 
 setDeleted:
-UPDATE note SET deleted = ?, updated_at = ? WHERE id = ?;
+UPDATE note SET deleted = ?, updated_at = ?, local_dirty = 1, local_updated_at = ? WHERE id = ?;
 
 deleteById:
 DELETE FROM note WHERE id = ?;
 
 deleteAll:
 DELETE FROM note;
+
+selectDirty:
+SELECT *
+FROM note
+WHERE local_dirty = 1
+ORDER BY updated_at DESC, id DESC;
+
+clearDirtyById:
+UPDATE note SET local_dirty = 0 WHERE id = ?;
+
+updateFromRemote:
+UPDATE note SET title = ?, priority = ?, description = ?, deleted = ?, updated_at = ?, local_dirty = 0 WHERE id = ?;

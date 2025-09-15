@@ -47,7 +47,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.model.Note
 import com.edufelip.shared.model.Priority
@@ -70,8 +69,8 @@ import com.edufelip.shared.resources.this_week
 import com.edufelip.shared.resources.today
 import com.edufelip.shared.resources.updated
 import com.edufelip.shared.resources.your_notes
-import com.edufelip.shared.ui.gadgets.DismissibleNoteRow
 import com.edufelip.shared.ui.gadgets.MaterialSearchBar
+import com.edufelip.shared.ui.gadgets.NoteRow
 import com.edufelip.shared.ui.gadgets.RailContent
 import com.edufelip.shared.ui.settings.LocalAppPreferences
 import kotlinx.coroutines.launch
@@ -107,39 +106,37 @@ fun ListScreen(
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val isLarge = maxWidth > 600.dp
-        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
         @Composable
         fun ContentScaffold(showNavIcon: Boolean) {
             Scaffold(
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                modifier = Modifier.fillMaxSize(),
                 snackbarHost = {
                     if (snackBarHostState != null) SnackbarHost(snackBarHostState)
                 },
                 topBar = if (showTopAppBar) {
                     (
-                        {
-                            LargeTopAppBar(
-                                title = { Text(text = stringResource(Res.string.your_notes)) },
-                                navigationIcon = {
-                                    if (showNavIcon) {
-                                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                            Icon(
-                                                imageVector = Icons.Default.Menu,
-                                                contentDescription = stringResource(Res.string.cd_open_drawer),
-                                            )
+                            {
+                                LargeTopAppBar(
+                                    title = { Text(text = stringResource(Res.string.your_notes)) },
+                                    navigationIcon = {
+                                        if (showNavIcon) {
+                                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Menu,
+                                                    contentDescription = stringResource(Res.string.cd_open_drawer),
+                                                )
+                                            }
                                         }
-                                    }
-                                },
-                                colors = TopAppBarDefaults.largeTopAppBarColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                    navigationIconContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                    titleContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                ),
-                                scrollBehavior = scrollBehavior,
+                                    },
+                                    colors = TopAppBarDefaults.largeTopAppBarColors(
+                                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                        navigationIconContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        titleContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    ),
+                                )
+                            }
                             )
-                        }
-                        )
                 } else {
                     ({})
                 },
@@ -212,6 +209,8 @@ fun ListScreen(
                     val grouped: Map<Bucket, List<Note>> =
                         filtered.groupBy { bucket(if (useUpdated.value) it.updatedAt else it.createdAt) }
                     LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize(),
                         contentPadding = PaddingValues(bottom = 96.dp),
                     ) {
                         stickyHeader {
@@ -365,8 +364,16 @@ fun ListScreen(
                             }
                         }
 
-                        grouped.forEach { (section, itemsInGroup) ->
-                            stickyHeader {
+                        val groupOrder = listOf(
+                            Bucket.TODAY,
+                            Bucket.THIS_WEEK,
+                            Bucket.THIS_MONTH,
+                            Bucket.EARLIER
+                        )
+                        val orderedGroups =
+                            groupOrder.mapNotNull { b -> grouped[b]?.let { b to it } }
+                        orderedGroups.forEach { (section, itemsInGroup) ->
+                            item {
                                 Surface(tonalElevation = 2.dp) {
                                     Text(
                                         text = when (section) {
@@ -384,11 +391,9 @@ fun ListScreen(
                                 }
                             }
                             items(itemsInGroup, key = { it.id }) { note ->
-                                DismissibleNoteRow(
+                                NoteRow(
                                     note = note,
                                     onClick = onNoteClick,
-                                    onDismiss = onDelete,
-                                    isRestore = false,
                                     showUpdated = useUpdated.value,
                                     modifier = Modifier
                                         .padding(horizontal = 12.dp, vertical = 6.dp)

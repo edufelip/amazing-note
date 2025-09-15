@@ -9,12 +9,12 @@ import com.edufelip.shared.model.Note
 import com.edufelip.shared.model.Priority
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
 
 class NotesSyncManager(
     private val db: NoteDatabase,
@@ -24,6 +24,7 @@ class NotesSyncManager(
 ) {
     private var cloudJob: Job? = null
     private var lastUid: String? = null
+
     // Throttle: after 3 consecutive merges, pause further merges until next explicit sync
     private var mergeCallCount: Int = 0
     private var mergingDisabled: Boolean = false
@@ -33,10 +34,6 @@ class NotesSyncManager(
 
     fun start() {
         cloudJob?.cancel()
-        cloudJob = currentUser.uid.onEach { uid ->
-            // cancel handled automatically by launching new stream below
-        }.launchIn(scope)
-
         scope.launch {
             currentUser.uid.collect { uid ->
                 cloudJob?.cancel()
@@ -61,12 +58,34 @@ class NotesSyncManager(
         mergeRemoteIntoLocalAndPushLocalNewer(uid, remote)
     }
 
-    suspend fun migrateLocalToCloudOnce(uid: String, isMigrated: (String) -> Boolean, setMigrated: (String) -> Unit) {
-        val key = "notes_migrated_$uid"
-        if (isMigrated(key)) return
-        val allLocal = getAllLocal()
-        for (n in allLocal) cloud.upsert(uid, n)
-        setMigrated(key)
+    suspend fun syncLocalToRemoteOnly() {
+        val uid = currentUser.uid.first() ?: return
+        // Push only dirty rows to avoid unnecessary writes and reordering
+        val dirtyRows = db.noteQueries.selectDirty().executeAsList()
+        if (dirtyRows.isEmpty()) {
+            _events.tryEmit(SyncEvent.SyncCompleted)
+            return
+        }
+        for (row in dirtyRows) {
+            val note = Note(
+                id = row.id.toInt(),
+                title = row.title,
+                priority = when (row.priority.toInt()) {
+                    0 -> Priority.HIGH
+                    1 -> Priority.MEDIUM
+                    else -> Priority.LOW
+                },
+                description = row.description,
+                deleted = row.deleted != 0L,
+                createdAt = row.created_at,
+                updatedAt = row.updated_at,
+                dirty = row.local_dirty != 0L,
+                localUpdatedAt = row.local_updated_at
+            )
+            cloud.upsertPreserveUpdatedAt(uid, note)
+            db.noteQueries.clearDirtyById(row.id)
+        }
+        _events.tryEmit(SyncEvent.SyncCompleted)
     }
 
     private suspend fun mergeRemoteIntoLocalAndPushLocalNewer(uid: String, remote: List<Note>) {
@@ -101,6 +120,7 @@ class NotesSyncManager(
                         updateLocalFromRemote(l.id, r)
                         overwrites++
                     }
+
                     l.updatedAt > r.updatedAt -> toPushDistinct[id] = l
                 }
             }
@@ -138,14 +158,17 @@ class NotesSyncManager(
             deleted = row.deleted != 0L,
             createdAt = row.created_at,
             updatedAt = row.updated_at,
+            dirty = row.local_dirty != 0L,
+            localUpdatedAt = row.local_updated_at
         )
-        return rowsActive.map(::mapRow) + rowsDeleted.map(::mapRow)
+        return rowsActive.map(transform = ::mapRow) + rowsDeleted.map(::mapRow)
     }
 
     private fun clearLocal() {
         db.noteQueries.deleteAll()
         _events.tryEmit(SyncEvent.SyncCompleted)
     }
+
     private fun insertLocal(n: Note) {
         db.noteQueries.insertWithId(
             id = n.id.toLong(),
@@ -163,7 +186,7 @@ class NotesSyncManager(
     }
 
     private fun updateLocalFromRemote(id: Int, note: Note) {
-        db.noteQueries.updateNote(
+        db.noteQueries.updateFromRemote(
             title = note.title,
             priority = when (note.priority) {
                 Priority.HIGH -> 0L
@@ -195,6 +218,7 @@ class NotesSyncManager(
                 x = x ushr 8
             }
         }
+
         fun mixString(s: String) {
             for (ch in s) {
                 hash = hash xor ch.code.toLong()
@@ -211,8 +235,6 @@ class NotesSyncManager(
             mix(n.priority.ordinal.toLong())
             mixString(n.description)
             mix(if (n.deleted) 1 else 0)
-            mix(n.createdAt)
-            mix(n.updatedAt)
         }
         return hash
     }

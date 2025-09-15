@@ -8,6 +8,9 @@ interface CloudNotesDataSource {
     suspend fun getAll(uid: String): List<Note>
     suspend fun upsert(uid: String, note: Note)
     suspend fun delete(uid: String, id: Int)
+
+    // Upsert that preserves provided updatedAt (no server timestamp). Useful for push-only sync to avoid reordering.
+    suspend fun upsertPreserveUpdatedAt(uid: String, note: Note)
 }
 
 expect fun provideCloudNotesDataSource(): CloudNotesDataSource
@@ -17,4 +20,3 @@ interface CurrentUserProvider {
 }
 
 expect fun provideCurrentUserProvider(): CurrentUserProvider
-

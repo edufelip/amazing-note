@@ -27,15 +27,15 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
-import com.edufelip.shared.presentation.AuthViewModel
 import com.edufelip.shared.model.Note
+import com.edufelip.shared.presentation.AuthViewModel
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.empty_trash_hint
 import com.edufelip.shared.resources.empty_trash_title
 import com.edufelip.shared.resources.trash
-import com.edufelip.shared.ui.gadgets.DismissibleNoteRow
 import com.edufelip.shared.ui.gadgets.DrawerContent
+import com.edufelip.shared.ui.gadgets.NoteRow
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -97,7 +97,11 @@ fun TrashScreen(
                 }
             },
         ) { padding ->
-            Box(modifier = Modifier.padding(padding)) {
+            Box(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+            ) {
                 TrashScreenContent(
                     notes = notes,
                     onRestore = onRestore,
@@ -137,13 +141,15 @@ fun TrashScreenContent(
 
     LazyColumn(contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp)) {
         items(notes, key = { it.id }) { note ->
-            DismissibleNoteRow(
-                note = note,
-                onClick = onRestore,
-                onDismiss = onRestore,
-                isRestore = true,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            )
+            Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
+                NoteRow(
+                    note = note,
+                    onClick = {}, // no navigation or restore on row click
+                )
+                androidx.compose.material3.TextButton(onClick = { onRestore(note) }) {
+                    androidx.compose.material3.Text("Restore")
+                }
+            }
         }
     }
 }

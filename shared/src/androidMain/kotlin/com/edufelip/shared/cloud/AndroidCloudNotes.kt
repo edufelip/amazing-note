@@ -3,8 +3,8 @@ package com.edufelip.shared.cloud
 import com.edufelip.shared.model.Note
 import com.edufelip.shared.model.Priority
 import com.google.android.gms.tasks.Task
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -16,9 +16,9 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
+import java.util.Date
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import java.util.Date
 
 private fun col(uid: String): CollectionReference =
     FirebaseFirestore.getInstance().collection("users").document(uid).collection("notes")
@@ -30,21 +30,7 @@ private data class Dto(
     val description: String? = null,
     val deleted: Boolean? = null,
     val createdAt: Long? = null,
-    val updatedAt: Long? = null,
-)
-
-private fun Note.toDto(): Map<String, Any?> = mapOf(
-    "id" to id,
-    "title" to title,
-    "priority" to when (priority) {
-        Priority.HIGH -> 0
-        Priority.MEDIUM -> 1
-        Priority.LOW -> 2
-    },
-    "description" to description,
-    "deleted" to deleted,
-    "createdAt" to createdAt,
-    "updatedAt" to updatedAt,
+    val updatedAt: Long? = null
 )
 
 private fun Dto.toNote(docId: String): Note? {
@@ -126,12 +112,33 @@ actual fun provideCloudNotesDataSource(): CloudNotesDataSource {
                 },
                 "updatedAt" to FieldValue.serverTimestamp(),
             )
-            data["createdAt"] = if (note.createdAt == 0L) FieldValue.serverTimestamp() else Timestamp(Date(note.createdAt))
+            data["createdAt"] =
+                if (note.createdAt == 0L) FieldValue.serverTimestamp() else Timestamp(Date(note.createdAt))
             ref.set(data, SetOptions.merge()).await()
         }
 
         override suspend fun delete(uid: String, id: Int) {
             col(uid).document(id.toString()).delete().await()
+        }
+
+        override suspend fun upsertPreserveUpdatedAt(uid: String, note: Note) {
+            val ref = col(uid).document(note.id.toString())
+            val data = mutableMapOf<String, Any?>(
+                "id" to note.id,
+                "title" to note.title,
+                "description" to note.description,
+                "deleted" to note.deleted,
+                "priority" to when (note.priority) {
+                    Priority.HIGH -> 0
+                    Priority.MEDIUM -> 1
+                    Priority.LOW -> 2
+                },
+                // Preserve provided updatedAt to avoid reordering on push-only sync
+                "updatedAt" to Timestamp(Date(note.updatedAt)),
+            )
+            data["createdAt"] =
+                if (note.createdAt == 0L) FieldValue.serverTimestamp() else Timestamp(Date(note.createdAt))
+            ref.set(data, SetOptions.merge()).await()
         }
     }
 }

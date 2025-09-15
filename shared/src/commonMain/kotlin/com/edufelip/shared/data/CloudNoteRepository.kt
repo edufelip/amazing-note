@@ -40,11 +40,19 @@ class CloudNoteRepository(
             deleted = false,
             createdAt = now,
             updatedAt = now,
+            dirty = false,
+            localUpdatedAt = now,
         )
         cloud.upsert(uid, note)
     }
 
-    override suspend fun update(id: Int, title: String, priority: Priority, description: String, deleted: Boolean) {
+    override suspend fun update(
+        id: Int,
+        title: String,
+        priority: Priority,
+        description: String,
+        deleted: Boolean
+    ) {
         val uid = currentUser.uid.first() ?: return
         val now = nowEpochMs()
         val note = Note(
@@ -55,14 +63,29 @@ class CloudNoteRepository(
             deleted = deleted,
             createdAt = now,
             updatedAt = now,
+            dirty = true,
+            localUpdatedAt = now,
         )
         cloud.upsert(uid, note)
     }
 
     override suspend fun setDeleted(id: Int, deleted: Boolean) {
         val uid = currentUser.uid.first() ?: return
-        val now = com.edufelip.shared.util.nowEpochMs()
-        cloud.upsert(uid, Note(id, "", Priority.MEDIUM, "", deleted, createdAt = now, updatedAt = now))
+        val now = nowEpochMs()
+        cloud.upsert(
+            uid,
+            Note(
+                id,
+                "",
+                Priority.MEDIUM,
+                "",
+                deleted,
+                createdAt = now,
+                updatedAt = now,
+                dirty = false,
+                localUpdatedAt = now
+            )
+        )
     }
 
     override suspend fun delete(id: Int) {
