@@ -29,6 +29,14 @@ Go to [Google Play](https://play.google.com/store/apps/details?id=com.edufelip.a
 * Google Identity Services (Android sign-in via Credential Manager + Google ID)
 * JUnit and Mockito for unit tests
 
+Key recent changes
+- One shared SQLDelight database instance is used by UI and sync to avoid state drift.
+- Logout or account switch clears the local DB and Firestore offline cache so notes are not visible across sessions.
+- Sync can run in push-only mode (local → remote): only dirty local changes are uploaded, and remote is not merged back.
+- Firestore `createdAt`/`updatedAt` are stored as Timestamp; push-only preserves `updatedAt` to keep list order stable.
+- Swipe-to-delete removed; delete/restore are explicit actions.
+- Notes list uses a single simple scroll; section labels (Today/This week/This month/Earlier) are not sticky.
+
 ## Installation
 Clone this repository and import into **Android Studio**
 ```bash
@@ -61,6 +69,19 @@ iOS (CocoaPods + Compose Multiplatform)
 Notes
 - iOS integrates FirebaseAuth + GoogleSignIn via CocoaPods (configured in shared/build.gradle.kts cocoapods block).
 - Ensure `GoogleService-Info.plist` is present in `iosApp/iosApp/` and your URL scheme (REVERSED_CLIENT_ID) is set in `Info.plist`.
+
+Firestore rules
+- Per-user access is required or Firestore will reject writes (PERMISSION_DENIED). Example rules:
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/notes/{noteId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
 
 ## CI Hints
 Minimal CI steps you can copy into your pipeline:
@@ -164,13 +185,18 @@ MainActivity follows this pattern and is the app launcher.
 
 ## Material You & UX
 - Dynamic color-aware theme on Android and iOS.
-- Sticky section headers grouped by date (Today, This week, This month, Earlier).
+- Section labels grouped by date (Today, This week, This month, Earlier) – labels scroll with content (not sticky).
 - Search + priority FilterChips (All/High/Medium/Low).
 - Toggle between Created vs. Updated for grouping and note timestamps.
 - Persisted UI state:
   - Dark theme toggle
   - Priority filter selection
   - Date mode (Created vs. Updated)
+
+Delete/Restore
+- Swipe gestures were removed to avoid accidental actions.
+- Delete from Home sets a soft-delete flag (moves to Trash) and runs a push-only sync to update remote immediately.
+- Restore from Trash clears soft-delete and runs push-only sync.
 
 ## Localization
 - Shared UI uses a common string key set (`shared/i18n/Strings.kt`) and CompositionLocal `LocalStrings`.
@@ -232,3 +258,120 @@ This project is mantained by:
 3. Commit your changes (git commit -m 'Add some feature')
 4. Push your branch (git push origin my-new-feature)
 5. Create a new Pull Request
+
+## Diagrams
+
+Architecture Overview
+
+```mermaid
+flowchart LR
+  subgraph UI[Compose UI (shared)]
+    A[Home/List/Detail/Trash]
+  end
+  VM[NoteUiViewModel (Android: KmpNoteViewModel)]
+  UC[NoteUseCases]
+  REP[NoteRepository]
+  subgraph Local[Local Persistence]
+    SQL[SQLDelight NoteDatabase\n(note table)]
+  end
+  subgraph Cloud[Cloud]
+    FS[Firestore\nusers/{uid}/notes/{id}]
+  end
+  SYNC[NotesSyncManager]
+
+  A --> VM --> UC --> REP --> SQL
+  SYNC <--> SQL
+  SYNC <--> FS
+  VM -. auth state .-> SYNC
+```
+
+Sync Modes
+
+Two‑way merge (login/explicit sync):
+```mermaid
+sequenceDiagram
+  participant UI as UI
+  participant SM as NotesSyncManager
+  participant FS as Firestore
+  participant DB as SQLDelight
+  UI->>SM: syncNow()
+  SM->>FS: getAll(uid)
+  FS-->>SM: remote notes
+  SM->>DB: merge remote into local (overwrite if newer)
+  SM->>FS: upsert local-newer notes
+  SM-->>UI: SyncCompleted
+```
+
+Push‑only (insert/update/delete/restore):
+```mermaid
+sequenceDiagram
+  participant UI as UI
+  participant DB as SQLDelight
+  participant SM as NotesSyncManager
+  participant FS as Firestore
+  UI->>DB: write local (mark dirty)
+  UI->>SM: syncLocalToRemoteOnly()
+  SM->>DB: selectDirty()
+  loop for each dirty note
+    SM->>FS: upsertPreserveUpdatedAt(note)
+    SM->>DB: clearDirtyById(id)
+  end
+  SM-->>UI: SyncCompleted
+```
+
+Data Model
+
+```mermaid
+classDiagram
+  class Note {
+    +Int id
+    +String title
+    +Int priority 0|1|2
+    +String description
+    +Boolean deleted
+    +Long createdAt (epoch ms)
+    +Long updatedAt (epoch ms)
+    -- local only --
+    +Int local_dirty (0|1)
+    +Long local_updated_at
+  }
+```
+
+Auth State and Clearing
+
+```mermaid
+flowchart TD
+  L[Login] -->|uid!=null| StartSync[Start remote listener]
+  StartSync --> TwoWay[Two-way merge on snapshots]
+  LO[Logout or uid switch] --> ClearLocal[Clear local DB]
+  ClearLocal --> ClearCache[Clear Firestore offline cache]
+  ClearCache --> Idle[No user]
+```
+
+## Data sync and offline
+
+- Local database: SQLDelight (Android: `AndroidSqliteDriver`, iOS: native driver). DB name: `notes.db`.
+- Firestore: `users/{uid}/notes/{id}`; documents contain id, title, description, priority (0/1/2), deleted (bool), createdAt (Timestamp), updatedAt (Timestamp).
+- Two sync modes used in the app:
+  - Two‑way merge: fetches remote, merges into local, and pushes local‑newer to remote (used on login and some flows).
+  - Push‑only: uploads only local dirty changes; does not merge from remote (used on insert/update/delete/restore flows). Push‑only preserves `updatedAt` to avoid reordering.
+- Dirty tracking: the `note` table has `local_dirty` and `local_updated_at` columns to mark local edits. Push‑only syncs only dirty rows and clears the flag after successful push.
+- Logout/account switch: local DB is wiped and Firestore offline cache cleared to prevent cross‑account leakage.
+
+Immediate population after login
+- After login, the app triggers a one‑shot sync so notes appear on Home right away.
+- A brief loading bar appears on Home while the first sync completes.
+
+Where the schema lives
+- Main schema and queries: `shared/src/commonMain/sqldelight/com/edufelip/shared/db/Note.sq`
+- Migrations: `shared/src/commonMain/sqldelight/com/edufelip/shared/db/migrations/`
+- SQLDelight config: `shared/build.gradle.kts` under `sqldelight { databases { ... } }`
+
+About SQLDelight query result types
+- Named queries that list columns generate a named result type (e.g., `SelectAll`).
+- To get the generated table row type (`com.edufelip.shared.db.Note`), write `SELECT *`.
+- You can also provide a mapper to return your domain model directly from a query.
+
+QA checklists
+- Full test plan: `docs/QA_TEST_PLAN.md`
+- Quick regression list: `docs/QA_CHECKLIST.md`
