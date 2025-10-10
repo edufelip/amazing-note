@@ -15,10 +15,10 @@ import androidx.compose.ui.graphics.drawscope.Stroke
  */
 @Composable
 fun TrashIllustration(modifier: Modifier = Modifier) {
+    val primary = MaterialTheme.colorScheme.primary
     Canvas(modifier = modifier) {
         val width = size.width
         val height = size.height
-        val primary = MaterialTheme.colorScheme.primary
         val baseStrokeWidth = height * 0.02f
 
         // can lid

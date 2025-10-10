@@ -291,14 +291,13 @@ fun ListScreen(
                                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                                             verticalArrangement = Arrangement.spacedBy(8.dp),
                                         ) {
-                                            val chips =
-                                                listOf<Pair<String, Priority?>>(
-                                                    stringResource(Res.string.priority_all) to null,
-                                                ) + listOf(
-                                                    stringResource(Res.string.high_priority) to Priority.HIGH,
-                                                    stringResource(Res.string.medium_priority) to Priority.MEDIUM,
-                                                    stringResource(Res.string.low_priority) to Priority.LOW,
-                                                )
+                                            val chips = listOf<Pair<String, Priority?>>(
+                                                stringResource(Res.string.priority_all) to null,
+                                            ) + listOf(
+                                                stringResource(Res.string.high_priority) to Priority.HIGH,
+                                                stringResource(Res.string.medium_priority) to Priority.MEDIUM,
+                                                stringResource(Res.string.low_priority) to Priority.LOW,
+                                            )
                                             chips.forEach { (label, value) ->
                                                 val selected = selectedFilter.value == value
                                                 FilterChip(

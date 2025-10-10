@@ -57,6 +57,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.model.Note
 import com.edufelip.shared.resources.Res
+import com.edufelip.shared.resources.cd_back
 import com.edufelip.shared.resources.empty_trash_description
 import com.edufelip.shared.resources.empty_trash_hint
 import com.edufelip.shared.resources.empty_trash_title
