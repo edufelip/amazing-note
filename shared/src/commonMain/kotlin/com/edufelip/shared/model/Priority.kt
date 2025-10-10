@@ -12,7 +12,6 @@ enum class Priority(override val serialized: String, val value: Int) : StringEnu
     override fun toString(): String = serialized
 
     companion object {
-        fun fromString(value: String?): Priority? =
-            if (value == null) null else fromString<Priority>(value)
+        fun fromString(value: String?): Priority? = if (value == null) null else fromString<Priority>(value)
     }
 }

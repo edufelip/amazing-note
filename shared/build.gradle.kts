@@ -81,6 +81,16 @@ kotlin {
             }
         }
     }
+
+    targets.all {
+        compilations.configureEach {
+            compileTaskProvider.configure {
+                compilerOptions {
+                    freeCompilerArgs.add("-Xexpect-actual-classes")
+                }
+            }
+        }
+    }
 }
 
 compose {

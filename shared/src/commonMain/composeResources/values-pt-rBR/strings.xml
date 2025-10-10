@@ -2,6 +2,7 @@
     <!-- Navegação -->
     <string name="your_notes">Suas notas</string>
     <string name="trash">Lixeira</string>
+    <string name="trash_count">Lixeira (%1$d)</string>
     <string name="privacy_policy">Política de Privacidade</string>
     <string name="sync_now">Sincronizar agora</string>
 
@@ -45,6 +46,7 @@
     <string name="priority">Prioridade</string>
     <string name="filters">Filtros</string>
     <string name="search">Procurar</string>
+    <string name="priority_all">Todas</string>
     <string name="high_priority">Alta Prioridade</string>
     <string name="medium_priority">Média Prioridade</string>
     <string name="low_priority">Baixa Prioridade</string>
@@ -54,8 +56,18 @@
     <string name="description">Descrição</string>
 
     <!-- Notas - Estados vazios -->
+    <string name="empty_notes_greeting">Bom dia</string>
+    <string name="empty_notes_subtitle">Pronto para capturar um pensamento?</string>
     <string name="empty_notes_title">Sem notas ainda</string>
     <string name="empty_notes_hint">Toque no botão + para criar sua primeira nota</string>
+    <string name="empty_trash_title">A lixeira está vazia</string>
+    <string name="empty_trash_hint">Notas excluídas aparecerão aqui</string>
+    <string name="empty_trash_description">Notas na lixeira são apagadas permanentemente após 7 dias.</string>
+    <string name="trash_deleted_today">Excluída hoje</string>
+    <string name="trash_deleted_yesterday">Excluída há 1 dia</string>
+    <string name="trash_deleted_days_ago">Excluída há %1$d dias</string>
+    <string name="trash_recover_selected">Recuperar selecionadas (%1$d)</string>
+    <string name="trash_empty_action">Esvaziar lixeira</string>
     <string name="no_notes_match_filter">Nenhuma nota corresponde a este filtro</string>
     <string name="no_notes_match_search">Nenhuma nota corresponde à sua pesquisa</string>
 
@@ -81,6 +93,9 @@
     <string name="cd_back">Voltar</string>
     <string name="cd_save">Salvar</string>
     <string name="cd_delete">Excluir</string>
+    <string name="cd_undo">Desfazer</string>
+    <string name="cd_redo">Refazer</string>
+    <string name="cd_more">Mais opções</string>
     <string name="cd_restore">Restaurar</string>
     <string name="cd_search">Pesquisar</string>
     <string name="cd_clear_search">Limpar pesquisa</string>
@@ -91,4 +106,50 @@
     <string name="error_description_required">Descrição é obrigatória</string>
     <string name="error_title_too_long">Título muito longo (máx. %1$d)</string>
     <string name="error_description_too_long">Descrição muito longa (máx. %1$d)</string>
+
+    <!-- Pastas e navegação inferior -->
+    <string name="bottom_notes">Notas</string>
+    <string name="bottom_folders">Pastas</string>
+    <string name="bottom_settings">Configurações</string>
+    <string name="new_folder">Nova pasta</string>
+    <string name="rename_folder">Renomear pasta</string>
+    <string name="delete_folder">Excluir pasta</string>
+    <string name="delete_folder_message">As notas serão movidas para Sem pasta.</string>
+    <string name="folder_options_rename">Renomear</string>
+    <string name="folder_options_delete">Excluir</string>
+    <string name="folder_name">Nome da pasta</string>
+    <string name="folders_empty_title">Missão pela organização!</string>
+    <string name="folders_empty_hint">Sua prateleira de troféus espera - crie a sua primeira pasta para desbloquear uma conquista de organização.</string>
+    <string name="folders_empty_unlock_label">Desbloqueie a 1ª pasta</string>
+    <string name="folders_header_title">Pastas</string>
+    <string name="folders_header_subtitle">Organize suas notas em pastas.</string>
+    <string name="folders_view_all">Ver tudo</string>
+    <string name="home_new_folder">Nova pasta</string>
+    <string name="folder_note_count_one">1 nota</string>
+    <string name="folder_note_count_other">%1$d notas</string>
+    <string name="unassigned_subtitle">Notas sem pasta</string>
+    <string name="folder_detail_empty_title">Ainda sem notas</string>
+    <string name="folder_detail_empty_hint">Adicione notas a esta pasta para manter tudo organizado.</string>
+    <string name="folder_add_note">Adicionar nota</string>
+    <string name="no_folder_label">Sem pasta</string>
+    <string name="folder_field_label">Pasta</string>
+    <string name="unassigned_notes">Sem pasta</string>
+
+    <!-- Configurações -->
+    <string name="settings_header">Configurações</string>
+    <string name="personalize_title">Personalize suas notas</string>
+    <string name="personalize_subtitle">Deixe o app com a sua cara.</string>
+    <string name="welcome_message">Entre para sincronizar em todos os dispositivos.</string>
+    <string name="appearance_section">Aparência</string>
+    <string name="theme_option">Modo escuro</string>
+    <string name="theme_subtitle">Alterne entre modo claro e escuro.</string>
+    <string name="account_section">Conta</string>
+    <string name="management_section">Atalhos</string>
+    <string name="trash_subtitle">Notas excluídas recentemente</string>
+    <string name="app_version_label">Versão do app</string>
+
+    <!-- Ações -->
+    <string name="restore">Restaurar</string>
+    <string name="dialog_ok">OK</string>
+    <string name="dialog_cancel">Cancelar</string>
 </resources>

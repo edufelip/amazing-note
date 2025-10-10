@@ -38,13 +38,13 @@ class DefaultNoteUiViewModelTest {
 
     @Test
     fun insert_invalid_emptyTitle() = runTest {
-        val result = vm.insert("", Priority.HIGH, "desc")
+        val result = vm.insert("", Priority.HIGH, "desc", null)
         assertThat(result).isInstanceOf(NoteActionResult.Invalid::class.java)
     }
 
     @Test
     fun insert_success_and_observeNotes() = runTest {
-        val result = vm.insert("Title", Priority.MEDIUM, "Desc")
+        val result = vm.insert("Title", Priority.MEDIUM, "Desc", null)
         assertThat(result).isInstanceOf(NoteActionResult.Success::class.java)
         val notes = vm.notes.first()
         assertThat(notes).hasSize(1)
@@ -53,16 +53,16 @@ class DefaultNoteUiViewModelTest {
 
     @Test
     fun update_invalid_tooLongTitle() = runTest {
-        vm.insert("T", Priority.LOW, "D")
+        vm.insert("T", Priority.LOW, "D", null)
         val existing = vm.notes.first().first()
         val longTitle = "x".repeat(Constants.MAX_TITLE_LENGTH + 1)
-        val result = vm.update(existing.id, longTitle, existing.priority, existing.description, false)
+        val result = vm.update(existing.id, longTitle, existing.priority, existing.description, false, existing.folderId)
         assertThat(result).isInstanceOf(NoteActionResult.Invalid::class.java)
     }
 
     @Test
     fun setDeleted_and_restore() = runTest {
-        vm.insert("To Delete", Priority.LOW, "D")
+        vm.insert("To Delete", Priority.LOW, "D", null)
         val note = vm.notes.first().first()
         vm.setDeleted(note.id, true)
         val trash1 = vm.trash.first()

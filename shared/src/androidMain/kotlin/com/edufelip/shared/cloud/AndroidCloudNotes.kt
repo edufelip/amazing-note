@@ -20,8 +20,7 @@ import java.util.Date
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-private fun col(uid: String): CollectionReference =
-    FirebaseFirestore.getInstance().collection("users").document(uid).collection("notes")
+private fun col(uid: String): CollectionReference = FirebaseFirestore.getInstance().collection("users").document(uid).collection("notes")
 
 private data class Dto(
     val id: Int? = null,
@@ -30,7 +29,8 @@ private data class Dto(
     val description: String? = null,
     val deleted: Boolean? = null,
     val createdAt: Long? = null,
-    val updatedAt: Long? = null
+    val updatedAt: Long? = null,
+    val folderId: Long? = null,
 )
 
 private fun Dto.toNote(docId: String): Note? {
@@ -47,6 +47,7 @@ private fun Dto.toNote(docId: String): Note? {
         deleted = deleted ?: false,
         createdAt = createdAt ?: 0L,
         updatedAt = updatedAt ?: 0L,
+        folderId = folderId,
     )
 }
 
@@ -58,6 +59,7 @@ private fun parseDto(map: Map<String, Any?>): Dto = Dto(
     deleted = map["deleted"] as? Boolean,
     createdAt = map["createdAt"].toMillis(),
     updatedAt = map["updatedAt"].toMillis(),
+    folderId = (map["folderId"] as? Number)?.toLong(),
 )
 
 private fun Any?.toMillis(): Long? = when (this) {
@@ -71,7 +73,7 @@ actual fun provideCloudNotesDataSource(): CloudNotesDataSource {
     val settings = FirebaseFirestoreSettings.Builder()
         .setLocalCacheSettings(
             PersistentCacheSettings.newBuilder()
-                .build()
+                .build(),
         )
         .build()
     db.firestoreSettings = settings
@@ -92,7 +94,7 @@ actual fun provideCloudNotesDataSource(): CloudNotesDataSource {
             val res = col(uid).get().await()
             return res.documents.mapNotNull { doc ->
                 parseDto(
-                    doc.data ?: emptyMap()
+                    doc.data ?: emptyMap(),
                 ).toNote(doc.id)
             }
                 .sortedBy { it.updatedAt }
@@ -110,6 +112,7 @@ actual fun provideCloudNotesDataSource(): CloudNotesDataSource {
                     Priority.MEDIUM -> 1
                     Priority.LOW -> 2
                 },
+                "folderId" to note.folderId,
                 "updatedAt" to FieldValue.serverTimestamp(),
             )
             data["createdAt"] =
@@ -133,6 +136,7 @@ actual fun provideCloudNotesDataSource(): CloudNotesDataSource {
                     Priority.MEDIUM -> 1
                     Priority.LOW -> 2
                 },
+                "folderId" to note.folderId,
                 // Preserve provided updatedAt to avoid reordering on push-only sync
                 "updatedAt" to Timestamp(Date(note.updatedAt)),
             )
@@ -160,8 +164,7 @@ actual fun provideCurrentUserProvider(): CurrentUserProvider = object : CurrentU
         }
 }
 
-private suspend fun <T> Task<T>.await(): T =
-    kotlinx.coroutines.suspendCancellableCoroutine { cont ->
-        addOnSuccessListener { result -> cont.resume(result) }
-        addOnFailureListener { e -> cont.resumeWithException(e) }
-    }
+private suspend fun <T> Task<T>.await(): T = kotlinx.coroutines.suspendCancellableCoroutine { cont ->
+    addOnSuccessListener { result -> cont.resume(result) }
+    addOnFailureListener { e -> cont.resumeWithException(e) }
+}

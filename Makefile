@@ -23,3 +23,9 @@ clean:
 	./gradlew clean
 	rm -rf iosApp/Pods iosApp/iosApp.xcworkspace iosApp/DerivedData
 
+
+pcm:
+	python3 tools/pcm_update.py
+
+check-pcm:
+	python3 tools/pcm_update.py --check

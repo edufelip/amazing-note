@@ -80,7 +80,8 @@ class NotesSyncManager(
                 createdAt = row.created_at,
                 updatedAt = row.updated_at,
                 dirty = row.local_dirty != 0L,
-                localUpdatedAt = row.local_updated_at
+                localUpdatedAt = row.local_updated_at,
+                folderId = row.folder_id,
             )
             cloud.upsertPreserveUpdatedAt(uid, note)
             db.noteQueries.clearDirtyById(row.id)
@@ -159,13 +160,15 @@ class NotesSyncManager(
             createdAt = row.created_at,
             updatedAt = row.updated_at,
             dirty = row.local_dirty != 0L,
-            localUpdatedAt = row.local_updated_at
+            localUpdatedAt = row.local_updated_at,
+            folderId = row.folder_id,
         )
         return rowsActive.map(transform = ::mapRow) + rowsDeleted.map(::mapRow)
     }
 
     private fun clearLocal() {
         db.noteQueries.deleteAll()
+        db.noteQueries.deleteAllFolders()
         _events.tryEmit(SyncEvent.SyncCompleted)
     }
 
@@ -182,6 +185,7 @@ class NotesSyncManager(
             deleted = if (n.deleted) 1 else 0,
             created_at = n.createdAt,
             updated_at = n.updatedAt,
+            folder_id = n.folderId,
         )
     }
 
@@ -196,6 +200,7 @@ class NotesSyncManager(
             description = note.description,
             deleted = if (note.deleted) 1 else 0,
             updated_at = note.updatedAt,
+            folder_id = note.folderId,
             id = id.toLong(),
         )
     }
@@ -235,6 +240,7 @@ class NotesSyncManager(
             mix(n.priority.ordinal.toLong())
             mixString(n.description)
             mix(if (n.deleted) 1 else 0)
+            mix(n.folderId ?: -1L)
         }
         return hash
     }

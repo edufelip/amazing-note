@@ -13,13 +13,11 @@ fun SnapshotStateList<AppRoutes>.navigate(destination: AppRoutes, singleTop: Boo
 /**
  * Pops one entry if possible. Returns true if a pop occurred.
  */
-fun SnapshotStateList<AppRoutes>.goBack(): Boolean {
-    return if (this.size > 1) {
-        this.removeLastOrNull()
-        true
-    } else {
-        false
-    }
+fun SnapshotStateList<AppRoutes>.goBack(): Boolean = if (this.size > 1) {
+    this.removeLastOrNull()
+    true
+} else {
+    false
 }
 
 /**
@@ -28,4 +26,3 @@ fun SnapshotStateList<AppRoutes>.goBack(): Boolean {
 fun SnapshotStateList<AppRoutes>.popToRoot() {
     while (this.size > 1) this.removeLastOrNull()
 }
-

@@ -9,13 +9,11 @@ class ObserveCurrentUser(private val repository: AuthRepository) {
 }
 
 class Login(private val repository: AuthRepository) {
-    suspend operator fun invoke(email: String, password: String) =
-        repository.signInWithEmailPassword(email, password)
+    suspend operator fun invoke(email: String, password: String) = repository.signInWithEmailPassword(email, password)
 }
 
 class SignUp(private val repository: AuthRepository) {
-    suspend operator fun invoke(email: String, password: String) =
-        repository.signUpWithEmailPassword(email, password)
+    suspend operator fun invoke(email: String, password: String) = repository.signUpWithEmailPassword(email, password)
 }
 
 class SendPasswordReset(private val repository: AuthRepository) {

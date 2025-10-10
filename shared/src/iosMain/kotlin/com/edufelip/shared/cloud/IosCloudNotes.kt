@@ -2,29 +2,25 @@ package com.edufelip.shared.cloud
 
 import cocoapods.FirebaseAuth.FIRAuth
 import cocoapods.FirebaseFirestore.FIRCollectionReference
+import cocoapods.FirebaseFirestore.FIRFieldValue
 import cocoapods.FirebaseFirestore.FIRFirestore
+import cocoapods.FirebaseFirestore.FIRFirestoreSettings
 import cocoapods.FirebaseFirestore.FIRListenerRegistration
 import cocoapods.FirebaseFirestore.FIRQuerySnapshot
-import cocoapods.FirebaseFirestore.FIRFirestoreSettings
+import cocoapods.FirebaseFirestore.FIRSetOptions
+import cocoapods.FirebaseFirestore.FIRTimestamp
 import com.edufelip.shared.model.Note
 import com.edufelip.shared.model.Priority
-import kotlinx.cinterop.objcPtr
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
-import platform.Foundation.NSNumber
-import platform.Foundation.NSNumberCompanion
-import platform.Foundation.NSObject
-import cocoapods.FirebaseFirestore.FIRFieldValue
-import cocoapods.FirebaseFirestore.FIRSetOptions
-import cocoapods.FirebaseFirestore.FIRTimestamp
 import platform.Foundation.NSDate
+import platform.Foundation.NSNumber
 
-private fun col(uid: String): FIRCollectionReference =
-    FIRFirestore.firestore().collectionWithPath("users")
-        .documentWithPath(uid)
-        .collectionWithPath("notes")
+private fun col(uid: String): FIRCollectionReference = FIRFirestore.firestore().collectionWithPath("users")
+    .documentWithPath(uid)
+    .collectionWithPath("notes")
 
 private fun Note.toMap(): Map<Any?, *> = mapOf<Any?, Any?>(
     "id" to id.toLong(),
@@ -38,6 +34,7 @@ private fun Note.toMap(): Map<Any?, *> = mapOf<Any?, Any?>(
     "deleted" to deleted,
     "createdAt" to createdAt,
     "updatedAt" to updatedAt,
+    "folderId" to folderId,
 )
 
 private fun Any?.toLongOrZero(): Long = when (this) {
@@ -72,6 +69,7 @@ private fun mapToNote(id: String, data: Map<Any?, *>): Note? {
         deleted = data["deleted"].toBool(),
         createdAt = data["createdAt"].toLongOrZero(),
         updatedAt = data["updatedAt"].toLongOrZero(),
+        folderId = (data["folderId"].toLongOrZero()).takeIf { (data["folderId"] != null) },
     )
 }
 
@@ -98,21 +96,20 @@ actual fun provideCloudNotesDataSource(): CloudNotesDataSource {
             awaitClose { registration.remove() }
         }
 
-        override suspend fun getAll(uid: String): List<Note> =
-            kotlinx.coroutines.suspendCancellableCoroutine { cont ->
-                col(uid).getDocumentsWithCompletion { snapshot, error ->
-                    if (snapshot != null) {
-                        val list = snapshot.documents().mapNotNull { doc ->
-                            @Suppress("UNCHECKED_CAST")
-                            val data = doc.data() as? Map<Any?, *> ?: emptyMap<Any?, Any?>()
-                            mapToNote(doc.documentID, data)
-                        }.sortedBy { it.updatedAt }
-                        cont.resume(list) {}
-                    } else {
-                        cont.resume(emptyList()) {}
-                    }
+        override suspend fun getAll(uid: String): List<Note> = kotlinx.coroutines.suspendCancellableCoroutine { cont ->
+            col(uid).getDocumentsWithCompletion { snapshot, error ->
+                if (snapshot != null) {
+                    val list = snapshot.documents().mapNotNull { doc ->
+                        @Suppress("UNCHECKED_CAST")
+                        val data = doc.data() as? Map<Any?, *> ?: emptyMap<Any?, Any?>()
+                        mapToNote(doc.documentID, data)
+                    }.sortedBy { it.updatedAt }
+                    cont.resume(list) {}
+                } else {
+                    cont.resume(emptyList()) {}
                 }
             }
+        }
 
         override suspend fun upsert(uid: String, note: Note) {
             kotlinx.coroutines.suspendCancellableCoroutine<Unit> { cont ->
@@ -126,6 +123,7 @@ actual fun provideCloudNotesDataSource(): CloudNotesDataSource {
                         Priority.MEDIUM -> 1
                         Priority.LOW -> 2
                     },
+                    "folderId" to note.folderId,
                     "updatedAt" to FIRFieldValue.fieldValueForServerTimestamp(),
                 )
                 data["createdAt"] = if (note.createdAt == 0L) {
@@ -136,14 +134,17 @@ actual fun provideCloudNotesDataSource(): CloudNotesDataSource {
                 }
                 val opts = FIRSetOptions.setOptionsWithMerge(true)
                 col(uid).documentWithPath(note.id.toString()).setData(data, opts) { error ->
-                    if (error != null) cont.resumeWith(
-                        Result.failure(
-                            Throwable(
-                                error.localizedDescription ?: "error"
-                            )
+                    if (error != null) {
+                        cont.resumeWith(
+                            Result.failure(
+                                Throwable(
+                                    error.localizedDescription ?: "error",
+                                ),
+                            ),
                         )
-                    )
-                    else cont.resume(Unit) {}
+                    } else {
+                        cont.resume(Unit) {}
+                    }
                 }
             }
         }
@@ -151,14 +152,17 @@ actual fun provideCloudNotesDataSource(): CloudNotesDataSource {
         override suspend fun delete(uid: String, id: Int) {
             kotlinx.coroutines.suspendCancellableCoroutine<Unit> { cont ->
                 col(uid).documentWithPath(id.toString()).deleteDocumentWithCompletion { error ->
-                    if (error != null) cont.resumeWith(
-                        Result.failure(
-                            Throwable(
-                                error.localizedDescription ?: "error"
-                            )
+                    if (error != null) {
+                        cont.resumeWith(
+                            Result.failure(
+                                Throwable(
+                                    error.localizedDescription ?: "error",
+                                ),
+                            ),
                         )
-                    )
-                    else cont.resume(Unit) {}
+                    } else {
+                        cont.resume(Unit) {}
+                    }
                 }
             }
         }
@@ -175,6 +179,7 @@ actual fun provideCloudNotesDataSource(): CloudNotesDataSource {
                         Priority.MEDIUM -> 1
                         Priority.LOW -> 2
                     },
+                    "folderId" to note.folderId,
                     // Preserve provided updatedAt as Timestamp
                     "updatedAt" to NSDate.dateWithTimeIntervalSince1970(note.updatedAt.toDouble() / 1000.0),
                 )
@@ -185,14 +190,17 @@ actual fun provideCloudNotesDataSource(): CloudNotesDataSource {
                 }
                 val opts = FIRSetOptions.setOptionsWithMerge(true)
                 col(uid).documentWithPath(note.id.toString()).setData(data, opts) { error ->
-                    if (error != null) cont.resumeWith(
-                        Result.failure(
-                            Throwable(
-                                error.localizedDescription ?: "error"
-                            )
+                    if (error != null) {
+                        cont.resumeWith(
+                            Result.failure(
+                                Throwable(
+                                    error.localizedDescription ?: "error",
+                                ),
+                            ),
                         )
-                    )
-                    else cont.resume(Unit) {}
+                    } else {
+                        cont.resume(Unit) {}
+                    }
                 }
             }
         }

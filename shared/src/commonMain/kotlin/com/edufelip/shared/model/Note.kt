@@ -10,4 +10,5 @@ data class Note(
     val updatedAt: Long,
     val dirty: Boolean = false,
     val localUpdatedAt: Long = 0L,
+    val folderId: Long? = null,
 )

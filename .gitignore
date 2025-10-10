@@ -30,3 +30,4 @@ iosApp/DerivedData/
 shared/*.podspec
 /.kotlin
 AGENTS.md
+.project_context

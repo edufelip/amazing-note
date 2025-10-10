@@ -3,14 +3,15 @@ package com.edufelip.amazing_note.ui
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.lifecycle.lifecycleScope
 import com.edufelip.amazing_note.auth.FirebaseAuthServiceImpl
 import com.edufelip.amazing_note.ui.viewmodels.KmpNoteViewModel
-import com.edufelip.shared.ui.AmazingNoteApp
 import com.edufelip.shared.db.NoteDatabase
+import com.edufelip.shared.ui.AmazingNoteApp
 import com.edufelip.shared.ui.settings.Settings
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -24,10 +25,17 @@ class MainActivity : ComponentActivity() {
     private val authService by lazy { FirebaseAuthServiceImpl() }
 
     @Inject lateinit var settings: Settings
+
     @Inject lateinit var noteDb: NoteDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        enableEdgeToEdge()
+
+        val appVersion = runCatching {
+            packageManager.getPackageInfo(packageName, 0).versionName ?: "0.0.0"
+        }.getOrElse { "0.0.0" }
 
         setContent {
             AmazingNoteApp(
@@ -74,6 +82,7 @@ class MainActivity : ComponentActivity() {
                 },
                 settings = settings,
                 noteDatabase = noteDb,
+                appVersion = appVersion,
             )
         }
     }

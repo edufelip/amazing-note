@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: check-pcm
+        name: Ensure Project Context Manifest is fresh
+        entry: make check-pcm
+        language: system
+        pass_filenames: false
+        stages: [pre-push]

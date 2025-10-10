@@ -10,27 +10,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import coil3.compose.AsyncImage
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.user_placeholder
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-actual fun AvatarImage(photoUrl: String?, modifier: Modifier) {
+actual fun AvatarImage(photoUrl: String?, size: Dp, modifier: Modifier) {
     if (!photoUrl.isNullOrBlank()) {
         AsyncImage(
             model = photoUrl,
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = modifier.size(48.dp).clip(CircleShape),
+            modifier = modifier.size(size).clip(CircleShape),
             placeholder = painterResource(Res.drawable.user_placeholder),
             error = painterResource(Res.drawable.user_placeholder),
         )
     } else {
         Box(
             modifier = modifier
-                .size(48.dp)
+                .size(size)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant),
         ) {

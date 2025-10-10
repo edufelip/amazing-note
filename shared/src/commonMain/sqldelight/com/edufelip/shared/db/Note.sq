@@ -7,7 +7,15 @@ CREATE TABLE note(
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
   local_dirty INTEGER NOT NULL DEFAULT 0,
-  local_updated_at INTEGER NOT NULL DEFAULT 0
+  local_updated_at INTEGER NOT NULL DEFAULT 0,
+  folder_id INTEGER
+);
+
+CREATE TABLE folder(
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
 );
 
 selectAll:
@@ -27,16 +35,28 @@ SELECT *
 FROM note
 WHERE id = ?;
 
+selectNotesByFolder:
+SELECT *
+FROM note
+WHERE deleted = 0 AND folder_id = ?
+ORDER BY updated_at DESC, id DESC;
+
+selectNotesWithoutFolder:
+SELECT *
+FROM note
+WHERE deleted = 0 AND folder_id IS NULL
+ORDER BY updated_at DESC, id DESC;
+
 insertNote:
-INSERT INTO note(title, priority, description, deleted, created_at, updated_at, local_dirty, local_updated_at)
-VALUES (?, ?, ?, 0, ?, ?, 1, ?);
+INSERT INTO note(title, priority, description, deleted, created_at, updated_at, local_dirty, local_updated_at, folder_id)
+VALUES (?, ?, ?, 0, ?, ?, 1, ?, ?);
 
 insertWithId:
-INSERT INTO note(id, title, priority, description, deleted, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO note(id, title, priority, description, deleted, created_at, updated_at, folder_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 updateNote:
-UPDATE note SET title = ?, priority = ?, description = ?, deleted = ?, updated_at = ?, local_dirty = 1, local_updated_at = ?
+UPDATE note SET title = ?, priority = ?, description = ?, deleted = ?, updated_at = ?, local_dirty = 1, local_updated_at = ?, folder_id = ?
 WHERE id = ?;
 
 setDeleted:
@@ -58,4 +78,37 @@ clearDirtyById:
 UPDATE note SET local_dirty = 0 WHERE id = ?;
 
 updateFromRemote:
-UPDATE note SET title = ?, priority = ?, description = ?, deleted = ?, updated_at = ?, local_dirty = 0 WHERE id = ?;
+UPDATE note SET title = ?, priority = ?, description = ?, deleted = ?, updated_at = ?, local_dirty = 0, folder_id = ? WHERE id = ?;
+
+setNoteFolder:
+UPDATE note SET folder_id = ?, updated_at = ?, local_dirty = 1, local_updated_at = ? WHERE id = ?;
+
+clearFolderAssignment:
+UPDATE note SET folder_id = NULL, updated_at = ?, local_dirty = 1, local_updated_at = ? WHERE folder_id = ?;
+
+selectFolders:
+SELECT *
+FROM folder
+ORDER BY updated_at DESC, id DESC;
+
+insertFolder:
+INSERT INTO folder(name, created_at, updated_at)
+VALUES (?, ?, ?);
+
+updateFolder:
+UPDATE folder SET name = ?, updated_at = ?
+WHERE id = ?;
+
+deleteFolder:
+DELETE FROM folder WHERE id = ?;
+
+deleteAllFolders:
+DELETE FROM folder;
+
+countNotesInFolder:
+SELECT COUNT(*)
+FROM note
+WHERE folder_id = ? AND deleted = 0;
+
+lastInsertedFolderId:
+SELECT last_insert_rowid();

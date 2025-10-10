@@ -33,8 +33,12 @@ class AuthViewModel(
             .launchIn(scope)
     }
 
-    fun clearError() { _error.value = null }
-    fun clearMessage() { _message.value = null }
+    fun clearError() {
+        _error.value = null
+    }
+    fun clearMessage() {
+        _message.value = null
+    }
 
     fun loginWithEmail(email: String, password: String) {
         if (_loading.value) return
@@ -55,7 +59,9 @@ class AuthViewModel(
     fun logout() {
         if (_loading.value) return
         scope.launch(Dispatchers.Main) {
-            try { useCases.logout() } catch (_: Exception) {}
+            try {
+                useCases.logout()
+            } catch (_: Exception) {}
         }
     }
 

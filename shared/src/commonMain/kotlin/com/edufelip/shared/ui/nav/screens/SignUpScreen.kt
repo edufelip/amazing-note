@@ -31,8 +31,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.*
+import com.edufelip.shared.resources.Res
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,7 +70,7 @@ fun SignUpScreen(
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
             )
-        }
+        },
     ) { padding ->
         Column(
             modifier = Modifier

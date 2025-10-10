@@ -10,15 +10,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import coil3.compose.AsyncImage
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.user_placeholder
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-actual fun AvatarImage(photoUrl: String?, modifier: Modifier) {
-    val shapeMod = modifier.size(48.dp).clip(CircleShape)
+actual fun AvatarImage(photoUrl: String?, size: Dp, modifier: Modifier) {
+    val shapeMod = modifier.size(size).clip(CircleShape)
     if (!photoUrl.isNullOrBlank()) {
         AsyncImage(
             model = photoUrl,

@@ -19,8 +19,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,6 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.presentation.AuthViewModel
 import com.edufelip.shared.resources.Res
+import com.edufelip.shared.resources.cd_back
 import com.edufelip.shared.resources.continue_with_google
 import com.edufelip.shared.resources.email
 import com.edufelip.shared.resources.forgot_password
@@ -59,8 +60,6 @@ import com.edufelip.shared.resources.password
 import com.edufelip.shared.resources.reset_email_sent
 import com.edufelip.shared.resources.sign_up
 import com.edufelip.shared.resources.sign_up_success
-import com.edufelip.shared.resources.cd_back
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -133,7 +132,7 @@ fun LoginScreen(
                 ),
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         Column(
             modifier = Modifier
@@ -178,7 +177,7 @@ fun LoginScreen(
 
             val scope = rememberCoroutineScope()
             val googleCanceledText = stringResource(Res.string.google_sign_in_canceled)
-                Button(
+            Button(
                 onClick = {
                     onRequestGoogleSignIn?.invoke { success, err ->
                         if (!success) {
@@ -227,7 +226,7 @@ fun LoginScreen(
                 onClick = {
                     if (email.isNotBlank()) auth.sendPasswordReset(email.trim())
                 },
-                enabled = !loading
+                enabled = !loading,
             ) {
                 Box(Modifier.fillMaxWidth()) {
                     Text(
@@ -241,7 +240,7 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
                     onOpenSignUp()
-                }
+                },
             ) {
                 Box(Modifier.fillMaxWidth()) {
                     Text(

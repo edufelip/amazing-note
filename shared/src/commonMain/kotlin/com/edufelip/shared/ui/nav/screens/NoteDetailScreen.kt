@@ -10,6 +10,7 @@ import com.edufelip.shared.domain.validation.NoteValidationError.DescriptionTooL
 import com.edufelip.shared.domain.validation.NoteValidationError.EmptyDescription
 import com.edufelip.shared.domain.validation.NoteValidationError.EmptyTitle
 import com.edufelip.shared.domain.validation.NoteValidationError.TitleTooLong
+import com.edufelip.shared.model.Folder
 import com.edufelip.shared.model.Note
 import com.edufelip.shared.model.Priority
 import com.edufelip.shared.resources.Res
@@ -26,12 +27,15 @@ fun NoteDetailScreen(
     id: Int?,
     editing: Note?,
     onBack: () -> Unit,
-    saveAndValidate: suspend (id: Int?, title: String, priority: Priority, description: String) -> NoteActionResult,
+    folders: List<Folder>,
+    initialFolderId: Long?,
+    saveAndValidate: suspend (id: Int?, title: String, priority: Priority, description: String, folderId: Long?) -> NoteActionResult,
     onDelete: (id: Int) -> Unit,
 ) {
     val titleState = remember { mutableStateOf(editing?.title ?: "") }
     val descriptionState = remember { mutableStateOf(editing?.description ?: "") }
     val priorityState = remember { mutableStateOf(editing?.priority ?: Priority.LOW) }
+    val folderState = remember { mutableStateOf(editing?.folderId ?: initialFolderId) }
     val titleError = remember { mutableStateOf<String?>(null) }
     val descriptionError = remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
@@ -57,7 +61,7 @@ fun NoteDetailScreen(
         onBack = onBack,
         onSave = {
             scope.launch {
-                when (val result = saveAndValidate(id, titleState.value, priorityState.value, descriptionState.value)) {
+                when (val result = saveAndValidate(id, titleState.value, priorityState.value, descriptionState.value, folderState.value)) {
                     is NoteActionResult.Success -> onBack()
                     is NoteActionResult.Invalid -> {
                         titleError.value = result.errors.firstOrNull { it is EmptyTitle || it is TitleTooLong }?.let { e ->
@@ -86,5 +90,8 @@ fun NoteDetailScreen(
         },
         titleError = titleError.value,
         descriptionError = descriptionError.value,
+        folders = folders,
+        selectedFolderId = folderState.value,
+        onFolderChange = { folderState.value = it },
     )
 }
