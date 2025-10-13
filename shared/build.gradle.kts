@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -26,6 +27,8 @@ kotlin {
         pod("FirebaseAuth")
         // Firestore for iOS
         pod("FirebaseFirestore")
+        // Firebase Storage for attachments
+        pod("FirebaseStorage")
         // Google Sign-In for iOS (used by iosMain Kotlin)
         pod("GoogleSignIn")
         // Ensure CocoaPods links sqlite3 when integrating the shared framework
@@ -54,6 +57,7 @@ kotlin {
                 implementation(compose.materialIconsExtended)
                 implementation(libs.sqldelight.runtime)
                 implementation(libs.sqldelight.coroutines)
+                implementation(libs.kotlinx.serialization.json)
             }
         }
         commonTest {
@@ -69,8 +73,9 @@ kotlin {
                 implementation(compose.components.resources)
                 implementation(libs.activity.compose)
                 implementation(libs.ktor.client.okhttp)
-                implementation(libs.firebase.auth.ktx)
-                implementation(libs.firebase.firestore.ktx)
+                implementation(libs.firebase.auth)
+                implementation(libs.firebase.firestore)
+                implementation(libs.firebase.storage)
             }
         }
         iosMain {

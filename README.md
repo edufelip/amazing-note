@@ -186,11 +186,10 @@ MainActivity follows this pattern and is the app launcher.
 ## Material You & UX
 - Dynamic color-aware theme on Android and iOS.
 - Section labels grouped by date (Today, This week, This month, Earlier) – labels scroll with content (not sticky).
-- Search + priority FilterChips (All/High/Medium/Low).
+- Search bar anchored directly above the notes feed.
 - Toggle between Created vs. Updated for grouping and note timestamps.
 - Persisted UI state:
   - Dark theme toggle
-  - Priority filter selection
   - Date mode (Created vs. Updated)
 
 Delete/Restore
@@ -217,11 +216,6 @@ Usage:
 New groups and relative time strings added for headers and time labels. If you localize iOS, add keys:
 - `today`, `this_week`, `this_month`, `earlier`
 - `updated`, `created`, `updated_just_now`, `updated_minutes_ago`, `updated_hours_ago`, `updated_days_ago`, `created_just_now`, `created_minutes_ago`, `created_hours_ago`, `created_days_ago`
-
-## Enum String Serialization
-- Enums that need stable string representations implement `shared/util/StringEnum.kt`.
-- Example: `Priority` overrides `toString()` to return `high|medium|low` and exposes `Priority.fromString("high")` for parsing.
-- Use `enum.toString()` for persistence and `EnumType.fromString(value)` when reading back to avoid hardcoded strings scattered across the codebase.
 
 ## Layouts
 <br>
@@ -326,7 +320,6 @@ classDiagram
   class Note {
     +Int id
     +String title
-    +Int priority 0|1|2
     +String description
     +Boolean deleted
     +Long createdAt (epoch ms)
@@ -351,7 +344,7 @@ flowchart TD
 ## Data sync and offline
 
 - Local database: SQLDelight (Android: `AndroidSqliteDriver`, iOS: native driver). DB name: `notes.db`.
-- Firestore: `users/{uid}/notes/{id}`; documents contain id, title, description, priority (0/1/2), deleted (bool), createdAt (Timestamp), updatedAt (Timestamp).
+- Firestore: `users/{uid}/notes/{id}`; documents contain id, title, description, deleted (bool), createdAt (Timestamp), updatedAt (Timestamp).
 - Two sync modes used in the app:
   - Two‑way merge: fetches remote, merges into local, and pushes local‑newer to remote (used on login and some flows).
   - Push‑only: uploads only local dirty changes; does not merge from remote (used on insert/update/delete/restore flows). Push‑only preserves `updatedAt` to avoid reordering.

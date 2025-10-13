@@ -11,7 +11,7 @@ Use this abbreviated checklist for fast validation of core flows, sync, and logo
 
 ## Notes CRUD (Online)
 - [ ] Create note → appears in list within seconds.
-- [ ] Firestore doc created under `users/{uid}/notes/{id}` with fields: id, title, description, priority (0/1/2), deleted, createdAt (Timestamp), updatedAt (Timestamp).
+- [ ] Firestore doc created under `users/{uid}/notes/{id}` with fields: id, title, description, deleted, createdAt (Timestamp), updatedAt (Timestamp).
 - [ ] Update note → UI reflects change; Firestore updated.
 - [ ] Move to Trash → leaves Home; visible in Trash; Firestore `deleted=true`.
 - [ ] Restore from Trash → back to Home; Firestore `deleted=false`.
@@ -33,12 +33,12 @@ Use this abbreviated checklist for fast validation of core flows, sync, and logo
 - [ ] Switch back to A → only A’s notes visible; no B notes leak.
 
 ## One-Time Migration (First Login)
-- [ ] Create local notes while logged out (with varied priorities) → Login as A → notes upload once to Firestore with correct priorities and Timestamp fields.
+- [ ] Create local notes while logged out → Login as A → notes upload once to Firestore with correct Timestamp fields.
 - [ ] Logout and login as A again → no duplicate uploads.
 
 ## UI & Preferences
 - [ ] Empty state shows correct title/hint when no notes.
-- [ ] Priority filter and search work; “no matches” messages appear appropriately.
+- [ ] Search works; “no matches” message appears appropriately.
 - [ ] Trash screen actions (restore/delete if available) operate correctly.
 - [ ] Dark theme toggle persists across app restarts.
 

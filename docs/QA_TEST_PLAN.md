@@ -10,7 +10,7 @@ This file outlines a comprehensive, manual QA session to validate core features,
 - Validate one-time migration of pre-login local notes to cloud after first login.
 - Validate UI states: empty lists, filters, trash, error states, and preferences persistence.
 - Validate immediate post-login sync population and the Home loading indicator behavior.
-- Validate Firestore Timestamp handling for createdAt/updatedAt and priority persistence on cloud.
+- Validate Firestore Timestamp handling for createdAt/updatedAt on cloud.
 
 ## 2) Test Environment
 - Platforms: Android (primary); iOS (parity checks if available).
@@ -59,8 +59,8 @@ This file outlines a comprehensive, manual QA session to validate core features,
 
 ### 5.2 Create Note → Push to Firestore
 - Create note while online
-  - Steps: From Home → Add → Fill title/description/priority → Save.
-  - Expected: New note appears in list; within seconds, Firestore document created under `users/{A}/notes/{id}` with matching fields; fields include `id` (int), `title`, `description`, `priority` (0/1/2), `deleted` (bool), `createdAt` (Timestamp), `updatedAt` (Timestamp; server-side).
+  - Steps: From Home → Add → Fill title/description → Save.
+  - Expected: New note appears in list; within seconds, Firestore document created under `users/{A}/notes/{id}` with matching fields; fields include `id` (int), `title`, `description`, `deleted` (bool), `createdAt` (Timestamp), `updatedAt` (Timestamp; server-side).
 - Create multiple notes rapidly (3–5)
   - Expected: All appear locally and in Firestore with correct ordering (sorted by updatedAt desc in UI).
 
@@ -134,8 +134,8 @@ This file outlines a comprehensive, manual QA session to validate core features,
 
 ### 5.9 One-Time Local → Cloud Migration on First Login
 - Migrate once per uid
-  - Steps: Start logged out; create 2–3 local notes with varied priorities (HIGH/MEDIUM/LOW) → Login as A.
-  - Expected: On first login, local notes are uploaded to Firestore and marked migrated; notes appear on Web with correct `priority` values and Timestamps for `createdAt`/`updatedAt`.
+  - Steps: Start logged out; create 2–3 local notes → Login as A.
+  - Expected: On first login, local notes are uploaded to Firestore and marked migrated; notes appear on Web with the correct Timestamps for `createdAt`/`updatedAt`.
   - Then: Logout → Login as A again.
   - Expected: No duplicate uploads; Firestore remains with single copies.
  - Immediate population after login
@@ -146,9 +146,9 @@ This file outlines a comprehensive, manual QA session to validate core features,
 - Empty state (never created notes)
   - Steps: Fresh login with no notes in cloud.
   - Expected: Shows empty state title and hint.
-- Filters & search
-  - Steps: Create notes with various priorities; apply priority filters and search queries (no matches & some matches).
-  - Expected: Correct filtering; shows “no notes match …” texts when relevant.
+- Search
+  - Steps: Create notes with different text; perform searches yielding matches and no matches.
+  - Expected: Correct filtering; shows “no notes match …” text when relevant.
 - Trash screen UI
   - Steps: Move items to Trash; verify listings, restore, and delete actions (if permanent delete exists).
   - Expected: UI updates correctly after each action.

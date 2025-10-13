@@ -1,6 +1,7 @@
 package com.edufelip.shared.ui
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.animateColorAsState
@@ -10,6 +11,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,9 +22,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
@@ -42,6 +48,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -55,6 +62,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
@@ -78,6 +86,8 @@ import com.edufelip.shared.resources.guest
 import com.edufelip.shared.resources.unassigned_notes
 import com.edufelip.shared.sync.LocalNotesSyncManager
 import com.edufelip.shared.sync.NotesSyncManager
+import com.edufelip.shared.attachments.AttachmentPicker
+import com.edufelip.shared.attachments.rememberAttachmentPicker
 import com.edufelip.shared.ui.gadgets.AvatarImage
 import com.edufelip.shared.ui.images.platformConfigImageLoader
 import com.edufelip.shared.ui.nav.AppRoutes
@@ -101,6 +111,7 @@ import com.edufelip.shared.ui.settings.LocalSettings
 import com.edufelip.shared.ui.settings.Settings
 import com.edufelip.shared.ui.theme.AmazingNoteTheme
 import com.edufelip.shared.ui.util.OnSystemBack
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
@@ -127,6 +138,7 @@ fun AmazingNoteApp(
     val trash by viewModel.trash.collectAsState(initial = emptyList())
     val folders by viewModel.folders.collectAsState(initial = emptyList())
     val unassignedNotes by viewModel.notesWithoutFolder.collectAsState(initial = emptyList())
+    val attachmentPicker = rememberAttachmentPicker()
 
     val scope = rememberCoroutineScope()
     val authRepository = remember(authService) { DefaultAuthRepository(authService) }
@@ -150,7 +162,18 @@ fun AmazingNoteApp(
         LocalNotesSyncManager provides syncManager,
     ) {
         AmazingNoteTheme(darkTheme = darkTheme) {
-            val current = backStack.last()
+            val currentRoute by remember { derivedStateOf { backStack.last() } }
+            val targetBottomBarVisible by remember { derivedStateOf { currentRoute in tabs } }
+            var bottomBarVisible by remember { mutableStateOf(targetBottomBarVisible) }
+            LaunchedEffect(targetBottomBarVisible) {
+                if (targetBottomBarVisible) {
+                    delay(100)
+                    bottomBarVisible = true
+                } else {
+                    bottomBarVisible = false
+                }
+            }
+            val bottomBarHeight = 72.dp
 
             fun setRoot(destination: AppRoutes) {
                 if (backStack.size == 1 && backStack.last() == destination) return
@@ -161,27 +184,60 @@ fun AmazingNoteApp(
             OnSystemBack {
                 when {
                     backStack.size > 1 -> backStack.goBack()
-                    current != AppRoutes.Notes -> setRoot(AppRoutes.Notes)
+                    currentRoute != AppRoutes.Notes -> setRoot(AppRoutes.Notes)
                 }
             }
 
             Scaffold(
+                contentWindowInsets = WindowInsets(0),
                 topBar = {
-                    if (current in tabs) {
+                    AnimatedVisibility(
+                        visible = bottomBarVisible,
+                        enter = fadeIn(animationSpec = tween(durationMillis = 220)),
+                        exit = fadeOut(animationSpec = tween(durationMillis = 220)),
+                    ) {
                         AmazingTopBar(user = user)
                     }
                 },
                 bottomBar = {
-                    if (current in tabs) {
-                        AmazingBottomBar(
-                            current = current,
-                            onSelect = { route -> setRoot(route) },
-                        )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = bottomBarHeight)
+                            .windowInsetsPadding(WindowInsets.navigationBars),
+                    ) {
+                        AnimatedVisibility(
+                            visible = bottomBarVisible,
+                            enter = slideInVertically(
+                                initialOffsetY = { it },
+                                animationSpec = tween(durationMillis = 320),
+                            ) + fadeIn(animationSpec = tween(durationMillis = 320)),
+                            exit = slideOutVertically(
+                                targetOffsetY = { it },
+                                animationSpec = tween(durationMillis = 320),
+                            ) + fadeOut(animationSpec = tween(durationMillis = 320)),
+                        ) {
+                            AmazingBottomBar(
+                                current = currentRoute,
+                                onSelect = { route -> setRoot(route) },
+                            )
+                        }
                     }
                 },
             ) { padding ->
+                val layoutDirection = LocalLayoutDirection.current
+                val contentModifier = Modifier
+                    .fillMaxSize()
+                    .padding(
+                        start = padding.calculateStartPadding(layoutDirection),
+                        top = padding.calculateTopPadding(),
+                        end = padding.calculateEndPadding(layoutDirection),
+                    )
+                    .padding(bottom = bottomBarHeight)
+
                 AnimatedContent(
-                    targetState = current,
+                    modifier = contentModifier,
+                    targetState = currentRoute,
                     transitionSpec = {
                         val duration = 250
                         when {
@@ -193,10 +249,17 @@ fun AmazingNoteApp(
                                 slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith
                                     slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
                             }
+                            initialState in tabs && targetState in tabs -> {
+                                val fadeDuration = 220
+                                fadeIn(animationSpec = tween(fadeDuration)) togetherWith
+                                    fadeOut(animationSpec = tween(fadeDuration))
+                            }
                             initialState is AppRoutes.Login ||
                                 targetState is AppRoutes.Login ||
                                 initialState is AppRoutes.SignUp ||
-                                targetState is AppRoutes.SignUp -> {
+                                targetState is AppRoutes.SignUp ||
+                                initialState is AppRoutes.Trash ||
+                                targetState is AppRoutes.Trash -> {
                                 fadeIn(animationSpec = tween(duration)) togetherWith fadeOut(animationSpec = tween(duration))
                             }
                             else -> EnterTransition.None togetherWith ExitTransition.None
@@ -206,13 +269,10 @@ fun AmazingNoteApp(
                     when (state) {
                         AppRoutes.Notes -> {
                             Box(
-                                modifier = Modifier
-                                    .padding(padding)
-                                    .fillMaxSize(),
+                                modifier = Modifier.fillMaxSize(),
                             ) {
                                 HomeScreen(
                                     notes = notes,
-                                    folders = folders,
                                     auth = authViewModel,
                                     onOpenNote = { note -> backStack.navigate(AppRoutes.NoteDetail(note.id, note.folderId)) },
                                     onAdd = { backStack.navigate(AppRoutes.NoteDetail(null, null)) },
@@ -222,25 +282,18 @@ fun AmazingNoteApp(
                                             syncManager.syncLocalToRemoteOnly()
                                         }
                                     },
-                                    onOpenFolder = { folder -> backStack.navigate(AppRoutes.FolderDetail(folder.id)) },
-                                    onOpenUnassigned = { backStack.navigate(AppRoutes.FolderDetail(null)) },
-                                    onOpenFolders = { setRoot(AppRoutes.Folders) },
-                                    onCreateFolder = { name -> scope.launch { viewModel.createFolder(name) } },
                                 )
                             }
                         }
 
                         AppRoutes.Folders -> {
                             Box(
-                                modifier = Modifier
-                                    .padding(padding)
-                                    .fillMaxSize(),
+                                modifier = Modifier.fillMaxSize(),
                             ) {
                                 FoldersScreen(
                                     folders = folders,
                                     notes = notes,
                                     onOpenFolder = { folder -> backStack.navigate(AppRoutes.FolderDetail(folder.id)) },
-                                    onOpenUnassigned = { backStack.navigate(AppRoutes.FolderDetail(null)) },
                                     onCreateFolder = { name -> scope.launch { viewModel.createFolder(name) } },
                                     onRenameFolder = { folder, newName -> scope.launch { viewModel.renameFolder(folder.id, newName) } },
                                     onDeleteFolder = { folder ->
@@ -249,16 +302,13 @@ fun AmazingNoteApp(
                                             syncManager.syncLocalToRemoteOnly()
                                         }
                                     },
-                                    onBack = { setRoot(AppRoutes.Notes) },
                                 )
                             }
                         }
 
                         AppRoutes.Settings -> {
                             Box(
-                                modifier = Modifier
-                                    .padding(padding)
-                                    .fillMaxSize(),
+                                modifier = Modifier.fillMaxSize(),
                             ) {
                                 SettingsScreen(
                                     darkTheme = darkTheme,
@@ -286,9 +336,7 @@ fun AmazingNoteApp(
                                 viewModel.notesByFolder(folderId).collectAsState(initial = emptyList())
                             }
                             Box(
-                                modifier = Modifier
-                                    .padding(padding)
-                                    .fillMaxSize(),
+                                modifier = Modifier.fillMaxSize(),
                             ) {
                                 FolderDetailScreen(
                                     title = folderTitle,
@@ -329,16 +377,15 @@ fun AmazingNoteApp(
                                 folders = folders,
                                 initialFolderId = initialFolderId,
                                 onBack = { backStack.goBack() },
-                                saveAndValidate = { noteId, title, priority, description, folderId ->
-                                    if (noteId == null) {
-                                        val result = viewModel.insert(title, priority, description, folderId)
-                                        syncManager.syncLocalToRemoteOnly()
-                                        result
-                                    } else {
-                                        val result = viewModel.update(noteId, title, priority, description, false, folderId)
-                                        syncManager.syncLocalToRemoteOnly()
-                                        result
-                                    }
+                                saveAndValidate = { noteId, title, description, spans, attachments, folderId, blocks ->
+                                    val result =
+                                        if (noteId == null) {
+                                            viewModel.insert(title, description, spans, attachments, folderId, blocks)
+                                        } else {
+                                            viewModel.update(noteId, title, description, false, spans, attachments, folderId, blocks)
+                                        }
+                                    syncManager.syncLocalToRemoteOnly()
+                                    result
                                 },
                                 onDelete = { noteId ->
                                     scope.launch {
@@ -346,14 +393,13 @@ fun AmazingNoteApp(
                                         syncManager.syncLocalToRemoteOnly()
                                     }
                                 },
+                                attachmentPicker = attachmentPicker,
                             )
                         }
 
                         AppRoutes.Trash -> {
                             Box(
-                                modifier = Modifier
-                                    .padding(padding)
-                                    .fillMaxSize(),
+                                modifier = Modifier.fillMaxSize(),
                             ) {
                                 TrashScreen(
                                     notes = trash,
@@ -370,9 +416,7 @@ fun AmazingNoteApp(
 
                         AppRoutes.Privacy -> {
                             PrivacyScreen(
-                                modifier = Modifier
-                                    .padding(padding)
-                                    .fillMaxSize(),
+                                modifier = Modifier.fillMaxSize(),
                                 onBack = { backStack.goBack() },
                             )
                         }
@@ -389,13 +433,14 @@ fun AmazingNoteApp(
                         }
 
                         AppRoutes.SignUp -> {
+                            val loading = authViewModel.loading.collectAsState().value
                             SignUpScreen(
                                 onBack = { backStack.goBack() },
                                 onSubmit = { email, password ->
                                     authViewModel.signUp(email, password)
                                     backStack.popToRoot()
                                 },
-                                loading = authViewModel.loading.collectAsState().value,
+                                loading = loading,
                             )
                         }
                     }

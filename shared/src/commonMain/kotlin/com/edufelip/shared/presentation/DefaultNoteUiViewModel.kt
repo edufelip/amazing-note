@@ -2,7 +2,9 @@ package com.edufelip.shared.presentation
 
 import com.edufelip.shared.domain.usecase.NoteUseCases
 import com.edufelip.shared.domain.validation.NoteActionResult
-import com.edufelip.shared.model.Priority
+import com.edufelip.shared.model.NoteAttachment
+import com.edufelip.shared.model.NoteBlock
+import com.edufelip.shared.model.NoteTextSpan
 
 class DefaultNoteUiViewModel(
     private val useCases: NoteUseCases,
@@ -14,16 +16,25 @@ class DefaultNoteUiViewModel(
 
     override fun notesByFolder(folderId: Long) = useCases.observeNotesByFolder(folderId)
 
-    override suspend fun insert(title: String, priority: Priority, description: String, folderId: Long?): NoteActionResult = useCases.insertNote(title, priority, description, folderId)
+    override suspend fun insert(
+        title: String,
+        description: String,
+        spans: List<NoteTextSpan>,
+        attachments: List<NoteAttachment>,
+        folderId: Long?,
+        blocks: List<NoteBlock>,
+    ): NoteActionResult = useCases.insertNote(title, description, folderId, spans, attachments, blocks)
 
     override suspend fun update(
         id: Int,
         title: String,
-        priority: Priority,
         description: String,
         deleted: Boolean,
+        spans: List<NoteTextSpan>,
+        attachments: List<NoteAttachment>,
         folderId: Long?,
-    ): NoteActionResult = useCases.updateNote(id, title, priority, description, deleted, folderId)
+        blocks: List<NoteBlock>,
+    ): NoteActionResult = useCases.updateNote(id, title, description, deleted, folderId, spans, attachments, blocks)
 
     override suspend fun setDeleted(id: Int, deleted: Boolean) = useCases.setDeleted(id, deleted)
 

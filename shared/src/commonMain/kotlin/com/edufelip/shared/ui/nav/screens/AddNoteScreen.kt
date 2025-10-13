@@ -5,8 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -31,6 +29,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Redo
 import androidx.compose.material.icons.automirrored.outlined.Undo
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.AddBox
 import androidx.compose.material.icons.outlined.ArrowDropDown
@@ -43,10 +43,9 @@ import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -57,14 +56,26 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import com.edufelip.shared.model.BlockType
 import com.edufelip.shared.model.Folder
-import com.edufelip.shared.model.Priority
+import com.edufelip.shared.model.NoteAttachment
+import com.edufelip.shared.model.NoteBlock
+import com.edufelip.shared.model.asAttachment
 import com.edufelip.shared.resources.Res
+import com.edufelip.shared.resources.attachments_label
+import com.edufelip.shared.resources.attachment_generic_name
+import com.edufelip.shared.resources.attachment_upload_failed
+import com.edufelip.shared.resources.attachment_upload_failed_with_detail
+import com.edufelip.shared.resources.attachment_uploading
 import com.edufelip.shared.resources.cd_add
 import com.edufelip.shared.resources.cd_back
 import com.edufelip.shared.resources.cd_delete
@@ -73,26 +84,24 @@ import com.edufelip.shared.resources.cd_save
 import com.edufelip.shared.resources.cd_undo
 import com.edufelip.shared.resources.description
 import com.edufelip.shared.resources.folder_field_label
-import com.edufelip.shared.resources.high_priority
-import com.edufelip.shared.resources.low_priority
-import com.edufelip.shared.resources.medium_priority
 import com.edufelip.shared.resources.no_folder_label
-import com.edufelip.shared.resources.priority
 import com.edufelip.shared.resources.title
 import org.jetbrains.compose.resources.stringResource
+import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddNoteScreen(
-    title: String,
-    onTitleChange: (String) -> Unit,
-    priority: Priority,
-    onPriorityChange: (Priority) -> Unit,
+    title: TextFieldValue,
+    onTitleChange: (TextFieldValue) -> Unit,
     folders: List<Folder>,
     selectedFolderId: Long?,
     onFolderChange: (Long?) -> Unit,
-    description: String,
-    onDescriptionChange: (String) -> Unit,
+    descriptionBlocks: List<NoteBlock>,
+    textBlockValue: TextFieldValue,
+    onTextBlockChange: (TextFieldValue) -> Unit,
+    onMoveBlockUp: (NoteBlock) -> Unit = {},
+    onMoveBlockDown: (NoteBlock) -> Unit = {},
     onBack: () -> Unit,
     onSave: () -> Unit,
     onDelete: (() -> Unit)? = null,
@@ -103,6 +112,14 @@ fun AddNoteScreen(
     onRedo: (() -> Unit)? = null,
     undoEnabled: Boolean = false,
     redoEnabled: Boolean = false,
+    onToggleBold: (() -> Unit)? = null,
+    onToggleItalic: (() -> Unit)? = null,
+    onToggleUnderline: (() -> Unit)? = null,
+    onAddAttachment: (() -> Unit)? = null,
+    onRemoveImageBlock: ((NoteBlock) -> Unit)? = null,
+    uploadProgress: Float? = null,
+    uploadingFileName: String? = null,
+    uploadError: String? = null,
 ) {
     val scrollState = rememberScrollState()
 
@@ -140,25 +157,53 @@ fun AddNoteScreen(
                 supportingText = titleError,
             )
 
-            PriorityAndFolderSection(
-                priority = priority,
-                onPriorityChange = onPriorityChange,
+            FolderSection(
                 folders = folders,
                 selectedFolderId = selectedFolderId,
                 onFolderChange = onFolderChange,
             )
 
-            NoteDescriptionField(
-                value = description,
-                onValueChange = onDescriptionChange,
+            BlockListEditor(
+                blocks = descriptionBlocks,
+                textValue = textBlockValue,
+                onTextChange = onTextBlockChange,
                 isError = descriptionError != null,
                 supportingText = descriptionError,
+                onMoveBlockUp = onMoveBlockUp,
+                onMoveBlockDown = onMoveBlockDown,
+                onRemoveBlock = onRemoveImageBlock,
             )
+
+            uploadProgress?.let { progress ->
+                UploadProgressIndicator(
+                    progress = progress,
+                    fileName = uploadingFileName,
+                )
+            }
+
+            uploadError?.let { detail ->
+                val errorText = if (detail.isBlank()) {
+                    stringResource(Res.string.attachment_upload_failed)
+                } else {
+                    stringResource(Res.string.attachment_upload_failed_with_detail, detail)
+                }
+                Text(
+                    text = errorText,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
         }
 
-        EditorFooterBar(onDelete = onDelete)
+        EditorFooterBar(
+            onAddAttachment = onAddAttachment,
+            onToggleBold = onToggleBold,
+            onToggleItalic = onToggleItalic,
+            onToggleUnderline = onToggleUnderline,
+            onDelete = onDelete,
+        )
     }
 }
 
@@ -211,8 +256,8 @@ private fun NoteEditorTopBar(
 
 @Composable
 private fun NoteTitleField(
-    value: String,
-    onValueChange: (String) -> Unit,
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
     isError: Boolean,
     supportingText: String?,
 ) {
@@ -248,36 +293,17 @@ private fun NoteTitleField(
 }
 
 @Composable
-private fun PriorityAndFolderSection(
-    priority: Priority,
-    onPriorityChange: (Priority) -> Unit,
+private fun FolderSection(
     folders: List<Folder>,
     selectedFolderId: Long?,
     onFolderChange: (Long?) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
-            text = stringResource(Res.string.priority),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Priority.values().forEach { item ->
-                PriorityChip(
-                    priority = item,
-                    selected = item == priority,
-                    onClick = { onPriorityChange(item) },
-                )
-            }
-        }
-
-        Text(
             text = stringResource(Res.string.folder_field_label),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 8.dp),
         )
         FolderPicker(
             folders = folders,
@@ -285,28 +311,6 @@ private fun PriorityAndFolderSection(
             onFolderChange = onFolderChange,
         )
     }
-}
-
-@Composable
-private fun PriorityChip(
-    priority: Priority,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
-    val label = when (priority) {
-        Priority.HIGH -> stringResource(Res.string.high_priority)
-        Priority.MEDIUM -> stringResource(Res.string.medium_priority)
-        Priority.LOW -> stringResource(Res.string.low_priority)
-    }
-    FilterChip(
-        selected = selected,
-        onClick = onClick,
-        label = { Text(text = label) },
-        colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-            selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-        ),
-    )
 }
 
 @Composable
@@ -378,8 +382,8 @@ private fun FolderPicker(
 
 @Composable
 private fun NoteDescriptionField(
-    value: String,
-    onValueChange: (String) -> Unit,
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
     isError: Boolean,
     supportingText: String?,
 ) {
@@ -417,7 +421,152 @@ private fun NoteDescriptionField(
 }
 
 @Composable
+private fun BlockListEditor(
+    blocks: List<NoteBlock>,
+    textValue: TextFieldValue,
+    onTextChange: (TextFieldValue) -> Unit,
+    isError: Boolean,
+    supportingText: String?,
+    onMoveBlockUp: (NoteBlock) -> Unit,
+    onMoveBlockDown: (NoteBlock) -> Unit,
+    onRemoveBlock: ((NoteBlock) -> Unit)?,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+        var hasRenderedImages = false
+        val ordered = blocks.sortedBy { it.order }
+        ordered.forEachIndexed { index, block ->
+            when (block.type) {
+                BlockType.TEXT -> {
+                    NoteDescriptionField(
+                        value = textValue,
+                        onValueChange = onTextChange,
+                        isError = isError,
+                        supportingText = supportingText,
+                    )
+                }
+
+                BlockType.IMAGE -> {
+                    if (!hasRenderedImages) {
+                        Text(
+                            text = stringResource(Res.string.attachments_label),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        hasRenderedImages = true
+                    }
+                    val canMoveUp = index > 0 && ordered[index - 1].type != BlockType.TEXT
+                    val canMoveDown = index < ordered.lastIndex
+                    ImageBlockEditor(
+                        block = block,
+                        canMoveUp = canMoveUp,
+                        canMoveDown = canMoveDown,
+                        onMoveUp = { onMoveBlockUp(block) },
+                        onMoveDown = { onMoveBlockDown(block) },
+                        onRemove = onRemoveBlock,
+                    )
+                }
+
+                else -> Unit
+            }
+        }
+    }
+}
+
+@Composable
+private fun ImageBlockEditor(
+    block: NoteBlock,
+    canMoveUp: Boolean,
+    canMoveDown: Boolean,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
+    onRemove: ((NoteBlock) -> Unit)?,
+) {
+    val imageUrl = block.metadata["url"]
+    if (imageUrl.isNullOrBlank()) return
+    val attachment = block.asAttachment()
+    val displayName = attachment?.fileName ?: attachment?.id ?: block.id
+    val caption = block.metadata["caption"].orEmpty()
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 160.dp, max = 320.dp),
+        ) {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = caption.takeIf { it.isNotBlank() } ?: displayName,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(18.dp)),
+                contentScale = ContentScale.Crop,
+            )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = displayName,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f, fill = false),
+                maxLines = 1,
+            )
+            IconButton(onClick = onMoveUp, enabled = canMoveUp) {
+                Icon(imageVector = Icons.Filled.ArrowUpward, contentDescription = null)
+            }
+            IconButton(onClick = onMoveDown, enabled = canMoveDown) {
+                Icon(imageVector = Icons.Filled.ArrowDownward, contentDescription = null)
+            }
+            if (onRemove != null) {
+                IconButton(onClick = { onRemove(block) }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Delete,
+                        contentDescription = stringResource(Res.string.cd_delete),
+                        tint = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+        }
+        if (caption.isNotBlank()) {
+            Text(
+                text = caption,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+
+@Composable
+private fun UploadProgressIndicator(
+    progress: Float,
+    fileName: String?,
+) {
+    val coerced = progress.coerceIn(0f, 1f)
+    val percent = (coerced * 100f).roundToInt()
+    val displayName = fileName ?: stringResource(Res.string.attachment_generic_name)
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = stringResource(Res.string.attachment_uploading, displayName, percent),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        LinearProgressIndicator(
+            progress = { coerced },
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+
+@Composable
 private fun EditorFooterBar(
+    onAddAttachment: (() -> Unit)?,
+    onToggleBold: (() -> Unit)?,
+    onToggleItalic: (() -> Unit)?,
+    onToggleUnderline: (() -> Unit)?,
     onDelete: (() -> Unit)?,
 ) {
     Surface(
@@ -437,7 +586,8 @@ private fun EditorFooterBar(
             CircularIconButton(
                 icon = Icons.Outlined.AddBox,
                 contentDescription = stringResource(Res.string.cd_add),
-                onClick = {},
+                onClick = { onAddAttachment?.invoke() },
+                enabled = onAddAttachment != null,
             )
 
             Row(
@@ -452,19 +602,22 @@ private fun EditorFooterBar(
                 CircularIconButton(
                     icon = Icons.Outlined.FormatBold,
                     contentDescription = null,
-                    onClick = {},
+                    onClick = { onToggleBold?.invoke() },
+                    enabled = onToggleBold != null,
                     size = 40.dp,
                 )
                 CircularIconButton(
                     icon = Icons.Outlined.FormatItalic,
                     contentDescription = null,
-                    onClick = {},
+                    onClick = { onToggleItalic?.invoke() },
+                    enabled = onToggleItalic != null,
                     size = 40.dp,
                 )
                 CircularIconButton(
                     icon = Icons.Outlined.FormatUnderlined,
                     contentDescription = null,
-                    onClick = {},
+                    onClick = { onToggleUnderline?.invoke() },
+                    enabled = onToggleUnderline != null,
                     size = 40.dp,
                 )
             }
@@ -474,12 +627,6 @@ private fun EditorFooterBar(
                     icon = Icons.Outlined.Delete,
                     contentDescription = stringResource(Res.string.cd_delete),
                     onClick = onDelete,
-                )
-            } else {
-                CircularIconButton(
-                    icon = Icons.Outlined.MoreVert,
-                    contentDescription = null,
-                    onClick = {},
                 )
             }
         }

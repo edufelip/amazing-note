@@ -10,7 +10,9 @@ import cocoapods.FirebaseFirestore.FIRQuerySnapshot
 import cocoapods.FirebaseFirestore.FIRSetOptions
 import cocoapods.FirebaseFirestore.FIRTimestamp
 import com.edufelip.shared.model.Note
-import com.edufelip.shared.model.Priority
+import com.edufelip.shared.model.attachmentsFromJson
+import com.edufelip.shared.model.spansFromJson
+import com.edufelip.shared.model.toJson
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,12 +27,9 @@ private fun col(uid: String): FIRCollectionReference = FIRFirestore.firestore().
 private fun Note.toMap(): Map<Any?, *> = mapOf<Any?, Any?>(
     "id" to id.toLong(),
     "title" to title,
-    "priority" to when (priority) {
-        Priority.HIGH -> 0
-        Priority.MEDIUM -> 1
-        Priority.LOW -> 2
-    },
     "description" to description,
+    "descriptionSpans" to descriptionSpans.toJson(),
+    "attachments" to attachments.toJson(),
     "deleted" to deleted,
     "createdAt" to createdAt,
     "updatedAt" to updatedAt,
@@ -55,17 +54,15 @@ private fun Any?.toStringOrEmpty(): String = (this as? String) ?: ""
 private fun Any?.toBool(): Boolean = (this as? Boolean) ?: false
 
 private fun mapToNote(id: String, data: Map<Any?, *>): Note? {
-    val pid = data["priority"].toIntOrNullCompat() ?: 1
     val title = data["title"] as? String ?: return null
+    val spansJson = data["descriptionSpans"]?.toString()
+    val attachmentsJson = data["attachments"]?.toString()
     return Note(
         id = (data["id"].toIntOrNullCompat() ?: id.toIntOrNull() ?: -1),
         title = title,
-        priority = when (pid) {
-            0 -> Priority.HIGH
-            1 -> Priority.MEDIUM
-            else -> Priority.LOW
-        },
         description = data["description"].toStringOrEmpty(),
+        descriptionSpans = spansFromJson(spansJson),
+        attachments = attachmentsFromJson(attachmentsJson),
         deleted = data["deleted"].toBool(),
         createdAt = data["createdAt"].toLongOrZero(),
         updatedAt = data["updatedAt"].toLongOrZero(),
@@ -117,12 +114,9 @@ actual fun provideCloudNotesDataSource(): CloudNotesDataSource {
                     "id" to note.id.toLong(),
                     "title" to note.title,
                     "description" to note.description,
+                    "descriptionSpans" to note.descriptionSpans.toJson(),
+                    "attachments" to note.attachments.toJson(),
                     "deleted" to note.deleted,
-                    "priority" to when (note.priority) {
-                        Priority.HIGH -> 0
-                        Priority.MEDIUM -> 1
-                        Priority.LOW -> 2
-                    },
                     "folderId" to note.folderId,
                     "updatedAt" to FIRFieldValue.fieldValueForServerTimestamp(),
                 )
@@ -173,12 +167,9 @@ actual fun provideCloudNotesDataSource(): CloudNotesDataSource {
                     "id" to note.id.toLong(),
                     "title" to note.title,
                     "description" to note.description,
+                    "descriptionSpans" to note.descriptionSpans.toJson(),
+                    "attachments" to note.attachments.toJson(),
                     "deleted" to note.deleted,
-                    "priority" to when (note.priority) {
-                        Priority.HIGH -> 0
-                        Priority.MEDIUM -> 1
-                        Priority.LOW -> 2
-                    },
                     "folderId" to note.folderId,
                     // Preserve provided updatedAt as Timestamp
                     "updatedAt" to NSDate.dateWithTimeIntervalSince1970(note.updatedAt.toDouble() / 1000.0),

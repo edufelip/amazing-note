@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.google.services)
 }
 
@@ -90,7 +90,7 @@ dependencies {
 
     // Dagger - Hilt
     implementation(libs.hilt.android)
-    ksp(libs.hilt.android.compiler)
+    kapt(libs.hilt.android.compiler)
 
     // Local Unit Tests
     testImplementation(libs.junit)
@@ -100,10 +100,10 @@ dependencies {
 
     // Firebase Auth (Android) via BoM
     implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.auth)
 
     // Firestore (version managed by Firebase BoM)
-    implementation(libs.google.firebase.firestore.ktx)
+    implementation(libs.firebase.firestore)
 
     // Google Identity Services (Credential Manager + Google ID)
     implementation(libs.credentials.core)

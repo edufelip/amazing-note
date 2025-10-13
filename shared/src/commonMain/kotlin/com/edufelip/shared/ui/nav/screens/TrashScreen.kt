@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -88,37 +89,40 @@ fun TrashScreen(
     Scaffold(
         modifier = modifier,
         topBar = {
-            Surface(tonalElevation = 2.dp, shadowElevation = 1.dp) {
-                TopAppBar(
-                    title = {
-                        val titleText = if (notes.isEmpty()) {
-                            stringResource(Res.string.trash)
-                        } else {
-                            stringResource(Res.string.trash_count, notes.size)
-                        }
-                        Text(text = titleText)
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = onBack) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(Res.string.cd_back),
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                    ),
+            TopAppBar(
+                title = {
+                    val titleText = if (notes.isEmpty()) {
+                        stringResource(Res.string.trash)
+                    } else {
+                        stringResource(Res.string.trash_count, notes.size)
+                    }
+                    Text(
+                        text = titleText,
+                        style = MaterialTheme.typography.titleLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(Res.string.cd_back),
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
                 )
-            }
+            )
         },
     ) { padding ->
         Box(
             modifier = Modifier
-                .padding(padding)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .padding(padding),
         ) {
             TrashScreenContent(
                 notes = notes,

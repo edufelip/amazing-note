@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.Center
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -41,26 +39,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.model.Note
-import com.edufelip.shared.model.Priority
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
 import com.edufelip.shared.resources.created
 import com.edufelip.shared.resources.earlier
-import com.edufelip.shared.resources.empty_notes_hint
-import com.edufelip.shared.resources.empty_notes_title
-import com.edufelip.shared.resources.high_priority
-import com.edufelip.shared.resources.low_priority
-import com.edufelip.shared.resources.medium_priority
-import com.edufelip.shared.resources.no_notes_match_filter
 import com.edufelip.shared.resources.no_notes_match_search
 import com.edufelip.shared.resources.order_by
-import com.edufelip.shared.resources.priority
-import com.edufelip.shared.resources.priority_all
 import com.edufelip.shared.resources.this_month
 import com.edufelip.shared.resources.this_week
 import com.edufelip.shared.resources.today
@@ -68,6 +58,7 @@ import com.edufelip.shared.resources.updated
 import com.edufelip.shared.resources.your_notes
 import com.edufelip.shared.ui.gadgets.MaterialSearchBar
 import com.edufelip.shared.ui.gadgets.NoteRow
+import com.edufelip.shared.ui.nav.components.NotesEmptyState
 import com.edufelip.shared.ui.settings.LocalAppPreferences
 import org.jetbrains.compose.resources.stringResource
 
@@ -90,12 +81,15 @@ fun ListScreen(
     emptyContent: (@Composable () -> Unit)? = null,
 ) {
     val appPrefs = LocalAppPreferences.current
-    val selectedFilter = remember { mutableStateOf(appPrefs.getPriorityFilter()) }
     var showFilters by rememberSaveable { mutableStateOf(false) }
 
     @Composable
     fun ContentScaffold() {
-        val scaffoldContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp)
+        val scaffoldContainerColor = if (hasAnyNotes) {
+            MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp)
+        } else {
+            MaterialTheme.colorScheme.background
+        }
         Scaffold(
             modifier = Modifier.fillMaxSize().background(scaffoldContainerColor),
             snackbarHost = {
@@ -122,55 +116,35 @@ fun ListScreen(
                 ({})
             },
             floatingActionButton = {
-                FloatingActionButton(
-                    onClick = onAddClick,
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = stringResource(Res.string.cd_add),
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                    )
+                if (hasAnyNotes) {
+                    FloatingActionButton(
+                        modifier = Modifier.padding(bottom = 24.dp),
+                        onClick = onAddClick,
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        shape = RoundedCornerShape(16.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = stringResource(Res.string.cd_add),
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                        )
+                    }
                 }
             },
         ) { padding ->
             Box(
                 modifier = Modifier.fillMaxSize(),
             ) {
-                val filtered = when (val f = selectedFilter.value) {
-                    null -> notes
-                    else -> notes.filter { it.priority == f }
-                }
+                val filtered = notes
                 // Only show empty state if user truly has no notes at all
-                if (selectedFilter.value == null && !hasAnyNotes) {
+                if (!hasAnyNotes) {
                     if (emptyContent != null) {
                         emptyContent()
                     } else {
-                        Column(
-                            modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
-                            verticalArrangement = Center,
-                            horizontalAlignment = CenterHorizontally,
-                        ) {
-                            headerContent?.let { content ->
-                                Column(
-                                    modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
-                                ) {
-                                    content()
-                                }
-                            }
-                            Text(
-                                text = stringResource(Res.string.empty_notes_title),
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                            Spacer(modifier = Modifier.padding(4.dp))
-                            Text(
-                                text = stringResource(Res.string.empty_notes_hint),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
+                        NotesEmptyState(
+                            modifier = Modifier.fillMaxSize(),
+                            onCreateNote = onAddClick,
+                        )
                     }
                     return@Box
                 }
@@ -220,6 +194,7 @@ fun ListScreen(
                                 Box(
                                     modifier = Modifier.fillMaxWidth()
                                         .padding(horizontal = 12.dp, vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
                                 ) {
                                     MaterialSearchBar(
                                         query = searchQuery,
@@ -274,47 +249,6 @@ fun ListScreen(
                                                 ),
                                             )
                                         }
-                                        // Label for priority filter
-                                        Text(
-                                            text = stringResource(Res.string.priority),
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.padding(
-                                                horizontal = 16.dp,
-                                                vertical = 4.dp,
-                                            ),
-                                        )
-                                        @OptIn(ExperimentalLayoutApi::class)
-                                        FlowRow(
-                                            modifier = Modifier.fillMaxWidth()
-                                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                                        ) {
-                                            val chips = listOf<Pair<String, Priority?>>(
-                                                stringResource(Res.string.priority_all) to null,
-                                            ) + listOf(
-                                                stringResource(Res.string.high_priority) to Priority.HIGH,
-                                                stringResource(Res.string.medium_priority) to Priority.MEDIUM,
-                                                stringResource(Res.string.low_priority) to Priority.LOW,
-                                            )
-                                            chips.forEach { (label, value) ->
-                                                val selected = selectedFilter.value == value
-                                                FilterChip(
-                                                    selected = selected,
-                                                    onClick = {
-                                                        selectedFilter.value = value
-                                                        appPrefs.setPriorityFilter(value)
-                                                    },
-                                                    label = { Text(label) },
-                                                    colors = FilterChipDefaults.filterChipColors(
-                                                        selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                                        selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                    ),
-                                                    modifier = Modifier,
-                                                )
-                                            }
-                                        }
                                     }
                                 }
                             }
@@ -332,23 +266,6 @@ fun ListScreen(
                             ) {
                                 Text(
                                     text = stringResource(Res.string.no_notes_match_search),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                )
-                            }
-                        }
-                    } else if (selectedFilter.value != null && filtered.isEmpty()) {
-                        // If a specific priority filter is selected and nothing matches,
-                        // show the empty message without hiding the header/filters.
-                        item {
-                            Column(
-                                modifier = Modifier.fillMaxWidth()
-                                    .padding(horizontal = 24.dp, vertical = 16.dp),
-                                verticalArrangement = Center,
-                                horizontalAlignment = CenterHorizontally,
-                            ) {
-                                Text(
-                                    text = stringResource(Res.string.no_notes_match_filter),
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurface,
                                 )

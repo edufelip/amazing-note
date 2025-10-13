@@ -3,7 +3,9 @@ package com.edufelip.amazing_note.ui.viewmodels
 import androidx.lifecycle.ViewModel
 import com.edufelip.shared.domain.usecase.NoteUseCases
 import com.edufelip.shared.domain.validation.NoteActionResult
-import com.edufelip.shared.model.Priority
+import com.edufelip.shared.model.NoteAttachment
+import com.edufelip.shared.model.NoteBlock
+import com.edufelip.shared.model.NoteTextSpan
 import com.edufelip.shared.presentation.DefaultNoteUiViewModel
 import com.edufelip.shared.presentation.NoteUiViewModel
 import com.edufelip.shared.ui.settings.AppPreferences
@@ -25,16 +27,25 @@ class KmpNoteViewModel @Inject constructor(
 
     override fun notesByFolder(folderId: Long) = delegate.notesByFolder(folderId)
 
-    override suspend fun insert(title: String, priority: Priority, description: String, folderId: Long?): NoteActionResult = delegate.insert(title, priority, description, folderId)
+    override suspend fun insert(
+        title: String,
+        description: String,
+        spans: List<NoteTextSpan>,
+        attachments: List<NoteAttachment>,
+        folderId: Long?,
+        blocks: List<NoteBlock>,
+    ): NoteActionResult = delegate.insert(title, description, spans, attachments, folderId, blocks)
 
     override suspend fun update(
         id: Int,
         title: String,
-        priority: Priority,
         description: String,
         deleted: Boolean,
+        spans: List<NoteTextSpan>,
+        attachments: List<NoteAttachment>,
         folderId: Long?,
-    ): NoteActionResult = delegate.update(id, title, priority, description, deleted, folderId)
+        blocks: List<NoteBlock>,
+    ): NoteActionResult = delegate.update(id, title, description, deleted, spans, attachments, folderId, blocks)
 
     override suspend fun setDeleted(id: Int, deleted: Boolean) = delegate.setDeleted(id, deleted)
 
@@ -54,6 +65,4 @@ class KmpNoteViewModel @Inject constructor(
     fun isDateModeUpdatedPref(): Boolean = appPreferences.isDateModeUpdated()
     fun setDateModeUpdatedPref(updated: Boolean) = appPreferences.setDateModeUpdated(updated)
 
-    fun getPriorityFilterPref(): Priority? = appPreferences.getPriorityFilter()
-    fun setPriorityFilterPref(value: Priority?) = appPreferences.setPriorityFilter(value)
 }

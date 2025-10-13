@@ -27,23 +27,25 @@
 
     <!-- Notas - Lista y Filtros -->
     <string name="order_by">Ordenar por</string>
-    <string name="priority">Prioridad</string>
     <string name="filters">Filtros</string>
     <string name="search">Buscar</string>
-    <string name="priority_all">Todas</string>
-    <string name="high_priority">Alta Prioridad</string>
-    <string name="medium_priority">Media Prioridad</string>
-    <string name="low_priority">Baja Prioridad</string>
 
     <!-- Notas - Campos -->
     <string name="title">Título</string>
     <string name="description">Descripción</string>
+    <string name="attachment_uploading">Subiendo %1$s… %2$d%%</string>
+    <string name="attachment_upload_failed">Error al subir el archivo.</string>
+    <string name="attachment_upload_failed_with_detail">Error al subir el archivo: %1$s</string>
+    <string name="attachment_generic_name">archivo</string>
+    <string name="attachments_label">Archivos adjuntos</string>
 
     <!-- Notas - Estados vacíos -->
     <string name="empty_notes_greeting">Buenos días</string>
     <string name="empty_notes_subtitle">¿Listo para capturar una idea?</string>
     <string name="empty_notes_title">Aún no hay notas</string>
     <string name="empty_notes_hint">Toca el botón + para crear tu primera nota</string>
+    <string name="notes_empty_unlock_label">Desbloquea la 1.ª nota</string>
+    <string name="notes_empty_action">Crear nota</string>
     <string name="empty_trash_title">La papelera está vacía</string>
     <string name="empty_trash_hint">Las notas eliminadas aparecerán aquí</string>
     <string name="empty_trash_description">Las notas en la papelera se eliminan permanentemente después de 7 días.</string>
@@ -52,7 +54,6 @@
     <string name="trash_deleted_days_ago">Eliminada hace %1$d días</string>
     <string name="trash_recover_selected">Recuperar seleccionadas (%1$d)</string>
     <string name="trash_empty_action">Vaciar papelera</string>
-    <string name="no_notes_match_filter">Ninguna nota coincide con este filtro</string>
     <string name="no_notes_match_search">Ninguna nota coincide con tu búsqueda</string>
 
     <!-- Tiempo y Actividad -->

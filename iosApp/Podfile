@@ -23,16 +23,13 @@ post_install do |installer|
     end
   end
   installer.aggregate_targets.each do |agg|
-    if agg.name == 'Pods-iosApp'
-      agg.xcconfigs.each do |config_name, config|
-        flags = config.attributes['OTHER_LDFLAGS'] || '$(inherited)'
-        unless flags.to_s.include?('-lsqlite3')
-          config.attributes['OTHER_LDFLAGS'] = "#{flags} -lsqlite3"
-        end
-      end
-      agg.xcconfigs.each do |config_name, config|
-        agg.override_build_settings(config_name, config)
-      end
+    next unless agg.name == 'Pods-iosApp'
+
+    agg.xcconfigs.each do |config_name, config|
+      next if config.libraries.include?('sqlite3')
+
+      config.libraries << 'sqlite3'
+      config.save_as(agg.xcconfig_path(config_name))
     end
   end
 end

@@ -1,37 +1,34 @@
 [versions]
-appcompat = "1.7.1"
 core = "2.2.0"
 core-ktx = "1.17.0"
 coroutines = "1.10.2"
-gradle-plugin = "8.13.0"
-hilt = "2.57.1"
+gradle-plugin = "8.9.1"
+hilt = "2.57.2"
 junit = "4.13.2"
-kotlin = "2.2.10"
-ksp = "2.2.10-2.0.2"
-lifecycle = "2.9.3"
-truth = "1.4.4"
-compose-bom = "2025.09.00"
+kotlin = "2.2.20"
+kotlinx-serialization = "1.7.3"
+ksp = "2.0.21-1.0.28"
+lifecycle = "2.9.4"
+truth = "1.4.5"
+compose-bom = "2025.10.00"
 activity-compose = "1.11.0"
-compose-mpp = "1.8.2"
+compose-mpp = "1.9.1"
 sqldelight = "2.1.0"
-firebase-bom = "34.2.0"
-google-services = "4.4.3"
+firebase-bom = "34.4.0"
+google-services = "4.4.4"
 credentials = "1.5.0"
 googleid = "1.1.1"
-firebase-auth = "23.2.1"
-firebase-firestore = "25.1.4"
-coil3 = "3.3.0"
-ktor = "3.3.0"
-coil = "2.7.0"
-navigation3Ui = "1.0.0-alpha09"
+firebase-auth = "24.0.1"
+firebase-firestore = "26.0.2"
+firebase-storage = "22.0.1"
+coil3 = "3.2.0"
+ktor = "3.2.0"
 
 [libraries]
  
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "core" }
  
-google-firebase-firestore-ktx = { module = "com.google.firebase:firebase-firestore-ktx" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-android-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
  
@@ -56,8 +53,8 @@ sqldelight-android-driver = { module = "app.cash.sqldelight:android-driver", ver
 sqldelight-native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "sqldelight" }
 
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
-firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebase-auth" }
-firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebase-firestore" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebase-auth" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebase-firestore" }
 credentials-core = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 credentials-play-services = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
@@ -65,7 +62,8 @@ coil3-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref
 coil3-network-ktor3 = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", version.ref = "coil3" }
 ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
-coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebase-storage" }
 
 [plugins]
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
@@ -79,3 +77,4 @@ kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref 
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-mpp" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

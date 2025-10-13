@@ -1,18 +1,24 @@
 package com.edufelip.shared.ui.gadgets
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.PaddingValues
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_clear_search
 import com.edufelip.shared.resources.cd_search
@@ -29,8 +35,7 @@ fun MaterialSearchBar(
     onFiltersClick: () -> Unit = {},
     filtersActive: Boolean = false,
 ) {
-    // Keep the search bar non-expanding to avoid measuring issues inside stickyHeader/LazyColumn.
-    SearchBar(
+    DockedSearchBar(
         modifier = modifier,
         expanded = false,
         onExpandedChange = {},
@@ -42,7 +47,14 @@ fun MaterialSearchBar(
                 expanded = false,
                 onExpandedChange = {},
                 leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = stringResource(Res.string.cd_search))
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .padding(12.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(Icons.Default.Search, contentDescription = stringResource(Res.string.cd_search))
+                    }
                 },
                 trailingIcon = {
                     androidx.compose.foundation.layout.Row {
@@ -55,7 +67,8 @@ fun MaterialSearchBar(
                             Icon(
                                 imageVector = Icons.Filled.Tune,
                                 contentDescription = stringResource(Res.string.filters),
-                                tint = if (filtersActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                tint = if (filtersActive) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }

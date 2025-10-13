@@ -43,23 +43,25 @@
 
     <!-- Notas - Lista e Filtros -->
     <string name="order_by">Ordenar por</string>
-    <string name="priority">Prioridade</string>
     <string name="filters">Filtros</string>
     <string name="search">Procurar</string>
-    <string name="priority_all">Todas</string>
-    <string name="high_priority">Alta Prioridade</string>
-    <string name="medium_priority">Média Prioridade</string>
-    <string name="low_priority">Baixa Prioridade</string>
 
     <!-- Notas - Campos -->
     <string name="title">Título</string>
     <string name="description">Descrição</string>
+    <string name="attachment_uploading">Enviando %1$s… %2$d%%</string>
+    <string name="attachment_upload_failed">Falha ao enviar o arquivo.</string>
+    <string name="attachment_upload_failed_with_detail">Falha ao enviar o arquivo: %1$s</string>
+    <string name="attachment_generic_name">arquivo</string>
+    <string name="attachments_label">Anexos</string>
 
     <!-- Notas - Estados vazios -->
     <string name="empty_notes_greeting">Bom dia</string>
     <string name="empty_notes_subtitle">Pronto para capturar um pensamento?</string>
     <string name="empty_notes_title">Sem notas ainda</string>
     <string name="empty_notes_hint">Toque no botão + para criar sua primeira nota</string>
+    <string name="notes_empty_unlock_label">Desbloqueie a 1ª nota</string>
+    <string name="notes_empty_action">Criar nota</string>
     <string name="empty_trash_title">A lixeira está vazia</string>
     <string name="empty_trash_hint">Notas excluídas aparecerão aqui</string>
     <string name="empty_trash_description">Notas na lixeira são apagadas permanentemente após 7 dias.</string>
@@ -68,7 +70,6 @@
     <string name="trash_deleted_days_ago">Excluída há %1$d dias</string>
     <string name="trash_recover_selected">Recuperar selecionadas (%1$d)</string>
     <string name="trash_empty_action">Esvaziar lixeira</string>
-    <string name="no_notes_match_filter">Nenhuma nota corresponde a este filtro</string>
     <string name="no_notes_match_search">Nenhuma nota corresponde à sua pesquisa</string>
 
     <!-- Tempo e Atividade -->

@@ -3,7 +3,9 @@ package com.edufelip.shared.presentation
 import com.edufelip.shared.domain.validation.NoteActionResult
 import com.edufelip.shared.model.Folder
 import com.edufelip.shared.model.Note
-import com.edufelip.shared.model.Priority
+import com.edufelip.shared.model.NoteAttachment
+import com.edufelip.shared.model.NoteBlock
+import com.edufelip.shared.model.NoteTextSpan
 import kotlinx.coroutines.flow.Flow
 
 interface NoteUiViewModel {
@@ -14,8 +16,24 @@ interface NoteUiViewModel {
 
     fun notesByFolder(folderId: Long): Flow<List<Note>>
 
-    suspend fun insert(title: String, priority: Priority, description: String, folderId: Long?): NoteActionResult
-    suspend fun update(id: Int, title: String, priority: Priority, description: String, deleted: Boolean, folderId: Long?): NoteActionResult
+    suspend fun insert(
+        title: String,
+        description: String,
+        spans: List<NoteTextSpan>,
+        attachments: List<NoteAttachment>,
+        folderId: Long?,
+        blocks: List<NoteBlock> = emptyList(),
+    ): NoteActionResult
+    suspend fun update(
+        id: Int,
+        title: String,
+        description: String,
+        deleted: Boolean,
+        spans: List<NoteTextSpan>,
+        attachments: List<NoteAttachment>,
+        folderId: Long?,
+        blocks: List<NoteBlock> = emptyList(),
+    ): NoteActionResult
     suspend fun setDeleted(id: Int, deleted: Boolean)
     suspend fun delete(id: Int)
     suspend fun assignToFolder(id: Int, folderId: Long?)

@@ -6,7 +6,10 @@ import com.edufelip.shared.domain.validation.NoteValidationRules
 import com.edufelip.shared.domain.validation.validateNoteInput
 import com.edufelip.shared.model.Folder
 import com.edufelip.shared.model.Note
-import com.edufelip.shared.model.Priority
+import com.edufelip.shared.model.NoteAttachment
+import com.edufelip.shared.model.NoteBlock
+import com.edufelip.shared.model.NoteTextSpan
+import com.edufelip.shared.model.ensureBlocks
 import kotlinx.coroutines.flow.Flow
 
 class ObserveNotes(private val repository: NoteRepository) {
@@ -33,10 +36,18 @@ class InsertNote(
     private val repository: NoteRepository,
     private val rules: NoteValidationRules,
 ) {
-    suspend operator fun invoke(title: String, priority: Priority, description: String, folderId: Long?): NoteActionResult {
+    suspend operator fun invoke(
+        title: String,
+        description: String,
+        folderId: Long?,
+        spans: List<NoteTextSpan>,
+        attachments: List<NoteAttachment>,
+        blocks: List<NoteBlock> = emptyList(),
+    ): NoteActionResult {
         val errors = validateNoteInput(title, description, rules)
         if (errors.isNotEmpty()) return NoteActionResult.Invalid(errors)
-        repository.insert(title, priority, description, folderId)
+        val finalBlocks = ensureBlocks(description, spans, attachments, blocks)
+        repository.insert(title, description, folderId, spans, attachments, finalBlocks)
         return NoteActionResult.Success
     }
 }
@@ -48,14 +59,17 @@ class UpdateNote(
     suspend operator fun invoke(
         id: Int,
         title: String,
-        priority: Priority,
         description: String,
         deleted: Boolean,
         folderId: Long?,
+        spans: List<NoteTextSpan>,
+        attachments: List<NoteAttachment>,
+        blocks: List<NoteBlock> = emptyList(),
     ): NoteActionResult {
         val errors = validateNoteInput(title, description, rules)
         if (errors.isNotEmpty()) return NoteActionResult.Invalid(errors)
-        repository.update(id, title, priority, description, deleted, folderId)
+        val finalBlocks = ensureBlocks(description, spans, attachments, blocks)
+        repository.update(id, title, description, deleted, folderId, spans, attachments, finalBlocks)
         return NoteActionResult.Success
     }
 }

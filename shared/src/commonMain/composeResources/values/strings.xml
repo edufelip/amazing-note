@@ -43,23 +43,25 @@
 
     <!-- Notes - List & Filters -->
     <string name="order_by">Order By</string>
-    <string name="priority">Priority</string>
     <string name="filters">Filters</string>
     <string name="search">Search</string>
-    <string name="priority_all">All</string>
-    <string name="high_priority">High Priority</string>
-    <string name="medium_priority">Medium Priority</string>
-    <string name="low_priority">Low Priority</string>
 
     <!-- Notes - Fields -->
     <string name="title">Title</string>
     <string name="description">Description</string>
+    <string name="attachment_uploading">Uploading %1$s… %2$d%%</string>
+    <string name="attachment_upload_failed">Attachment upload failed.</string>
+    <string name="attachment_upload_failed_with_detail">Attachment upload failed: %1$s</string>
+    <string name="attachment_generic_name">attachment</string>
+    <string name="attachments_label">Attachments</string>
 
     <!-- Notes - Empty States -->
     <string name="empty_notes_greeting">Good morning</string>
     <string name="empty_notes_subtitle">Ready to capture a thought?</string>
     <string name="empty_notes_title">No notes yet</string>
     <string name="empty_notes_hint">Tap the + button to create your first note</string>
+    <string name="notes_empty_unlock_label">Unlock 1st Note</string>
+    <string name="notes_empty_action">Start a note</string>
     <string name="empty_trash_title">Trash is empty</string>
     <string name="empty_trash_hint">Notes you delete will appear here</string>
     <string name="empty_trash_description">Notes in the trash are permanently deleted after 7 days.</string>
@@ -68,7 +70,6 @@
     <string name="trash_deleted_days_ago">Deleted %1$d days ago</string>
     <string name="trash_recover_selected">Recover selected (%1$d)</string>
     <string name="trash_empty_action">Empty trash</string>
-    <string name="no_notes_match_filter">No notes match this filter</string>
     <string name="no_notes_match_search">No notes match your search</string>
 
     <!-- Time & Activity -->
@@ -100,6 +101,9 @@
     <string name="cd_search">Search</string>
     <string name="cd_clear_search">Clear search</string>
     <string name="cd_toggle_dark_theme">Toggle dark theme</string>
+    <string name="cd_help">Help</string>
+    <string name="folder_layout_list_content_description">Switch to list view</string>
+    <string name="folder_layout_grid_content_description">Switch to grid view</string>
 
     <!-- Errors & Validation -->
     <string name="error_title_required">Title is required</string>
@@ -124,6 +128,14 @@
     <string name="folders_header_title">Folders</string>
     <string name="folders_header_subtitle">Organize your notes into folders.</string>
     <string name="folders_view_all">View all</string>
+    <string name="search_hint_folders">Search folders</string>
+    <string name="search_reset">Reset search</string>
+    <string name="search_no_results">No folders found</string>
+    <string name="login_headline">Welcome Back!</string>
+    <string name="login_subheadline">Sign in to continue managing your notes.</string>
+    <string name="login_dont_have_account">Don&apos;t have an account?</string>
+    <string name="login_signup_cta">Sign up</string>
+    <string name="login_help">Need help</string>
     <string name="home_new_folder">New folder</string>
     <string name="folder_note_count_one">1 note</string>
     <string name="folder_note_count_other">%1$d notes</string>
@@ -134,6 +146,10 @@
     <string name="no_folder_label">No folder</string>
     <string name="folder_field_label">Folder</string>
     <string name="unassigned_notes">Unassigned</string>
+    <string name="sign_up_subtitle">Join our community of note-takers!</string>
+    <string name="sign_up_primary_cta">Create account</string>
+    <string name="sign_up_need_help">Need help?</string>
+    <string name="contact_us">Contact us</string>
 
     <!-- Settings -->
     <string name="settings_header">Settings</string>

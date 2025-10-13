@@ -7,7 +7,12 @@ import com.edufelip.shared.cloud.provideCurrentUserProvider
 import com.edufelip.shared.domain.repository.NoteRepository
 import com.edufelip.shared.model.Folder
 import com.edufelip.shared.model.Note
-import com.edufelip.shared.model.Priority
+import com.edufelip.shared.model.NoteAttachment
+import com.edufelip.shared.model.NoteBlock
+import com.edufelip.shared.model.NoteTextSpan
+import com.edufelip.shared.model.blocksToLegacyContent
+import com.edufelip.shared.model.ensureBlocks
+import com.edufelip.shared.model.withLegacyFieldsFromBlocks
 import com.edufelip.shared.util.nowEpochMs
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -36,20 +41,32 @@ class CloudNoteRepository(
 
     override fun folders(): Flow<List<Folder>> = flowOf(emptyList())
 
-    override suspend fun insert(title: String, priority: Priority, description: String, folderId: Long?) {
+    override suspend fun insert(
+        title: String,
+        description: String,
+        folderId: Long?,
+        spans: List<NoteTextSpan>,
+        attachments: List<NoteAttachment>,
+        blocks: List<NoteBlock>,
+    ) {
         val uid = currentUser.uid.first() ?: return
         val now = nowEpochMs()
+        val finalBlocks = ensureBlocks(description, spans, attachments, blocks)
+        val legacy = blocksToLegacyContent(finalBlocks)
+        val normalizedAttachments = if (legacy.attachments.isNotEmpty()) legacy.attachments else attachments
         val note = Note(
             id = now.hashCode(),
             title = title,
-            priority = priority,
-            description = description,
+            description = legacy.description.ifBlank { description },
             deleted = false,
             createdAt = now,
             updatedAt = now,
             dirty = false,
             localUpdatedAt = now,
             folderId = folderId,
+            descriptionSpans = legacy.spans.ifEmpty { spans },
+            attachments = normalizedAttachments,
+            blocks = finalBlocks,
         )
         cloud.upsert(uid, note)
     }
@@ -57,24 +74,31 @@ class CloudNoteRepository(
     override suspend fun update(
         id: Int,
         title: String,
-        priority: Priority,
         description: String,
         deleted: Boolean,
         folderId: Long?,
+        spans: List<NoteTextSpan>,
+        attachments: List<NoteAttachment>,
+        blocks: List<NoteBlock>,
     ) {
         val uid = currentUser.uid.first() ?: return
         val now = nowEpochMs()
+        val finalBlocks = ensureBlocks(description, spans, attachments, blocks)
+        val legacy = blocksToLegacyContent(finalBlocks)
+        val normalizedAttachments = if (legacy.attachments.isNotEmpty()) legacy.attachments else attachments
         val note = Note(
             id = id,
             title = title,
-            priority = priority,
-            description = description,
+            description = legacy.description.ifBlank { description },
             deleted = deleted,
             createdAt = now,
             updatedAt = now,
             dirty = true,
             localUpdatedAt = now,
             folderId = folderId,
+            descriptionSpans = legacy.spans.ifEmpty { spans },
+            attachments = normalizedAttachments,
+            blocks = finalBlocks,
         )
         cloud.upsert(uid, note)
     }
@@ -85,15 +109,18 @@ class CloudNoteRepository(
         cloud.upsert(
             uid,
             Note(
-                id,
-                "",
-                Priority.MEDIUM,
-                "",
-                deleted,
+                id = id,
+                title = "",
+                description = "",
+                deleted = deleted,
                 createdAt = now,
                 updatedAt = now,
                 dirty = false,
                 localUpdatedAt = now,
+                folderId = null,
+                descriptionSpans = emptyList(),
+                attachments = emptyList(),
+                blocks = emptyList(),
             ),
         )
     }

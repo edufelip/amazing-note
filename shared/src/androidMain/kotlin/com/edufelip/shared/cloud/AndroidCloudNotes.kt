@@ -1,7 +1,13 @@
 package com.edufelip.shared.cloud
 
 import com.edufelip.shared.model.Note
-import com.edufelip.shared.model.Priority
+import com.edufelip.shared.model.attachmentsFromJson
+import com.edufelip.shared.model.blocksFromJson
+import com.edufelip.shared.model.blocksToJson
+import com.edufelip.shared.model.ensureBlocks
+import com.edufelip.shared.model.withLegacyFieldsFromBlocks
+import com.edufelip.shared.model.spansFromJson
+import com.edufelip.shared.model.toJson
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -25,8 +31,10 @@ private fun col(uid: String): CollectionReference = FirebaseFirestore.getInstanc
 private data class Dto(
     val id: Int? = null,
     val title: String? = null,
-    val priority: Int? = null,
     val description: String? = null,
+    val descriptionSpans: String? = null,
+    val attachments: String? = null,
+    val blocks: String? = null,
     val deleted: Boolean? = null,
     val createdAt: Long? = null,
     val updatedAt: Long? = null,
@@ -34,28 +42,28 @@ private data class Dto(
 )
 
 private fun Dto.toNote(docId: String): Note? {
-    val pid = priority ?: 1
+    val resolvedTitle = title ?: return null
     return Note(
         id = id ?: docId.toIntOrNull() ?: -1,
-        title = title ?: return null,
-        priority = when (pid) {
-            0 -> Priority.HIGH
-            1 -> Priority.MEDIUM
-            else -> Priority.LOW
-        },
+        title = resolvedTitle,
         description = description ?: "",
+        descriptionSpans = spansFromJson(descriptionSpans),
+        attachments = attachmentsFromJson(attachments),
+        blocks = blocksFromJson(blocks),
         deleted = deleted ?: false,
         createdAt = createdAt ?: 0L,
         updatedAt = updatedAt ?: 0L,
         folderId = folderId,
-    )
+    ).ensureBlocks().withLegacyFieldsFromBlocks()
 }
 
 private fun parseDto(map: Map<String, Any?>): Dto = Dto(
     id = (map["id"] as? Number)?.toInt(),
     title = map["title"] as? String,
-    priority = (map["priority"] as? Number)?.toInt(),
     description = map["description"] as? String,
+    descriptionSpans = map["descriptionSpans"] as? String,
+    attachments = map["attachments"] as? String,
+    blocks = map["blocks"] as? String,
     deleted = map["deleted"] as? Boolean,
     createdAt = map["createdAt"].toMillis(),
     updatedAt = map["updatedAt"].toMillis(),
@@ -106,12 +114,10 @@ actual fun provideCloudNotesDataSource(): CloudNotesDataSource {
                 "id" to note.id,
                 "title" to note.title,
                 "description" to note.description,
+                "descriptionSpans" to note.descriptionSpans.toJson(),
+                "attachments" to note.attachments.toJson(),
+                "blocks" to note.blocks.blocksToJson(),
                 "deleted" to note.deleted,
-                "priority" to when (note.priority) {
-                    Priority.HIGH -> 0
-                    Priority.MEDIUM -> 1
-                    Priority.LOW -> 2
-                },
                 "folderId" to note.folderId,
                 "updatedAt" to FieldValue.serverTimestamp(),
             )
@@ -130,12 +136,10 @@ actual fun provideCloudNotesDataSource(): CloudNotesDataSource {
                 "id" to note.id,
                 "title" to note.title,
                 "description" to note.description,
+                "descriptionSpans" to note.descriptionSpans.toJson(),
+                "attachments" to note.attachments.toJson(),
+                "blocks" to note.blocks.blocksToJson(),
                 "deleted" to note.deleted,
-                "priority" to when (note.priority) {
-                    Priority.HIGH -> 0
-                    Priority.MEDIUM -> 1
-                    Priority.LOW -> 2
-                },
                 "folderId" to note.folderId,
                 // Preserve provided updatedAt to avoid reordering on push-only sync
                 "updatedAt" to Timestamp(Date(note.updatedAt)),

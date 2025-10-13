@@ -3,7 +3,10 @@ package com.edufelip.amazing_note.domain
 import com.edufelip.shared.domain.repository.NoteRepository
 import com.edufelip.shared.model.Folder
 import com.edufelip.shared.model.Note
-import com.edufelip.shared.model.Priority
+import com.edufelip.shared.model.NoteAttachment
+import com.edufelip.shared.model.NoteBlock
+import com.edufelip.shared.model.NoteTextSpan
+import com.edufelip.shared.model.ensureBlocks
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -24,30 +27,54 @@ class FakeDomainRepository : NoteRepository {
 
     override fun folders(): Flow<List<Folder>> = folderState
 
-    override suspend fun insert(title: String, priority: Priority, description: String, folderId: Long?) {
+    override suspend fun insert(
+        title: String,
+        description: String,
+        folderId: Long?,
+        spans: List<NoteTextSpan>,
+        attachments: List<NoteAttachment>,
+        blocks: List<NoteBlock>,
+    ) {
         val nextId = (notes.maxOfOrNull { it.id } ?: 0) + 1
         val now = System.currentTimeMillis()
-        notes += Note(nextId, title, priority, description, false, createdAt = now, updatedAt = now, folderId = folderId)
+        val finalBlocks = ensureBlocks(description, spans, attachments, blocks)
+        notes += Note(
+            nextId,
+            title,
+            description,
+            false,
+            createdAt = now,
+            updatedAt = now,
+            folderId = folderId,
+            descriptionSpans = spans,
+            attachments = attachments,
+            blocks = finalBlocks,
+        )
         state.value = notes.toList()
     }
 
     override suspend fun update(
         id: Int,
         title: String,
-        priority: Priority,
         description: String,
         deleted: Boolean,
         folderId: Long?,
+        spans: List<NoteTextSpan>,
+        attachments: List<NoteAttachment>,
+        blocks: List<NoteBlock>,
     ) {
         val idx = notes.indexOfFirst { it.id == id }.takeIf { it >= 0 } ?: return
         val now = System.currentTimeMillis()
+        val finalBlocks = ensureBlocks(description, spans, attachments, blocks)
         notes[idx] = notes[idx].copy(
             title = title,
-            priority = priority,
             description = description,
             deleted = deleted,
             updatedAt = now,
             folderId = folderId,
+            descriptionSpans = spans,
+            attachments = attachments,
+            blocks = finalBlocks,
         )
         state.value = notes.toList()
     }

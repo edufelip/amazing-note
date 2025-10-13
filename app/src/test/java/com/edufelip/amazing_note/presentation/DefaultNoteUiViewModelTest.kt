@@ -7,7 +7,9 @@ import com.edufelip.amazing_note.others.Constants
 import com.edufelip.shared.domain.usecase.buildNoteUseCases
 import com.edufelip.shared.domain.validation.NoteActionResult
 import com.edufelip.shared.domain.validation.NoteValidationRules
-import com.edufelip.shared.model.Priority
+import com.edufelip.shared.model.NoteAttachment
+import com.edufelip.shared.model.NoteBlock
+import com.edufelip.shared.model.NoteTextSpan
 import com.edufelip.shared.presentation.DefaultNoteUiViewModel
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,6 +27,9 @@ class DefaultNoteUiViewModelTest {
     val mainCoroutineRule = MainCoroutineRule()
 
     private lateinit var vm: DefaultNoteUiViewModel
+    private val emptySpans = emptyList<NoteTextSpan>()
+    private val emptyAttachments = emptyList<NoteAttachment>()
+    private val emptyBlocks = emptyList<NoteBlock>()
 
     @Before
     fun setup() {
@@ -38,13 +43,13 @@ class DefaultNoteUiViewModelTest {
 
     @Test
     fun insert_invalid_emptyTitle() = runTest {
-        val result = vm.insert("", Priority.HIGH, "desc", null)
+        val result = vm.insert("", "desc", emptySpans, emptyAttachments, null, emptyBlocks)
         assertThat(result).isInstanceOf(NoteActionResult.Invalid::class.java)
     }
 
     @Test
     fun insert_success_and_observeNotes() = runTest {
-        val result = vm.insert("Title", Priority.MEDIUM, "Desc", null)
+        val result = vm.insert("Title", "Desc", emptySpans, emptyAttachments, null, emptyBlocks)
         assertThat(result).isInstanceOf(NoteActionResult.Success::class.java)
         val notes = vm.notes.first()
         assertThat(notes).hasSize(1)
@@ -53,16 +58,16 @@ class DefaultNoteUiViewModelTest {
 
     @Test
     fun update_invalid_tooLongTitle() = runTest {
-        vm.insert("T", Priority.LOW, "D", null)
+        vm.insert("T", "D", emptySpans, emptyAttachments, null, emptyBlocks)
         val existing = vm.notes.first().first()
         val longTitle = "x".repeat(Constants.MAX_TITLE_LENGTH + 1)
-        val result = vm.update(existing.id, longTitle, existing.priority, existing.description, false, existing.folderId)
+        val result = vm.update(existing.id, longTitle, existing.description, false, emptySpans, emptyAttachments, existing.folderId, emptyBlocks)
         assertThat(result).isInstanceOf(NoteActionResult.Invalid::class.java)
     }
 
     @Test
     fun setDeleted_and_restore() = runTest {
-        vm.insert("To Delete", Priority.LOW, "D", null)
+        vm.insert("To Delete", "D", emptySpans, emptyAttachments, null, emptyBlocks)
         val note = vm.notes.first().first()
         vm.setDeleted(note.id, true)
         val trash1 = vm.trash.first()
