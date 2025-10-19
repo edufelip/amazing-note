@@ -19,15 +19,13 @@ local.properties
 # Android Studio captures (all modules)
 **/captures/
 
-# iOS / CocoaPods
-iosApp/Pods/
-iosApp/*.xcworkspace
+# iOS
 iosApp/DerivedData/
 **/xcuserdata/
 *.xcuserstate
-
-# Generated podspec from KMP
-shared/*.podspec
 /.kotlin
 AGENTS.md
 .project_context
+.gradle-alt
+.gradle-cache
+.gradle-user

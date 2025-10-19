@@ -10,8 +10,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
@@ -68,9 +68,12 @@ import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.request.crossfade
+import com.edufelip.shared.attachments.rememberAttachmentPicker
 import com.edufelip.shared.auth.AuthService
 import com.edufelip.shared.auth.AuthUser
+import com.edufelip.shared.auth.GoogleSignInConfig
 import com.edufelip.shared.auth.NoAuthService
+import com.edufelip.shared.auth.rememberGoogleSignInLauncher
 import com.edufelip.shared.data.DefaultAuthRepository
 import com.edufelip.shared.db.DatabaseDriverFactory
 import com.edufelip.shared.db.NoteDatabase
@@ -86,8 +89,6 @@ import com.edufelip.shared.resources.guest
 import com.edufelip.shared.resources.unassigned_notes
 import com.edufelip.shared.sync.LocalNotesSyncManager
 import com.edufelip.shared.sync.NotesSyncManager
-import com.edufelip.shared.attachments.AttachmentPicker
-import com.edufelip.shared.attachments.rememberAttachmentPicker
 import com.edufelip.shared.ui.gadgets.AvatarImage
 import com.edufelip.shared.ui.images.platformConfigImageLoader
 import com.edufelip.shared.ui.nav.AppRoutes
@@ -120,7 +121,7 @@ import org.jetbrains.compose.resources.stringResource
 fun AmazingNoteApp(
     viewModel: NoteUiViewModel,
     authService: AuthService = NoAuthService,
-    onRequestGoogleSignIn: (((Boolean, String?) -> Unit) -> Unit)? = null,
+    googleSignInConfig: GoogleSignInConfig = GoogleSignInConfig(),
     settings: Settings = InMemorySettings(),
     appPreferences: AppPreferences = DefaultAppPreferences(settings),
     noteDatabase: NoteDatabase? = null,
@@ -139,6 +140,7 @@ fun AmazingNoteApp(
     val folders by viewModel.folders.collectAsState(initial = emptyList())
     val unassignedNotes by viewModel.notesWithoutFolder.collectAsState(initial = emptyList())
     val attachmentPicker = rememberAttachmentPicker()
+    val googleSignInLauncher = rememberGoogleSignInLauncher(googleSignInConfig)
 
     val scope = rememberCoroutineScope()
     val authRepository = remember(authService) { DefaultAuthRepository(authService) }
@@ -425,7 +427,7 @@ fun AmazingNoteApp(
                             LoginScreen(
                                 auth = authViewModel,
                                 onBack = { backStack.goBack() },
-                                onRequestGoogleSignIn = onRequestGoogleSignIn,
+                                googleSignInLauncher = googleSignInLauncher,
                                 onOpenSignUp = { backStack.navigate(AppRoutes.SignUp) },
                                 onLoginSuccess = { backStack.popToRoot() },
                                 showLocalSuccessSnackbar = true,

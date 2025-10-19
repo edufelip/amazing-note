@@ -59,16 +59,17 @@ Android
   - Lint: `./gradlew :app:lintDebug`
  - Gradle Wrapper: 9.0-milestone-1
 
-iOS (CocoaPods + Compose Multiplatform)
-- Requirements: Xcode, CocoaPods, JDK 17
-- Bootstrap (generates KMP framework + installs Pods):
-  - `chmod +x scripts/ios_bootstrap.sh && ./scripts/ios_bootstrap.sh`
-- Open workspace in Xcode:
-  - `open iosApp/iosApp.xcworkspace`
+iOS (SwiftPM + Shared Framework)
+- Requirements: Xcode 15+, JDK 17
+- First-time setup / refresh shared framework slices:
+  - `./scripts/rebuild_ios.sh`
+- Open the project in Xcode:
+  - `open iosApp/iosApp.xcodeproj`
+- Subsequent runs: the Xcode build phase automatically calls `embedAndSignAppleFrameworkForXcode` so you only need to hit Run.
 
 Notes
-- iOS integrates FirebaseAuth + GoogleSignIn via CocoaPods (configured in shared/build.gradle.kts cocoapods block).
 - Ensure `GoogleService-Info.plist` is present in `iosApp/iosApp/` and your URL scheme (REVERSED_CLIENT_ID) is set in `Info.plist`.
+- Google Sign-In currently falls back to Android only (the iOS launcher returns `null` until a native integration is added).
 
 Firestore rules
 - Per-user access is required or Firestore will reject writes (PERMISSION_DENIED). Example rules:
@@ -101,17 +102,15 @@ Minimal CI steps you can copy into your pipeline:
       run: ./gradlew verifyL10n --stacktrace
 ```
 
-- iOS (macOS runner) – CocoaPods + KMP
+- iOS (macOS runner) – SwiftPM + Shared framework
 ```
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         distribution: temurin
         java-version: '17'
-    - name: Bootstrap iOS (Pods + KMP framework)
-      run: |
-        chmod +x scripts/ios_bootstrap.sh
-        ./scripts/ios_bootstrap.sh
+    - name: Build shared framework and run xcodebuild
+      run: ./scripts/rebuild_ios.sh
     - name: Spotless Check (format enforcement)
       run: ./gradlew spotlessCheck --stacktrace
     - name: Verify Localization

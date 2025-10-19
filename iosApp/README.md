@@ -1,22 +1,27 @@
-Run the iOS sample with CocoaPods:
+# iOS module
 
-1) Generate the dummy framework once (from repo root):
+The iOS target uses Swift Package Manager and the Gradle `embedAndSignAppleFrameworkForXcode` task to consume the shared Kotlin framework. CocoaPods is no longer required.
 
-   ./gradlew :shared:generateDummyFramework
+## Quick start
 
-2) Install pods (from iosApp folder):
+From the repository root:
 
-   cd iosApp
-   pod install
+```bash
+./scripts/rebuild_ios.sh
+```
 
-3) Open the workspace:
+This script builds the shared framework for simulator + device slices and then runs `xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp`.
 
-   open iosApp.xcworkspace
+After that, open the project directly:
 
-4) Build & run the iosApp target. It will present the shared Compose UI via MainViewController().
+```bash
+open iosApp/iosApp.xcodeproj
+```
 
-Notes
-- Deployment target is iOS 14.0.
-- If code signing fails, set your team in Xcode > Target > Signing & Capabilities.
-- The Podfile points to ../shared. If you move folders, update the path.
+Select the **iosApp** scheme and run it on your simulator or device. The Xcode build phase named “Embed Shared Framework” calls the Gradle embed task automatically, so future builds only need the standard Xcode Run.
 
+## Notes
+
+- Keep `iosApp/iosApp/GoogleService-Info.plist` in place for Firebase configuration.
+- Set your signing team in *Signing & Capabilities* if you hit code-signing warnings.
+- Simulator images must be installed separately through Xcode ▸ Settings ▸ Platforms.

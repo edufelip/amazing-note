@@ -13,15 +13,14 @@ android-lint:
 	./gradlew :app:lintDebug
 
 ios-bootstrap:
-	chmod +x scripts/ios_bootstrap.sh
-	./scripts/ios_bootstrap.sh
+    ./scripts/rebuild_ios.sh
 
 ios-open:
-	open iosApp/iosApp.xcworkspace
+    open iosApp/iosApp.xcodeproj
 
 clean:
-	./gradlew clean
-	rm -rf iosApp/Pods iosApp/iosApp.xcworkspace iosApp/DerivedData
+    ./gradlew clean
+    rm -rf iosApp/DerivedData shared/build/xcode-frameworks
 
 
 pcm:

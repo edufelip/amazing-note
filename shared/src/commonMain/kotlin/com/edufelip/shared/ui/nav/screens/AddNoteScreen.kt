@@ -39,7 +39,6 @@ import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.FormatBold
 import androidx.compose.material.icons.outlined.FormatItalic
 import androidx.compose.material.icons.outlined.FormatUnderlined
-import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -67,15 +66,14 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.edufelip.shared.model.BlockType
 import com.edufelip.shared.model.Folder
-import com.edufelip.shared.model.NoteAttachment
 import com.edufelip.shared.model.NoteBlock
 import com.edufelip.shared.model.asAttachment
 import com.edufelip.shared.resources.Res
-import com.edufelip.shared.resources.attachments_label
 import com.edufelip.shared.resources.attachment_generic_name
 import com.edufelip.shared.resources.attachment_upload_failed
 import com.edufelip.shared.resources.attachment_upload_failed_with_detail
 import com.edufelip.shared.resources.attachment_uploading
+import com.edufelip.shared.resources.attachments_label
 import com.edufelip.shared.resources.cd_add
 import com.edufelip.shared.resources.cd_back
 import com.edufelip.shared.resources.cd_delete
@@ -538,7 +536,6 @@ private fun ImageBlockEditor(
         }
     }
 }
-
 
 @Composable
 private fun UploadProgressIndicator(

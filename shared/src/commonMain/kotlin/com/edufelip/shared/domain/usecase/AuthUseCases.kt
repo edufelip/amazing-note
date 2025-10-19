@@ -24,12 +24,17 @@ class Logout(private val repository: AuthRepository) {
     suspend operator fun invoke() = repository.signOut()
 }
 
+class SignInWithGoogle(private val repository: AuthRepository) {
+    suspend operator fun invoke(token: String) = repository.signInWithGoogle(token)
+}
+
 data class AuthUseCases(
     val observeCurrentUser: ObserveCurrentUser,
     val login: Login,
     val signUp: SignUp,
     val sendPasswordReset: SendPasswordReset,
     val logout: Logout,
+    val signInWithGoogle: SignInWithGoogle,
 )
 
 fun buildAuthUseCases(
@@ -40,4 +45,5 @@ fun buildAuthUseCases(
     signUp = SignUp(repository),
     sendPasswordReset = SendPasswordReset(repository),
     logout = Logout(repository),
+    signInWithGoogle = SignInWithGoogle(repository),
 )

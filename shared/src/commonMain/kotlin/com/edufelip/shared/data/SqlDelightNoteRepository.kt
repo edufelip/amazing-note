@@ -32,21 +32,20 @@ class SqlDelightNoteRepository(
 
     private fun currentTimeMillis(): Long = nowEpochMs()
 
-    private fun mapRowToNote(row: com.edufelip.shared.db.Note): Note =
-        Note(
-            id = row.id.toInt(),
-            title = row.title,
-            description = row.description,
-            deleted = row.deleted != 0L,
-            createdAt = row.created_at,
-            updatedAt = row.updated_at,
-            dirty = row.local_dirty != 0L,
-            localUpdatedAt = row.local_updated_at,
-            folderId = row.folder_id,
-            descriptionSpans = spansFromJson(row.description_spans),
-            attachments = attachmentsFromJson(row.attachments),
-            blocks = blocksFromJson(row.blocks),
-        ).ensureBlocks().withLegacyFieldsFromBlocks()
+    private fun mapRowToNote(row: com.edufelip.shared.db.Note): Note = Note(
+        id = row.id.toInt(),
+        title = row.title,
+        description = row.description,
+        deleted = row.deleted != 0L,
+        createdAt = row.created_at,
+        updatedAt = row.updated_at,
+        dirty = row.local_dirty != 0L,
+        localUpdatedAt = row.local_updated_at,
+        folderId = row.folder_id,
+        descriptionSpans = spansFromJson(row.description_spans),
+        attachments = attachmentsFromJson(row.attachments),
+        blocks = blocksFromJson(row.blocks),
+    ).ensureBlocks().withLegacyFieldsFromBlocks()
 
     private fun mapRowToFolder(row: com.edufelip.shared.db.Folder): Folder = Folder(
         id = row.id,

@@ -38,8 +38,7 @@ enum class BlockType {
     QUOTE,
 }
 
-internal fun List<NoteBlock>.blocksToJson(): String =
-    blockJsonFormatter.encodeToString(this)
+internal fun List<NoteBlock>.blocksToJson(): String = blockJsonFormatter.encodeToString(this)
 
 internal fun blocksFromJson(raw: String?): List<NoteBlock> = raw
     ?.takeIf { it.isNotBlank() }
@@ -50,8 +49,7 @@ internal fun blocksFromJson(raw: String?): List<NoteBlock> = raw
 
 internal const val LEGACY_SPANS_KEY = "legacy_spans_json"
 
-internal fun legacyBlockId(type: BlockType, order: Int): String =
-    "legacy-${type.name.lowercase()}-$order"
+internal fun legacyBlockId(type: BlockType, order: Int): String = "legacy-${type.name.lowercase()}-$order"
 
 internal fun NoteAttachment.toBlockMetadata(): Map<String, String> = buildMap {
     put("url", downloadUrl)
@@ -84,8 +82,7 @@ internal fun metadataToAttachment(metadata: Map<String, String>): NoteAttachment
     )
 }
 
-private fun metadataToSpans(metadata: Map<String, String>): List<NoteTextSpan> =
-    metadata[LEGACY_SPANS_KEY]?.let { spansFromJson(it) } ?: emptyList()
+private fun metadataToSpans(metadata: Map<String, String>): List<NoteTextSpan> = metadata[LEGACY_SPANS_KEY]?.let { spansFromJson(it) } ?: emptyList()
 
 data class LegacyContent(
     val description: String,
@@ -137,11 +134,9 @@ fun ensureBlocks(
     spans: List<NoteTextSpan>,
     attachments: List<NoteAttachment>,
     blocks: List<NoteBlock>,
-): List<NoteBlock> =
-    if (blocks.isNotEmpty()) blocks else legacyBlocksFrom(description, spans, attachments)
+): List<NoteBlock> = if (blocks.isNotEmpty()) blocks else legacyBlocksFrom(description, spans, attachments)
 
-fun Note.ensureBlocks(): Note =
-    if (blocks.isNotEmpty()) this else copy(blocks = legacyBlocksFrom(description, descriptionSpans, attachments))
+fun Note.ensureBlocks(): Note = if (blocks.isNotEmpty()) this else copy(blocks = legacyBlocksFrom(description, descriptionSpans, attachments))
 
 fun Note.withLegacyFieldsFromBlocks(): Note {
     if (blocks.isEmpty()) return this
@@ -153,5 +148,4 @@ fun Note.withLegacyFieldsFromBlocks(): Note {
     )
 }
 
-fun NoteBlock.asAttachment(): NoteAttachment? =
-    if (type == BlockType.IMAGE) metadataToAttachment(metadata) else null
+fun NoteBlock.asAttachment(): NoteAttachment? = if (type == BlockType.IMAGE) metadataToAttachment(metadata) else null

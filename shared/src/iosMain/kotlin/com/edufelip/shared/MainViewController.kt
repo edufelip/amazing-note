@@ -1,8 +1,8 @@
 package com.edufelip.shared
 
+import androidx.compose.runtime.remember
 import androidx.compose.ui.window.ComposeUIViewController
-import com.edufelip.shared.auth.IosFirebaseAuthService
-import com.edufelip.shared.auth.IosGoogleSignIn
+import com.edufelip.shared.auth.GitLiveAuthService
 import com.edufelip.shared.data.SqlDelightNoteRepository
 import com.edufelip.shared.db.DatabaseDriverFactory
 import com.edufelip.shared.db.createDatabase
@@ -38,12 +38,14 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
     val repo = SqlDelightNoteRepository(db)
     val useCases = buildNoteUseCases(repo, NoteValidationRules())
     val vm = DefaultNoteUiViewModel(useCases)
+    val authService = remember { GitLiveAuthService() }
+    val settings = remember { IosSettings() }
+    val appPreferences = remember(settings) { DefaultAppPreferences(settings) }
     AmazingNoteApp(
         viewModel = vm,
-        authService = IosFirebaseAuthService(),
-        onRequestGoogleSignIn = { cb -> IosGoogleSignIn.requestSignIn { success, err -> cb(success, err) } },
-        settings = IosSettings(),
-        appPreferences = DefaultAppPreferences(IosSettings()),
+        authService = authService,
+        settings = settings,
+        appPreferences = appPreferences,
         noteDatabase = db,
     )
 }

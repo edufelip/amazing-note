@@ -89,7 +89,7 @@ fun FoldersHeader(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.padding(top = 16.dp, start = 8.dp, end = 8.dp)
+                modifier = Modifier.padding(top = 16.dp, start = 8.dp, end = 8.dp),
             ) {
                 MaterialSearchBar(
                     modifier = Modifier.weight(1f),

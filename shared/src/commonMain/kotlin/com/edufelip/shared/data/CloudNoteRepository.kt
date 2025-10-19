@@ -12,7 +12,6 @@ import com.edufelip.shared.model.NoteBlock
 import com.edufelip.shared.model.NoteTextSpan
 import com.edufelip.shared.model.blocksToLegacyContent
 import com.edufelip.shared.model.ensureBlocks
-import com.edufelip.shared.model.withLegacyFieldsFromBlocks
 import com.edufelip.shared.util.nowEpochMs
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow

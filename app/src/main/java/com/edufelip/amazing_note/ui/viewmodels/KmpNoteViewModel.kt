@@ -64,5 +64,4 @@ class KmpNoteViewModel @Inject constructor(
 
     fun isDateModeUpdatedPref(): Boolean = appPreferences.isDateModeUpdated()
     fun setDateModeUpdatedPref(updated: Boolean) = appPreferences.setDateModeUpdated(updated)
-
 }

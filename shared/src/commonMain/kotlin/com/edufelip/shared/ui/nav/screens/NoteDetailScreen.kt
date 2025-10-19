@@ -2,26 +2,37 @@ package com.edufelip.shared.ui.nav.screens
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
+import com.edufelip.shared.attachments.AttachmentPicker
 import com.edufelip.shared.domain.validation.NoteActionResult
 import com.edufelip.shared.domain.validation.NoteValidationError
 import com.edufelip.shared.domain.validation.NoteValidationError.DescriptionTooLong
 import com.edufelip.shared.domain.validation.NoteValidationError.EmptyDescription
 import com.edufelip.shared.domain.validation.NoteValidationError.EmptyTitle
 import com.edufelip.shared.domain.validation.NoteValidationError.TitleTooLong
-import com.edufelip.shared.attachments.AttachmentPicker
+import com.edufelip.shared.model.BlockType
 import com.edufelip.shared.model.Folder
+import com.edufelip.shared.model.LEGACY_SPANS_KEY
 import com.edufelip.shared.model.Note
 import com.edufelip.shared.model.NoteAttachment
+import com.edufelip.shared.model.NoteBlock
 import com.edufelip.shared.model.NoteRichText
 import com.edufelip.shared.model.NoteTextSpan
 import com.edufelip.shared.model.NoteTextStyle
+import com.edufelip.shared.model.asAttachment
+import com.edufelip.shared.model.blocksToLegacyContent
+import com.edufelip.shared.model.ensureBlocks
+import com.edufelip.shared.model.legacyBlockId
+import com.edufelip.shared.model.toImageBlock
+import com.edufelip.shared.model.toJson
+import com.edufelip.shared.model.withLegacyFieldsFromBlocks
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.error_description_required
 import com.edufelip.shared.resources.error_description_too_long
@@ -30,8 +41,6 @@ import com.edufelip.shared.resources.error_title_too_long
 import com.edufelip.shared.ui.util.OnSystemBack
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.TextRange
 import kotlin.math.max
 import kotlin.math.min
 
@@ -50,20 +59,40 @@ fun NoteDetailScreen(
         spans: List<NoteTextSpan>,
         attachments: List<NoteAttachment>,
         folderId: Long?,
+        blocks: List<NoteBlock>,
     ) -> NoteActionResult,
     onDelete: (id: Int) -> Unit,
     attachmentPicker: AttachmentPicker? = null,
 ) {
-    val initialSpans = remember(editing?.id) { editing?.descriptionSpans ?: emptyList() }
-    val initialAttachments = remember(editing?.id) { editing?.attachments ?: emptyList() }
-    val initialTitleValue = remember(editing?.id) { createTitleValue(editing?.title.orEmpty()) }
-    val initialDescriptionValue = remember(editing?.id) { createDescriptionValue(editing?.description.orEmpty(), initialSpans) }
+    val normalizedNote = remember(editing?.id) { editing?.ensureBlocks()?.withLegacyFieldsFromBlocks() }
+    val baseDescription = normalizedNote?.description ?: editing?.description.orEmpty()
+    val baseSpans = normalizedNote?.descriptionSpans ?: editing?.descriptionSpans ?: emptyList()
+    val baseAttachments = normalizedNote?.attachments ?: editing?.attachments ?: emptyList()
+    val baseBlocks = normalizedNote?.blocks ?: editing?.blocks ?: emptyList()
+
+    val rawInitialBlocks = remember(editing?.id) {
+        buildEditorBlocks(
+            existingBlocks = baseBlocks,
+            description = baseDescription,
+            spans = baseSpans,
+            attachments = baseAttachments,
+        )
+    }
+    val initialContent = remember(editing?.id, rawInitialBlocks) { blocksToLegacyContent(rawInitialBlocks) }
+    val initialSpans = remember(editing?.id) { initialContent.spans }
+    val initialDescriptionValue = remember(editing?.id) {
+        createDescriptionValue(initialContent.description, initialSpans)
+    }
+    val initialBlocks = remember(editing?.id) {
+        rawInitialBlocks.updateTextBlockContent(initialDescriptionValue.text, initialSpans)
+    }
+    val initialTitleValue = remember(editing?.id) { createTitleValue(normalizedNote?.title ?: editing?.title.orEmpty()) }
     val initialFolder = remember(editing?.id, initialFolderId) { editing?.folderId ?: initialFolderId }
 
     var titleState by remember(editing?.id) { mutableStateOf(initialTitleValue) }
     var descriptionState by remember(editing?.id) { mutableStateOf(initialDescriptionValue) }
     var spansState by remember(editing?.id) { mutableStateOf(initialSpans) }
-    var attachmentsState by remember(editing?.id) { mutableStateOf(initialAttachments) }
+    var blocksState by remember(editing?.id) { mutableStateOf(initialBlocks) }
     val folderState = remember(editing?.id, initialFolder) { mutableStateOf(initialFolder) }
     val titleError = remember(editing?.id) { mutableStateOf<String?>(null) }
     val descriptionError = remember(editing?.id) { mutableStateOf<String?>(null) }
@@ -72,7 +101,7 @@ fun NoteDetailScreen(
     val history = remember(editing?.id) {
         EditorHistory(
             maxSize = 20,
-            initial = EditorSnapshot(initialTitleValue, initialDescriptionValue, initialSpans, initialAttachments),
+            initial = EditorSnapshot(initialTitleValue, initialDescriptionValue, initialSpans, initialBlocks),
         )
     }
     var canUndo by remember(editing?.id) { mutableStateOf(history.canUndo()) }
@@ -88,19 +117,19 @@ fun NoteDetailScreen(
         titleState.text,
         descriptionState.text,
         spansState,
-        attachmentsState,
+        blocksState,
         folderState.value,
         initialTitleValue.text,
         initialDescriptionValue.text,
         initialSpans,
-        initialAttachments,
+        initialBlocks,
         initialFolder,
     ) {
         derivedStateOf {
             titleState.text != initialTitleValue.text ||
                 descriptionState.text != initialDescriptionValue.text ||
                 spansState != initialSpans ||
-                attachmentsState != initialAttachments ||
+                blocksState != initialBlocks ||
                 folderState.value != initialFolder
         }
     }
@@ -109,14 +138,14 @@ fun NoteDetailScreen(
         titleError.value = errors.firstOrNull { it is EmptyTitle || it is TitleTooLong }?.let { e ->
             when (e) {
                 is EmptyTitle -> errorTitleRequiredTpl
-                is TitleTooLong -> String.format(errorTitleTooLongTpl, e.max)
+                is TitleTooLong -> errorTitleTooLongTpl.replace("%d", e.max.toString())
                 else -> null
             }
         }
         descriptionError.value = errors.firstOrNull { it is EmptyDescription || it is DescriptionTooLong }?.let { e ->
             when (e) {
                 is EmptyDescription -> errorDescriptionRequiredTpl
-                is DescriptionTooLong -> String.format(errorDescriptionTooLongTpl, e.max)
+                is DescriptionTooLong -> errorDescriptionTooLongTpl.replace("%d", e.max.toString())
                 else -> null
             }
         }
@@ -129,14 +158,16 @@ fun NoteDetailScreen(
         isSaving = true
         scope.launch {
             try {
+                val attachments = attachmentsFromBlocks(blocksState)
                 when (
                     val result = saveAndValidate(
                         id,
                         titleState.text,
                         descriptionState.text,
                         spansState,
-                        attachmentsState,
+                        attachments,
                         folderState.value,
+                        blocksState,
                     )
                 ) {
                     is NoteActionResult.Success -> {
@@ -169,7 +200,7 @@ fun NoteDetailScreen(
         newTitle: TextFieldValue = titleState,
         newDescription: TextFieldValue = descriptionState,
         newSpans: List<NoteTextSpan> = spansState,
-        newAttachments: List<NoteAttachment> = attachmentsState,
+        newBlocks: List<NoteBlock> = blocksState,
         recordHistory: Boolean = true,
     ) {
         val sanitizedSpans = mergeSpans(sanitizeSpans(newSpans, newDescription.text.length))
@@ -177,9 +208,10 @@ fun NoteDetailScreen(
         titleState = newTitle
         descriptionState = annotatedDescription
         spansState = sanitizedSpans
-        attachmentsState = newAttachments
+        val normalizedBlocks = newBlocks.updateTextBlockContent(annotatedDescription.text, sanitizedSpans)
+        blocksState = normalizedBlocks
         if (recordHistory) {
-            history.commit(EditorSnapshot(newTitle, annotatedDescription, sanitizedSpans, newAttachments))
+            history.commit(EditorSnapshot(newTitle, annotatedDescription, sanitizedSpans, normalizedBlocks))
         }
         canUndo = history.canUndo()
         canRedo = history.canRedo()
@@ -188,10 +220,11 @@ fun NoteDetailScreen(
     fun undo() {
         if (!history.canUndo()) return
         val snapshot = history.undo()
+        val annotated = snapshot.description.withSpans(snapshot.spans)
         titleState = snapshot.title
-        descriptionState = snapshot.description.withSpans(snapshot.spans)
+        descriptionState = annotated
         spansState = snapshot.spans
-        attachmentsState = snapshot.attachments
+        blocksState = snapshot.blocks
         canUndo = history.canUndo()
         canRedo = history.canRedo()
     }
@@ -199,10 +232,11 @@ fun NoteDetailScreen(
     fun redo() {
         if (!history.canRedo()) return
         val snapshot = history.redo()
+        val annotated = snapshot.description.withSpans(snapshot.spans)
         titleState = snapshot.title
-        descriptionState = snapshot.description.withSpans(snapshot.spans)
+        descriptionState = annotated
         spansState = snapshot.spans
-        attachmentsState = snapshot.attachments
+        blocksState = snapshot.blocks
         canUndo = history.canUndo()
         canRedo = history.canRedo()
     }
@@ -241,14 +275,47 @@ fun NoteDetailScreen(
                 }
                 val attachment = result.getOrNull()
                 if (attachment != null) {
-                    pushSnapshot(newAttachments = attachmentsState + attachment)
+                    val withoutDuplicate = blocksState.filterNot { existing ->
+                        existing.asAttachment()?.id == attachment.id
+                    }
+                    val newBlock = attachment.toImageBlock(withoutDuplicate.size)
+                    val updated = (withoutDuplicate + newBlock).normalizeOrders()
+                    pushSnapshot(newBlocks = updated)
                 } else if (result.isFailure) {
-                    uploadError = result.exceptionOrNull()?.localizedMessage ?: ""
+                    uploadError = result.exceptionOrNull()?.message ?: ""
                 }
                 uploadState = null
             }
             Unit
         }
+    }
+
+    fun moveImageBlockUp(block: NoteBlock) {
+        if (block.type != BlockType.IMAGE) return
+        val currentIndex = blocksState.indexOfFirst { it.id == block.id }
+        if (currentIndex <= 1) return
+        val mutable = blocksState.toMutableList()
+        val moving = mutable.removeAt(currentIndex)
+        val targetIndex = (currentIndex - 1).coerceAtLeast(1)
+        mutable.add(targetIndex, moving)
+        pushSnapshot(newBlocks = mutable.normalizeOrders())
+    }
+
+    fun moveImageBlockDown(block: NoteBlock) {
+        if (block.type != BlockType.IMAGE) return
+        val currentIndex = blocksState.indexOfFirst { it.id == block.id }
+        if (currentIndex == -1 || currentIndex >= blocksState.lastIndex) return
+        val mutable = blocksState.toMutableList()
+        val moving = mutable.removeAt(currentIndex)
+        val targetIndex = (currentIndex + 1).coerceAtMost(mutable.size).coerceAtLeast(1)
+        mutable.add(targetIndex, moving)
+        pushSnapshot(newBlocks = mutable.normalizeOrders())
+    }
+
+    fun removeImageBlock(block: NoteBlock) {
+        if (block.type != BlockType.IMAGE) return
+        val updated = blocksState.filterNot { it.id == block.id }
+        pushSnapshot(newBlocks = updated.normalizeOrders())
     }
 
     AddNoteScreen(
@@ -257,29 +324,19 @@ fun NoteDetailScreen(
             titleError.value = null
             pushSnapshot(newTitle = it)
         },
-        description = descriptionState,
-        onDescriptionChange = {
+        folders = folders,
+        selectedFolderId = folderState.value,
+        onFolderChange = { folderState.value = it },
+        descriptionBlocks = blocksState,
+        textBlockValue = descriptionState,
+        onTextBlockChange = {
             descriptionError.value = null
             pushSnapshot(newDescription = it)
         },
+        onMoveBlockUp = { block -> moveImageBlockUp(block) },
+        onMoveBlockDown = { block -> moveImageBlockDown(block) },
         onBack = { handleBackPress() },
         onSave = { launchSave(navigateBack = true) },
-        onUndo = { undo() },
-        onRedo = { redo() },
-        undoEnabled = canUndo,
-        redoEnabled = canRedo,
-        onToggleBold = { toggleStyle(NoteTextStyle.Bold) },
-        onToggleItalic = { toggleStyle(NoteTextStyle.Italic) },
-        onToggleUnderline = { toggleStyle(NoteTextStyle.Underline) },
-        onAddAttachment = if (uploadState == null) addAttachmentHandler else null,
-        attachments = attachmentsState,
-        uploadProgress = uploadState?.takeIf { it.visible }?.progress,
-        uploadingFileName = uploadState?.takeIf { it.visible }?.fileName,
-        uploadError = uploadError,
-        onRemoveAttachment = { attachment ->
-            val updated = attachmentsState.filterNot { it.id == attachment.id }
-            pushSnapshot(newAttachments = updated)
-        },
         onDelete = id?.let { noteId ->
             {
                 onDelete(noteId)
@@ -288,9 +345,18 @@ fun NoteDetailScreen(
         },
         titleError = titleError.value,
         descriptionError = descriptionError.value,
-        folders = folders,
-        selectedFolderId = folderState.value,
-        onFolderChange = { folderState.value = it },
+        onUndo = { undo() },
+        onRedo = { redo() },
+        undoEnabled = canUndo,
+        redoEnabled = canRedo,
+        onToggleBold = { toggleStyle(NoteTextStyle.Bold) },
+        onToggleItalic = { toggleStyle(NoteTextStyle.Italic) },
+        onToggleUnderline = { toggleStyle(NoteTextStyle.Underline) },
+        onAddAttachment = if (uploadState == null) addAttachmentHandler else null,
+        onRemoveImageBlock = { block -> removeImageBlock(block) },
+        uploadProgress = uploadState?.takeIf { it.visible }?.progress,
+        uploadingFileName = uploadState?.takeIf { it.visible }?.fileName,
+        uploadError = uploadError,
     )
 }
 
@@ -298,22 +364,25 @@ private data class EditorSnapshot(
     val title: TextFieldValue,
     val description: TextFieldValue,
     val spans: List<NoteTextSpan>,
-    val attachments: List<NoteAttachment>,
+    val blocks: List<NoteBlock>,
 )
 
 private class EditorHistory(
     private val maxSize: Int,
     initial: EditorSnapshot,
 ) {
-    private val snapshots = mutableListOf(initial)
+    private val snapshots = mutableListOf(
+        initial.copy(blocks = initial.blocks.map { it.copy() }),
+    )
     private var pointer = 0
 
     fun commit(snapshot: EditorSnapshot) {
-        if (snapshots.getOrNull(pointer) == snapshot) return
+        val normalized = snapshot.copy(blocks = snapshot.blocks.map { it.copy() })
+        if (snapshots.getOrNull(pointer) == normalized) return
         if (pointer < snapshots.size - 1) {
             snapshots.subList(pointer + 1, snapshots.size).clear()
         }
-        snapshots.add(snapshot)
+        snapshots.add(normalized)
         pointer++
         if (snapshots.size > maxSize) {
             snapshots.removeAt(0)
@@ -405,4 +474,90 @@ private fun toggleSpanStyle(
         return updated
     }
     return existing + NoteTextSpan(normalizedStart, normalizedEnd, style)
+}
+
+private fun attachmentsFromBlocks(blocks: List<NoteBlock>): List<NoteAttachment> = blocks.mapNotNull { it.asAttachment() }
+
+private fun buildEditorBlocks(
+    existingBlocks: List<NoteBlock>,
+    description: String,
+    spans: List<NoteTextSpan>,
+    attachments: List<NoteAttachment>,
+): List<NoteBlock> {
+    val ensured = ensureBlocks(description, spans, attachments, existingBlocks)
+    val metadata = if (spans.isNotEmpty()) mapOf(LEGACY_SPANS_KEY to spans.toJson()) else emptyMap()
+    val baseBlocks = when {
+        ensured.isEmpty() -> listOf(
+            NoteBlock(
+                id = legacyBlockId(BlockType.TEXT, 0),
+                type = BlockType.TEXT,
+                content = description,
+                metadata = metadata,
+                order = 0,
+            ),
+        )
+        ensured.any { it.type == BlockType.TEXT } -> ensured
+        else -> listOf(
+            NoteBlock(
+                id = legacyBlockId(BlockType.TEXT, 0),
+                type = BlockType.TEXT,
+                content = description,
+                metadata = metadata,
+                order = 0,
+            ),
+        ) + ensured
+    }
+    return if (baseBlocks.isEmpty()) {
+        listOf(
+            NoteBlock(
+                id = legacyBlockId(BlockType.TEXT, 0),
+                type = BlockType.TEXT,
+                content = description,
+                metadata = metadata,
+                order = 0,
+            ),
+        )
+    } else {
+        baseBlocks.normalizeOrders()
+    }
+}
+
+private fun List<NoteBlock>.normalizeOrders(): List<NoteBlock> = mapIndexed { index, block -> block.copy(order = index) }
+
+private fun List<NoteBlock>.updateTextBlockContent(
+    text: String,
+    spans: List<NoteTextSpan>,
+): List<NoteBlock> {
+    val spanMetadata = if (spans.isEmpty()) null else spans.toJson()
+    val mutable = toMutableList()
+    val textIndex = mutable.indexOfFirst { it.type == BlockType.TEXT }
+    val metadata = if (textIndex >= 0) {
+        mutable[textIndex].metadata.toMutableMap()
+    } else {
+        mutableMapOf()
+    }
+    if (spanMetadata == null) {
+        metadata.remove(LEGACY_SPANS_KEY)
+    } else {
+        metadata[LEGACY_SPANS_KEY] = spanMetadata
+    }
+    val updatedTextBlock = if (textIndex >= 0) {
+        mutable[textIndex].copy(
+            content = text,
+            metadata = metadata.toMap(),
+        )
+    } else {
+        NoteBlock(
+            id = legacyBlockId(BlockType.TEXT, 0),
+            type = BlockType.TEXT,
+            content = text,
+            metadata = metadata.toMap(),
+            order = 0,
+        )
+    }
+    if (textIndex >= 0) {
+        mutable.removeAt(textIndex)
+    }
+    mutable.add(0, updatedTextBlock)
+    return mutable.normalizeOrders()
 }

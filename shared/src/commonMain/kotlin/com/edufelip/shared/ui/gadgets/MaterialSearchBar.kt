@@ -15,10 +15,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.PaddingValues
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_clear_search
 import com.edufelip.shared.resources.cd_search
@@ -67,8 +66,11 @@ fun MaterialSearchBar(
                             Icon(
                                 imageVector = Icons.Filled.Tune,
                                 contentDescription = stringResource(Res.string.filters),
-                                tint = if (filtersActive) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.onSurfaceVariant
+                                tint = if (filtersActive) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
                             )
                         }
                     }

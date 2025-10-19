@@ -1,6 +1,11 @@
+@file:OptIn(ExperimentalSwiftExportDsl::class)
+
+import org.jetbrains.kotlin.gradle.plugin.mpp.Framework
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.swiftexport.ExperimentalSwiftExportDsl
+
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.native.cocoapods")
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.compose.multiplatform)
@@ -18,29 +23,6 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
-    cocoapods {
-        version = "1.1.0"
-        summary = "Shared KMP module for Amazing Note"
-        homepage = "https://example.com/amazing-note"
-        ios.deploymentTarget = "14.0"
-        // Firebase Auth for iOS
-        pod("FirebaseAuth")
-        // Firestore for iOS
-        pod("FirebaseFirestore")
-        // Firebase Storage for attachments
-        pod("FirebaseStorage")
-        // Google Sign-In for iOS (used by iosMain Kotlin)
-        pod("GoogleSignIn")
-        // Ensure CocoaPods links sqlite3 when integrating the shared framework
-        // Value is injected verbatim into the podspec, so include quotes/array.
-        extraSpecAttributes["libraries"] = "['sqlite3']"
-        framework {
-            // The name your iOS app will import
-            baseName = "shared"
-            isStatic = true
-        }
-    }
-
     sourceSets {
         commonMain {
             dependencies {
@@ -49,15 +31,16 @@ kotlin {
                 implementation(compose.foundation)
                 implementation(compose.material3)
                 implementation(compose.ui)
-                // Compose Multiplatform Resources
                 implementation(compose.components.resources)
-                // Coil 3 multiplatform
                 implementation(libs.coil3.compose)
                 implementation(libs.coil3.network.ktor3)
                 implementation(compose.materialIconsExtended)
                 implementation(libs.sqldelight.runtime)
                 implementation(libs.sqldelight.coroutines)
                 implementation(libs.kotlinx.serialization.json)
+                implementation(libs.gitlive.firestore)
+                implementation(libs.gitlive.auth)
+                implementation(libs.gitlive.storage)
             }
         }
         commonTest {
@@ -72,8 +55,14 @@ kotlin {
                 implementation(compose.uiTooling)
                 implementation(compose.components.resources)
                 implementation(libs.activity.compose)
+                implementation(libs.credentials.core)
+                implementation(libs.credentials.play.services)
+                implementation(libs.googleid)
                 implementation(libs.ktor.client.okhttp)
+                api(project.dependencies.platform(libs.firebase.bom))
                 implementation(libs.firebase.auth)
+                implementation(libs.firebase.auth.ktx)
+                implementation(libs.firebase.common.ktx)
                 implementation(libs.firebase.firestore)
                 implementation(libs.firebase.storage)
             }
@@ -94,6 +83,14 @@ kotlin {
                     freeCompilerArgs.add("-Xexpect-actual-classes")
                 }
             }
+        }
+    }
+
+    swiftExport {
+        moduleName = "Shared"
+        flattenPackage = "com.edufelip.amazing_note"
+        configure {
+            freeCompilerArgs.add("-Xexpect-actual-classes")
         }
     }
 }

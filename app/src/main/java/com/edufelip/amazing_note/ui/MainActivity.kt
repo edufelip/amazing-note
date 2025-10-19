@@ -5,24 +5,22 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.credentials.CredentialManager
-import androidx.credentials.GetCredentialRequest
-import androidx.lifecycle.lifecycleScope
-import com.edufelip.amazing_note.auth.FirebaseAuthServiceImpl
 import com.edufelip.amazing_note.ui.viewmodels.KmpNoteViewModel
 import com.edufelip.shared.db.NoteDatabase
 import com.edufelip.shared.ui.AmazingNoteApp
 import com.edufelip.shared.ui.settings.Settings
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.edufelip.shared.auth.GitLiveAuthService
+import com.edufelip.shared.auth.GoogleSignInConfig
+import com.edufelip.amazing_note.R
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.initialize
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val vm: KmpNoteViewModel by viewModels()
-    private val authService by lazy { FirebaseAuthServiceImpl() }
+    private val authService by lazy { GitLiveAuthService() }
 
     @Inject lateinit var settings: Settings
 
@@ -30,6 +28,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        Firebase.initialize(applicationContext)
 
         enableEdgeToEdge()
 
@@ -41,45 +41,9 @@ class MainActivity : ComponentActivity() {
             AmazingNoteApp(
                 viewModel = vm,
                 authService = authService,
-                onRequestGoogleSignIn = { cb ->
-                    lifecycleScope.launch {
-                        try {
-                            val googleIdOption = GetGoogleIdOption.Builder()
-                                .setFilterByAuthorizedAccounts(false)
-                                .setServerClientId(getString(com.edufelip.amazing_note.R.string.default_web_client_id))
-                                .build()
-                            val request = GetCredentialRequest.Builder()
-                                .addCredentialOption(googleIdOption)
-                                .build()
-                            val credentialManager = CredentialManager.create(this@MainActivity)
-                            val result = credentialManager.getCredential(
-                                request = request,
-                                context = this@MainActivity,
-                            )
-                            val credential = result.credential
-                            val googleIdTokenCredential = when {
-                                credential is androidx.credentials.CustomCredential &&
-                                    credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL -> {
-                                    GoogleIdTokenCredential.createFrom(credential.data)
-                                }
-                                else -> null
-                            }
-                            val idToken = googleIdTokenCredential?.idToken
-                            if (idToken.isNullOrBlank()) {
-                                cb(false, "Missing Google ID token")
-                            } else {
-                                try {
-                                    authService.signInWithGoogle(idToken)
-                                    cb(true, null)
-                                } catch (e: Exception) {
-                                    cb(false, e.message ?: "Google sign-in failed")
-                                }
-                            }
-                        } catch (e: Exception) {
-                            cb(false, e.message ?: "Google sign-in canceled")
-                        }
-                    }
-                },
+                googleSignInConfig = GoogleSignInConfig(
+                    androidServerClientId = getString(R.string.default_web_client_id),
+                ),
                 settings = settings,
                 noteDatabase = noteDb,
                 appVersion = appVersion,

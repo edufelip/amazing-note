@@ -10,9 +10,9 @@ import com.edufelip.shared.model.attachmentsFromJson
 import com.edufelip.shared.model.blocksFromJson
 import com.edufelip.shared.model.blocksToJson
 import com.edufelip.shared.model.ensureBlocks
-import com.edufelip.shared.model.withLegacyFieldsFromBlocks
 import com.edufelip.shared.model.spansFromJson
 import com.edufelip.shared.model.toJson
+import com.edufelip.shared.model.withLegacyFieldsFromBlocks
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
@@ -265,9 +265,9 @@ class NotesSyncManager(
                 block.metadata.entries
                     .sortedBy { it.key }
                     .forEach { (key, value) ->
-                    mixString(key)
-                    mixString(value)
-                }
+                        mixString(key)
+                        mixString(value)
+                    }
                 mix(block.order.toLong())
             }
             mix(if (n.deleted) 1 else 0)

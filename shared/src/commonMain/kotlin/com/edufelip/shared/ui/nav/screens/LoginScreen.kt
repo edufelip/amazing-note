@@ -45,8 +45,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,6 +59,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.edufelip.shared.auth.GoogleSignInLauncher
 import com.edufelip.shared.presentation.AuthViewModel
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_back
@@ -87,7 +88,7 @@ import org.jetbrains.compose.resources.stringResource
 fun LoginScreen(
     auth: AuthViewModel,
     onBack: () -> Unit,
-    onRequestGoogleSignIn: (((Boolean, String?) -> Unit) -> Unit)? = null,
+    googleSignInLauncher: GoogleSignInLauncher? = null,
     onOpenSignUp: () -> Unit,
     onLoginSuccess: () -> Unit = onBack,
     showLocalSuccessSnackbar: Boolean = true,
@@ -229,12 +230,20 @@ fun LoginScreen(
             val googleCanceledText = stringResource(Res.string.google_sign_in_canceled)
             GoogleButton(
                 text = stringResource(Res.string.continue_with_google),
-                enabled = onRequestGoogleSignIn != null && !loading,
+                enabled = googleSignInLauncher != null && !loading,
                 onClick = {
-                    onRequestGoogleSignIn?.invoke { success, err ->
-                        if (!success) {
-                            val message = err ?: googleCanceledText
-                            scope.launch { snackbarHostState.showSnackbar(message) }
+                    val launcher = googleSignInLauncher ?: return@GoogleButton
+                    scope.launch {
+                        val result = launcher.signIn()
+                        when {
+                            !result.idToken.isNullOrBlank() -> {
+                                auth.signInWithGoogleToken(result.idToken)
+                            }
+                            !result.errorMessage.isNullOrBlank() -> {
+                                auth.setError(result.errorMessage)
+                                snackbarHostState.showSnackbar(result.errorMessage)
+                            }
+                            else -> snackbarHostState.showSnackbar(googleCanceledText)
                         }
                     }
                 },

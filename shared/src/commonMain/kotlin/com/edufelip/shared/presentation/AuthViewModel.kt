@@ -40,6 +40,10 @@ class AuthViewModel(
         _message.value = null
     }
 
+    fun setError(message: String) {
+        _error.value = message
+    }
+
     fun loginWithEmail(email: String, password: String) {
         if (_loading.value) return
         _loading.value = true
@@ -62,6 +66,22 @@ class AuthViewModel(
             try {
                 useCases.logout()
             } catch (_: Exception) {}
+        }
+    }
+
+    fun signInWithGoogleToken(idToken: String) {
+        if (_loading.value) return
+        _loading.value = true
+        _error.value = null
+        _message.value = null
+        scope.launch(Dispatchers.Main) {
+            try {
+                useCases.signInWithGoogle(idToken)
+            } catch (e: Exception) {
+                _error.value = e.message ?: "Google sign-in failed"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 
