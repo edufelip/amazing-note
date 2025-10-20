@@ -35,6 +35,9 @@
 		FB3B66BB2EA5408000EBB707 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = FB3B66BA2EA5408000EBB707 /* GoogleSignInSwift */; };
 		FB768F192E6F6E4B00DD44F2 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FB768F182E6F6E3F00DD44F2 /* libsqlite3.tbd */; };
 		FB768F1A2E6F6E5600DD44F2 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FB768F182E6F6E3F00DD44F2 /* libsqlite3.tbd */; };
+		FBB6D9CB2EA69B74004A20DC /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBD56A2D2EA6530800C3D67E /* Shared.framework */; };
+		FBB6D9CC2EA69B75004A20DC /* Shared.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = FBD56A2D2EA6530800C3D67E /* Shared.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FBB6D9CF2EA69C2A004A20DC /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = FBB6D9CE2EA69C2A004A20DC /* FirebaseCore */; };
 		FDE52B8D57A097A60A4CF366 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6C1F485E0CF8BB70C9DDD2 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -55,6 +58,20 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		FBB6D9CD2EA69B75004A20DC /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				FBB6D9CC2EA69B75004A20DC /* Shared.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		1285E8A7B7E7359EA11B9591 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		86038AE1032E284E79B32AD6 /* iosApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iosApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -63,6 +80,8 @@
 		FB0526992E6E5B6E008B31BB /* amazingnoteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = amazingnoteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB0526A32E6E5B6E008B31BB /* amazingnoteUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = amazingnoteUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB768F182E6F6E3F00DD44F2 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		FBD56A2D2EA6530800C3D67E /* Shared.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Shared.framework; path = ../shared/build/bin/iosArm64/debugFramework/Shared.framework; sourceTree = "<group>"; };
+		FBD56A312EA6532100C3D67E /* Shared.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Shared.framework; path = ../shared/build/bin/iosSimulatorArm64/debugFramework/Shared.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,6 +95,7 @@
 				FB21EC032EA1502200207E53 /* FirebaseAnalyticsCore in Frameworks */,
 				FB3B66B22EA5404600EBB707 /* FirebaseRemoteConfig in Frameworks */,
 				FB3B66B92EA5408000EBB707 /* GoogleSignIn in Frameworks */,
+				FBB6D9CF2EA69C2A004A20DC /* FirebaseCore in Frameworks */,
 				FB110FF32EA1509700F11279 /* FirebaseAnalyticsIdentitySupport in Frameworks */,
 				FB3B66B62EA5404600EBB707 /* FirebaseStorageCombine-Community in Frameworks */,
 				FB110FF12EA1509700F11279 /* FirebaseAnalyticsCore in Frameworks */,
@@ -83,6 +103,7 @@
 				FB3B66B02EA5404600EBB707 /* FirebasePerformance in Frameworks */,
 				FB3B66A22EA5404600EBB707 /* FirebaseAuth in Frameworks */,
 				FB3B66A82EA5404600EBB707 /* FirebaseFirestore in Frameworks */,
+				FBB6D9CB2EA69B74004A20DC /* Shared.framework in Frameworks */,
 				FB3B66A62EA5404600EBB707 /* FirebaseCrashlytics in Frameworks */,
 				FB3B66B42EA5404600EBB707 /* FirebaseStorage in Frameworks */,
 				FB110FF52EA1509700F11279 /* FirebaseAppCheck in Frameworks */,
@@ -180,6 +201,8 @@
 		FB768F172E6F6E3F00DD44F2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				FBD56A2D2EA6530800C3D67E /* Shared.framework */,
+				FBD56A312EA6532100C3D67E /* Shared.framework */,
 				FB768F182E6F6E3F00DD44F2 /* libsqlite3.tbd */,
 			);
 			name = Frameworks;
@@ -195,7 +218,7 @@
 				FB3B66BC2EA55D7200EBB707 /* ShellScript */,
 				297B59D9CE634556D6007C40 /* Sources */,
 				E4F1A5D83BA204744AD54907 /* Frameworks */,
-				BBA011C0A1B341708C0E1F1C /* Embed Shared Framework */,
+				FBB6D9CD2EA69B75004A20DC /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -333,42 +356,26 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		BBA011C0A1B341708C0E1F1C /* Embed Shared Framework */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Embed Shared Framework";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "set -euo pipefail\n\nexport JAVA_HOME=\"$(/usr/libexec/java_home -v 17)\"\nexport PATH=\"$JAVA_HOME/bin:$PATH\"\n\nSDK_BASE=\"$(echo \"$SDK_NAME\" | sed 's/[0-9.]*$//')\"\nREPO_ROOT=\"$(cd \"$SRCROOT/..\" && pwd)\"\ncd \"$REPO_ROOT\"\n\n./gradlew :shared:embedAndSignAppleFrameworkForXcode \\\n  -PXCODE_CONFIGURATION=\"$CONFIGURATION\" \\\n  -PXCODE_SDK=\"$SDK_BASE\" \\\n  -PXCODE_TARGET=iosApp\n";
-			showEnvVarsInLog = 0;
-		};
 		FB3B66BC2EA55D7200EBB707 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/../shared/build.gradle.kts",
+				"$(SRCROOT)/../gradle/libs.versions.toml",
+				"$(SRCROOT)/../shared/src/commonMain",
 			);
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/kmp/$(CONFIGURATION).stamp\n",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$SRCROOT/..\"\n./gradlew :<Shared module name>:embedSwiftExportForXcode\n";
+			shellScript = "set -euo pipefail\nexport JAVA_HOME=\"$(\"/usr/libexec/java_home\" -v 17)\"; export PATH=\"$JAVA_HOME/bin:$PATH\"\n\nCONFIG=\"${CONFIGURATION:-Debug}\"\nPLATFORM=\"${PLATFORM_NAME:-iphonesimulator}\"\n\n# Vars Compose and KMP expect\nif [ \"$PLATFORM\" = \"iphoneos\" ]; then\n  export SDK_NAME=\"iphoneos\"; export ARCHS=\"arm64\"\n  SUFFIX=\"IosArm64\"; OUTDIR=\"iosArm64\"\nelse\n  export SDK_NAME=\"iphonesimulator\"\n  if [ \"$(uname -m)\" = \"arm64\" ]; then ARCHS=\"arm64\"; SUFFIX=\"IosSimulatorArm64\"; OUTDIR=\"iosSimulatorArm64\"\n  else ARCHS=\"x86_64\"; SUFFIX=\"IosX64\"; OUTDIR=\"iosX64\"\n  fi\n  export ARCHS\nfi\n\nROOT_DIR=\"${CONFIGURATION_BUILD_DIR}\"\nPKG_DIR=\"${ROOT_DIR}/PackageFrameworks\"\necho \"ROOT_DIR=$ROOT_DIR\"\necho \"PKG_DIR=$PKG_DIR\"\nls -1 \"$ROOT_DIR\" | head || true\n[ -d \"$PKG_DIR\" ] && ls -1 \"$PKG_DIR\" | head || true\n\n# Build colon-separated list of framework search dirs for Gradle\nFW_DIRS=\"$ROOT_DIR\"\n[ -d \"$PKG_DIR\" ] && FW_DIRS=\"$FW_DIRS:$PKG_DIR\"\n\n# Collect the framework names that actually exist\nFW_LIST=\"\"\n\nadd_fw() {\n  case \" $FW_LIST \" in\n    *\" $1 \"*) : ;;   # already present\n    *) FW_LIST=\"$FW_LIST $1\" ;;\n  esac\n}\n\nscan_dir_for_fw() {\n  d=\"$1\"\n  for f in \"$d\"/*.framework; do\n    [ -d \"$f\" ] || continue\n    name=\"$(basename \"${f%.framework}\")\"\n    case \"$name\" in\n      Firebase*|Google*|grpc|grpcpp|openssl_grpc|FirebaseFirestoreInternal)\n        add_fw \"$name\"\n      ;;\n    esac\n  done\n}\n\n# Scan both dirs\nIFS=:; for d in $FW_DIRS; do scan_dir_for_fw \"$d\"; done; unset IFS\nFW_LIST=\"$(echo \"$FW_LIST\" | xargs)\"  # trim\necho \"Will link frameworks: $FW_LIST\"\n\ncd \"$SRCROOT/..\"\nchmod +x ./gradlew\n\n# Hand paths and names to Gradle at configuration time\nexport ORG_GRADLE_PROJECT_XCODE_FRAMEWORKS_DIRS=\"$FW_DIRS\"\nexport ORG_GRADLE_PROJECT_FIREBASE_FW=\"$(echo \"$FW_LIST\" | tr ' ' ,)\"\n\n./gradlew \":shared:link${CONFIG}Framework${SUFFIX}\" --stacktrace\n\n# Drop KMP framework where Xcode compiles and links from\nSRC=\"shared/build/bin/${OUTDIR}/$(printf %s \"$CONFIG\" | tr '[:upper:]' '[:lower:]')Framework/Shared.framework\"\nDST=\"${CONFIGURATION_BUILD_DIR}\"\nrm -rf \"$DST/Shared.framework\"\nrsync -a \"$SRC\" \"$DST/\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -545,6 +552,10 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = L4N9Z3Z82V;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(CONFIGURATION_BUILD_DIR)",
+					"$(inherited)",
+				);
 				INFOPLIST_FILE = iosApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -565,6 +576,10 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = L4N9Z3Z82V;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(CONFIGURATION_BUILD_DIR)",
+					"$(inherited)",
+				);
 				INFOPLIST_FILE = iosApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -973,6 +988,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FB3B66B72EA5408000EBB707 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignInSwift;
+		};
+		FBB6D9CE2EA69C2A004A20DC /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

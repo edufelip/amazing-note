@@ -1,8 +1,5 @@
-@file:OptIn(ExperimentalSwiftExportDsl::class)
-
 import org.jetbrains.kotlin.gradle.plugin.mpp.Framework
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import org.jetbrains.kotlin.gradle.swiftexport.ExperimentalSwiftExportDsl
 
 plugins {
     id("com.android.library")
@@ -18,10 +15,26 @@ kotlin {
     @Suppress("UNUSED_VARIABLE")
     androidTarget()
 
-    // iOS targets
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+    val iosArm64 = iosArm64()
+    val iosSimArm64 = iosSimulatorArm64()
+
+    listOf(iosArm64, iosSimArm64).forEach { t ->
+        t.binaries.framework {
+            baseName = "Shared"
+            isStatic = true
+            linkerOpts("-lsqlite3")
+        }
+    }
+
+    tasks.register("printFrameworkPaths") {
+        doLast {
+            kotlin.targets.withType(KotlinNativeTarget::class.java).configureEach {
+                binaries.withType(Framework::class.java).configureEach {
+                    println("${target.name}:${buildType}:${outputFile.absolutePath}")
+                }
+            }
+        }
+    }
 
     sourceSets {
         commonMain {
@@ -61,8 +74,6 @@ kotlin {
                 implementation(libs.ktor.client.okhttp)
                 api(project.dependencies.platform(libs.firebase.bom))
                 implementation(libs.firebase.auth)
-                implementation(libs.firebase.auth.ktx)
-                implementation(libs.firebase.common.ktx)
                 implementation(libs.firebase.firestore)
                 implementation(libs.firebase.storage)
             }
@@ -83,14 +94,6 @@ kotlin {
                     freeCompilerArgs.add("-Xexpect-actual-classes")
                 }
             }
-        }
-    }
-
-    swiftExport {
-        moduleName = "Shared"
-        flattenPackage = "com.edufelip.amazing_note"
-        configure {
-            freeCompilerArgs.add("-Xexpect-actual-classes")
         }
     }
 }
@@ -114,13 +117,6 @@ tasks
     .configureEach {
         dependsOn(tasks.named("compileKotlinMetadata"))
     }
-
-// Ensure all Kotlin/Native iOS binaries link with SQLite3
-kotlin.targets.withType(org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget::class.java).configureEach {
-    binaries.all {
-        linkerOpts("-lsqlite3")
-    }
-}
 
 android {
     namespace = "com.edufelip.amazing_note.shared"

@@ -10,7 +10,7 @@ plugins {
     alias(libs.plugins.compose.multiplatform) apply false
     alias(libs.plugins.sqldelight) apply false
     alias(libs.plugins.google.services) apply false
-    id("com.diffplug.spotless") version "8.0.0"
+    alias(libs.plugins.spotless)
 }
 
 // Code formatting & import optimization (approx. Android Studio Cmd+Opt+L / Ctrl+Alt+O)
