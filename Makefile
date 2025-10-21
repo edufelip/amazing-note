@@ -13,18 +13,18 @@ android-lint:
 	./gradlew :app:lintDebug
 
 ios-bootstrap:
-    ./scripts/rebuild_ios.sh
+	./scripts/rebuild_ios.sh
 
 ios-open:
-    open iosApp/iosApp.xcodeproj
+	open iosApp/iosApp.xcodeproj
 
 clean:
-    ./gradlew clean
-    rm -rf iosApp/DerivedData shared/build/xcode-frameworks
+	./gradlew clean
+	rm -rf iosApp/DerivedData shared/build/xcode-frameworks
 
 
 pcm:
-	python3 tools/pcm_update.py
+	python3 scripts/pcm_update.py
 
 check-pcm:
-	python3 tools/pcm_update.py --check
+	python3 scripts/pcm_update.py --check

@@ -1,24 +1,40 @@
 # iOS module
 
-The iOS target uses Swift Package Manager and the Gradle `embedAndSignAppleFrameworkForXcode` task to consume the shared Kotlin framework. CocoaPods is no longer required.
+The iOS host app consumes the shared Kotlin Multiplatform framework. Swift Package Manager supplies Firebase and other iOS dependencies—no CocoaPods required.
 
 ## Quick start
 
-From the repository root:
+1. **Build Swift Package dependencies once.**  
+   Open the project in Xcode or run:
+   ```bash
+   xcodebuild -project iosApp/iosApp.xcodeproj \
+              -scheme iosApp \
+              -configuration Debug \
+              -sdk iphoneos \
+              build
+   ```
+   This compiles Firebase (and other SPM packages) into Xcode’s DerivedData folder so Gradle can link against them.
 
-```bash
-./scripts/rebuild_ios.sh
-```
+2. **Link the shared framework via Gradle.**  
+   Either use the helper script:
+   ```bash
+   ./scripts/rebuild_ios.sh
+   ```
+   or invoke the link tasks directly:
+   ```bash
+   ./gradlew :shared:linkDebugFrameworkIosArm64 \
+             -PXCODE_FRAMEWORKS_BUILD_DIR=/absolute/path/to/DerivedData/.../Build/Products/Debug-iphoneos
 
-This script builds the shared framework for simulator + device slices and then runs `xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp`.
+   ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64 \
+             -PXCODE_FRAMEWORKS_BUILD_DIR=/absolute/path/to/DerivedData/.../Build/Products/Debug-iphonesimulator
+   ```
+   (Use `xcodebuild -showBuildSettings` to locate the `CONFIGURATION_BUILD_DIR` for your scheme/config.)
 
-After that, open the project directly:
+3. **Embed the framework in Xcode.**  
+   In the **iosApp** target, open *General ▸ Frameworks, Libraries, and Embedded Content*, add `Shared.framework` from the build products, and set it to **Embed & Sign**. That removes the need for any extra embed shell script.
 
-```bash
-open iosApp/iosApp.xcodeproj
-```
-
-Select the **iosApp** scheme and run it on your simulator or device. The Xcode build phase named “Embed Shared Framework” calls the Gradle embed task automatically, so future builds only need the standard Xcode Run.
+4. **Run from Xcode or the CLI.**  
+   After linking and embedding, regular Xcode builds (or `xcodebuild`) will pick up the fresh `Shared.framework`.
 
 ## Notes
 
