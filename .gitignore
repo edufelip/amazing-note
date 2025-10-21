@@ -29,3 +29,6 @@ AGENTS.md
 .gradle-alt
 .gradle-cache
 .gradle-user
+
+GoogleService-Info.plist
+google-services.json
