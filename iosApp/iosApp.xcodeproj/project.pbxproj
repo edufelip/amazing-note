@@ -38,6 +38,7 @@
 		FBB6D9CF2EA69C2A004A20DC /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = FBB6D9CE2EA69C2A004A20DC /* FirebaseCore */; };
 		FBCCD1222EA707D500ABA501 /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBCCD11C2EA6FD1600ABA501 /* Shared.framework */; };
 		FDE52B8D57A097A60A4CF366 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6C1F485E0CF8BB70C9DDD2 /* AppDelegate.swift */; };
+		FBF71E202FA1234500ABCDEF /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = FBF71E1F2FA1234500ABCDEF /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -69,6 +70,7 @@
 		FBCCD11C2EA6FD1600ABA501 /* Shared.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Shared.framework; sourceTree = "<group>"; };
 		FBD56A2D2EA6530800C3D67E /* Shared.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Shared.framework; path = ../shared/build/bin/iosArm64/debugFramework/Shared.framework; sourceTree = "<group>"; };
 		FBD56A312EA6532100C3D67E /* Shared.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Shared.framework; path = ../shared/build/bin/iosSimulatorArm64/debugFramework/Shared.framework; sourceTree = "<group>"; };
+		FBF71E1F2FA1234500ABCDEF /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,6 +139,7 @@
 			children = (
 				8B6C1F485E0CF8BB70C9DDD2 /* AppDelegate.swift */,
 				1285E8A7B7E7359EA11B9591 /* SceneDelegate.swift */,
+				FBF71E1F2FA1234500ABCDEF /* GoogleService-Info.plist */,
 			);
 			path = iosApp;
 			sourceTree = "<group>";
@@ -215,6 +218,7 @@
 			buildPhases = (
 				FBCCD1212EA7037700ABA501 /* ShellScript */,
 				297B59D9CE634556D6007C40 /* Sources */,
+				FBF71E102FA1234500ABCDEF /* Resources */,
 				E4F1A5D83BA204744AD54907 /* Frameworks */,
 			);
 			buildRules = (
@@ -350,6 +354,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FBF71E102FA1234500ABCDEF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FBF71E202FA1234500ABCDEF /* GoogleService-Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
@@ -369,7 +381,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$SRCROOT/..\"\n\n./gradlew :shared:embedAndSignAppleFrameworkForXcode\n\nDERIVED_DATA_DIR=$(echo \"${TARGET_BUILD_DIR}\" | awk -F'/Build/' '{print $1}')\n\nINDEXER_DATA_DIR=${DERIVED_DATA_DIR}/Index.noindex/Build/Products/Debug-$PLATFORM_NAME\nmkdir -p $INDEXER_DATA_DIR\ncp -R shared/build/xcode-frameworks/$CONFIGURATION/$SDK_NAME/* ${INDEXER_DATA_DIR}\n";
+			shellScript = "cd \"$SRCROOT/..\"\n\nset -euo pipefail\n\nCOMPOSE_PLATFORM=\"${PLATFORM_NAME:-${SDK_NAME:-}}\"\nCOMPOSE_ARCHS=\"${ARCHS:-}\"\n\nif [ -z \"$COMPOSE_ARCHS\" ]; then\n  case \"${SDK_NAME:-}\" in\n    iphonesimulator*)\n      COMPOSE_ARCHS=\"arm64\"\n      echo \"ARCHS not provided; defaulting to arm64 for simulator\" >&2\n      ;;\n    iphoneos*)\n      COMPOSE_ARCHS=\"arm64\"\n      echo \"ARCHS not provided; defaulting to arm64 for device\" >&2\n      ;;\n  esac\nfi\n\nif [ -z \"${PLATFORM_NAME:-}\" ] && [ -n \"$COMPOSE_PLATFORM\" ]; then\n  export PLATFORM_NAME=\"$COMPOSE_PLATFORM\"\nfi\nif [ -z \"${ARCHS:-}\" ] && [ -n \"$COMPOSE_ARCHS\" ]; then\n  export ARCHS=\"$COMPOSE_ARCHS\"\nfi\n\necho \"Using Compose iOS platform=$COMPOSE_PLATFORM archs=$COMPOSE_ARCHS\" >&2\n\nset -- \"./gradlew\"\nif [ -n \"$COMPOSE_PLATFORM\" ]; then\n  set -- \"$@\" \"-Pcompose.ios.resources.platform=$COMPOSE_PLATFORM\"\nfi\nif [ -n \"$COMPOSE_ARCHS\" ]; then\n  set -- \"$@\" \"-Pcompose.ios.resources.archs=$COMPOSE_ARCHS\"\nfi\nset -- \"$@\" \":shared:embedAndSignAppleFrameworkForXcode\"\n\n\"$@\"\n\nDERIVED_DATA_DIR=$(echo \"${TARGET_BUILD_DIR}\" | awk -F'/Build/' '{print $1}')\n\nINDEXER_DATA_DIR=${DERIVED_DATA_DIR}/Index.noindex/Build/Products/Debug-$PLATFORM_NAME\nmkdir -p \"$INDEXER_DATA_DIR\"\n\nFRAMEWORKS_ROOT=\"shared/build/xcode-frameworks/$CONFIGURATION\"\nSOURCE_DIR=\"$FRAMEWORKS_ROOT/$SDK_NAME\"\n\nif [ ! -d \"$SOURCE_DIR\" ]; then\n  SOURCE_DIR=$(find \"$FRAMEWORKS_ROOT\" -maxdepth 1 -type d -name \"${SDK_NAME}*\" -print | head -n1 || true)\nfi\n\nif [ -z \"$SOURCE_DIR\" ] || [ ! -d \"$SOURCE_DIR\" ]; then\n  echo \"ERROR: Unable to locate frameworks for $SDK_NAME in $FRAMEWORKS_ROOT\"\n  exit 1\nfi\n\ncp -R \"$SOURCE_DIR/\"* \"$INDEXER_DATA_DIR/\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
