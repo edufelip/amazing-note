@@ -1,9 +1,7 @@
 package com.edufelip.shared.ui.nav.screens
 
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,8 +13,14 @@ import com.edufelip.shared.resources.dialog_cancel
 import com.edufelip.shared.resources.dialog_ok
 import com.edufelip.shared.resources.folder_name
 import com.edufelip.shared.resources.rename_folder
+import com.edufelip.shared.platform.Haptics
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveAlertDialog
+import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
+import io.github.alexzhirkevich.cupertino.cancel
+import io.github.alexzhirkevich.cupertino.default
 import org.jetbrains.compose.resources.stringResource
 
+@OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 fun FolderNameDialog(
     title: String? = null,
@@ -26,10 +30,13 @@ fun FolderNameDialog(
 ) {
     var value by rememberSaveable { mutableStateOf(initialValue) }
     val resolvedTitle = title ?: stringResource(Res.string.rename_folder)
-    AlertDialog(
-        onDismissRequest = onDismiss,
+    AdaptiveAlertDialog(
+        onDismissRequest = {
+            Haptics.lightTap()
+            onDismiss()
+        },
         title = { Text(text = resolvedTitle) },
-        text = {
+        message = {
             OutlinedTextField(
                 value = value,
                 onValueChange = { value = it },
@@ -37,19 +44,23 @@ fun FolderNameDialog(
                 label = { Text(text = stringResource(Res.string.folder_name)) },
             )
         },
-        confirmButton = {
-            TextButton(onClick = { onConfirm(value) }) {
-                Text(text = stringResource(Res.string.dialog_ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(text = stringResource(Res.string.dialog_cancel))
-            }
-        },
-    )
+    ) {
+        cancel(onClick = {
+            Haptics.lightTap()
+            onDismiss()
+        }) {
+            Text(text = stringResource(Res.string.dialog_cancel))
+        }
+        default(onClick = {
+            Haptics.lightTap()
+            onConfirm(value)
+        }) {
+            Text(text = stringResource(Res.string.dialog_ok))
+        }
+    }
 }
 
+@OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 fun DeleteFolderDialog(
     message: String,
@@ -58,15 +69,25 @@ fun DeleteFolderDialog(
     title: String? = null,
 ) {
     val resolvedTitle = title ?: stringResource(Res.string.delete_folder)
-    AlertDialog(
-        onDismissRequest = onDismiss,
+    AdaptiveAlertDialog(
+        onDismissRequest = {
+            Haptics.lightTap()
+            onDismiss()
+        },
         title = { Text(text = resolvedTitle) },
-        text = { Text(text = message) },
-        confirmButton = {
-            TextButton(onClick = onConfirm) { Text(text = stringResource(Res.string.dialog_ok)) }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(text = stringResource(Res.string.dialog_cancel)) }
-        },
-    )
+        message = { Text(text = message) },
+    ) {
+        cancel(onClick = {
+            Haptics.lightTap()
+            onDismiss()
+        }) {
+            Text(text = stringResource(Res.string.dialog_cancel))
+        }
+        default(onClick = {
+            Haptics.lightTap()
+            onConfirm()
+        }) {
+            Text(text = stringResource(Res.string.dialog_ok))
+        }
+    }
 }

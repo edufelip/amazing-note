@@ -48,6 +48,8 @@ kotlin {
                 implementation(libs.coil3.compose)
                 implementation(libs.coil3.network.ktor3)
                 implementation(compose.materialIconsExtended)
+                implementation(libs.cupertino.adaptive)
+                implementation(libs.cupertino.icons.extended)
                 implementation(libs.sqldelight.runtime)
                 implementation(libs.sqldelight.coroutines)
                 implementation(libs.kotlinx.serialization.json)

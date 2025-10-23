@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -42,6 +44,7 @@ import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.edufelip.shared.platform.PlatformFlags
 import com.edufelip.shared.model.Note
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
@@ -94,6 +97,7 @@ fun ListScreen(
                 if (snackBarHostState != null) SnackbarHost(snackBarHostState)
             },
             containerColor = Color.Transparent,
+            contentWindowInsets = if (PlatformFlags.isIos) WindowInsets(0) else ScaffoldDefaults.contentWindowInsets,
             topBar = if (showTopAppBar) {
                 (
                     {
@@ -116,7 +120,7 @@ fun ListScreen(
             floatingActionButton = {
                 if (hasAnyNotes) {
                     FloatingActionButton(
-                        modifier = Modifier.padding(bottom = 24.dp),
+                        modifier = Modifier.padding(bottom = if (PlatformFlags.isIos) 0.dp else 24.dp),
                         onClick = onAddClick,
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         shape = RoundedCornerShape(16.dp),
@@ -167,9 +171,10 @@ fun ListScreen(
 
                 val grouped: Map<Bucket, List<Note>> =
                     filtered.groupBy { bucket(if (useUpdated.value) it.updatedAt else it.createdAt) }
+                val listBottomPadding = if (PlatformFlags.isIos) 0.dp else 96.dp
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 96.dp),
+                    contentPadding = PaddingValues(bottom = listBottomPadding),
                 ) {
                     headerContent?.let { content ->
                         item(key = "list_header") {

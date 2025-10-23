@@ -55,6 +55,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.edufelip.shared.platform.PlatformFlags
 import com.edufelip.shared.model.Note
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_back
@@ -132,6 +133,9 @@ fun TrashScreen(
     }
 }
 
+private fun Modifier.navigationBarsPaddingIfAndroid(): Modifier =
+    if (PlatformFlags.isIos) this else this.navigationBarsPadding()
+
 @Composable
 private fun TrashScreenContent(
     notes: List<Note>,
@@ -154,7 +158,7 @@ private fun TrashScreenContent(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .navigationBarsPadding(),
+            .navigationBarsPaddingIfAndroid(),
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -249,7 +253,7 @@ private fun EmptyTrashState() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .navigationBarsPadding()
+            .navigationBarsPaddingIfAndroid()
             .padding(horizontal = 32.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,

@@ -12,7 +12,7 @@ targets:
   iosApp:
     type: application
     platform: iOS
-    deploymentTarget: "14.0"
+    deploymentTarget: "15.0"
     sources:
       - path: iosApp
         excludes:

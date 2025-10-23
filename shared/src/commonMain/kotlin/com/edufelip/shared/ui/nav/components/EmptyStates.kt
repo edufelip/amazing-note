@@ -37,6 +37,7 @@ import com.edufelip.shared.resources.cd_add
 import com.edufelip.shared.resources.empty_notes_hint
 import com.edufelip.shared.resources.empty_notes_title
 import com.edufelip.shared.resources.notes_empty_action
+import com.edufelip.shared.platform.PlatformFlags
 import com.edufelip.shared.resources.notes_empty_unlock_label
 import org.jetbrains.compose.resources.stringResource
 
@@ -49,7 +50,7 @@ fun NotesEmptyState(
         modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 24.dp)
-            .navigationBarsPadding(),
+            .navigationBarsPaddingIfAndroid(),
         contentAlignment = Alignment.Center,
     ) {
         Column(
@@ -147,3 +148,6 @@ fun NotesEmptyState(
         }
     }
 }
+
+private fun Modifier.navigationBarsPaddingIfAndroid(): Modifier =
+    if (PlatformFlags.isIos) this else this.navigationBarsPadding()

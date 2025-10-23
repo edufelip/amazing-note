@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.edufelip.shared.platform.PlatformFlags
 import com.edufelip.shared.model.Folder
 import com.edufelip.shared.model.Note
 import com.edufelip.shared.resources.Res
@@ -119,11 +120,12 @@ fun FoldersScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
-        contentWindowInsets = WindowInsets.safeDrawing,
+        contentWindowInsets = if (PlatformFlags.isIos) WindowInsets(0)
+            else WindowInsets.safeDrawing,
         floatingActionButton = {
             if (!isEmpty) {
                 ExtendedFloatingActionButton(
-                    modifier = Modifier.padding(bottom = 24.dp),
+                    modifier = Modifier.padding(bottom = if (PlatformFlags.isIos) 0.dp else 24.dp),
                     onClick = { openCreate() },
                     icon = { Icon(imageVector = Icons.Default.CreateNewFolder, contentDescription = null) },
                     text = { Text(text = stringResource(Res.string.home_new_folder)) },
@@ -204,7 +206,7 @@ fun FoldersScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(horizontal = 32.dp)
-                            .navigationBarsPadding(),
+                            .navigationBarsPaddingIfAndroid(),
                         onReset = { searchQuery = "" },
                     )
                 }
@@ -298,7 +300,7 @@ private fun EmptyFoldersState(
     Column(
         modifier = modifier
             .padding(horizontal = 24.dp)
-            .navigationBarsPadding(),
+            .navigationBarsPaddingIfAndroid(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -399,3 +401,6 @@ private fun EmptyFoldersState(
         }
     }
 }
+
+private fun Modifier.navigationBarsPaddingIfAndroid(): Modifier =
+    if (PlatformFlags.isIos) this else this.navigationBarsPadding()

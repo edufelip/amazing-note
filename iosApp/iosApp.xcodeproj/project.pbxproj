@@ -37,6 +37,8 @@
 		FB768F1A2E6F6E5600DD44F2 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FB768F182E6F6E3F00DD44F2 /* libsqlite3.tbd */; };
 		FBB6D9CF2EA69C2A004A20DC /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = FBB6D9CE2EA69C2A004A20DC /* FirebaseCore */; };
 		FBCCD1222EA707D500ABA501 /* Shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBCCD11C2EA6FD1600ABA501 /* Shared.framework */; };
+		FE1A578D2FB0C6B800F4E3F1 /* AppMain.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A578C2FB0C6B800F4E3F1 /* AppMain.swift */; };
+		FE1A57912FB0C6DE00F4E3F1 /* LiquidRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A57902FB0C6DE00F4E3F1 /* LiquidRoot.swift */; };
 		FDE52B8D57A097A60A4CF366 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6C1F485E0CF8BB70C9DDD2 /* AppDelegate.swift */; };
 		FBF71E202FA1234500ABCDEF /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = FBF71E1F2FA1234500ABCDEF /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
@@ -62,6 +64,8 @@
 		1285E8A7B7E7359EA11B9591 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		86038AE1032E284E79B32AD6 /* iosApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iosApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B6C1F485E0CF8BB70C9DDD2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		FE1A578C2FB0C6B800F4E3F1 /* AppMain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMain.swift; sourceTree = "<group>"; };
+		FE1A57902FB0C6DE00F4E3F1 /* LiquidRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidRoot.swift; sourceTree = "<group>"; };
 		FB0526892E6E5B6C008B31BB /* amazingnote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = amazingnote.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB0526992E6E5B6E008B31BB /* amazingnoteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = amazingnoteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB0526A32E6E5B6E008B31BB /* amazingnoteUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = amazingnoteUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -138,6 +142,8 @@
 			isa = PBXGroup;
 			children = (
 				8B6C1F485E0CF8BB70C9DDD2 /* AppDelegate.swift */,
+				FE1A578C2FB0C6B800F4E3F1 /* AppMain.swift */,
+				FE1A57902FB0C6DE00F4E3F1 /* LiquidRoot.swift */,
 				1285E8A7B7E7359EA11B9591 /* SceneDelegate.swift */,
 				FBF71E1F2FA1234500ABCDEF /* GoogleService-Info.plist */,
 			);
@@ -390,6 +396,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FE1A578D2FB0C6B800F4E3F1 /* AppMain.swift in Sources */,
+				FE1A57912FB0C6DE00F4E3F1 /* LiquidRoot.swift in Sources */,
 				FDE52B8D57A097A60A4CF366 /* AppDelegate.swift in Sources */,
 				88ABACE0259DE83261737B99 /* SceneDelegate.swift in Sources */,
 			);

@@ -22,6 +22,7 @@ ktor = "3.2.3"
 kotlinx-serialization = "1.8.1"
 gitlive = "2.1.0"
 spotless = "8.0.0"
+cupertino-adaptive = "0.1.0-alpha04"
 
 [libraries]
 
@@ -69,6 +70,8 @@ coil3-network-ktor3 = { group = "io.coil-kt.coil3", name = "coil-network-ktor3",
 ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+cupertino-adaptive = { group = "io.github.alexzhirkevich", name = "cupertino-adaptive", version.ref = "cupertino-adaptive" }
+cupertino-icons-extended = { group = "io.github.alexzhirkevich", name = "cupertino-icons-extended", version.ref = "cupertino-adaptive" }
 
 [plugins]
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

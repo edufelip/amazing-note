@@ -1,6 +1,8 @@
 package com.edufelip.shared.ui.nav.screens
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -21,23 +24,27 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PrivacyTip
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.presentation.AuthViewModel
@@ -58,8 +65,19 @@ import com.edufelip.shared.resources.trash
 import com.edufelip.shared.resources.trash_subtitle
 import com.edufelip.shared.resources.welcome_message
 import com.edufelip.shared.ui.nav.components.PersonalizeHeroIllustration
+import com.edufelip.shared.platform.Haptics
+import com.edufelip.shared.platform.PlatformFlags
+import com.edufelip.shared.platform.currentEpochMillis
+import com.edufelip.shared.ui.ios.IosDatePicker
+import com.edufelip.shared.ui.settings.LocalSettings
+import io.github.alexzhirkevich.cupertino.CupertinoButtonDefaults
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveButton
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveSwitch
+import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
+import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import org.jetbrains.compose.resources.stringResource
 
+@OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 fun SettingsScreen(
     darkTheme: Boolean,
@@ -74,6 +92,16 @@ fun SettingsScreen(
 ) {
     val userState = auth?.user?.collectAsState()?.value
     val itemsSpacing = 16.dp
+    val settingsStore = LocalSettings.current
+    val reviewDateKey = "daily_review_epoch"
+    var reviewReminder by rememberSaveable(reviewDateKey) {
+        mutableStateOf(
+            settingsStore.getString(reviewDateKey, "").toLongOrNull() ?: currentEpochMillis(),
+        )
+    }
+    LaunchedEffect(reviewReminder) {
+        settingsStore.setString(reviewDateKey, reviewReminder.toString())
+    }
 
     LazyColumn(
         modifier = modifier
@@ -99,18 +127,51 @@ fun SettingsScreen(
             SettingRow(
                 title = stringResource(Res.string.theme_option),
                 subtitle = stringResource(Res.string.theme_subtitle),
-                icon = Icons.Default.DarkMode,
+                materialIcon = Icons.Default.DarkMode,
+                cupertinoSymbol = "moon.fill",
                 trailing = {
-                    Switch(
+                    AdaptiveSwitch(
                         checked = darkTheme,
-                        onCheckedChange = onToggleDarkTheme,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                            checkedTrackColor = MaterialTheme.colorScheme.primary,
-                        ),
+                        onCheckedChange = { checked ->
+                            Haptics.lightTap()
+                            onToggleDarkTheme(checked)
+                        },
+                        adaptation = {
+                            material {
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                    checkedTrackColor = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                        },
                     )
                 },
             )
+        }
+
+        if (PlatformFlags.cupertinoLookEnabled) {
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant,
+                            RoundedCornerShape(20.dp),
+                        )
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Text(
+                        text = "Review reminder date",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    IosDatePicker(
+                        epochMillis = reviewReminder,
+                        onChange = { reviewReminder = it },
+                    )
+                }
+            }
         }
 
         item { SectionTitle(text = stringResource(Res.string.account_section)) }
@@ -119,7 +180,8 @@ fun SettingsScreen(
                 SettingRow(
                     title = stringResource(Res.string.login),
                     subtitle = stringResource(Res.string.welcome_message),
-                    icon = Icons.AutoMirrored.Filled.Login,
+                    materialIcon = Icons.AutoMirrored.Filled.Login,
+                    cupertinoSymbol = "rectangle.portrait.and.arrow.forward",
                     onClick = onLogin,
                 )
             } else {
@@ -138,7 +200,10 @@ fun SettingsScreen(
                             shape = CircleShape,
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Person,
+                                painter = AdaptiveIcons.painter(
+                                    material = { Icons.Default.Person },
+                                    cupertino = { "person.crop.circle" },
+                                ),
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(12.dp),
@@ -154,14 +219,33 @@ fun SettingsScreen(
                         }
                     }
                     Spacer(modifier = Modifier.height(12.dp))
-                    Button(
-                        onClick = onLogout,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError,
-                        ),
+                    AdaptiveButton(
+                        onClick = {
+                            Haptics.lightTap()
+                            onLogout()
+                        },
+                        adaptation = {
+                            material {
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.error,
+                                    contentColor = MaterialTheme.colorScheme.onError,
+                                )
+                            }
+                            cupertino {
+                                colors = CupertinoButtonDefaults.filledButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.error,
+                                    contentColor = MaterialTheme.colorScheme.onError,
+                                )
+                            }
+                        },
                     ) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.Logout, contentDescription = null)
+                        Icon(
+                            painter = AdaptiveIcons.painter(
+                                material = { Icons.AutoMirrored.Filled.Logout },
+                                cupertino = { "rectangle.portrait.and.arrow.right" },
+                            ),
+                            contentDescription = null,
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(text = stringResource(Res.string.logout))
                     }
@@ -174,7 +258,8 @@ fun SettingsScreen(
             SettingRow(
                 title = stringResource(Res.string.trash),
                 subtitle = stringResource(Res.string.trash_subtitle),
-                icon = Icons.Default.AutoDelete,
+                materialIcon = Icons.Default.AutoDelete,
+                cupertinoSymbol = "trash",
                 onClick = onOpenTrash,
             )
         }
@@ -182,7 +267,8 @@ fun SettingsScreen(
             SettingRow(
                 title = stringResource(Res.string.privacy_policy),
                 subtitle = null,
-                icon = Icons.Default.PrivacyTip,
+                materialIcon = Icons.Default.PrivacyTip,
+                cupertinoSymbol = "lock.shield",
                 onClick = onOpenPrivacy,
             )
         }
@@ -192,7 +278,8 @@ fun SettingsScreen(
             SettingRow(
                 title = stringResource(Res.string.app_version_label),
                 subtitle = appVersion,
-                icon = Icons.Default.Info,
+                materialIcon = Icons.Default.Info,
+                cupertinoSymbol = "info.circle",
                 enabled = false,
             )
         }
@@ -258,20 +345,46 @@ private fun SectionTitle(text: String) {
 private fun SettingRow(
     title: String,
     subtitle: String?,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    materialIcon: androidx.compose.ui.graphics.vector.ImageVector,
+    cupertinoSymbol: String = "",
     onClick: (() -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
     enabled: Boolean = true,
 ) {
     val shape = RoundedCornerShape(24.dp)
+    val interactionSource = remember { MutableInteractionSource() }
+    val handleClick = onClick?.let {
+        {
+            Haptics.lightTap()
+            it()
+        }
+    }
+    val iconPainter = if (cupertinoSymbol.isEmpty()) {
+        rememberVectorPainter(materialIcon)
+    } else {
+        AdaptiveIcons.painter(
+            material = { materialIcon },
+            cupertino = { cupertinoSymbol },
+        )
+    }
+    val clickableModifier = if (handleClick != null) {
+        Modifier.clickable(
+            enabled = enabled,
+            interactionSource = interactionSource,
+            indication = if (PlatformFlags.cupertinoLookEnabled) null else LocalIndication.current,
+        ) {
+            handleClick()
+        }
+    } else {
+        Modifier
+    }
     Surface(
         shape = shape,
         tonalElevation = 2.dp,
-        onClick = { onClick?.invoke() },
-        enabled = onClick != null && enabled,
     ) {
         Row(
             modifier = Modifier
+                .then(clickableModifier)
                 .fillMaxWidth()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -283,7 +396,7 @@ private fun SettingRow(
                     shape = RoundedCornerShape(16.dp),
                 ) {
                     Icon(
-                        imageVector = icon,
+                        painter = iconPainter,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(12.dp),

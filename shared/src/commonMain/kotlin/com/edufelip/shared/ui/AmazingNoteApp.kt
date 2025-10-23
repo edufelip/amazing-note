@@ -4,8 +4,6 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -14,36 +12,34 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -58,13 +54,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.request.crossfade
@@ -90,6 +84,8 @@ import com.edufelip.shared.resources.unassigned_notes
 import com.edufelip.shared.sync.LocalNotesSyncManager
 import com.edufelip.shared.sync.NotesSyncManager
 import com.edufelip.shared.ui.gadgets.AvatarImage
+import com.edufelip.shared.platform.PlatformFlags
+import com.edufelip.shared.platform.Haptics
 import com.edufelip.shared.ui.images.platformConfigImageLoader
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.nav.goBack
@@ -114,6 +110,12 @@ import com.edufelip.shared.ui.theme.AmazingNoteTheme
 import com.edufelip.shared.ui.util.OnSystemBack
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import io.github.alexzhirkevich.cupertino.CupertinoTopAppBarDefaults
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveNavigationBar
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveNavigationBarItem
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveTopAppBar
+import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
+import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.animation.ExperimentalAnimationApi::class)
@@ -126,13 +128,15 @@ fun AmazingNoteApp(
     appPreferences: AppPreferences = DefaultAppPreferences(settings),
     noteDatabase: NoteDatabase? = null,
     appVersion: String = "1.0.0",
+    initialRoute: AppRoutes = AppRoutes.Notes,
+    showBottomBar: Boolean = !PlatformFlags.isIos,
 ) {
     setSingletonImageLoaderFactory { context ->
         val base = ImageLoader.Builder(context).crossfade(true)
         platformConfigImageLoader(base, context).build()
     }
     var darkTheme by rememberSaveable { mutableStateOf(appPreferences.isDarkTheme()) }
-    val backStack = remember { mutableStateListOf<AppRoutes>(AppRoutes.Notes) }
+    val backStack = remember(initialRoute) { mutableStateListOf(initialRoute) }
     val tabs = remember { listOf(AppRoutes.Notes, AppRoutes.Folders, AppRoutes.Settings) }
 
     val notes by viewModel.notes.collectAsState(initial = emptyList())
@@ -165,17 +169,27 @@ fun AmazingNoteApp(
     ) {
         AmazingNoteTheme(darkTheme = darkTheme) {
             val currentRoute by remember { derivedStateOf { backStack.last() } }
-            val targetBottomBarVisible by remember { derivedStateOf { currentRoute in tabs } }
+            val bottomBarEnabled = showBottomBar
+            val targetBottomBarVisible = bottomBarEnabled && currentRoute in tabs
             var bottomBarVisible by remember { mutableStateOf(targetBottomBarVisible) }
-            LaunchedEffect(targetBottomBarVisible) {
-                if (targetBottomBarVisible) {
-                    delay(100)
-                    bottomBarVisible = true
+            LaunchedEffect(bottomBarEnabled, targetBottomBarVisible) {
+                if (bottomBarEnabled) {
+                    if (targetBottomBarVisible) {
+                        delay(100)
+                    }
+                    bottomBarVisible = targetBottomBarVisible
                 } else {
                     bottomBarVisible = false
                 }
             }
+            val topBarVisible = if (bottomBarEnabled) bottomBarVisible else currentRoute in tabs
             val bottomBarHeight = 72.dp
+            val safeAreaPadding = WindowInsets.safeDrawing.asPaddingValues()
+            val bottomPadding = when {
+                bottomBarEnabled && !PlatformFlags.isIos -> bottomBarHeight
+                PlatformFlags.isIos -> 0.dp
+                else -> safeAreaPadding.calculateBottomPadding()
+            }
 
             fun setRoot(destination: AppRoutes) {
                 if (backStack.size == 1 && backStack.last() == destination) return
@@ -190,52 +204,36 @@ fun AmazingNoteApp(
                 }
             }
 
-            Scaffold(
-                contentWindowInsets = WindowInsets(0),
-                topBar = {
-                    AnimatedVisibility(
-                        visible = bottomBarVisible,
-                        enter = fadeIn(animationSpec = tween(durationMillis = 220)),
-                        exit = fadeOut(animationSpec = tween(durationMillis = 220)),
-                    ) {
-                        AmazingTopBar(user = user)
-                    }
-                },
-                bottomBar = {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = bottomBarHeight)
-                            .windowInsetsPadding(WindowInsets.navigationBars),
-                    ) {
-                        AnimatedVisibility(
-                            visible = bottomBarVisible,
-                            enter = slideInVertically(
-                                initialOffsetY = { it },
-                                animationSpec = tween(durationMillis = 320),
-                            ) + fadeIn(animationSpec = tween(durationMillis = 320)),
-                            exit = slideOutVertically(
-                                targetOffsetY = { it },
-                                animationSpec = tween(durationMillis = 320),
-                            ) + fadeOut(animationSpec = tween(durationMillis = 320)),
-                        ) {
-                            AmazingBottomBar(
-                                current = currentRoute,
-                                onSelect = { route -> setRoot(route) },
-                            )
-                        }
-                    }
-                },
-            ) { padding ->
-                val layoutDirection = LocalLayoutDirection.current
-                val contentModifier = Modifier
+            val layoutDirection = LocalLayoutDirection.current
+            val topBarComposable: @Composable () -> Unit = {
+                AnimatedVisibility(
+                    visible = topBarVisible,
+                    enter = fadeIn(animationSpec = tween(durationMillis = 220)),
+                    exit = fadeOut(animationSpec = tween(durationMillis = 220)),
+                ) {
+                    AmazingTopBar(user = user)
+                }
+            }
+
+            val content: @Composable (PaddingValues) -> Unit = { padding ->
+                val baseModifier = Modifier
                     .fillMaxSize()
                     .padding(
                         start = padding.calculateStartPadding(layoutDirection),
                         top = padding.calculateTopPadding(),
                         end = padding.calculateEndPadding(layoutDirection),
                     )
-                    .padding(bottom = bottomBarHeight)
+                val contentModifier = if (PlatformFlags.isIos) {
+                    baseModifier
+                        .padding(bottom = 0.dp)
+                        .windowInsetsPadding(
+                            WindowInsets.safeDrawing.only(
+                                WindowInsetsSides.Top + WindowInsetsSides.Horizontal,
+                            ),
+                        )
+                } else {
+                    baseModifier.padding(bottom = bottomPadding)
+                }
 
                 AnimatedContent(
                     modifier = contentModifier,
@@ -276,37 +274,6 @@ fun AmazingNoteApp(
                                 HomeScreen(
                                     notes = notes,
                                     auth = authViewModel,
-                                    onOpenNote = { note -> backStack.navigate(AppRoutes.NoteDetail(note.id, note.folderId)) },
-                                    onAdd = { backStack.navigate(AppRoutes.NoteDetail(null, null)) },
-                                    onDelete = { note ->
-                                        scope.launch {
-                                            viewModel.setDeleted(note.id, true)
-                                            syncManager.syncLocalToRemoteOnly()
-                                        }
-                                    },
-                                )
-                            }
-                        }
-
-                        AppRoutes.Folders -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                            ) {
-                                FoldersScreen(
-                                    folders = folders,
-                                    notes = notes,
-                                    onOpenFolder = { folder -> backStack.navigate(AppRoutes.FolderDetail(folder.id)) },
-                                    onCreateFolder = { name -> scope.launch { viewModel.createFolder(name) } },
-                                    onRenameFolder = { folder, newName -> scope.launch { viewModel.renameFolder(folder.id, newName) } },
-                                    onDeleteFolder = { folder ->
-                                        scope.launch {
-                                            viewModel.deleteFolder(folder.id)
-                                            syncManager.syncLocalToRemoteOnly()
-                                        }
-                                    },
-                                )
-                            }
-                        }
 
                         AppRoutes.Settings -> {
                             Box(
@@ -448,106 +415,207 @@ fun AmazingNoteApp(
                     }
                 }
             }
+
+            if (PlatformFlags.isIos) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Scaffold(
+                        contentWindowInsets = WindowInsets(0),
+                        topBar = topBarComposable,
+                    ) { padding ->
+                        content(padding)
+                    }
+                    if (bottomBarEnabled) {
+                        AnimatedVisibility(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 12.dp)
+                                .fillMaxWidth()
+                                .zIndex(10f),
+                            visible = bottomBarVisible,
+                            enter = slideInVertically(
+                                initialOffsetY = { it },
+                                animationSpec = tween(durationMillis = 320),
+                            ) + fadeIn(animationSpec = tween(durationMillis = 320)),
+                            exit = slideOutVertically(
+                                targetOffsetY = { it },
+                                animationSpec = tween(durationMillis = 320),
+                            ) + fadeOut(animationSpec = tween(durationMillis = 320)),
+                        ) {
+                            AmazingBottomBar(
+                                current = currentRoute,
+                                onSelect = { route -> setRoot(route) },
+                                windowInsets = WindowInsets(0),
+                            )
+                        }
+                    }
+                }
+            } else {
+                Scaffold(
+                    contentWindowInsets = WindowInsets(0),
+                    topBar = topBarComposable,
+                    bottomBar = {
+                        if (bottomBarEnabled) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = bottomBarHeight)
+                                    .windowInsetsPadding(WindowInsets.navigationBars),
+                            ) {
+                                AnimatedVisibility(
+                                    visible = bottomBarVisible,
+                                    enter = slideInVertically(
+                                        initialOffsetY = { it },
+                                        animationSpec = tween(durationMillis = 320),
+                                    ) + fadeIn(animationSpec = tween(durationMillis = 320)),
+                                    exit = slideOutVertically(
+                                        targetOffsetY = { it },
+                                        animationSpec = tween(durationMillis = 320),
+                                    ) + fadeOut(animationSpec = tween(durationMillis = 320)),
+                                ) {
+                                    AmazingBottomBar(
+                                        current = currentRoute,
+                                        onSelect = { route -> setRoot(route) },
+                                    )
+                                }
+                            }
+                        }
+                    },
+                ) { padding ->
+                    content(padding)
+                }
+            }
         }
     }
 }
 
 private data class BottomNavItem(
     val route: AppRoutes,
-    val icon: ImageVector,
+    val materialIcon: ImageVector,
+    val cupertinoSymbol: String,
     val label: String,
 )
 
+@OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 private fun AmazingTopBar(user: AuthUser?) {
     val name = user?.displayName?.takeIf { it.isNotBlank() }
         ?: user?.email?.takeIf { !it.isNullOrBlank() }
         ?: stringResource(Res.string.guest)
-    Surface(color = MaterialTheme.colorScheme.surface, tonalElevation = 4.dp, shadowElevation = 10.dp) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            AvatarImage(
-                photoUrl = user?.photoUrl,
-                size = 32.dp,
-            )
+    AdaptiveTopAppBar(
+        modifier = Modifier.fillMaxWidth(),
+        windowInsets = WindowInsets.statusBars,
+        navigationIcon = {
+            Row(
+                modifier = Modifier.padding(start = 20.dp, end = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                AvatarImage(
+                    photoUrl = user?.photoUrl,
+                    size = 32.dp,
+                )
+            }
+        },
+        title = {
             Text(
                 text = name,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(vertical = 4.dp),
             )
+        },
+        actions = {},
+    ) {
+        material {
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        cupertino {
+            colors = CupertinoTopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            isTranslucent = false
         }
     }
 }
 
+@OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 private fun AmazingBottomBar(
     current: AppRoutes,
     onSelect: (AppRoutes) -> Unit,
+    windowInsets: WindowInsets = WindowInsets.navigationBars,
 ) {
     val items = listOf(
-        BottomNavItem(AppRoutes.Notes, Icons.Outlined.Description, stringResource(Res.string.bottom_notes)),
-        BottomNavItem(AppRoutes.Folders, Icons.Outlined.Folder, stringResource(Res.string.bottom_folders)),
-        BottomNavItem(AppRoutes.Settings, Icons.Outlined.Settings, stringResource(Res.string.bottom_settings)),
+        BottomNavItem(
+            route = AppRoutes.Notes,
+            materialIcon = Icons.Outlined.Description,
+            cupertinoSymbol = "doc.text",
+            label = stringResource(Res.string.bottom_notes),
+        ),
+        BottomNavItem(
+            route = AppRoutes.Folders,
+            materialIcon = Icons.Outlined.Folder,
+            cupertinoSymbol = "folder",
+            label = stringResource(Res.string.bottom_folders),
+        ),
+        BottomNavItem(
+            route = AppRoutes.Settings,
+            materialIcon = Icons.Outlined.Settings,
+            cupertinoSymbol = "gearshape",
+            label = stringResource(Res.string.bottom_settings),
+        ),
     )
-    Surface(color = MaterialTheme.colorScheme.surface, tonalElevation = 4.dp, shadowElevation = 10.dp) {
-        Column {
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 12.dp)
-                    .windowInsetsPadding(WindowInsets.navigationBars),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items.forEach { item ->
-                    val selected = item.route == current
-                    val background by animateColorAsState(
-                        if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent,
-                        label = "bottomNavBackground",
-                    )
-                    val contentColor by animateColorAsState(
-                        if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        label = "bottomNavContent",
-                    )
-                    val scale by animateFloatAsState(
-                        targetValue = if (selected) 1f else 0.97f,
-                        label = "bottomNavScale",
-                    )
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(20.dp))
-                            .graphicsLayer {
-                                scaleX = scale
-                                scaleY = scale
-                            }
-                            .clickable(onClick = { onSelect(item.route) })
-                            .background(background)
-                            .padding(horizontal = 18.dp, vertical = 10.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Icon(
-                            imageVector = item.icon,
-                            contentDescription = item.label,
-                            tint = contentColor,
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = item.label,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = contentColor,
-                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-                        )
-                    }
-                }
+    AdaptiveNavigationBar(
+        modifier = Modifier.fillMaxWidth(),
+        windowInsets = windowInsets,
+        adaptation = {
+            material {
+                containerColor = MaterialTheme.colorScheme.surface
             }
+            cupertino {
+                containerColor = MaterialTheme.colorScheme.surface
+                isTranslucent = true
+                selectedTint = MaterialTheme.colorScheme.primary
+                unselectedTint = MaterialTheme.colorScheme.onSurfaceVariant
+            }
+        },
+    ) {
+        items.forEach { item ->
+            val isSelected = item.route == current
+            val iconPainter = AdaptiveIcons.painter(
+                material = { item.materialIcon },
+                cupertino = { item.cupertinoSymbol },
+            )
+            AdaptiveNavigationBarItem(
+                selected = isSelected,
+                onClick = {
+                    if (!isSelected) {
+                        Haptics.lightTap()
+                    }
+                    onSelect(item.route)
+                },
+                icon = {
+                    Icon(
+                        painter = iconPainter,
+                        contentDescription = item.label,
+                    )
+                },
+                label = {
+                    Text(
+                        text = item.label,
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                },
+                alwaysShowLabel = true,
+            )
         }
     }
 }

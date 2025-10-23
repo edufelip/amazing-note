@@ -10,9 +10,12 @@ import com.edufelip.shared.domain.usecase.buildNoteUseCases
 import com.edufelip.shared.domain.validation.NoteValidationRules
 import com.edufelip.shared.presentation.DefaultNoteUiViewModel
 import com.edufelip.shared.ui.AmazingNoteApp
+import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.settings.DefaultAppPreferences
 import com.edufelip.shared.ui.settings.Settings
 import platform.Foundation.NSUserDefaults
+import platform.UIKit.UIColor
+import platform.UIKit.UIEdgeInsetsZero
 import platform.UIKit.UIViewController
 
 private class IosSettings : Settings {
@@ -33,19 +36,56 @@ private class IosSettings : Settings {
     }
 }
 
-fun MainViewController(): UIViewController = ComposeUIViewController {
-    val db = createDatabase(DatabaseDriverFactory())
-    val repo = SqlDelightNoteRepository(db)
-    val useCases = buildNoteUseCases(repo, NoteValidationRules())
-    val vm = DefaultNoteUiViewModel(useCases)
-    val authService = remember { GitLiveAuthService() }
-    val settings = remember { IosSettings() }
-    val appPreferences = remember(settings) { DefaultAppPreferences(settings) }
-    AmazingNoteApp(
-        viewModel = vm,
-        authService = authService,
-        settings = settings,
-        appPreferences = appPreferences,
-        noteDatabase = db,
+fun MainViewController(): UIViewController =
+    createAmazingNoteViewController(
+        initialRoute = AppRoutes.Notes,
+        showBottomBar = true,
     )
+
+fun makeNotesViewController(): UIViewController =
+    createAmazingNoteViewController(
+        initialRoute = AppRoutes.Notes,
+        showBottomBar = false,
+    )
+
+fun makeFoldersViewController(): UIViewController =
+    createAmazingNoteViewController(
+        initialRoute = AppRoutes.Folders,
+        showBottomBar = false,
+    )
+
+fun makeSettingsViewController(): UIViewController =
+    createAmazingNoteViewController(
+        initialRoute = AppRoutes.Settings,
+        showBottomBar = false,
+    )
+
+fun createAmazingNoteViewController(
+    initialRoute: AppRoutes,
+    showBottomBar: Boolean,
+): UIViewController {
+    val controller = ComposeUIViewController {
+        val db = createDatabase(DatabaseDriverFactory())
+        val repo = SqlDelightNoteRepository(db)
+        val useCases = buildNoteUseCases(repo, NoteValidationRules())
+        val vm = DefaultNoteUiViewModel(useCases)
+        val authService = remember { GitLiveAuthService() }
+        val settings = remember { IosSettings() }
+        val appPreferences = remember(settings) { DefaultAppPreferences(settings) }
+        AmazingNoteApp(
+            viewModel = vm,
+            authService = authService,
+            settings = settings,
+            appPreferences = appPreferences,
+            noteDatabase = db,
+            initialRoute = initialRoute,
+            showBottomBar = showBottomBar,
+        )
+    }
+    return controller.apply {
+        view.insetsLayoutMarginsFromSafeArea = false
+        viewRespectsSystemMinimumLayoutMargins = false
+        view.backgroundColor = UIColor.clearColor
+        additionalSafeAreaInsets = UIEdgeInsetsZero
+    }
 }

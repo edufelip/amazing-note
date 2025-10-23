@@ -2,12 +2,18 @@ package com.edufelip.shared.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
+import com.edufelip.shared.platform.PlatformFlags
+import io.github.alexzhirkevich.cupertino.adaptive.MaterialThemeSpec
+import io.github.alexzhirkevich.cupertino.adaptive.Theme
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveTheme
+import io.github.alexzhirkevich.cupertino.adaptive.CupertinoThemeSpec
+import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -85,6 +91,7 @@ private val darkScheme = darkColorScheme(
     surfaceContainerHighest = surfaceContainerHighestDark,
 )
 
+@OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 fun AmazingNoteTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -94,12 +101,20 @@ fun AmazingNoteTheme(
     val platformScheme = rememberPlatformColorScheme(darkTheme, useDynamicColor)
     val colorScheme = platformScheme ?: if (darkTheme) darkScheme else lightScheme
     val dynamicActive = platformScheme != null && useDynamicColor
-    CompositionLocalProvider(LocalDynamicColorActive provides dynamicActive) {
-        MaterialTheme(
+    val shapes = Shapes()
+    val target = if (PlatformFlags.cupertinoLookEnabled) Theme.Cupertino else Theme.Material3
+    AdaptiveTheme(
+        target = target,
+        material = MaterialThemeSpec(
             colorScheme = colorScheme,
+            shapes = shapes,
             typography = Typography,
-            content = content,
-        )
+        ),
+        cupertino = CupertinoThemeSpec.Default(),
+    ) {
+        CompositionLocalProvider(LocalDynamicColorActive provides dynamicActive) {
+            content()
+        }
     }
 }
 
