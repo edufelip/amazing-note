@@ -1,6 +1,6 @@
 package com.edufelip.shared.attachments
 
-import com.edufelip.shared.model.NoteAttachment
+import com.edufelip.shared.domain.model.NoteAttachment
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.storage.File as StorageFile
 import dev.gitlive.firebase.storage.storage

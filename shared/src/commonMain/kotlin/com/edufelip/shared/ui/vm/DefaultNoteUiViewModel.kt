@@ -1,10 +1,10 @@
-package com.edufelip.shared.presentation
+package com.edufelip.shared.vm
 
 import com.edufelip.shared.domain.usecase.NoteUseCases
 import com.edufelip.shared.domain.validation.NoteActionResult
-import com.edufelip.shared.model.NoteAttachment
-import com.edufelip.shared.model.NoteBlock
-import com.edufelip.shared.model.NoteTextSpan
+import com.edufelip.shared.domain.model.NoteAttachment
+import com.edufelip.shared.domain.model.NoteBlock
+import com.edufelip.shared.domain.model.NoteTextSpan
 
 class DefaultNoteUiViewModel(
     private val useCases: NoteUseCases,

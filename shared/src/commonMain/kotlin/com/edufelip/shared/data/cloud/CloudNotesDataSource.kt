@@ -1,13 +1,13 @@
 package com.edufelip.shared.cloud
 
-import com.edufelip.shared.model.Note
-import com.edufelip.shared.model.attachmentsFromJson
-import com.edufelip.shared.model.blocksFromJson
-import com.edufelip.shared.model.blocksToJson
-import com.edufelip.shared.model.ensureBlocks
-import com.edufelip.shared.model.spansFromJson
-import com.edufelip.shared.model.toJson
-import com.edufelip.shared.model.withLegacyFieldsFromBlocks
+import com.edufelip.shared.domain.model.Note
+import com.edufelip.shared.domain.model.attachmentsFromJson
+import com.edufelip.shared.domain.model.blocksFromJson
+import com.edufelip.shared.domain.model.blocksToJson
+import com.edufelip.shared.domain.model.ensureBlocks
+import com.edufelip.shared.domain.model.spansFromJson
+import com.edufelip.shared.domain.model.toJson
+import com.edufelip.shared.domain.model.withLegacyFieldsFromBlocks
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.DocumentSnapshot

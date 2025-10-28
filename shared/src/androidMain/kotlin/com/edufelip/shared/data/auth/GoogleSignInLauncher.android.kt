@@ -5,9 +5,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.credentials.CredentialManager
-import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialException
+import com.edufelip.shared.data.auth.GoogleSignInConfig
+import com.edufelip.shared.data.auth.GoogleSignInLauncher
+import com.edufelip.shared.data.auth.GoogleSignInResult
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import kotlinx.coroutines.Dispatchers
@@ -58,7 +60,10 @@ private class AndroidGoogleSignInLauncher(
                 GoogleSignInResult(idToken = null, errorMessage = "Missing Google ID token")
             }
         } catch (e: GetCredentialException) {
-            GoogleSignInResult(idToken = null, errorMessage = e.message ?: "Google sign-in canceled")
+            GoogleSignInResult(
+                idToken = null,
+                errorMessage = e.message ?: "Google sign-in canceled"
+            )
         } catch (e: Exception) {
             GoogleSignInResult(idToken = null, errorMessage = e.message ?: "Google sign-in failed")
         }

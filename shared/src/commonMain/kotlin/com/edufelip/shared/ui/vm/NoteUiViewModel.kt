@@ -1,11 +1,11 @@
-package com.edufelip.shared.presentation
+package com.edufelip.shared.vm
 
 import com.edufelip.shared.domain.validation.NoteActionResult
-import com.edufelip.shared.model.Folder
-import com.edufelip.shared.model.Note
-import com.edufelip.shared.model.NoteAttachment
-import com.edufelip.shared.model.NoteBlock
-import com.edufelip.shared.model.NoteTextSpan
+import com.edufelip.shared.domain.model.Folder
+import com.edufelip.shared.domain.model.Note
+import com.edufelip.shared.domain.model.NoteAttachment
+import com.edufelip.shared.domain.model.NoteBlock
+import com.edufelip.shared.domain.model.NoteTextSpan
 import kotlinx.coroutines.flow.Flow
 
 interface NoteUiViewModel {

@@ -1,7 +1,7 @@
 package com.edufelip.shared.attachments
 
 import androidx.compose.runtime.Composable
-import com.edufelip.shared.model.NoteAttachment
+import com.edufelip.shared.domain.model.NoteAttachment
 
 fun interface AttachmentPicker {
     suspend fun pickImage(onProgress: (progress: Float, fileName: String?) -> Unit): NoteAttachment?

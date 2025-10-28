@@ -4,14 +4,16 @@ package com.edufelip.shared.attachments
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import com.edufelip.shared.model.NoteAttachment
+import com.edufelip.shared.domain.model.NoteAttachment
+import com.edufelip.shared.ui.attachments.AttachmentPicker
+import com.edufelip.shared.ui.attachments.AttachmentUploadPayload
+import com.edufelip.shared.ui.attachments.uploadAttachmentWithGitLive
 import com.edufelip.shared.util.findTopViewController
 import dev.gitlive.firebase.storage.File as StorageFile
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.Foundation.NSData
-import platform.Foundation.NSError
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL

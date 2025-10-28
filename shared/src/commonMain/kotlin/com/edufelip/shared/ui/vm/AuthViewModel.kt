@@ -1,6 +1,6 @@
-package com.edufelip.shared.presentation
+package com.edufelip.shared.vm
 
-import com.edufelip.shared.auth.AuthUser
+import com.edufelip.shared.data.auth.AuthUser
 import com.edufelip.shared.domain.usecase.AuthUseCases
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

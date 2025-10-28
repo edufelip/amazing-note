@@ -14,7 +14,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import com.edufelip.shared.model.NoteAttachment
+import com.edufelip.shared.domain.model.NoteAttachment
+import com.edufelip.shared.ui.attachments.AttachmentPicker
+import com.edufelip.shared.ui.attachments.AttachmentUploadPayload
+import com.edufelip.shared.ui.attachments.uploadAttachmentWithGitLive
 import dev.gitlive.firebase.storage.File as StorageFile
 import kotlinx.coroutines.CompletableDeferred
 
