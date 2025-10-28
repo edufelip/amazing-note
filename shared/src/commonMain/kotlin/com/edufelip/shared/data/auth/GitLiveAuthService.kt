@@ -1,4 +1,4 @@
-package com.edufelip.shared.auth
+package com.edufelip.shared.data.auth
 
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseAuth
@@ -36,11 +36,10 @@ class GitLiveAuthService(
         auth.signOut()
     }
 
-    private fun FirebaseUser.toAuthUser(): AuthUser =
-        AuthUser(
-            uid = uid,
-            displayName = displayName,
-            email = email,
-            photoUrl = photoURL,
-        )
+    private fun FirebaseUser.toAuthUser(): AuthUser = AuthUser(
+        uid = uid,
+        displayName = displayName,
+        email = email,
+        photoUrl = photoURL,
+    )
 }

@@ -15,9 +15,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.edufelip.shared.Constants
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.privacy_policy
+import com.edufelip.shared.ui.util.Constants
 import com.edufelip.shared.ui.web.WebView
 import org.jetbrains.compose.resources.stringResource
 

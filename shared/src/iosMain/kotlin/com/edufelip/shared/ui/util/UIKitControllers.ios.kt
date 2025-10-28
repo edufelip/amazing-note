@@ -1,15 +1,14 @@
 @file:OptIn(ExperimentalForeignApi::class)
 
-package com.edufelip.shared.util
+package com.edufelip.shared.ui.util
 
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIApplication
+import platform.UIKit.UINavigationController
+import platform.UIKit.UITabBarController
 import platform.UIKit.UIViewController
 import platform.UIKit.UIWindow
 import platform.UIKit.UIWindowScene
-import platform.UIKit.UINavigationController
-import platform.UIKit.UITabBarController
-import kotlin.collections.firstNotNullOfOrNull
 import kotlin.collections.firstNotNullOfOrNull
 
 /**

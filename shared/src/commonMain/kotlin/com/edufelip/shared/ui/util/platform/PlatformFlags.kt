@@ -1,4 +1,4 @@
-package com.edufelip.shared.platform
+package com.edufelip.shared.ui.util.platform
 
 /**
  * Flags controlling platform specific behaviour so that Cupertino styling

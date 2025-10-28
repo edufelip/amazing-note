@@ -3,6 +3,7 @@ package com.edufelip.shared.ui.nav.screens
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -47,7 +47,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.edufelip.shared.presentation.AuthViewModel
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.account_section
 import com.edufelip.shared.resources.app_version_label
@@ -64,12 +63,13 @@ import com.edufelip.shared.resources.theme_subtitle
 import com.edufelip.shared.resources.trash
 import com.edufelip.shared.resources.trash_subtitle
 import com.edufelip.shared.resources.welcome_message
-import com.edufelip.shared.ui.nav.components.PersonalizeHeroIllustration
-import com.edufelip.shared.platform.Haptics
-import com.edufelip.shared.platform.PlatformFlags
-import com.edufelip.shared.platform.currentEpochMillis
 import com.edufelip.shared.ui.ios.IosDatePicker
+import com.edufelip.shared.ui.nav.components.PersonalizeHeroIllustration
 import com.edufelip.shared.ui.settings.LocalSettings
+import com.edufelip.shared.ui.util.platform.Haptics
+import com.edufelip.shared.ui.util.platform.PlatformFlags
+import com.edufelip.shared.ui.util.platform.currentEpochMillis
+import com.edufelip.shared.ui.vm.AuthViewModel
 import io.github.alexzhirkevich.cupertino.CupertinoButtonDefaults
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveButton
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveSwitch

@@ -1,4 +1,4 @@
-package com.edufelip.shared.vm
+package com.edufelip.shared.ui.vm
 
 import com.edufelip.shared.data.auth.AuthUser
 import com.edufelip.shared.domain.usecase.AuthUseCases

@@ -13,7 +13,7 @@ import com.edufelip.shared.resources.dialog_cancel
 import com.edufelip.shared.resources.dialog_ok
 import com.edufelip.shared.resources.folder_name
 import com.edufelip.shared.resources.rename_folder
-import com.edufelip.shared.platform.Haptics
+import com.edufelip.shared.ui.util.platform.Haptics
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveAlertDialog
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.cancel

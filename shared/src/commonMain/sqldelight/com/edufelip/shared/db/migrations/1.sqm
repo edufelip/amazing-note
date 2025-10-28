@@ -1,0 +1,9 @@
+ALTER TABLE note ADD COLUMN content_json TEXT;
+
+UPDATE note
+SET content_json = '{"blocks":[]}'
+WHERE content_json IS NULL;
+
+UPDATE note
+SET content_json = printf('{"blocks":[{"type":"text","id":"legacy-text-%d","text":%s}]}', id, json_quote(description))
+WHERE content_json = '{"blocks":[]}' AND length(description) > 0;

@@ -1,4 +1,4 @@
-package com.edufelip.shared.model
+package com.edufelip.shared.domain.model
 
 data class Note(
     val id: Int,
@@ -12,5 +12,5 @@ data class Note(
     val folderId: Long? = null,
     val descriptionSpans: List<NoteTextSpan> = emptyList(),
     val attachments: List<NoteAttachment> = emptyList(),
-    val blocks: List<NoteBlock> = emptyList(),
+    val content: NoteContent = NoteContent(),
 )

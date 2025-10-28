@@ -44,8 +44,7 @@ import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.edufelip.shared.platform.PlatformFlags
-import com.edufelip.shared.model.Note
+import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
 import com.edufelip.shared.resources.created
@@ -60,8 +59,14 @@ import com.edufelip.shared.resources.your_notes
 import com.edufelip.shared.ui.gadgets.MaterialSearchBar
 import com.edufelip.shared.ui.gadgets.NoteRow
 import com.edufelip.shared.ui.nav.components.NotesEmptyState
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.settings.LocalAppPreferences
+import com.edufelip.shared.ui.util.platform.PlatformFlags
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 private enum class Bucket { TODAY, THIS_WEEK, THIS_MONTH, EARLIER }
 
@@ -317,4 +322,66 @@ fun ListScreen(
     }
 
     ContentScaffold()
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(name = "List")
+@DevicePreviews
+@Composable
+internal fun ListScreenPreview(
+    @PreviewParameter(ListScreenPreviewProvider::class) state: ListPreviewState,
+) {
+    DevicePreviewContainer(
+        isDarkTheme = state.isDarkTheme,
+        localized = state.localized,
+    ) {
+        ListScreen(
+            notes = state.notes,
+            onNoteClick = {},
+            onAddClick = {},
+            searchQuery = state.searchQuery,
+            onSearchQueryChange = {},
+            onDelete = {},
+            hasAnyNotes = state.hasAnyNotes,
+            showTopAppBar = true,
+        )
+    }
+}
+
+internal data class ListPreviewState(
+    val notes: List<Note>,
+    val searchQuery: String = "",
+    val hasAnyNotes: Boolean = true,
+    val isDarkTheme: Boolean = false,
+    val localized: Boolean = false,
+)
+
+internal object ListPreviewSamples {
+    private val sampleNotes: List<Note> = List(10) { index ->
+        Note(
+            id = index + 1,
+            title = "Note #${index + 1}",
+            description = "This is a sample note to preview different layouts and sizes.",
+            deleted = false,
+            createdAt = 1_700_000_000_000L + index * 3_600_000L,
+            updatedAt = 1_700_000_000_000L + index * 3_600_000L,
+        )
+    }
+
+    val populated = ListPreviewState(notes = sampleNotes)
+    val empty = ListPreviewState(
+        notes = emptyList(),
+        hasAnyNotes = false,
+    )
+    val dark = ListPreviewState(
+        notes = sampleNotes,
+        isDarkTheme = true,
+        localized = true,
+    )
+
+    val states: List<ListPreviewState> = listOf(populated, empty, dark)
+}
+
+internal expect class ListScreenPreviewProvider() : PreviewParameterProvider<ListPreviewState> {
+    override val values: Sequence<ListPreviewState>
 }

@@ -1,23 +1,23 @@
-package com.edufelip.shared.data
+package com.edufelip.shared.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.edufelip.shared.db.NoteDatabase
-import com.edufelip.shared.domain.repository.NoteRepository
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.NoteAttachment
-import com.edufelip.shared.domain.model.NoteBlock
+import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
 import com.edufelip.shared.domain.model.attachmentsFromJson
-import com.edufelip.shared.domain.model.blocksFromJson
-import com.edufelip.shared.domain.model.blocksToJson
-import com.edufelip.shared.domain.model.blocksToLegacyContent
-import com.edufelip.shared.domain.model.ensureBlocks
+import com.edufelip.shared.domain.model.ensureContent
 import com.edufelip.shared.domain.model.spansFromJson
 import com.edufelip.shared.domain.model.toJson
-import com.edufelip.shared.domain.model.withLegacyFieldsFromBlocks
-import com.edufelip.shared.util.nowEpochMs
+import com.edufelip.shared.domain.model.toLegacyContent
+import com.edufelip.shared.domain.model.withLegacyFieldsFromContent
+import com.edufelip.shared.domain.model.noteContentFromJson
+import com.edufelip.shared.domain.model.noteContentFromLegacyBlocksJson
+import com.edufelip.shared.domain.repository.NoteRepository
+import com.edufelip.shared.ui.util.nowEpochMs
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -32,20 +32,27 @@ class SqlDelightNoteRepository(
 
     private fun currentTimeMillis(): Long = nowEpochMs()
 
-    private fun mapRowToNote(row: com.edufelip.shared.db.Note): Note = Note(
-        id = row.id.toInt(),
-        title = row.title,
-        description = row.description,
-        deleted = row.deleted != 0L,
-        createdAt = row.created_at,
-        updatedAt = row.updated_at,
-        dirty = row.local_dirty != 0L,
-        localUpdatedAt = row.local_updated_at,
-        folderId = row.folder_id,
-        descriptionSpans = spansFromJson(row.description_spans),
-        attachments = attachmentsFromJson(row.attachments),
-        blocks = blocksFromJson(row.blocks),
-    ).ensureBlocks().withLegacyFieldsFromBlocks()
+    private fun mapRowToNote(row: com.edufelip.shared.db.Note): Note {
+        val spans = spansFromJson(row.description_spans)
+        val attachments = attachmentsFromJson(row.attachments)
+        val parsedContent = noteContentFromJson(row.content_json)
+        val legacyContent = if (parsedContent.blocks.isNotEmpty()) parsedContent else noteContentFromLegacyBlocksJson(row.blocks)
+        val ensuredContent = ensureContent(row.description, spans, attachments, legacyContent)
+        return Note(
+            id = row.id.toInt(),
+            title = row.title,
+            description = row.description,
+            deleted = row.deleted != 0L,
+            createdAt = row.created_at,
+            updatedAt = row.updated_at,
+            dirty = row.local_dirty != 0L,
+            localUpdatedAt = row.local_updated_at,
+            folderId = row.folder_id,
+            descriptionSpans = spans,
+            attachments = attachments,
+            content = ensuredContent,
+        ).ensureContent().withLegacyFieldsFromContent()
+    }
 
     private fun mapRowToFolder(row: com.edufelip.shared.db.Folder): Folder = Folder(
         id = row.id,
@@ -70,10 +77,10 @@ class SqlDelightNoteRepository(
         folderId: Long?,
         spans: List<NoteTextSpan>,
         attachments: List<NoteAttachment>,
-        blocks: List<NoteBlock>,
+        content: NoteContent,
     ) {
-        val finalBlocks = ensureBlocks(description, spans, attachments, blocks)
-        val legacy = blocksToLegacyContent(finalBlocks)
+        val finalContent = ensureContent(description, spans, attachments, content)
+        val legacy = finalContent.toLegacyContent()
         val normalizedAttachments = if (legacy.attachments.isNotEmpty()) legacy.attachments else attachments
         val now = currentTimeMillis()
         queries.insertNote(
@@ -81,7 +88,8 @@ class SqlDelightNoteRepository(
             description = legacy.description.ifBlank { description },
             description_spans = legacy.spans.ifEmpty { spans }.toJson(),
             attachments = normalizedAttachments.toJson(),
-            blocks = finalBlocks.blocksToJson(),
+            blocks = "[]",
+            content_json = finalContent.toJson(),
             created_at = now,
             updated_at = now,
             local_updated_at = now,
@@ -97,10 +105,10 @@ class SqlDelightNoteRepository(
         folderId: Long?,
         spans: List<NoteTextSpan>,
         attachments: List<NoteAttachment>,
-        blocks: List<NoteBlock>,
+        content: NoteContent,
     ) {
-        val finalBlocks = ensureBlocks(description, spans, attachments, blocks)
-        val legacy = blocksToLegacyContent(finalBlocks)
+        val finalContent = ensureContent(description, spans, attachments, content)
+        val legacy = finalContent.toLegacyContent()
         val normalizedAttachments = if (legacy.attachments.isNotEmpty()) legacy.attachments else attachments
         val now = currentTimeMillis()
         queries.updateNote(
@@ -108,7 +116,8 @@ class SqlDelightNoteRepository(
             description = legacy.description.ifBlank { description },
             description_spans = legacy.spans.ifEmpty { spans }.toJson(),
             attachments = normalizedAttachments.toJson(),
-            blocks = finalBlocks.blocksToJson(),
+            blocks = "[]",
+            content_json = finalContent.toJson(),
             deleted = if (deleted) 1 else 0,
             updated_at = now,
             local_updated_at = now,

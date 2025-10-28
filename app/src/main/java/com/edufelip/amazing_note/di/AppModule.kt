@@ -2,11 +2,11 @@ package com.edufelip.amazing_note.di
 
 import android.content.Context
 import com.edufelip.amazing_note.others.AndroidSettings
-import com.edufelip.shared.data.SqlDelightNoteRepository
-import com.edufelip.shared.db.AndroidContextHolder
-import com.edufelip.shared.db.DatabaseDriverFactory
+import com.edufelip.shared.data.db.AndroidContextHolder
+import com.edufelip.shared.data.db.DatabaseDriverFactory
+import com.edufelip.shared.data.db.createDatabase
+import com.edufelip.shared.data.repository.SqlDelightNoteRepository
 import com.edufelip.shared.db.NoteDatabase
-import com.edufelip.shared.db.createDatabase
 import com.edufelip.shared.domain.repository.NoteRepository
 import com.edufelip.shared.domain.usecase.NoteUseCases
 import com.edufelip.shared.domain.usecase.buildNoteUseCases

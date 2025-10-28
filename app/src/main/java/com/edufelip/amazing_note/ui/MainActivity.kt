@@ -5,13 +5,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import com.edufelip.amazing_note.R
 import com.edufelip.amazing_note.ui.viewmodels.KmpNoteViewModel
+import com.edufelip.shared.data.auth.GitLiveAuthService
+import com.edufelip.shared.data.auth.GoogleSignInConfig
 import com.edufelip.shared.db.NoteDatabase
 import com.edufelip.shared.ui.AmazingNoteApp
 import com.edufelip.shared.ui.settings.Settings
-import com.edufelip.shared.auth.GitLiveAuthService
-import com.edufelip.shared.auth.GoogleSignInConfig
-import com.edufelip.amazing_note.R
 import dagger.hilt.android.AndroidEntryPoint
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.initialize

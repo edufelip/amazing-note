@@ -1,16 +1,17 @@
-package com.edufelip.shared.db
+package com.edufelip.shared.data.db
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
+import com.edufelip.shared.db.NoteDatabase
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSCachesDirectory
+import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSHomeDirectory
-import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSSearchPathForDirectoriesInDomains
 import platform.Foundation.NSUserDomainMask
 
-private val DATABASE_NAME = "notes.v${NoteDatabase.Schema.version}.db"
+private val DATABASE_NAME = "notes.v${NoteDatabase.Companion.Schema.version}.db"
 
 private val LEGACY_DATABASE_FILES = listOf(
     "notes.db",
@@ -21,16 +22,15 @@ private val LEGACY_DATABASE_FILES = listOf(
 
 actual class DatabaseDriverFactory actual constructor() {
     @OptIn(ExperimentalForeignApi::class)
-    actual fun createDriver(): SqlDriver =
-        runCatching { NativeSqliteDriver(NoteDatabase.Schema, DATABASE_NAME) }
-            .getOrElse { error ->
-                if (!error.message.orEmpty().contains("Database version", ignoreCase = true)) {
-                    throw error
-                }
-                println("notes.db schema mismatch detected; clearing local cache and recreating database.")
-                resetDatabase()
-                NativeSqliteDriver(NoteDatabase.Schema, DATABASE_NAME)
+    actual fun createDriver(): SqlDriver = runCatching { NativeSqliteDriver(NoteDatabase.Companion.Schema, DATABASE_NAME) }
+        .getOrElse { error ->
+            if (!error.message.orEmpty().contains("Database version", ignoreCase = true)) {
+                throw error
             }
+            println("notes.db schema mismatch detected; clearing local cache and recreating database.")
+            resetDatabase()
+            NativeSqliteDriver(NoteDatabase.Companion.Schema, DATABASE_NAME)
+        }
 }
 
 @OptIn(ExperimentalForeignApi::class)

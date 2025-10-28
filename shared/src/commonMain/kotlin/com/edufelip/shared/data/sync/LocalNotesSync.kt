@@ -1,4 +1,4 @@
-package com.edufelip.shared.sync
+package com.edufelip.shared.data.sync
 
 import androidx.compose.runtime.staticCompositionLocalOf
 

@@ -1,4 +1,4 @@
-package com.edufelip.shared.platform
+package com.edufelip.shared.ui.util.platform
 
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIImpactFeedbackGenerator

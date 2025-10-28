@@ -1,10 +1,10 @@
-package com.edufelip.shared.attachments
+package com.edufelip.shared.ui.attachments
 
 import com.edufelip.shared.domain.model.NoteAttachment
 import dev.gitlive.firebase.Firebase
-import dev.gitlive.firebase.storage.File as StorageFile
 import dev.gitlive.firebase.storage.storage
 import kotlin.random.Random
+import dev.gitlive.firebase.storage.File as StorageFile
 
 data class AttachmentUploadPayload(
     val file: StorageFile,

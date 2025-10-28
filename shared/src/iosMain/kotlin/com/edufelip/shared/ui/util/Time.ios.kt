@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalForeignApi::class)
 
-package com.edufelip.shared.util
+package com.edufelip.shared.ui.util
 
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSDate

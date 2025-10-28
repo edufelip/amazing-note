@@ -2,20 +2,19 @@ package com.edufelip.shared
 
 import androidx.compose.runtime.remember
 import androidx.compose.ui.window.ComposeUIViewController
-import com.edufelip.shared.auth.GitLiveAuthService
-import com.edufelip.shared.data.SqlDelightNoteRepository
-import com.edufelip.shared.db.DatabaseDriverFactory
-import com.edufelip.shared.db.createDatabase
+import com.edufelip.shared.data.auth.GitLiveAuthService
+import com.edufelip.shared.data.db.DatabaseDriverFactory
+import com.edufelip.shared.data.db.createDatabase
+import com.edufelip.shared.data.repository.SqlDelightNoteRepository
 import com.edufelip.shared.domain.usecase.buildNoteUseCases
 import com.edufelip.shared.domain.validation.NoteValidationRules
-import com.edufelip.shared.presentation.DefaultNoteUiViewModel
 import com.edufelip.shared.ui.AmazingNoteApp
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.settings.DefaultAppPreferences
 import com.edufelip.shared.ui.settings.Settings
+import com.edufelip.shared.ui.vm.DefaultNoteUiViewModel
 import platform.Foundation.NSUserDefaults
 import platform.UIKit.UIColor
-import platform.UIKit.UIEdgeInsetsZero
 import platform.UIKit.UIViewController
 
 private class IosSettings : Settings {
@@ -36,29 +35,25 @@ private class IosSettings : Settings {
     }
 }
 
-fun MainViewController(): UIViewController =
-    createAmazingNoteViewController(
-        initialRoute = AppRoutes.Notes,
-        showBottomBar = true,
-    )
+fun MainViewController(): UIViewController = createAmazingNoteViewController(
+    initialRoute = AppRoutes.Notes,
+    showBottomBar = true,
+)
 
-fun makeNotesViewController(): UIViewController =
-    createAmazingNoteViewController(
-        initialRoute = AppRoutes.Notes,
-        showBottomBar = false,
-    )
+fun makeNotesViewController(): UIViewController = createAmazingNoteViewController(
+    initialRoute = AppRoutes.Notes,
+    showBottomBar = false,
+)
 
-fun makeFoldersViewController(): UIViewController =
-    createAmazingNoteViewController(
-        initialRoute = AppRoutes.Folders,
-        showBottomBar = false,
-    )
+fun makeFoldersViewController(): UIViewController = createAmazingNoteViewController(
+    initialRoute = AppRoutes.Folders,
+    showBottomBar = false,
+)
 
-fun makeSettingsViewController(): UIViewController =
-    createAmazingNoteViewController(
-        initialRoute = AppRoutes.Settings,
-        showBottomBar = false,
-    )
+fun makeSettingsViewController(): UIViewController = createAmazingNoteViewController(
+    initialRoute = AppRoutes.Settings,
+    showBottomBar = false,
+)
 
 fun createAmazingNoteViewController(
     initialRoute: AppRoutes,
@@ -84,8 +79,6 @@ fun createAmazingNoteViewController(
     }
     return controller.apply {
         view.insetsLayoutMarginsFromSafeArea = false
-        viewRespectsSystemMinimumLayoutMargins = false
         view.backgroundColor = UIColor.clearColor
-        additionalSafeAreaInsets = UIEdgeInsetsZero
     }
 }

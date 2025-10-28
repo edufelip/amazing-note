@@ -61,7 +61,12 @@ import com.edufelip.shared.resources.sign_up_need_help
 import com.edufelip.shared.resources.sign_up_primary_cta
 import com.edufelip.shared.resources.sign_up_subtitle
 import com.edufelip.shared.resources.sign_up_title
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -298,4 +303,47 @@ private fun isPasswordValid(pw: String): Boolean {
     val hasDigit = pw.any { it.isDigit() }
     val hasSymbol = pw.any { !it.isLetterOrDigit() }
     return hasUpper && hasLower && hasDigit && hasSymbol
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(name = "Sign Up")
+@DevicePreviews
+@Composable
+internal fun SignUpScreenPreview(
+    @PreviewParameter(SignUpScreenPreviewProvider::class) state: SignUpPreviewState,
+) {
+    DevicePreviewContainer(
+        isDarkTheme = state.isDarkTheme,
+        localized = state.localized,
+    ) {
+        SignUpScreen(
+            onBack = {},
+            onSubmit = { _, _ -> },
+            loading = state.loading,
+        )
+    }
+}
+
+internal data class SignUpPreviewState(
+    val loading: Boolean,
+    val isDarkTheme: Boolean = false,
+    val localized: Boolean = false,
+)
+
+internal object SignUpPreviewSamples {
+    val idle = SignUpPreviewState(loading = false)
+    val loading = SignUpPreviewState(
+        loading = true,
+        isDarkTheme = true,
+    )
+    val localized = SignUpPreviewState(
+        loading = false,
+        localized = true,
+    )
+
+    val states: List<SignUpPreviewState> = listOf(idle, loading, localized)
+}
+
+internal expect class SignUpScreenPreviewProvider() : PreviewParameterProvider<SignUpPreviewState> {
+    override val values: Sequence<SignUpPreviewState>
 }

@@ -1,3 +1,3 @@
-package com.edufelip.shared.util
+package com.edufelip.shared.ui.util
 
 expect fun nowEpochMs(): Long

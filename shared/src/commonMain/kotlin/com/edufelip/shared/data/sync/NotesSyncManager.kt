@@ -1,18 +1,21 @@
-package com.edufelip.shared.sync
+package com.edufelip.shared.data.sync
 
 import com.edufelip.shared.data.cloud.CloudNotesDataSource
 import com.edufelip.shared.data.cloud.CurrentUserProvider
 import com.edufelip.shared.data.cloud.provideCloudNotesDataSource
 import com.edufelip.shared.data.cloud.provideCurrentUserProvider
 import com.edufelip.shared.db.NoteDatabase
+import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.Note
+import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.attachmentsFromJson
-import com.edufelip.shared.domain.model.blocksFromJson
-import com.edufelip.shared.domain.model.blocksToJson
-import com.edufelip.shared.domain.model.ensureBlocks
+import com.edufelip.shared.domain.model.ensureContent
+import com.edufelip.shared.domain.model.noteContentFromJson
+import com.edufelip.shared.domain.model.noteContentFromLegacyBlocksJson
 import com.edufelip.shared.domain.model.spansFromJson
 import com.edufelip.shared.domain.model.toJson
-import com.edufelip.shared.domain.model.withLegacyFieldsFromBlocks
+import com.edufelip.shared.domain.model.withLegacyFieldsFromContent
+import com.edufelip.shared.domain.model.TextBlock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
@@ -22,6 +25,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlin.collections.iterator
+import kotlin.text.iterator
 
 class NotesSyncManager(
     private val db: NoteDatabase,
@@ -82,20 +87,7 @@ class NotesSyncManager(
             return
         }
         for (row in dirtyRows) {
-            val note = Note(
-                id = row.id.toInt(),
-                title = row.title,
-                description = row.description,
-                deleted = row.deleted != 0L,
-                createdAt = row.created_at,
-                updatedAt = row.updated_at,
-                dirty = row.local_dirty != 0L,
-                localUpdatedAt = row.local_updated_at,
-                folderId = row.folder_id,
-                blocks = blocksFromJson(row.blocks),
-                descriptionSpans = spansFromJson(row.description_spans),
-                attachments = attachmentsFromJson(row.attachments),
-            ).ensureBlocks().withLegacyFieldsFromBlocks()
+            val note = rowToNote(row)
             cloud.upsertPreserveUpdatedAt(uid, note)
             db.noteQueries.clearDirtyById(row.id)
         }
@@ -160,7 +152,22 @@ class NotesSyncManager(
     private fun getAllLocal(): List<Note> {
         val rowsActive = db.noteQueries.selectAll().executeAsList()
         val rowsDeleted = db.noteQueries.selectDeleted().executeAsList()
-        fun mapRow(row: com.edufelip.shared.db.Note): Note = Note(
+        return rowsActive.map(::rowToNote) + rowsDeleted.map(::rowToNote)
+    }
+
+    private fun clearLocal() {
+        db.noteQueries.deleteAll()
+        db.noteQueries.deleteAllFolders()
+        _events.tryEmit(SyncEvent.SyncCompleted)
+    }
+
+    private fun rowToNote(row: com.edufelip.shared.db.Note): Note {
+        val spans = spansFromJson(row.description_spans)
+        val attachments = attachmentsFromJson(row.attachments)
+        val parsedContent = noteContentFromJson(row.content_json)
+        val legacyContent = if (parsedContent.blocks.isNotEmpty()) parsedContent else noteContentFromLegacyBlocksJson(row.blocks)
+        val ensuredContent = ensureContent(row.description, spans, attachments, legacyContent)
+        return Note(
             id = row.id.toInt(),
             title = row.title,
             description = row.description,
@@ -170,28 +177,22 @@ class NotesSyncManager(
             dirty = row.local_dirty != 0L,
             localUpdatedAt = row.local_updated_at,
             folderId = row.folder_id,
-            descriptionSpans = spansFromJson(row.description_spans),
-            attachments = attachmentsFromJson(row.attachments),
-            blocks = blocksFromJson(row.blocks),
-        ).ensureBlocks()
-        return rowsActive.map(transform = ::mapRow) + rowsDeleted.map(::mapRow)
-    }
-
-    private fun clearLocal() {
-        db.noteQueries.deleteAll()
-        db.noteQueries.deleteAllFolders()
-        _events.tryEmit(SyncEvent.SyncCompleted)
+            descriptionSpans = spans,
+            attachments = attachments,
+            content = ensuredContent,
+        ).ensureContent().withLegacyFieldsFromContent()
     }
 
     private fun insertLocal(n: Note) {
-        val normalized = n.withLegacyFieldsFromBlocks()
+        val normalized = n.ensureContent().withLegacyFieldsFromContent()
         db.noteQueries.insertWithId(
             id = normalized.id.toLong(),
             title = normalized.title,
             description = normalized.description,
             description_spans = normalized.descriptionSpans.toJson(),
             attachments = normalized.attachments.toJson(),
-            blocks = normalized.blocks.blocksToJson(),
+            blocks = "[]",
+            content_json = normalized.content.toJson(),
             deleted = if (normalized.deleted) 1 else 0,
             created_at = normalized.createdAt,
             updated_at = normalized.updatedAt,
@@ -200,13 +201,14 @@ class NotesSyncManager(
     }
 
     private fun updateLocalFromRemote(id: Int, note: Note) {
-        val normalized = note.withLegacyFieldsFromBlocks()
+        val normalized = note.ensureContent().withLegacyFieldsFromContent()
         db.noteQueries.updateFromRemote(
             title = normalized.title,
             description = normalized.description,
             description_spans = normalized.descriptionSpans.toJson(),
             attachments = normalized.attachments.toJson(),
-            blocks = normalized.blocks.blocksToJson(),
+            blocks = "[]",
+            content_json = normalized.content.toJson(),
             deleted = if (normalized.deleted) 1 else 0,
             updated_at = normalized.updatedAt,
             folder_id = normalized.folderId,
@@ -258,17 +260,32 @@ class NotesSyncManager(
                 mixString(attachment.thumbnailUrl ?: "")
                 mixString(attachment.mimeType)
             }
-            n.blocks.sortedBy { it.order }.forEach { block ->
+            n.content.blocks.forEachIndexed { index, block ->
                 mixString(block.id)
-                mixString(block.type.name)
-                mixString(block.content)
-                block.metadata.entries
-                    .sortedBy { it.key }
-                    .forEach { (key, value) ->
-                        mixString(key)
-                        mixString(value)
+                when (block) {
+                    is TextBlock -> {
+                        mixString("text")
+                        mixString(block.text)
+                        block.spans.forEach { span ->
+                            mix(span.start.toLong())
+                            mix(span.end.toLong())
+                            mixString(span.style.name)
+                        }
                     }
-                mix(block.order.toLong())
+
+                    is ImageBlock -> {
+                        mixString("image")
+                        mixString(block.uri)
+                        mixString(block.remoteUri ?: "")
+                        mix(block.width?.toLong() ?: -1L)
+                        mix(block.height?.toLong() ?: -1L)
+                        mixString(block.alt ?: "")
+                        mixString(block.thumbnailUri ?: "")
+                        mixString(block.mimeType ?: "")
+                        mixString(block.fileName ?: "")
+                    }
+                }
+                mix(index.toLong())
             }
             mix(if (n.deleted) 1 else 0)
             mix(n.folderId ?: -1L)

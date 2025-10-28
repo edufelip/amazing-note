@@ -1,4 +1,4 @@
-package com.edufelip.shared.platform
+package com.edufelip.shared.ui.util.platform
 
 /**
  * Lightweight haptic feedback helpers so we can provide subtle taps on iOS

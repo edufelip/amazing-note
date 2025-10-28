@@ -1,4 +1,4 @@
-package com.edufelip.shared.model
+package com.edufelip.shared.domain.model
 
 data class Folder(
     val id: Long,

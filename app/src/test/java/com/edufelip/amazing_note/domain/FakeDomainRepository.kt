@@ -1,12 +1,12 @@
 package com.edufelip.amazing_note.domain
 
+import com.edufelip.shared.domain.model.Folder
+import com.edufelip.shared.domain.model.Note
+import com.edufelip.shared.domain.model.NoteAttachment
+import com.edufelip.shared.domain.model.NoteContent
+import com.edufelip.shared.domain.model.NoteTextSpan
+import com.edufelip.shared.domain.model.ensureContent
 import com.edufelip.shared.domain.repository.NoteRepository
-import com.edufelip.shared.model.Folder
-import com.edufelip.shared.model.Note
-import com.edufelip.shared.model.NoteAttachment
-import com.edufelip.shared.model.NoteBlock
-import com.edufelip.shared.model.NoteTextSpan
-import com.edufelip.shared.model.ensureBlocks
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -33,11 +33,11 @@ class FakeDomainRepository : NoteRepository {
         folderId: Long?,
         spans: List<NoteTextSpan>,
         attachments: List<NoteAttachment>,
-        blocks: List<NoteBlock>,
+        content: NoteContent,
     ) {
         val nextId = (notes.maxOfOrNull { it.id } ?: 0) + 1
         val now = System.currentTimeMillis()
-        val finalBlocks = ensureBlocks(description, spans, attachments, blocks)
+        val finalContent = ensureContent(description, spans, attachments, content)
         notes += Note(
             nextId,
             title,
@@ -48,7 +48,7 @@ class FakeDomainRepository : NoteRepository {
             folderId = folderId,
             descriptionSpans = spans,
             attachments = attachments,
-            blocks = finalBlocks,
+            content = finalContent,
         )
         state.value = notes.toList()
     }
@@ -61,11 +61,11 @@ class FakeDomainRepository : NoteRepository {
         folderId: Long?,
         spans: List<NoteTextSpan>,
         attachments: List<NoteAttachment>,
-        blocks: List<NoteBlock>,
+        content: NoteContent,
     ) {
         val idx = notes.indexOfFirst { it.id == id }.takeIf { it >= 0 } ?: return
         val now = System.currentTimeMillis()
-        val finalBlocks = ensureBlocks(description, spans, attachments, blocks)
+        val finalContent = ensureContent(description, spans, attachments, content)
         notes[idx] = notes[idx].copy(
             title = title,
             description = description,
@@ -74,7 +74,7 @@ class FakeDomainRepository : NoteRepository {
             folderId = folderId,
             descriptionSpans = spans,
             attachments = attachments,
-            blocks = finalBlocks,
+            content = finalContent,
         )
         state.value = notes.toList()
     }

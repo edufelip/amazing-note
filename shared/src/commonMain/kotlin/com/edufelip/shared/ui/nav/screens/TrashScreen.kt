@@ -55,8 +55,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.edufelip.shared.platform.PlatformFlags
-import com.edufelip.shared.model.Note
+import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_back
 import com.edufelip.shared.resources.empty_trash_description
@@ -72,8 +71,14 @@ import com.edufelip.shared.resources.trash_deleted_yesterday
 import com.edufelip.shared.resources.trash_empty_action
 import com.edufelip.shared.resources.trash_recover_selected
 import com.edufelip.shared.ui.nav.components.TrashIllustration
-import com.edufelip.shared.util.nowEpochMs
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.util.nowEpochMs
+import com.edufelip.shared.ui.util.platform.PlatformFlags
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 private const val DAY_IN_MILLIS = 24L * 60 * 60 * 1000
 
@@ -133,8 +138,7 @@ fun TrashScreen(
     }
 }
 
-private fun Modifier.navigationBarsPaddingIfAndroid(): Modifier =
-    if (PlatformFlags.isIos) this else this.navigationBarsPadding()
+private fun Modifier.navigationBarsPaddingIfAndroid(): Modifier = if (PlatformFlags.isIos) this else this.navigationBarsPadding()
 
 @Composable
 private fun TrashScreenContent(
@@ -454,4 +458,59 @@ private fun TimelineIndicator(
             )
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(name = "Trash")
+@DevicePreviews
+@Composable
+internal fun TrashScreenPreview(
+    @PreviewParameter(TrashScreenPreviewProvider::class) state: TrashPreviewState,
+) {
+    DevicePreviewContainer(
+        isDarkTheme = state.isDarkTheme,
+        localized = state.localized,
+    ) {
+        TrashScreen(
+            notes = state.notes,
+            onRestore = {},
+            onBack = {},
+            onEmptyTrash = {},
+        )
+    }
+}
+
+internal data class TrashPreviewState(
+    val notes: List<Note>,
+    val isDarkTheme: Boolean = false,
+    val localized: Boolean = false,
+)
+
+internal object TrashPreviewSamples {
+    private val now = 1_700_100_000_000L
+
+    private val baseNotes: List<Note> = List(6) { index ->
+        Note(
+            id = index + 100,
+            title = "Trash #${index + 1}",
+            description = "Deleted note sample for preview.",
+            deleted = true,
+            createdAt = now + index * 3_600_000L,
+            updatedAt = now + index * 5_400_000L,
+        )
+    }
+
+    val empty = TrashPreviewState(notes = emptyList())
+    val populated = TrashPreviewState(notes = baseNotes)
+    val dark = TrashPreviewState(
+        notes = baseNotes,
+        isDarkTheme = true,
+        localized = true,
+    )
+
+    val states: List<TrashPreviewState> = listOf(populated, empty, dark)
+}
+
+internal expect class TrashScreenPreviewProvider() : PreviewParameterProvider<TrashPreviewState> {
+    override val values: Sequence<TrashPreviewState>
 }

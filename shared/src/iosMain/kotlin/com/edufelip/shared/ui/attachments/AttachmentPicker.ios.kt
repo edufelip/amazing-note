@@ -1,15 +1,11 @@
 @file:OptIn(ExperimentalForeignApi::class)
 
-package com.edufelip.shared.attachments
+package com.edufelip.shared.ui.attachments
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.edufelip.shared.domain.model.NoteAttachment
-import com.edufelip.shared.ui.attachments.AttachmentPicker
-import com.edufelip.shared.ui.attachments.AttachmentUploadPayload
-import com.edufelip.shared.ui.attachments.uploadAttachmentWithGitLive
-import com.edufelip.shared.util.findTopViewController
-import dev.gitlive.firebase.storage.File as StorageFile
+import com.edufelip.shared.ui.util.findTopViewController
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -30,6 +26,7 @@ import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import dev.gitlive.firebase.storage.File as StorageFile
 
 @Composable
 actual fun rememberAttachmentPicker(): AttachmentPicker? = remember {
@@ -110,7 +107,8 @@ private data class PickedData(
 
 private class PickerDelegate(
     private val onResult: (Result<PickedData?>) -> Unit,
-) : NSObject(), PHPickerViewControllerDelegateProtocol {
+) : NSObject(),
+    PHPickerViewControllerDelegateProtocol {
     override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
         dispatch_async(dispatch_get_main_queue()) {
             picker.dismissViewControllerAnimated(true, completion = null)

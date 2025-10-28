@@ -1,4 +1,4 @@
-package com.edufelip.shared.auth
+package com.edufelip.shared.data.auth
 
 data class AuthUser(
     val uid: String,

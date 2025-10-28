@@ -55,7 +55,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.edufelip.shared.model.Folder
+import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_more
 import com.edufelip.shared.resources.folder_layout_grid_content_description

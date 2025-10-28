@@ -1,6 +1,6 @@
 package com.edufelip.shared.domain.repository
 
-import com.edufelip.shared.auth.AuthUser
+import com.edufelip.shared.data.auth.AuthUser
 import kotlinx.coroutines.flow.Flow
 
 interface AuthRepository {

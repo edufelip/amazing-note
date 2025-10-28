@@ -1,18 +1,18 @@
-package com.edufelip.shared.data
+package com.edufelip.shared.data.repository
 
-import com.edufelip.shared.cloud.CloudNotesDataSource
-import com.edufelip.shared.cloud.CurrentUserProvider
-import com.edufelip.shared.cloud.provideCloudNotesDataSource
-import com.edufelip.shared.cloud.provideCurrentUserProvider
-import com.edufelip.shared.domain.repository.NoteRepository
+import com.edufelip.shared.data.cloud.CloudNotesDataSource
+import com.edufelip.shared.data.cloud.CurrentUserProvider
+import com.edufelip.shared.data.cloud.provideCloudNotesDataSource
+import com.edufelip.shared.data.cloud.provideCurrentUserProvider
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.NoteAttachment
-import com.edufelip.shared.domain.model.NoteBlock
+import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
-import com.edufelip.shared.domain.model.blocksToLegacyContent
-import com.edufelip.shared.domain.model.ensureBlocks
-import com.edufelip.shared.util.nowEpochMs
+import com.edufelip.shared.domain.model.ensureContent
+import com.edufelip.shared.domain.model.toLegacyContent
+import com.edufelip.shared.domain.repository.NoteRepository
+import com.edufelip.shared.ui.util.nowEpochMs
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -46,12 +46,12 @@ class CloudNoteRepository(
         folderId: Long?,
         spans: List<NoteTextSpan>,
         attachments: List<NoteAttachment>,
-        blocks: List<NoteBlock>,
+        content: NoteContent,
     ) {
         val uid = currentUser.uid.first() ?: return
         val now = nowEpochMs()
-        val finalBlocks = ensureBlocks(description, spans, attachments, blocks)
-        val legacy = blocksToLegacyContent(finalBlocks)
+        val finalContent = ensureContent(description, spans, attachments, content)
+        val legacy = finalContent.toLegacyContent()
         val normalizedAttachments = if (legacy.attachments.isNotEmpty()) legacy.attachments else attachments
         val note = Note(
             id = now.hashCode(),
@@ -65,7 +65,7 @@ class CloudNoteRepository(
             folderId = folderId,
             descriptionSpans = legacy.spans.ifEmpty { spans },
             attachments = normalizedAttachments,
-            blocks = finalBlocks,
+            content = finalContent,
         )
         cloud.upsert(uid, note)
     }
@@ -78,12 +78,12 @@ class CloudNoteRepository(
         folderId: Long?,
         spans: List<NoteTextSpan>,
         attachments: List<NoteAttachment>,
-        blocks: List<NoteBlock>,
+        content: NoteContent,
     ) {
         val uid = currentUser.uid.first() ?: return
         val now = nowEpochMs()
-        val finalBlocks = ensureBlocks(description, spans, attachments, blocks)
-        val legacy = blocksToLegacyContent(finalBlocks)
+        val finalContent = ensureContent(description, spans, attachments, content)
+        val legacy = finalContent.toLegacyContent()
         val normalizedAttachments = if (legacy.attachments.isNotEmpty()) legacy.attachments else attachments
         val note = Note(
             id = id,
@@ -97,7 +97,7 @@ class CloudNoteRepository(
             folderId = folderId,
             descriptionSpans = legacy.spans.ifEmpty { spans },
             attachments = normalizedAttachments,
-            blocks = finalBlocks,
+            content = finalContent,
         )
         cloud.upsert(uid, note)
     }
@@ -119,7 +119,7 @@ class CloudNoteRepository(
                 folderId = null,
                 descriptionSpans = emptyList(),
                 attachments = emptyList(),
-                blocks = emptyList(),
+                content = NoteContent(),
             ),
         )
     }

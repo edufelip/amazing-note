@@ -1,4 +1,4 @@
-package com.edufelip.shared.auth
+package com.edufelip.shared.data.auth
 
 import kotlinx.coroutines.flow.Flow
 

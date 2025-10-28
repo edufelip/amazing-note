@@ -8,12 +8,12 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
-import com.edufelip.shared.platform.PlatformFlags
-import io.github.alexzhirkevich.cupertino.adaptive.MaterialThemeSpec
-import io.github.alexzhirkevich.cupertino.adaptive.Theme
+import com.edufelip.shared.ui.util.platform.PlatformFlags
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveTheme
 import io.github.alexzhirkevich.cupertino.adaptive.CupertinoThemeSpec
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
+import io.github.alexzhirkevich.cupertino.adaptive.MaterialThemeSpec
+import io.github.alexzhirkevich.cupertino.adaptive.Theme
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,

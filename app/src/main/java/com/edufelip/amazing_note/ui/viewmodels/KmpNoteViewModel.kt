@@ -1,14 +1,14 @@
 package com.edufelip.amazing_note.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
+import com.edufelip.shared.domain.model.NoteAttachment
+import com.edufelip.shared.domain.model.NoteContent
+import com.edufelip.shared.domain.model.NoteTextSpan
 import com.edufelip.shared.domain.usecase.NoteUseCases
 import com.edufelip.shared.domain.validation.NoteActionResult
-import com.edufelip.shared.model.NoteAttachment
-import com.edufelip.shared.model.NoteBlock
-import com.edufelip.shared.model.NoteTextSpan
-import com.edufelip.shared.presentation.DefaultNoteUiViewModel
-import com.edufelip.shared.presentation.NoteUiViewModel
 import com.edufelip.shared.ui.settings.AppPreferences
+import com.edufelip.shared.ui.vm.DefaultNoteUiViewModel
+import com.edufelip.shared.ui.vm.NoteUiViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -33,8 +33,8 @@ class KmpNoteViewModel @Inject constructor(
         spans: List<NoteTextSpan>,
         attachments: List<NoteAttachment>,
         folderId: Long?,
-        blocks: List<NoteBlock>,
-    ): NoteActionResult = delegate.insert(title, description, spans, attachments, folderId, blocks)
+        content: NoteContent,
+    ): NoteActionResult = delegate.insert(title, description, spans, attachments, folderId, content)
 
     override suspend fun update(
         id: Int,
@@ -44,8 +44,8 @@ class KmpNoteViewModel @Inject constructor(
         spans: List<NoteTextSpan>,
         attachments: List<NoteAttachment>,
         folderId: Long?,
-        blocks: List<NoteBlock>,
-    ): NoteActionResult = delegate.update(id, title, description, deleted, spans, attachments, folderId, blocks)
+        content: NoteContent,
+    ): NoteActionResult = delegate.update(id, title, description, deleted, spans, attachments, folderId, content)
 
     override suspend fun setDeleted(id: Int, deleted: Boolean) = delegate.setDeleted(id, deleted)
 

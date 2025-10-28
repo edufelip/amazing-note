@@ -54,7 +54,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
@@ -62,30 +61,27 @@ import androidx.compose.ui.zIndex
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.request.crossfade
-import com.edufelip.shared.attachments.rememberAttachmentPicker
-import com.edufelip.shared.auth.AuthService
-import com.edufelip.shared.auth.AuthUser
-import com.edufelip.shared.auth.GoogleSignInConfig
-import com.edufelip.shared.auth.NoAuthService
-import com.edufelip.shared.auth.rememberGoogleSignInLauncher
-import com.edufelip.shared.data.DefaultAuthRepository
-import com.edufelip.shared.db.DatabaseDriverFactory
+import com.edufelip.shared.domain.model.toLegacyContent
+import com.edufelip.shared.data.auth.AuthService
+import com.edufelip.shared.data.auth.AuthUser
+import com.edufelip.shared.data.auth.GoogleSignInConfig
+import com.edufelip.shared.data.auth.NoAuthService
+import com.edufelip.shared.data.auth.rememberGoogleSignInLauncher
+import com.edufelip.shared.data.db.DatabaseDriverFactory
+import com.edufelip.shared.data.db.createDatabase
+import com.edufelip.shared.data.repository.DefaultAuthRepository
+import com.edufelip.shared.data.sync.LocalNotesSyncManager
+import com.edufelip.shared.data.sync.NotesSyncManager
 import com.edufelip.shared.db.NoteDatabase
-import com.edufelip.shared.db.createDatabase
 import com.edufelip.shared.domain.usecase.buildAuthUseCases
-import com.edufelip.shared.presentation.AuthViewModel
-import com.edufelip.shared.presentation.NoteUiViewModel
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.bottom_folders
 import com.edufelip.shared.resources.bottom_notes
 import com.edufelip.shared.resources.bottom_settings
 import com.edufelip.shared.resources.guest
 import com.edufelip.shared.resources.unassigned_notes
-import com.edufelip.shared.sync.LocalNotesSyncManager
-import com.edufelip.shared.sync.NotesSyncManager
+import com.edufelip.shared.ui.attachments.rememberAttachmentPicker
 import com.edufelip.shared.ui.gadgets.AvatarImage
-import com.edufelip.shared.platform.PlatformFlags
-import com.edufelip.shared.platform.Haptics
 import com.edufelip.shared.ui.images.platformConfigImageLoader
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.nav.goBack
@@ -108,14 +104,18 @@ import com.edufelip.shared.ui.settings.LocalSettings
 import com.edufelip.shared.ui.settings.Settings
 import com.edufelip.shared.ui.theme.AmazingNoteTheme
 import com.edufelip.shared.ui.util.OnSystemBack
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.edufelip.shared.ui.util.platform.Haptics
+import com.edufelip.shared.ui.util.platform.PlatformFlags
+import com.edufelip.shared.ui.vm.AuthViewModel
+import com.edufelip.shared.ui.vm.NoteUiViewModel
 import io.github.alexzhirkevich.cupertino.CupertinoTopAppBarDefaults
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveNavigationBar
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveNavigationBarItem
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveTopAppBar
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.animation.ExperimentalAnimationApi::class)
@@ -274,6 +274,57 @@ fun AmazingNoteApp(
                                 HomeScreen(
                                     notes = notes,
                                     auth = authViewModel,
+                                    onOpenNote = { note ->
+                                        backStack.navigate(AppRoutes.NoteDetail(note.id, note.folderId))
+                                    },
+                                    onAdd = { backStack.navigate(AppRoutes.NoteDetail(null, null)) },
+                                    onDelete = { note ->
+                                        scope.launch {
+                                            viewModel.setDeleted(note.id, true)
+                                            syncManager.syncLocalToRemoteOnly()
+                                        }
+                                    },
+                                )
+                            }
+                        }
+
+                        AppRoutes.Folders -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                            ) {
+                                FoldersScreen(
+                                    folders = folders,
+                                    notes = notes,
+                                    onOpenFolder = { folder ->
+                                        backStack.navigate(AppRoutes.FolderDetail(folder.id))
+                                    },
+                                    onCreateFolder = { name ->
+                                        scope.launch {
+                                            val trimmed = name.trim()
+                                            if (trimmed.isNotEmpty()) {
+                                                viewModel.createFolder(trimmed)
+                                                syncManager.syncLocalToRemoteOnly()
+                                            }
+                                        }
+                                    },
+                                    onRenameFolder = { folder, newName ->
+                                        scope.launch {
+                                            val trimmed = newName.trim()
+                                            if (trimmed.isNotEmpty() && trimmed != folder.name) {
+                                                viewModel.renameFolder(folder.id, trimmed)
+                                                syncManager.syncLocalToRemoteOnly()
+                                            }
+                                        }
+                                    },
+                                    onDeleteFolder = { folder ->
+                                        scope.launch {
+                                            viewModel.deleteFolder(folder.id)
+                                            syncManager.syncLocalToRemoteOnly()
+                                        }
+                                    },
+                                )
+                            }
+                        }
 
                         AppRoutes.Settings -> {
                             Box(
@@ -346,12 +397,29 @@ fun AmazingNoteApp(
                                 folders = folders,
                                 initialFolderId = initialFolderId,
                                 onBack = { backStack.goBack() },
-                                saveAndValidate = { noteId, title, description, spans, attachments, folderId, blocks ->
+                                saveAndValidate = { noteId, title, content, folderId ->
+                                    val legacy = content.toLegacyContent()
                                     val result =
                                         if (noteId == null) {
-                                            viewModel.insert(title, description, spans, attachments, folderId, blocks)
+                                            viewModel.insert(
+                                                title = title,
+                                                description = legacy.description,
+                                                spans = legacy.spans,
+                                                attachments = legacy.attachments,
+                                                folderId = folderId,
+                                                content = content,
+                                            )
                                         } else {
-                                            viewModel.update(noteId, title, description, false, spans, attachments, folderId, blocks)
+                                            viewModel.update(
+                                                id = noteId,
+                                                title = title,
+                                                description = legacy.description,
+                                                deleted = false,
+                                                spans = legacy.spans,
+                                                attachments = legacy.attachments,
+                                                folderId = folderId,
+                                                content = content,
+                                            )
                                         }
                                     syncManager.syncLocalToRemoteOnly()
                                     result
@@ -583,8 +651,6 @@ private fun AmazingBottomBar(
             cupertino {
                 containerColor = MaterialTheme.colorScheme.surface
                 isTranslucent = true
-                selectedTint = MaterialTheme.colorScheme.primary
-                unselectedTint = MaterialTheme.colorScheme.onSurfaceVariant
             }
         },
     ) {

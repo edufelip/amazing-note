@@ -5,6 +5,7 @@ CREATE TABLE note(
   description_spans TEXT NOT NULL DEFAULT '[]',
   attachments TEXT NOT NULL DEFAULT '[]',
   blocks TEXT NOT NULL DEFAULT '[]',
+  content_json TEXT,
   deleted INTEGER NOT NULL,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
@@ -50,15 +51,15 @@ WHERE deleted = 0 AND folder_id IS NULL
 ORDER BY updated_at DESC, id DESC;
 
 insertNote:
-INSERT INTO note(title, description, description_spans, attachments, blocks, deleted, created_at, updated_at, local_dirty, local_updated_at, folder_id)
-VALUES (?, ?, ?, ?, ?, 0, ?, ?, 1, ?, ?);
+INSERT INTO note(title, description, description_spans, attachments, blocks, content_json, deleted, created_at, updated_at, local_dirty, local_updated_at, folder_id)
+VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, 1, ?, ?);
 
 insertWithId:
-INSERT INTO note(id, title, description, description_spans, attachments, blocks, deleted, created_at, updated_at, folder_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO note(id, title, description, description_spans, attachments, blocks, content_json, deleted, created_at, updated_at, folder_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updateNote:
-UPDATE note SET title = ?, description = ?, description_spans = ?, attachments = ?, blocks = ?, deleted = ?, updated_at = ?, local_dirty = 1, local_updated_at = ?, folder_id = ?
+UPDATE note SET title = ?, description = ?, description_spans = ?, attachments = ?, blocks = ?, content_json = ?, deleted = ?, updated_at = ?, local_dirty = 1, local_updated_at = ?, folder_id = ?
 WHERE id = ?;
 
 setDeleted:
@@ -80,7 +81,7 @@ clearDirtyById:
 UPDATE note SET local_dirty = 0 WHERE id = ?;
 
 updateFromRemote:
-UPDATE note SET title = ?, description = ?, description_spans = ?, attachments = ?, blocks = ?, deleted = ?, updated_at = ?, local_dirty = 0, folder_id = ? WHERE id = ?;
+UPDATE note SET title = ?, description = ?, description_spans = ?, attachments = ?, blocks = ?, content_json = ?, deleted = ?, updated_at = ?, local_dirty = 0, folder_id = ? WHERE id = ?;
 
 setNoteFolder:
 UPDATE note SET folder_id = ?, updated_at = ?, local_dirty = 1, local_updated_at = ? WHERE id = ?;

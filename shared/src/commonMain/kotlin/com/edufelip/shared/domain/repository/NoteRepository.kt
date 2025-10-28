@@ -1,10 +1,10 @@
 package com.edufelip.shared.domain.repository
 
-import com.edufelip.shared.model.Folder
-import com.edufelip.shared.model.Note
-import com.edufelip.shared.model.NoteAttachment
-import com.edufelip.shared.model.NoteBlock
-import com.edufelip.shared.model.NoteTextSpan
+import com.edufelip.shared.domain.model.Folder
+import com.edufelip.shared.domain.model.Note
+import com.edufelip.shared.domain.model.NoteAttachment
+import com.edufelip.shared.domain.model.NoteContent
+import com.edufelip.shared.domain.model.NoteTextSpan
 import kotlinx.coroutines.flow.Flow
 
 interface NoteRepository {
@@ -19,7 +19,7 @@ interface NoteRepository {
         folderId: Long? = null,
         spans: List<NoteTextSpan> = emptyList(),
         attachments: List<NoteAttachment> = emptyList(),
-        blocks: List<NoteBlock> = emptyList(),
+        content: NoteContent = NoteContent(),
     )
     suspend fun update(
         id: Int,
@@ -29,7 +29,7 @@ interface NoteRepository {
         folderId: Long? = null,
         spans: List<NoteTextSpan> = emptyList(),
         attachments: List<NoteAttachment> = emptyList(),
-        blocks: List<NoteBlock> = emptyList(),
+        content: NoteContent = NoteContent(),
     )
     suspend fun setDeleted(id: Int, deleted: Boolean)
     suspend fun delete(id: Int)

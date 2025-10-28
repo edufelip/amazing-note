@@ -59,8 +59,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.edufelip.shared.auth.GoogleSignInLauncher
-import com.edufelip.shared.presentation.AuthViewModel
+import com.edufelip.shared.data.auth.GoogleSignInLauncher
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_back
 import com.edufelip.shared.resources.cd_hide_password
@@ -79,6 +78,7 @@ import com.edufelip.shared.resources.login_title
 import com.edufelip.shared.resources.password
 import com.edufelip.shared.resources.reset_email_sent
 import com.edufelip.shared.resources.sign_up_success
+import com.edufelip.shared.ui.vm.AuthViewModel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource

@@ -14,12 +14,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.edufelip.shared.model.Note
-import com.edufelip.shared.presentation.AuthViewModel
-import com.edufelip.shared.sync.LocalNotesSyncManager
-import com.edufelip.shared.sync.SyncEvent
+import com.edufelip.shared.data.sync.LocalNotesSyncManager
+import com.edufelip.shared.data.sync.SyncEvent
+import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.ui.nav.components.NotesEmptyState
-import kotlinx.coroutines.flow.collect
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.vm.AuthViewModel
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,4 +90,59 @@ fun HomeScreen(
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(name = "Home")
+@DevicePreviews
+@Composable
+internal fun HomeScreenPreview(
+    @PreviewParameter(HomeScreenPreviewProvider::class) state: HomePreviewState,
+) {
+    DevicePreviewContainer(
+        isDarkTheme = state.isDarkTheme,
+        localized = state.localized,
+    ) {
+        HomeScreen(
+            notes = state.notes,
+            auth = null,
+            onOpenNote = {},
+            onAdd = {},
+            onDelete = {},
+        )
+    }
+}
+
+internal data class HomePreviewState(
+    val notes: List<Note>,
+    val isDarkTheme: Boolean = false,
+    val localized: Boolean = false,
+)
+
+internal object HomePreviewSamples {
+    private val sampleNotes = List(4) { index ->
+        Note(
+            id = index + 1,
+            title = "Pinned idea #${index + 1}",
+            description = "Sample note body to showcase how the list renders in previews.",
+            deleted = false,
+            createdAt = 1_700_000_000_000L + index * 3_600_000L,
+            updatedAt = 1_700_000_000_000L + index * 5_400_000L,
+            folderId = if (index % 2 == 0) 1L else 2L,
+        )
+    }
+
+    val empty = HomePreviewState(notes = emptyList())
+    val populated = HomePreviewState(notes = sampleNotes)
+    val dark = HomePreviewState(
+        notes = sampleNotes,
+        isDarkTheme = true,
+        localized = true,
+    )
+
+    val states: List<HomePreviewState> = listOf(empty, populated, dark)
+}
+
+internal expect class HomeScreenPreviewProvider() : PreviewParameterProvider<HomePreviewState> {
+    override val values: Sequence<HomePreviewState>
 }

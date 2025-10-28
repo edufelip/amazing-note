@@ -1,4 +1,4 @@
-package com.edufelip.shared.attachments
+package com.edufelip.shared.ui.attachments
 
 import androidx.compose.runtime.Composable
 import com.edufelip.shared.domain.model.NoteAttachment

@@ -44,9 +44,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.edufelip.shared.platform.PlatformFlags
-import com.edufelip.shared.model.Folder
-import com.edufelip.shared.model.Note
+import com.edufelip.shared.domain.model.Folder
+import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.delete_folder_message
 import com.edufelip.shared.resources.folders_empty_hint
@@ -61,7 +60,13 @@ import com.edufelip.shared.ui.nav.components.FolderLayout
 import com.edufelip.shared.ui.nav.components.FoldersGrid
 import com.edufelip.shared.ui.nav.components.FoldersHeader
 import com.edufelip.shared.ui.nav.components.FoldersList
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.util.platform.PlatformFlags
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -120,8 +125,11 @@ fun FoldersScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
-        contentWindowInsets = if (PlatformFlags.isIos) WindowInsets(0)
-            else WindowInsets.safeDrawing,
+        contentWindowInsets = if (PlatformFlags.isIos) {
+            WindowInsets(0)
+        } else {
+            WindowInsets.safeDrawing
+        },
         floatingActionButton = {
             if (!isEmpty) {
                 ExtendedFloatingActionButton(
@@ -402,5 +410,109 @@ private fun EmptyFoldersState(
     }
 }
 
-private fun Modifier.navigationBarsPaddingIfAndroid(): Modifier =
-    if (PlatformFlags.isIos) this else this.navigationBarsPadding()
+private fun Modifier.navigationBarsPaddingIfAndroid(): Modifier = if (PlatformFlags.isIos) this else this.navigationBarsPadding()
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(name = "Folders")
+@DevicePreviews
+@Composable
+internal fun FoldersScreenPreview(
+    @PreviewParameter(FoldersScreenPreviewProvider::class) state: FoldersPreviewState,
+) {
+    DevicePreviewContainer(
+        isDarkTheme = state.isDarkTheme,
+        localized = state.localized,
+    ) {
+        FoldersScreen(
+            folders = state.folders,
+            notes = state.notes,
+            onOpenFolder = {},
+            onCreateFolder = {},
+            onRenameFolder = { _, _ -> },
+            onDeleteFolder = {},
+        )
+    }
+}
+
+internal data class FoldersPreviewState(
+    val folders: List<Folder>,
+    val notes: List<Note>,
+    val isDarkTheme: Boolean = false,
+    val localized: Boolean = false,
+)
+
+internal object FoldersPreviewSamples {
+    private val sampleFolders = listOf(
+        Folder(id = 1, name = "Work", createdAt = 1_699_000_000_000, updatedAt = 1_699_100_000_000),
+        Folder(id = 2, name = "Personal", createdAt = 1_699_050_000_000, updatedAt = 1_699_150_000_000),
+        Folder(id = 3, name = "Reading List", createdAt = 1_699_060_000_000, updatedAt = 1_699_170_000_000),
+    )
+
+    private val sampleNotes = buildList {
+        addAll(
+            listOf(
+                Note(
+                    id = 11,
+                    title = "Project roadmap",
+                    description = "Outline the next milestones before Friday.",
+                    deleted = false,
+                    createdAt = 1_700_000_000_000,
+                    updatedAt = 1_700_010_000_000,
+                    folderId = 1,
+                ),
+                Note(
+                    id = 12,
+                    title = "Design review notes",
+                    description = "Summarize feedback from the last meeting.",
+                    deleted = false,
+                    createdAt = 1_700_020_000_000,
+                    updatedAt = 1_700_030_000_000,
+                    folderId = 1,
+                ),
+                Note(
+                    id = 21,
+                    title = "Groceries",
+                    description = "Vegetables, snacks, and coffee beans.",
+                    deleted = false,
+                    createdAt = 1_700_040_000_000,
+                    updatedAt = 1_700_050_000_000,
+                    folderId = 2,
+                ),
+            ),
+        )
+        add(
+            Note(
+                id = 31,
+                title = "Unread article",
+                description = "Revisit the Compose performance guide.",
+                deleted = false,
+                createdAt = 1_700_060_000_000,
+                updatedAt = 1_700_070_000_000,
+                folderId = null,
+            ),
+        )
+    }
+
+    val empty = FoldersPreviewState(
+        folders = emptyList(),
+        notes = emptyList(),
+    )
+
+    val populated = FoldersPreviewState(
+        folders = sampleFolders,
+        notes = sampleNotes,
+    )
+
+    val darkLocalized = FoldersPreviewState(
+        folders = sampleFolders,
+        notes = sampleNotes,
+        isDarkTheme = true,
+        localized = true,
+    )
+
+    val states: List<FoldersPreviewState> = listOf(empty, populated, darkLocalized)
+}
+
+internal expect class FoldersScreenPreviewProvider() : PreviewParameterProvider<FoldersPreviewState> {
+    override val values: Sequence<FoldersPreviewState>
+}

@@ -1,6 +1,6 @@
 package com.edufelip.shared.domain.usecase
 
-import com.edufelip.shared.auth.AuthUser
+import com.edufelip.shared.data.auth.AuthUser
 import com.edufelip.shared.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
 

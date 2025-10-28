@@ -14,7 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.edufelip.shared.model.Note
+import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.created_days_ago
 import com.edufelip.shared.resources.created_hours_ago
@@ -24,7 +24,7 @@ import com.edufelip.shared.resources.updated_days_ago
 import com.edufelip.shared.resources.updated_hours_ago
 import com.edufelip.shared.resources.updated_just_now
 import com.edufelip.shared.resources.updated_minutes_ago
-import com.edufelip.shared.util.nowEpochMs
+import com.edufelip.shared.ui.util.nowEpochMs
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

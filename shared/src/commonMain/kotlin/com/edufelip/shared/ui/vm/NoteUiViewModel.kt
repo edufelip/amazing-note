@@ -1,11 +1,11 @@
-package com.edufelip.shared.vm
+package com.edufelip.shared.ui.vm
 
-import com.edufelip.shared.domain.validation.NoteActionResult
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.NoteAttachment
-import com.edufelip.shared.domain.model.NoteBlock
+import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
+import com.edufelip.shared.domain.validation.NoteActionResult
 import kotlinx.coroutines.flow.Flow
 
 interface NoteUiViewModel {
@@ -22,7 +22,7 @@ interface NoteUiViewModel {
         spans: List<NoteTextSpan>,
         attachments: List<NoteAttachment>,
         folderId: Long?,
-        blocks: List<NoteBlock> = emptyList(),
+        content: NoteContent = NoteContent(),
     ): NoteActionResult
     suspend fun update(
         id: Int,
@@ -32,7 +32,7 @@ interface NoteUiViewModel {
         spans: List<NoteTextSpan>,
         attachments: List<NoteAttachment>,
         folderId: Long?,
-        blocks: List<NoteBlock> = emptyList(),
+        content: NoteContent = NoteContent(),
     ): NoteActionResult
     suspend fun setDeleted(id: Int, deleted: Boolean)
     suspend fun delete(id: Int)

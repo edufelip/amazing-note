@@ -1,13 +1,14 @@
-package com.edufelip.shared.cloud
+package com.edufelip.shared.data.cloud
 
 import com.edufelip.shared.domain.model.Note
+import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.attachmentsFromJson
-import com.edufelip.shared.domain.model.blocksFromJson
-import com.edufelip.shared.domain.model.blocksToJson
-import com.edufelip.shared.domain.model.ensureBlocks
+import com.edufelip.shared.domain.model.ensureContent
 import com.edufelip.shared.domain.model.spansFromJson
 import com.edufelip.shared.domain.model.toJson
-import com.edufelip.shared.domain.model.withLegacyFieldsFromBlocks
+import com.edufelip.shared.domain.model.withLegacyFieldsFromContent
+import com.edufelip.shared.domain.model.noteContentFromJson
+import com.edufelip.shared.domain.model.noteContentFromLegacyBlocksJson
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.DocumentSnapshot
@@ -36,21 +37,19 @@ interface CurrentUserProvider {
 fun provideCurrentUserProvider(): CurrentUserProvider = GitLiveCurrentUserProvider
 
 private object GitLiveCloudNotesDataSource : CloudNotesDataSource {
-    override fun observe(uid: String): Flow<List<Note>> =
-        notesCollection(uid)
-            .snapshots
-            .map { snapshot ->
-                snapshot.documents
-                    .mapNotNull { document -> document.toNoteOrNull() }
-                    .sortedBy { it.updatedAt }
-            }
+    override fun observe(uid: String): Flow<List<Note>> = notesCollection(uid)
+        .snapshots
+        .map { snapshot ->
+            snapshot.documents
+                .mapNotNull { document -> document.toNoteOrNull() }
+                .sortedBy { it.updatedAt }
+        }
 
-    override suspend fun getAll(uid: String): List<Note> =
-        notesCollection(uid)
-            .get()
-            .documents
-            .mapNotNull { it.toNoteOrNull() }
-            .sortedBy { it.updatedAt }
+    override suspend fun getAll(uid: String): List<Note> = notesCollection(uid)
+        .get()
+        .documents
+        .mapNotNull { it.toNoteOrNull() }
+        .sortedBy { it.updatedAt }
 
     override suspend fun upsert(uid: String, note: Note) {
         val data = note.toFirestoreData(useServerUpdatedAt = true)
@@ -73,11 +72,10 @@ private object GitLiveCloudNotesDataSource : CloudNotesDataSource {
     }
 }
 
-private fun notesCollection(uid: String) =
-    Firebase.firestore
-        .collection("users")
-        .document(uid)
-        .collection("notes")
+private fun notesCollection(uid: String) = Firebase.firestore
+    .collection("users")
+    .document(uid)
+    .collection("notes")
 
 private fun Note.toFirestoreData(useServerUpdatedAt: Boolean): Map<String, Any?> = buildMap {
     put("id", id)
@@ -85,7 +83,8 @@ private fun Note.toFirestoreData(useServerUpdatedAt: Boolean): Map<String, Any?>
     put("description", description)
     put("descriptionSpans", descriptionSpans.toJson())
     put("attachments", attachments.toJson())
-    put("blocks", blocks.blocksToJson())
+    put("contentJson", content.toJson())
+    put("blocks", "[]")
     put("deleted", deleted)
     put("folderId", folderId)
     put(
@@ -105,19 +104,25 @@ private fun DocumentSnapshot.toNoteOrNull(): Note? {
 
 private fun Map<String, Any?>.toNote(docId: String): Note? {
     val rawTitle = this["title"] as? String ?: return null
+    val description = this["description"] as? String ?: ""
+    val spans = spansFromJson(this["descriptionSpans"] as? String)
+    val attachments = attachmentsFromJson(this["attachments"] as? String)
+    val parsedContent = noteContentFromJson(this["contentJson"] as? String ?: this["content_json"] as? String)
+    val legacyContent = if (parsedContent.blocks.isNotEmpty()) parsedContent else noteContentFromLegacyBlocksJson(this["blocks"] as? String)
+    val ensuredContent = ensureContent(description, spans, attachments, legacyContent)
     val note = Note(
         id = (this["id"] as? Number)?.toInt() ?: docId.toIntOrNull() ?: -1,
         title = rawTitle,
-        description = this["description"] as? String ?: "",
-        descriptionSpans = spansFromJson(this["descriptionSpans"] as? String),
-        attachments = attachmentsFromJson(this["attachments"] as? String),
-        blocks = blocksFromJson(this["blocks"] as? String),
+        description = description,
+        descriptionSpans = spans,
+        attachments = attachments,
+        content = ensuredContent,
         deleted = (this["deleted"] as? Boolean) ?: false,
         createdAt = this["createdAt"].toMillis() ?: 0L,
         updatedAt = this["updatedAt"].toMillis() ?: 0L,
         folderId = (this["folderId"] as? Number)?.toLong(),
     )
-    return note.ensureBlocks().withLegacyFieldsFromBlocks()
+    return note.ensureContent().withLegacyFieldsFromContent()
 }
 
 private fun Any?.toMillis(): Long? = when (this) {

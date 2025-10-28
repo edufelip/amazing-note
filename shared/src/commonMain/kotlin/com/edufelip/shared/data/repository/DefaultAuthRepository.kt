@@ -1,7 +1,7 @@
-package com.edufelip.shared.data
+package com.edufelip.shared.data.repository
 
-import com.edufelip.shared.auth.AuthService
-import com.edufelip.shared.auth.AuthUser
+import com.edufelip.shared.data.auth.AuthService
+import com.edufelip.shared.data.auth.AuthUser
 import com.edufelip.shared.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
 
