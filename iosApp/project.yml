@@ -8,6 +8,13 @@ configs:
 settings:
   IPHONEOS_DEPLOYMENT_TARGET: 14.0
   SWIFT_VERSION: 5.0
+packages:
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    from: 12.4.0
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    from: 9.0.0
 targets:
   iosApp:
     type: application
@@ -17,9 +24,39 @@ targets:
       - path: iosApp
         excludes:
           - "**/*.plist"
+      - path: iosApp/GoogleService-Info.plist
+        type: file
+        buildPhase: resources
     settings:
       INFOPLIST_FILE: iosApp/Info.plist
       PRODUCT_BUNDLE_IDENTIFIER: com.edufelip.amazingnote.iosApp
+      FRAMEWORK_SEARCH_PATHS:
+        - "$(inherited)"
+        - "$(CONFIGURATION_BUILD_DIR)"
+      FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]:
+        - "$(inherited)"
+        - "$(CONFIGURATION_BUILD_DIR)"
+        - "$(SRCROOT)/../shared/build/bin/iosSimulatorArm64/debugFramework"
+      FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]:
+        - "$(inherited)"
+        - "$(CONFIGURATION_BUILD_DIR)"
+        - "$(SRCROOT)/../shared/build/bin/iosArm64/debugFramework"
+      EXCLUDED_ARCHS[sdk=iphonesimulator*]: x86_64
+      OTHER_LDFLAGS:
+        - "$(inherited)"
+        - "-framework"
+        - "Shared"
+    resources: []
+    dependencies:
+      - package: Firebase
+        product: FirebaseAuth
+      - package: Firebase
+        product: FirebaseFirestore
+      - package: Firebase
+        product: FirebaseStorage
+      - package: GoogleSignIn
+        product: GoogleSignIn
+      - sdk: libsqlite3.tbd
     scheme:
       testTargets: []
       gatherCoverageData: false
