@@ -7,7 +7,7 @@ import com.edufelip.shared.data.cloud.provideCurrentUserProvider
 import com.edufelip.shared.db.NoteDatabase
 import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.Note
-import com.edufelip.shared.domain.model.NoteContent
+import com.edufelip.shared.domain.model.TextBlock
 import com.edufelip.shared.domain.model.attachmentsFromJson
 import com.edufelip.shared.domain.model.ensureContent
 import com.edufelip.shared.domain.model.noteContentFromJson
@@ -15,7 +15,6 @@ import com.edufelip.shared.domain.model.noteContentFromLegacyBlocksJson
 import com.edufelip.shared.domain.model.spansFromJson
 import com.edufelip.shared.domain.model.toJson
 import com.edufelip.shared.domain.model.withLegacyFieldsFromContent
-import com.edufelip.shared.domain.model.TextBlock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow

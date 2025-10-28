@@ -150,8 +150,7 @@ fun noteContentFromLegacyBlocksJson(raw: String?): NoteContent {
     return NoteContent(blocks)
 }
 
-fun NoteContent.ensure(description: String, spans: List<NoteTextSpan>, attachments: List<NoteAttachment>): NoteContent =
-    if (blocks.isNotEmpty()) this else noteContentFromLegacy(description, spans, attachments)
+fun NoteContent.ensure(description: String, spans: List<NoteTextSpan>, attachments: List<NoteAttachment>): NoteContent = if (blocks.isNotEmpty()) this else noteContentFromLegacy(description, spans, attachments)
 
 fun ensureContent(
     description: String,
