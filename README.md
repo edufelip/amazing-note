@@ -140,6 +140,15 @@ Minimal CI steps you can copy into your pipeline:
   - `backStack.popToRoot()` – clear to root
   - Prefer these over direct `add/remove` to keep behavior consistent.
 
+## Shared UI Structure
+- Compose UI follows an atomic hierarchy under `shared/src/commonMain/kotlin/com/edufelip/shared/ui/components/`:
+  - `atoms/` for foundational controls (buttons, indicators, small visuals).
+  - `molecules/` for small reusable clusters (e.g., note rows, folder cards).
+  - `organisms/` for larger connected widgets, layouts, and empty states.
+- Feature-specific surfaces live in `shared/src/commonMain/kotlin/com/edufelip/shared/ui/features/<feature>/` with nested folders such as `screens/`, `components/`, and `dialogs/`.
+- Every reusable component and screen owns its own `@Preview`; platform-specific preview providers mirror the same feature structure under `shared/src/{androidMain,iosMain}/kotlin/com/edufelip/shared/ui/features/`.
+- When creating new UI, start with an atom or molecule in `ui/components`, compose them into an organism if needed, and keep feature wiring inside `ui/features/.../screens`.
+
 ## Android DI (Hilt + SQLDelight)
 
 Architecture (Clean): UI → ViewModel → UseCases → Repository → Data Source
