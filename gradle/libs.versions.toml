@@ -12,6 +12,7 @@ truth = "1.4.5"
 compose-bom = "2025.10.00"
 activity-compose = "1.11.0"
 compose-mpp = "1.9.1"
+uiTooling = "1.9.1"
 sqldelight = "2.1.0"
 firebase-bom = "34.4.0"
 google-services = "4.4.4"
@@ -23,6 +24,8 @@ kotlinx-serialization = "1.8.1"
 gitlive = "2.1.0"
 spotless = "8.0.0"
 cupertino-adaptive = "0.1.0-alpha04"
+firebase-auth-ktx = "23.2.0"
+firebase-common-ktx = "21.0.0"
 
 [libraries]
 
@@ -43,9 +46,10 @@ truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
 compose-ui = { group = "androidx.compose.ui", name = "ui" }
 compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
+androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "uiTooling" }
+androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "uiTooling" }
 
 sqldelight-runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sqldelight" }
 sqldelight-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqldelight" }
@@ -56,6 +60,8 @@ firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.r
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 firebase-storage = { module = "com.google.firebase:firebase-storage" }
+firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx", version.ref = "firebase-auth-ktx" }
+firebase-common-ktx = { module = "com.google.firebase:firebase-common-ktx", version.ref = "firebase-common-ktx" }
 
 gitlive-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "gitlive" }
 gitlive-auth = { module = "dev.gitlive:firebase-auth", version.ref = "gitlive" }
@@ -73,6 +79,9 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 cupertino-adaptive = { group = "io.github.alexzhirkevich", name = "cupertino-adaptive", version.ref = "cupertino-adaptive" }
 cupertino-icons-extended = { group = "io.github.alexzhirkevich", name = "cupertino-icons-extended", version.ref = "cupertino-adaptive" }
 
+[bundles]
+preview = ["androidx-ui-tooling-preview", "androidx-ui-tooling"]
+
 [plugins]
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 android-application = { id = "com.android.application", version.ref = "gradle-plugin" }
@@ -83,6 +92,8 @@ hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-mpp" }
+compose-compiler = { id = "org.jetbrains.compose.compiler", version.ref = "compose-mpp" }
+compose-hot-reload = { id = "org.jetbrains.compose.hot-reload", version.ref = "compose-mpp" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

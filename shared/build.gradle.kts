@@ -4,8 +4,8 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 plugins {
     id("com.android.library")
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.compose.multiplatform)
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.kotlin.serialization)
 }
@@ -30,7 +30,7 @@ kotlin {
         doLast {
             kotlin.targets.withType(KotlinNativeTarget::class.java).configureEach {
                 binaries.withType(Framework::class.java).configureEach {
-                    println("${target.name}:${buildType}:${outputFile.absolutePath}")
+                    println("${target.name}:$buildType:${outputFile.absolutePath}")
                 }
             }
         }
@@ -44,6 +44,7 @@ kotlin {
                 implementation(compose.foundation)
                 implementation(compose.material3)
                 implementation(compose.ui)
+                implementation(compose.components.uiToolingPreview)
                 implementation(compose.components.resources)
                 implementation(libs.coil3.compose)
                 implementation(libs.coil3.network.ktor3)
@@ -67,17 +68,19 @@ kotlin {
             dependencies {
                 implementation(libs.sqldelight.android.driver)
                 implementation(compose.preview)
-                implementation(compose.uiTooling)
+                implementation(libs.bundles.preview)
                 implementation(compose.components.resources)
                 implementation(libs.activity.compose)
                 implementation(libs.credentials.core)
                 implementation(libs.credentials.play.services)
                 implementation(libs.googleid)
                 implementation(libs.ktor.client.okhttp)
-                api(project.dependencies.platform(libs.firebase.bom))
+                implementation(platform("com.google.firebase:firebase-bom:${libs.versions.firebase.bom.get()}"))
                 implementation(libs.firebase.auth)
                 implementation(libs.firebase.firestore)
                 implementation(libs.firebase.storage)
+                implementation(libs.firebase.auth.ktx)
+                implementation(libs.firebase.common.ktx)
             }
         }
         iosMain {
