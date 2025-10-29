@@ -88,6 +88,7 @@ kotlin {
                 implementation(libs.sqldelight.native.driver)
                 implementation(libs.ktor.client.darwin)
                 implementation(compose.components.resources)
+                implementation(compose.components.uiToolingPreview)
             }
         }
     }

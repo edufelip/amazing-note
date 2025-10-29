@@ -1,6 +1,6 @@
 package com.edufelip.shared.ui.features.notes.screens
 
-import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.edufelip.shared.preview.PreviewParameterProvider
 
 internal actual class AddNoteScreenPreviewProvider actual constructor() : PreviewParameterProvider<AddNoteScreenPreviewState> {
     actual override val values: Sequence<AddNoteScreenPreviewState> = AddNotePreviewSamples.states.asSequence()

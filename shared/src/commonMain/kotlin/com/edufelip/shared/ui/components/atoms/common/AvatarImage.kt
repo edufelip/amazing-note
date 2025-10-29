@@ -8,5 +8,11 @@ import androidx.compose.ui.unit.Dp
 expect fun AvatarImage(
     photoUrl: String?,
     size: Dp,
-    modifier: Modifier = Modifier,
+    modifier: Modifier,
 )
+
+@Composable
+fun AvatarImage(
+    photoUrl: String?,
+    size: Dp,
+) = AvatarImage(photoUrl, size, Modifier)
