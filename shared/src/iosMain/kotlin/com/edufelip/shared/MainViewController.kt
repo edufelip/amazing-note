@@ -37,7 +37,7 @@ private class IosSettings : Settings {
 
 fun MainViewController(): UIViewController = createAmazingNoteViewController(
     initialRoute = AppRoutes.Notes,
-    showBottomBar = true,
+    showBottomBar = false,
 )
 
 fun makeNotesViewController(): UIViewController = createAmazingNoteViewController(

@@ -12,6 +12,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,6 +25,7 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -219,31 +221,16 @@ fun AmazingNoteApp(
             val content: @Composable (PaddingValues) -> Unit = { padding ->
                 val baseModifier = Modifier
                     .fillMaxSize()
+                    .consumeWindowInsets(padding)
                     .padding(
                         start = padding.calculateStartPadding(layoutDirection),
                         top = padding.calculateTopPadding(),
                         end = padding.calculateEndPadding(layoutDirection),
+                        bottom = if (PlatformFlags.isIos) 0.dp else bottomPadding,
                     )
-                val contentModifier = if (PlatformFlags.isIos) {
-                    baseModifier
-                        .padding(bottom = 0.dp)
-                        .windowInsetsPadding(
-                            WindowInsets.safeDrawing.only(
-                                WindowInsetsSides.Top + WindowInsetsSides.Horizontal,
-                            ),
-                        )
-                } else {
-                    baseModifier
-                        .padding(bottom = bottomPadding)
-                        .windowInsetsPadding(
-                            WindowInsets.safeDrawing.only(
-                                WindowInsetsSides.Top + WindowInsetsSides.Horizontal,
-                            ),
-                        )
-                }
 
                 AnimatedContent(
-                    modifier = contentModifier,
+                    modifier = baseModifier,
                     targetState = currentRoute,
                     transitionSpec = {
                         val duration = 250
@@ -491,72 +478,54 @@ fun AmazingNoteApp(
                 }
             }
 
-            if (PlatformFlags.isIos) {
-                Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+            ) {
+                if (PlatformFlags.isIos) {
                     Scaffold(
-                        contentWindowInsets = WindowInsets(0),
+                        containerColor = Color.Transparent,
+                        contentWindowInsets = WindowInsets.safeDrawing,
                         topBar = topBarComposable,
                     ) { padding ->
                         content(padding)
                     }
-                    if (bottomBarEnabled) {
-                        AnimatedVisibility(
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .padding(bottom = 12.dp)
-                                .fillMaxWidth()
-                                .zIndex(10f),
-                            visible = bottomBarVisible,
-                            enter = slideInVertically(
-                                initialOffsetY = { it },
-                                animationSpec = tween(durationMillis = 320),
-                            ) + fadeIn(animationSpec = tween(durationMillis = 320)),
-                            exit = slideOutVertically(
-                                targetOffsetY = { it },
-                                animationSpec = tween(durationMillis = 320),
-                            ) + fadeOut(animationSpec = tween(durationMillis = 320)),
-                        ) {
-                            AmazingBottomBar(
-                                current = currentRoute,
-                                onSelect = { route -> setRoot(route) },
-                                windowInsets = WindowInsets(0),
-                            )
-                        }
-                    }
-                }
-            } else {
-                Scaffold(
-                    contentWindowInsets = WindowInsets(0),
-                    topBar = topBarComposable,
-                    bottomBar = {
-                        if (bottomBarEnabled) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(min = bottomBarHeight)
-                                    .windowInsetsPadding(WindowInsets.navigationBars),
-                            ) {
-                                AnimatedVisibility(
-                                    visible = bottomBarVisible,
-                                    enter = slideInVertically(
-                                        initialOffsetY = { it },
-                                        animationSpec = tween(durationMillis = 320),
-                                    ) + fadeIn(animationSpec = tween(durationMillis = 320)),
-                                    exit = slideOutVertically(
-                                        targetOffsetY = { it },
-                                        animationSpec = tween(durationMillis = 320),
-                                    ) + fadeOut(animationSpec = tween(durationMillis = 320)),
+                } else {
+                    Scaffold(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentWindowInsets = WindowInsets.safeDrawing,
+                        topBar = topBarComposable,
+                        bottomBar = {
+                            if (bottomBarEnabled) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = bottomBarHeight)
+                                        .windowInsetsPadding(WindowInsets.navigationBars),
                                 ) {
-                                    AmazingBottomBar(
-                                        current = currentRoute,
-                                        onSelect = { route -> setRoot(route) },
-                                    )
+                                    AnimatedVisibility(
+                                        visible = bottomBarVisible,
+                                        enter = slideInVertically(
+                                            initialOffsetY = { it },
+                                            animationSpec = tween(durationMillis = 320),
+                                        ) + fadeIn(animationSpec = tween(durationMillis = 320)),
+                                        exit = slideOutVertically(
+                                            targetOffsetY = { it },
+                                            animationSpec = tween(durationMillis = 320),
+                                        ) + fadeOut(animationSpec = tween(durationMillis = 320)),
+                                    ) {
+                                        AmazingBottomBar(
+                                            current = currentRoute,
+                                            onSelect = { route -> setRoot(route) },
+                                        )
+                                    }
                                 }
                             }
-                        }
-                    },
-                ) { padding ->
-                    content(padding)
+                        },
+                    ) { padding ->
+                        content(padding)
+                    }
                 }
             }
         }
