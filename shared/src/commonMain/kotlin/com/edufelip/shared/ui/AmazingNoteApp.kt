@@ -483,49 +483,39 @@ fun AmazingNoteApp(
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
             ) {
-                if (PlatformFlags.isIos) {
-                    Scaffold(
-                        containerColor = Color.Transparent,
-                        contentWindowInsets = WindowInsets.safeDrawing,
-                        topBar = topBarComposable,
-                    ) { padding ->
-                        content(padding)
-                    }
-                } else {
-                    Scaffold(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        contentWindowInsets = WindowInsets.safeDrawing,
-                        topBar = topBarComposable,
-                        bottomBar = {
-                            if (bottomBarEnabled) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .heightIn(min = bottomBarHeight)
-                                        .windowInsetsPadding(WindowInsets.navigationBars),
+                Scaffold(
+                    containerColor = Color.Transparent,
+                    contentWindowInsets = WindowInsets.safeDrawing,
+                    topBar = topBarComposable,
+                    bottomBar = {
+                        if (bottomBarEnabled) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = bottomBarHeight)
+                                    .windowInsetsPadding(WindowInsets.navigationBars),
+                            ) {
+                                AnimatedVisibility(
+                                    visible = bottomBarVisible,
+                                    enter = slideInVertically(
+                                        initialOffsetY = { it },
+                                        animationSpec = tween(durationMillis = 320),
+                                    ) + fadeIn(animationSpec = tween(durationMillis = 320)),
+                                    exit = slideOutVertically(
+                                        targetOffsetY = { it },
+                                        animationSpec = tween(durationMillis = 320),
+                                    ) + fadeOut(animationSpec = tween(durationMillis = 320)),
                                 ) {
-                                    AnimatedVisibility(
-                                        visible = bottomBarVisible,
-                                        enter = slideInVertically(
-                                            initialOffsetY = { it },
-                                            animationSpec = tween(durationMillis = 320),
-                                        ) + fadeIn(animationSpec = tween(durationMillis = 320)),
-                                        exit = slideOutVertically(
-                                            targetOffsetY = { it },
-                                            animationSpec = tween(durationMillis = 320),
-                                        ) + fadeOut(animationSpec = tween(durationMillis = 320)),
-                                    ) {
-                                        AmazingBottomBar(
-                                            current = currentRoute,
-                                            onSelect = { route -> setRoot(route) },
-                                        )
-                                    }
+                                    AmazingBottomBar(
+                                        current = currentRoute,
+                                        onSelect = { route -> setRoot(route) },
+                                    )
                                 }
                             }
-                        },
-                    ) { padding ->
-                        content(padding)
-                    }
+                        }
+                    },
+                ) { padding ->
+                    content(padding)
                 }
             }
         }

@@ -15,6 +15,7 @@ import com.edufelip.shared.ui.settings.Settings
 import com.edufelip.shared.ui.vm.DefaultNoteUiViewModel
 import platform.Foundation.NSUserDefaults
 import platform.UIKit.UIColor
+import platform.UIKit.systemBackgroundColor
 import platform.UIKit.UIViewController
 
 private class IosSettings : Settings {
@@ -79,6 +80,6 @@ fun createAmazingNoteViewController(
     }
     return controller.apply {
         view.insetsLayoutMarginsFromSafeArea = false
-        view.backgroundColor = UIColor.clearColor
+        view.backgroundColor = UIColor.systemBackgroundColor()
     }
 }
