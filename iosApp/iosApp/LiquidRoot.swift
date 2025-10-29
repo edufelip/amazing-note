@@ -7,23 +7,18 @@ struct LiquidRoot: View {
     var body: some View {
         TabView(selection: $selection) {
             ComposeHost { MainViewControllerKt.makeNotesViewController() }
-                .ignoresSafeArea(.all)
-                .ignoresSafeArea(.keyboard)
                 .tabItem { Label("Notes", systemImage: "note.text") }
                 .tag(Tab.notes)
 
             ComposeHost { MainViewControllerKt.makeFoldersViewController() }
-                .ignoresSafeArea(.all)
-                .ignoresSafeArea(.keyboard)
                 .tabItem { Label("Folders", systemImage: "folder") }
                 .tag(Tab.folders)
 
             ComposeHost { MainViewControllerKt.makeSettingsViewController() }
-                .ignoresSafeArea(.all)
-                .ignoresSafeArea(.keyboard)
                 .tabItem { Label("Settings", systemImage: "gearshape") }
                 .tag(Tab.settings)
         }
+        .ignoresSafeArea(.all, edges: .all)
     }
 
     private enum Tab: Hashable {

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -22,11 +22,13 @@
 /* Begin PBXFileReference section */
 		1285E8A7B7E7359EA11B9591 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		245434685F34A9A15B1AC406 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
-		86038AE1032E284E79B32AD6 /* iosApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = iosApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		86038AE1032E284E79B32AD6 /* iosApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iosApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B6C1F485E0CF8BB70C9DDD2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A55143988C4C8F291BE72E9A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		BDC2B4ED6760D21408C91A4A /* LiquidRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidRoot.swift; sourceTree = "<group>"; };
 		C678D2A4430FF615DBC7217B /* AppMain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMain.swift; sourceTree = "<group>"; };
+		FB54EE8E2EB2691B007A2F0E /* Shared.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Shared.framework; sourceTree = "<group>"; };
+		FB54EE912EB2696A007A2F0E /* Shared.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Shared.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +63,7 @@
 		3666012298E772D226418813 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				FB54EE8F2EB2691B007A2F0E /* iphonesimulator */,
 				245434685F34A9A15B1AC406 /* libsqlite3.tbd */,
 			);
 			name = Frameworks;
@@ -69,6 +72,7 @@
 		38B69C3F79CD97858CF7B609 = {
 			isa = PBXGroup;
 			children = (
+				FB54EE922EB2696A007A2F0E /* iphonesimulator */,
 				1DB4B685CAEE8BEFEBBAEF94 /* iosApp */,
 				3666012298E772D226418813 /* Frameworks */,
 				94C98B8B3A2BFC1966447269 /* Products */,
@@ -83,6 +87,24 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		FB54EE8F2EB2691B007A2F0E /* iphonesimulator */ = {
+			isa = PBXGroup;
+			children = (
+				FB54EE8E2EB2691B007A2F0E /* Shared.framework */,
+			);
+			name = iphonesimulator;
+			path = "../shared/build/xcode-frameworks/Debug/iphonesimulator";
+			sourceTree = "<group>";
+		};
+		FB54EE922EB2696A007A2F0E /* iphonesimulator */ = {
+			isa = PBXGroup;
+			children = (
+				FB54EE912EB2696A007A2F0E /* Shared.framework */,
+			);
+			name = iphonesimulator;
+			path = "../shared/build/xcode-frameworks/Debug/iphonesimulator";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -90,6 +112,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 29DCA9F0B3A40325067EB163 /* Build configuration list for PBXNativeTarget "iosApp" */;
 			buildPhases = (
+				FB54EE932EB26976007A2F0E /* ShellScript */,
 				297B59D9CE634556D6007C40 /* Sources */,
 				1623B02D10928C8101C1F806 /* Resources */,
 				EF8A6E9BFD470986D9D5C9B5 /* Frameworks */,
@@ -132,7 +155,6 @@
 				7C4F1707FE80007C7DCEAE3C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				DF1BCD5B98717A06C1B5AE17 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -151,6 +173,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		FB54EE932EB26976007A2F0E /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = " cd \"$SRCROOT/..\"\n  export JAVA_HOME=\"/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home\"\n  ./gradlew :shared:embedAndSignAppleFrameworkForXcode \\\n    -Pcompose.ios.resources.archs=\"$ARCHS\" \\\n    -Pcompose.ios.resources.platform=\"$PLATFORM_NAME\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		297B59D9CE634556D6007C40 /* Sources */ = {
@@ -291,21 +333,20 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = L4N9Z3Z82V;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(CONFIGURATION_BUILD_DIR)",
-				);
-				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
-					"$(inherited)",
-					"$(CONFIGURATION_BUILD_DIR)",
-					"$(SRCROOT)/../shared/build/bin/iosArm64/debugFramework",
-				);
-				"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = (
-					"$(inherited)",
-					"$(CONFIGURATION_BUILD_DIR)",
-					"$(SRCROOT)/../shared/build/bin/iosSimulatorArm64/debugFramework",
-				);
+				FRAMEWORK_SEARCH_PATHS = "\" $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)\"";
+				"FRAMEWORK_SEARCH_PATHS[arch=*]" = " $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)\n";
+			"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
+				"$(inherited)",
+				"$(CONFIGURATION_BUILD_DIR)",
+				"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
+			);
+			"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = (
+				"$(inherited)",
+				"$(CONFIGURATION_BUILD_DIR)",
+				"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
+			);
 				INFOPLIST_FILE = iosApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -328,21 +369,20 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = L4N9Z3Z82V;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(CONFIGURATION_BUILD_DIR)",
-				);
-				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
-					"$(inherited)",
-					"$(CONFIGURATION_BUILD_DIR)",
-					"$(SRCROOT)/../shared/build/bin/iosArm64/debugFramework",
-				);
-				"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = (
-					"$(inherited)",
-					"$(CONFIGURATION_BUILD_DIR)",
-					"$(SRCROOT)/../shared/build/bin/iosSimulatorArm64/debugFramework",
-				);
+				FRAMEWORK_SEARCH_PATHS = "\" $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)\"";
+				"FRAMEWORK_SEARCH_PATHS[arch=*]" = " $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)\n";
+			"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
+				"$(inherited)",
+				"$(CONFIGURATION_BUILD_DIR)",
+				"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
+			);
+			"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = (
+				"$(inherited)",
+				"$(CONFIGURATION_BUILD_DIR)",
+				"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
+			);
 				INFOPLIST_FILE = iosApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (

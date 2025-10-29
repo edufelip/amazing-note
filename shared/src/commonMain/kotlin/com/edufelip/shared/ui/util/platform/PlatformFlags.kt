@@ -8,4 +8,5 @@ expect object PlatformFlags {
     val cupertinoLookEnabled: Boolean
     val isIosPlatform: Boolean
     val isIos: Boolean
+    val supportsLiquidGlass: Boolean
 }

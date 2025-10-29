@@ -45,6 +45,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Note
+import com.edufelip.shared.preview.Preview
+import com.edufelip.shared.preview.PreviewParameter
+import com.edufelip.shared.preview.PreviewParameterProvider
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
 import com.edufelip.shared.resources.created
@@ -64,9 +67,6 @@ import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.settings.LocalAppPreferences
 import com.edufelip.shared.ui.util.platform.PlatformFlags
 import org.jetbrains.compose.resources.stringResource
-import com.edufelip.shared.preview.Preview
-import com.edufelip.shared.preview.PreviewParameter
-import com.edufelip.shared.preview.PreviewParameterProvider
 
 private enum class Bucket { TODAY, THIS_WEEK, THIS_MONTH, EARLIER }
 
@@ -105,20 +105,21 @@ fun ListScreen(
             contentWindowInsets = if (PlatformFlags.isIos) WindowInsets(0) else ScaffoldDefaults.contentWindowInsets,
             topBar = if (showTopAppBar) {
                 (
-                    {
-                        LargeTopAppBar(
-                            title = {
-                                val resolvedTitle = title ?: stringResource(Res.string.your_notes)
-                                Text(text = resolvedTitle)
-                            },
-                            colors = TopAppBarDefaults.largeTopAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                                titleContentColor = MaterialTheme.colorScheme.onSurface,
-                            ),
+                        {
+                            LargeTopAppBar(
+                                title = {
+                                    val resolvedTitle =
+                                        title ?: stringResource(Res.string.your_notes)
+                                    Text(text = resolvedTitle)
+                                },
+                                colors = TopAppBarDefaults.largeTopAppBarColors(
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                                ),
+                            )
+                        }
                         )
-                    }
-                    )
             } else {
                 ({})
             },

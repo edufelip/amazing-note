@@ -54,6 +54,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
@@ -232,7 +233,13 @@ fun AmazingNoteApp(
                             ),
                         )
                 } else {
-                    baseModifier.padding(bottom = bottomPadding)
+                    baseModifier
+                        .padding(bottom = bottomPadding)
+                        .windowInsetsPadding(
+                            WindowInsets.safeDrawing.only(
+                                WindowInsetsSides.Top + WindowInsetsSides.Horizontal,
+                            ),
+                        )
                 }
 
                 AnimatedContent(
@@ -567,11 +574,12 @@ private data class BottomNavItem(
 @Composable
 private fun AmazingTopBar(user: AuthUser?) {
     val name = user?.displayName?.takeIf { it.isNotBlank() }
-        ?: user?.email?.takeIf { !it.isNullOrBlank() }
+        ?: user?.email?.takeIf { it.isNotBlank() }
         ?: stringResource(Res.string.guest)
+    val isIos = PlatformFlags.isIos
     AdaptiveTopAppBar(
         modifier = Modifier.fillMaxWidth(),
-        windowInsets = WindowInsets.statusBars,
+        windowInsets = if (isIos) WindowInsets(0) else WindowInsets.statusBars,
         navigationIcon = {
             Row(
                 modifier = Modifier.padding(start = 20.dp, end = 8.dp),
@@ -596,7 +604,7 @@ private fun AmazingTopBar(user: AuthUser?) {
     ) {
         material {
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface,
+                containerColor = if (isIos) Color.Transparent else MaterialTheme.colorScheme.surface,
                 titleContentColor = MaterialTheme.colorScheme.onSurface,
                 navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                 actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -604,12 +612,12 @@ private fun AmazingTopBar(user: AuthUser?) {
         }
         cupertino {
             colors = CupertinoTopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface,
+                containerColor = Color.Transparent,
                 titleContentColor = MaterialTheme.colorScheme.onSurface,
                 navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                 actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            isTranslucent = false
+            isTranslucent = true
         }
     }
 }
