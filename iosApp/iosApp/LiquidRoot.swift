@@ -5,20 +5,24 @@ struct LiquidRoot: View {
     @State private var selection: Tab = .notes
 
     var body: some View {
-        TabView(selection: $selection) {
-            ComposeHost { MainViewControllerKt.makeNotesViewController() }
-                .tabItem { Label("Notes", systemImage: "note.text") }
-                .tag(Tab.notes)
+        ZStack {
+            Color(uiColor: .systemBackground)
+                .ignoresSafeArea()
 
-            ComposeHost { MainViewControllerKt.makeFoldersViewController() }
-                .tabItem { Label("Folders", systemImage: "folder") }
-                .tag(Tab.folders)
+            TabView(selection: $selection) {
+                ComposeHost { MainViewControllerKt.makeNotesViewController() }
+                    .tabItem { Label("Notes", systemImage: "note.text") }
+                    .tag(Tab.notes)
 
-            ComposeHost { MainViewControllerKt.makeSettingsViewController() }
-                .tabItem { Label("Settings", systemImage: "gearshape") }
-                .tag(Tab.settings)
+                ComposeHost { MainViewControllerKt.makeFoldersViewController() }
+                    .tabItem { Label("Folders", systemImage: "folder") }
+                    .tag(Tab.folders)
+
+                ComposeHost { MainViewControllerKt.makeSettingsViewController() }
+                    .tabItem { Label("Settings", systemImage: "gearshape") }
+                    .tag(Tab.settings)
+            }
         }
-        .ignoresSafeArea(.all, edges: .all)
     }
 
     private enum Tab: Hashable {

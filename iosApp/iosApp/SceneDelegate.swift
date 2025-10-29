@@ -14,7 +14,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         let backgroundColor = UIColor.systemBackground
 
-        let host = UIHostingController(rootView: LiquidRoot().ignoresSafeArea(.all))
+        let host = UIHostingController(rootView: LiquidRoot())
         host.view.isOpaque = true
         host.view.backgroundColor = backgroundColor
 
