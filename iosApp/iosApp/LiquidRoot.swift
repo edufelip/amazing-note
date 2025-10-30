@@ -6,9 +6,7 @@ struct LiquidRoot: View {
 
     var body: some View {
         ZStack {
-            Color(uiColor: .systemBackground)
-                .ignoresSafeArea()
-
+            Color(uiColor: .systemBackground).ignoresSafeArea()
             TabView(selection: $selection) {
                 ComposeHost { MainViewControllerKt.makeNotesViewController() }
                     .tabItem { Label("Notes", systemImage: "note.text") }
@@ -22,7 +20,7 @@ struct LiquidRoot: View {
                     .tabItem { Label("Settings", systemImage: "gearshape") }
                     .tag(Tab.settings)
             }
-        }
+        }.ignoresSafeArea(.all, edges: .all)
     }
 
     private enum Tab: Hashable {

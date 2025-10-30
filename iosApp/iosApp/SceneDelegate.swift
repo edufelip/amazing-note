@@ -11,19 +11,15 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         options connectionOptions: UIScene.ConnectionOptions
     ) {
         guard let windowScene = scene as? UIWindowScene else { return }
-
-        let backgroundColor = UIColor.systemBackground
-
-        let host = UIHostingController(rootView: LiquidRoot())
+        let bg = UIColor.systemBackground
+        let host = UIHostingController(rootView: LiquidRoot()) // no need to force ignoresSafeArea here
         host.view.isOpaque = true
-        host.view.backgroundColor = backgroundColor
-
+        host.view.backgroundColor = bg
         let window = UIWindow(windowScene: windowScene)
         window.isOpaque = true
-        window.backgroundColor = backgroundColor
+        window.backgroundColor = bg
         window.rootViewController = host
-        window.makeKeyAndVisible()
-
         self.window = window
+        window.makeKeyAndVisible()
     }
 }

@@ -80,6 +80,6 @@ fun createAmazingNoteViewController(
     }
     return controller.apply {
         view.insetsLayoutMarginsFromSafeArea = false
-        view.backgroundColor = UIColor.systemBackgroundColor
+        view.backgroundColor = UIColor.systemBackgroundColor()
     }
 }
