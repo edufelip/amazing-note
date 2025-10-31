@@ -5,33 +5,26 @@ struct LiquidRoot: View {
     @State private var selection: Tab = .notes
 
     var body: some View {
-        ZStack {
-            Color(uiColor: .systemBackground).ignoresSafeArea()
-            TabView(selection: $selection) {
-                ComposeHost { MainViewControllerKt.makeNotesViewController() }
-                .ignoresSafeArea(.container, edges: .bottom)  // bottom only
-                .tabItem { Label("Notes", systemImage: "note.text") }
-                .tag(Tab.notes)
+        TabView(selection: $selection) {
+            ComposeHost { MainViewControllerKt.makeNotesViewController() }
+            .ignoresSafeArea(edges: .vertical)
+            .tabItem { Label("Notes", systemImage: "note.text") }
+            .tag(Tab.notes)
 
-                ComposeHost { MainViewControllerKt.makeFoldersViewController() }
-                .ignoresSafeArea(.container, edges: .bottom)  // bottom only
-                .tabItem { Label("Folders", systemImage: "folder") }
-                .tag(Tab.folders)
+            ComposeHost { MainViewControllerKt.makeFoldersViewController() }
+            .ignoresSafeArea(edges: .vertical)
+            .tabItem { Label("Folders", systemImage: "folder") }
+            .tag(Tab.folders)
 
-                ComposeHost { MainViewControllerKt.makeSettingsViewController() }
-                .ignoresSafeArea(.container, edges: .bottom)  // bottom only
-                .tabItem { Label("Settings", systemImage: "gearshape") }
-                .tag(Tab.settings)
-            }
-            .background(AppColors.app.ignoresSafeArea(edges: .top))
-            .toolbarBackground(.hidden, for: .tabBar)
+            ComposeHost { MainViewControllerKt.makeSettingsViewController() }
+            .ignoresSafeArea(edges: .vertical)
+            .tabItem { Label("Settings", systemImage: "gearshape") }
+            .tag(Tab.settings)
         }
     }
 
     private enum Tab: Hashable {
-        case notes
-        case folders
-        case settings
+        case notes, folders, settings
     }
 }
 
@@ -42,6 +35,5 @@ private struct ComposeHost: UIViewControllerRepresentable {
         controllerFactory()
     }
 
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-    }
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }

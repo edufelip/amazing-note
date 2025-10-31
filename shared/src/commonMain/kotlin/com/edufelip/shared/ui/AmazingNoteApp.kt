@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -26,9 +27,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Description
@@ -216,12 +219,29 @@ fun AmazingNoteApp(
             }
 
             val content: @Composable (PaddingValues) -> Unit = { padding ->
-                val baseModifier = Modifier.fillMaxSize().consumeWindowInsets(padding).padding(
-                        start = padding.calculateStartPadding(layoutDirection),
-                        top = padding.calculateTopPadding(),
-                        end = padding.calculateEndPadding(layoutDirection),
-                        bottom = if (PlatformFlags.isIos) 0.dp else bottomPadding,
-                    )
+                val baseModifier =
+                    Modifier
+                        .fillMaxSize()
+                        .consumeWindowInsets(padding)
+                        .padding(
+                            start = padding.calculateStartPadding(layoutDirection),
+                            top = padding.calculateTopPadding(),
+                            end = padding.calculateEndPadding(layoutDirection),
+                            bottom = if (PlatformFlags.isIos) 0.dp else bottomPadding,
+                        )
+                        .then(
+                            if (PlatformFlags.isIos)
+                                Modifier.windowInsetsPadding(
+                                    WindowInsets.safeDrawing.only(
+                                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+                                    )
+                                )
+                            else Modifier
+                        )
+                        .then(
+                            if (PlatformFlags.isIos && !topBarVisible) Modifier.statusBarsPadding() else Modifier
+                        )
+
 
                 AnimatedContent(
                     modifier = baseModifier,
@@ -507,16 +527,20 @@ fun AmazingNoteApp(
             }
 
             Box(
-                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
             ) {
                 Scaffold(
                     containerColor = Color.Transparent,
-                    contentWindowInsets = WindowInsets.safeDrawing,
+                    contentWindowInsets = if (PlatformFlags.isIos) WindowInsets(0) else WindowInsets.safeDrawing,
                     topBar = topBarComposable,
                     bottomBar = {
                         if (bottomBarEnabled) {
                             Box(
-                                modifier = Modifier.fillMaxWidth().heightIn(min = bottomBarHeight)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = bottomBarHeight)
                                     .windowInsetsPadding(WindowInsets.navigationBars),
                             ) {
                                 AnimatedVisibility(
@@ -560,8 +584,13 @@ private fun AmazingTopBar(user: AuthUser?) {
         user?.displayName?.takeIf { it.isNotBlank() } ?: user?.email?.takeIf { it.isNotBlank() }
         ?: stringResource(Res.string.guest)
     val isIos = PlatformFlags.isIos
+
+    val topBarModifier = Modifier
+        .fillMaxWidth()
+        .then(if (isIos) Modifier.statusBarsPadding() else Modifier)
+
     AdaptiveTopAppBar(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = topBarModifier,
         windowInsets = if (isIos) WindowInsets(0) else WindowInsets.statusBars,
         navigationIcon = {
             Row(
