@@ -35,7 +35,10 @@ fun PrivacyScreen(
                     title = { androidx.compose.material3.Text(text = stringResource(Res.string.privacy_policy)) },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = null
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(

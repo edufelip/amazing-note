@@ -31,13 +31,12 @@ class MainActivity : ComponentActivity() {
 
         Firebase.initialize(applicationContext)
 
-        enableEdgeToEdge()
-
         val appVersion = runCatching {
             packageManager.getPackageInfo(packageName, 0).versionName ?: "0.0.0"
         }.getOrElse { "0.0.0" }
 
         setContent {
+            enableEdgeToEdge()
             AmazingNoteApp(
                 viewModel = vm,
                 authService = authService,

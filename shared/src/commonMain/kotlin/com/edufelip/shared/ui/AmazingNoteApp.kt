@@ -18,16 +18,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBars
@@ -60,7 +58,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.request.crossfade
@@ -219,10 +216,7 @@ fun AmazingNoteApp(
             }
 
             val content: @Composable (PaddingValues) -> Unit = { padding ->
-                val baseModifier = Modifier
-                    .fillMaxSize()
-                    .consumeWindowInsets(padding)
-                    .padding(
+                val baseModifier = Modifier.fillMaxSize().consumeWindowInsets(padding).padding(
                         start = padding.calculateStartPadding(layoutDirection),
                         top = padding.calculateTopPadding(),
                         end = padding.calculateEndPadding(layoutDirection),
@@ -236,26 +230,30 @@ fun AmazingNoteApp(
                         val duration = 250
                         when {
                             initialState is AppRoutes.NoteDetail || targetState is AppRoutes.NoteDetail -> {
-                                slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith
-                                    slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
+                                slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith slideOutHorizontally(
+                                    animationSpec = tween(duration)
+                                ) { -it / 3 }
                             }
+
                             initialState is AppRoutes.FolderDetail || targetState is AppRoutes.FolderDetail -> {
-                                slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith
-                                    slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
+                                slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith slideOutHorizontally(
+                                    animationSpec = tween(duration)
+                                ) { -it / 3 }
                             }
+
                             initialState in tabs && targetState in tabs -> {
                                 val fadeDuration = 220
-                                fadeIn(animationSpec = tween(fadeDuration)) togetherWith
-                                    fadeOut(animationSpec = tween(fadeDuration))
+                                fadeIn(animationSpec = tween(fadeDuration)) togetherWith fadeOut(
+                                    animationSpec = tween(fadeDuration)
+                                )
                             }
-                            initialState is AppRoutes.Login ||
-                                targetState is AppRoutes.Login ||
-                                initialState is AppRoutes.SignUp ||
-                                targetState is AppRoutes.SignUp ||
-                                initialState is AppRoutes.Trash ||
-                                targetState is AppRoutes.Trash -> {
-                                fadeIn(animationSpec = tween(duration)) togetherWith fadeOut(animationSpec = tween(duration))
+
+                            initialState is AppRoutes.Login || targetState is AppRoutes.Login || initialState is AppRoutes.SignUp || targetState is AppRoutes.SignUp || initialState is AppRoutes.Trash || targetState is AppRoutes.Trash -> {
+                                fadeIn(animationSpec = tween(duration)) togetherWith fadeOut(
+                                    animationSpec = tween(duration)
+                                )
                             }
+
                             else -> EnterTransition.None togetherWith ExitTransition.None
                         }
                     },
@@ -269,9 +267,19 @@ fun AmazingNoteApp(
                                     notes = notes,
                                     auth = authViewModel,
                                     onOpenNote = { note ->
-                                        backStack.navigate(AppRoutes.NoteDetail(note.id, note.folderId))
+                                        backStack.navigate(
+                                            AppRoutes.NoteDetail(
+                                                note.id, note.folderId
+                                            )
+                                        )
                                     },
-                                    onAdd = { backStack.navigate(AppRoutes.NoteDetail(null, null)) },
+                                    onAdd = {
+                                        backStack.navigate(
+                                            AppRoutes.NoteDetail(
+                                                null, null
+                                            )
+                                        )
+                                    },
                                     onDelete = { note ->
                                         scope.launch {
                                             viewModel.setDeleted(note.id, true)
@@ -342,12 +350,14 @@ fun AmazingNoteApp(
 
                         is AppRoutes.FolderDetail -> {
                             val folderId = state.id
-                            val folderTitle = folderId?.let { id -> folders.firstOrNull { it.id == id }?.name }
-                                ?: stringResource(Res.string.unassigned_notes)
+                            val folderTitle =
+                                folderId?.let { id -> folders.firstOrNull { it.id == id }?.name }
+                                    ?: stringResource(Res.string.unassigned_notes)
                             val folderNotes by if (folderId == null) {
                                 viewModel.notesWithoutFolder.collectAsState(initial = unassignedNotes)
                             } else {
-                                viewModel.notesByFolder(folderId).collectAsState(initial = emptyList())
+                                viewModel.notesByFolder(folderId)
+                                    .collectAsState(initial = emptyList())
                             }
                             Box(
                                 modifier = Modifier.fillMaxSize(),
@@ -356,8 +366,20 @@ fun AmazingNoteApp(
                                     title = folderTitle,
                                     notes = folderNotes,
                                     onBack = { backStack.goBack() },
-                                    onOpenNote = { note -> backStack.navigate(AppRoutes.NoteDetail(note.id, note.folderId)) },
-                                    onAddNote = { backStack.navigate(AppRoutes.NoteDetail(null, folderId)) },
+                                    onOpenNote = { note ->
+                                        backStack.navigate(
+                                            AppRoutes.NoteDetail(
+                                                note.id, note.folderId
+                                            )
+                                        )
+                                    },
+                                    onAddNote = {
+                                        backStack.navigate(
+                                            AppRoutes.NoteDetail(
+                                                null, folderId
+                                            )
+                                        )
+                                    },
                                     onDeleteNote = { note ->
                                         scope.launch {
                                             viewModel.setDeleted(note.id, true)
@@ -365,7 +387,13 @@ fun AmazingNoteApp(
                                         }
                                     },
                                     onRenameFolder = folderId?.let { id ->
-                                        { newName -> scope.launch { viewModel.renameFolder(id, newName) } }
+                                        { newName ->
+                                            scope.launch {
+                                                viewModel.renameFolder(
+                                                    id, newName
+                                                )
+                                            }
+                                        }
                                     },
                                     onDeleteFolder = folderId?.let { id ->
                                         {
@@ -382,7 +410,8 @@ fun AmazingNoteApp(
 
                         is AppRoutes.NoteDetail -> {
                             val editing = state.id?.let { id ->
-                                notes.firstOrNull { it.id == id } ?: trash.firstOrNull { it.id == id }
+                                notes.firstOrNull { it.id == id }
+                                    ?: trash.firstOrNull { it.id == id }
                             }
                             val initialFolderId = editing?.folderId ?: state.folderId
                             NoteDetailScreen(
@@ -393,28 +422,27 @@ fun AmazingNoteApp(
                                 onBack = { backStack.goBack() },
                                 saveAndValidate = { noteId, title, content, folderId ->
                                     val legacy = content.toLegacyContent()
-                                    val result =
-                                        if (noteId == null) {
-                                            viewModel.insert(
-                                                title = title,
-                                                description = legacy.description,
-                                                spans = legacy.spans,
-                                                attachments = legacy.attachments,
-                                                folderId = folderId,
-                                                content = content,
-                                            )
-                                        } else {
-                                            viewModel.update(
-                                                id = noteId,
-                                                title = title,
-                                                description = legacy.description,
-                                                deleted = false,
-                                                spans = legacy.spans,
-                                                attachments = legacy.attachments,
-                                                folderId = folderId,
-                                                content = content,
-                                            )
-                                        }
+                                    val result = if (noteId == null) {
+                                        viewModel.insert(
+                                            title = title,
+                                            description = legacy.description,
+                                            spans = legacy.spans,
+                                            attachments = legacy.attachments,
+                                            folderId = folderId,
+                                            content = content,
+                                        )
+                                    } else {
+                                        viewModel.update(
+                                            id = noteId,
+                                            title = title,
+                                            description = legacy.description,
+                                            deleted = false,
+                                            spans = legacy.spans,
+                                            attachments = legacy.attachments,
+                                            folderId = folderId,
+                                            content = content,
+                                        )
+                                    }
                                     syncManager.syncLocalToRemoteOnly()
                                     result
                                 },
@@ -479,9 +507,7 @@ fun AmazingNoteApp(
             }
 
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
+                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
             ) {
                 Scaffold(
                     containerColor = Color.Transparent,
@@ -490,9 +516,7 @@ fun AmazingNoteApp(
                     bottomBar = {
                         if (bottomBarEnabled) {
                             Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(min = bottomBarHeight)
+                                modifier = Modifier.fillMaxWidth().heightIn(min = bottomBarHeight)
                                     .windowInsetsPadding(WindowInsets.navigationBars),
                             ) {
                                 AnimatedVisibility(
@@ -532,8 +556,8 @@ private data class BottomNavItem(
 @OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 private fun AmazingTopBar(user: AuthUser?) {
-    val name = user?.displayName?.takeIf { it.isNotBlank() }
-        ?: user?.email?.takeIf { it.isNotBlank() }
+    val name =
+        user?.displayName?.takeIf { it.isNotBlank() } ?: user?.email?.takeIf { it.isNotBlank() }
         ?: stringResource(Res.string.guest)
     val isIos = PlatformFlags.isIos
     AdaptiveTopAppBar(

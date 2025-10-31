@@ -6,34 +6,26 @@ struct LiquidRoot: View {
 
     var body: some View {
         ZStack {
-            Color(uiColor: .systemBackground).ignoresSafeArea() // paints status/home areas
+            Color(uiColor: .systemBackground).ignoresSafeArea()
             TabView(selection: $selection) {
-                ComposeHost {
-                    MainViewControllerKt.makeNotesViewController()
-                }
-                .tabItem {
-                    Label("Notes", systemImage: "note.text")
-                }
+                ComposeHost { MainViewControllerKt.makeNotesViewController() }
+                .ignoresSafeArea(.container, edges: .bottom)  // bottom only
+                .tabItem { Label("Notes", systemImage: "note.text") }
                 .tag(Tab.notes)
 
-                ComposeHost {
-                    MainViewControllerKt.makeFoldersViewController()
-                }
-                .tabItem {
-                    Label("Folders", systemImage: "folder")
-                }
+                ComposeHost { MainViewControllerKt.makeFoldersViewController() }
+                .ignoresSafeArea(.container, edges: .bottom)  // bottom only
+                .tabItem { Label("Folders", systemImage: "folder") }
                 .tag(Tab.folders)
 
-                ComposeHost {
-                    MainViewControllerKt.makeSettingsViewController()
-                }
-                .tabItem {
-                    Label("Settings", systemImage: "gearshape")
-                }
+                ComposeHost { MainViewControllerKt.makeSettingsViewController() }
+                .ignoresSafeArea(.container, edges: .bottom)  // bottom only
+                .tabItem { Label("Settings", systemImage: "gearshape") }
                 .tag(Tab.settings)
             }
+            .background(AppColors.app.ignoresSafeArea(edges: .top))
+            .toolbarBackground(.hidden, for: .tabBar)
         }
-        .ignoresSafeArea(.all, edges: .all)
     }
 
     private enum Tab: Hashable {
