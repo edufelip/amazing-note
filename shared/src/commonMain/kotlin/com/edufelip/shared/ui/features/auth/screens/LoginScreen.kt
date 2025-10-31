@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,6 +36,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -79,6 +81,7 @@ import com.edufelip.shared.resources.password
 import com.edufelip.shared.resources.reset_email_sent
 import com.edufelip.shared.resources.sign_up_success
 import com.edufelip.shared.ui.vm.AuthViewModel
+import com.edufelip.shared.ui.util.platform.PlatformFlags
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -141,6 +144,11 @@ fun LoginScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        contentWindowInsets = if (PlatformFlags.isIos) {
+            WindowInsets(0)
+        } else {
+            ScaffoldDefaults.contentWindowInsets
+        },
     ) { padding ->
         Column(
             modifier = Modifier

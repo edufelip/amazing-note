@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -63,6 +65,7 @@ import com.edufelip.shared.resources.sign_up_subtitle
 import com.edufelip.shared.resources.sign_up_title
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.util.platform.PlatformFlags
 import org.jetbrains.compose.resources.stringResource
 import com.edufelip.shared.preview.Preview
 import com.edufelip.shared.preview.PreviewParameter
@@ -88,6 +91,11 @@ fun SignUpScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = if (PlatformFlags.isIos) {
+            WindowInsets(0)
+        } else {
+            ScaffoldDefaults.contentWindowInsets
+        },
     ) { padding ->
         Column(
             modifier = Modifier

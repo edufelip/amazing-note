@@ -3,6 +3,7 @@ package com.edufelip.shared.ui.features.notes.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,6 +19,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -42,6 +44,7 @@ import com.edufelip.shared.resources.folder_options_rename
 import com.edufelip.shared.ui.features.notes.components.ListScreen
 import com.edufelip.shared.ui.features.notes.dialogs.DeleteFolderDialog
 import com.edufelip.shared.ui.features.notes.dialogs.FolderNameDialog
+import com.edufelip.shared.ui.util.platform.PlatformFlags
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,6 +79,11 @@ fun FolderDetailScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        contentWindowInsets = if (PlatformFlags.isIos) {
+            WindowInsets(0)
+        } else {
+            ScaffoldDefaults.contentWindowInsets
+        },
         topBar = {
             TopAppBar(
                 title = { Text(text = title) },
@@ -117,6 +125,11 @@ fun FolderDetailScreen(
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
+                windowInsets = if (PlatformFlags.isIos) {
+                    WindowInsets(0)
+                } else {
+                    TopAppBarDefaults.windowInsets
+                },
             )
         },
         floatingActionButton = {

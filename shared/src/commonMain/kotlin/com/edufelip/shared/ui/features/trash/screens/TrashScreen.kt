@@ -2,6 +2,7 @@ package com.edufelip.shared.ui.features.trash.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -10,6 +11,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -24,6 +26,7 @@ import com.edufelip.shared.resources.trash_count
 import com.edufelip.shared.ui.components.organisms.trash.TrashTimeline
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.util.platform.PlatformFlags
 import org.jetbrains.compose.resources.stringResource
 import com.edufelip.shared.preview.Preview
 import com.edufelip.shared.preview.PreviewParameter
@@ -40,6 +43,11 @@ fun TrashScreen(
 ) {
     Scaffold(
         modifier = modifier,
+        contentWindowInsets = if (PlatformFlags.isIos) {
+            WindowInsets(0)
+        } else {
+            ScaffoldDefaults.contentWindowInsets
+        },
         topBar = {
             TopAppBar(
                 title = {
@@ -68,6 +76,11 @@ fun TrashScreen(
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
+                windowInsets = if (PlatformFlags.isIos) {
+                    WindowInsets(0)
+                } else {
+                    TopAppBarDefaults.windowInsets
+                },
             )
         },
     ) { padding ->

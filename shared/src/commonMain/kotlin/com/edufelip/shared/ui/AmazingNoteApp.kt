@@ -485,7 +485,11 @@ fun AmazingNoteApp(
             ) {
                 Scaffold(
                     containerColor = Color.Transparent,
-                    contentWindowInsets = WindowInsets.safeDrawing,
+                    contentWindowInsets = if (PlatformFlags.isIos) {
+                        WindowInsets(0)
+                    } else {
+                        WindowInsets.safeDrawing
+                    },
                     topBar = topBarComposable,
                     bottomBar = {
                         if (bottomBarEnabled) {

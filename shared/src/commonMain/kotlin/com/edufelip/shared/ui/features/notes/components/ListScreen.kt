@@ -117,6 +117,11 @@ fun ListScreen(
                                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                                 ),
+                                windowInsets = if (PlatformFlags.isIos) {
+                                    WindowInsets(0)
+                                } else {
+                                    TopAppBarDefaults.windowInsets
+                                },
                             )
                         }
                         )

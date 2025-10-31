@@ -1,6 +1,7 @@
 package com.edufelip.shared.ui.features.settings.screens
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -9,6 +10,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -18,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.privacy_policy
 import com.edufelip.shared.ui.util.Constants
+import com.edufelip.shared.ui.util.platform.PlatformFlags
 import com.edufelip.shared.ui.web.WebView
 import org.jetbrains.compose.resources.stringResource
 
@@ -29,6 +32,11 @@ fun PrivacyScreen(
     onBack: () -> Unit,
 ) {
     Scaffold(
+        contentWindowInsets = if (PlatformFlags.isIos) {
+            WindowInsets(0)
+        } else {
+            ScaffoldDefaults.contentWindowInsets
+        },
         topBar = {
             Surface(tonalElevation = 2.dp, shadowElevation = 1.dp) {
                 TopAppBar(
@@ -43,6 +51,11 @@ fun PrivacyScreen(
                         navigationIconContentColor = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer,
                         titleContentColor = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer,
                     ),
+                    windowInsets = if (PlatformFlags.isIos) {
+                        WindowInsets(0)
+                    } else {
+                        TopAppBarDefaults.windowInsets
+                    },
                 )
             }
         },
