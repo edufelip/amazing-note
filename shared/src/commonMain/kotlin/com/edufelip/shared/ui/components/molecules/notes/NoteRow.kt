@@ -27,6 +27,7 @@ import com.edufelip.shared.resources.updated_hours_ago
 import com.edufelip.shared.resources.updated_just_now
 import com.edufelip.shared.resources.updated_minutes_ago
 import com.edufelip.shared.ui.util.nowEpochMs
+import com.edufelip.shared.ui.util.platform.PlatformFlags
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -36,17 +37,13 @@ fun NoteRow(
     onClick: (Note) -> Unit = {},
     showUpdated: Boolean = true,
 ) {
-    ElevatedCard(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onClick(note) },
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
-        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface),
-    ) {
+    val cupertinoLook = PlatformFlags.cupertinoLookEnabled
+    if (cupertinoLook) {
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .clickable { onClick(note) }
+                .padding(horizontal = 20.dp, vertical = 16.dp)
                 .animateContentSize(),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
@@ -58,7 +55,7 @@ fun NoteRow(
             )
             Text(
                 text = relativeTimeAgo(if (showUpdated) note.updatedAt else note.createdAt, showUpdated),
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (note.description.isNotBlank()) {
@@ -68,6 +65,42 @@ fun NoteRow(
                     maxLines = 4,
                     overflow = TextOverflow.Ellipsis,
                 )
+            }
+        }
+    } else {
+        ElevatedCard(
+            modifier = modifier
+                .fillMaxWidth()
+                .clickable { onClick(note) },
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
+            colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .animateContentSize(),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Text(
+                    text = note.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = relativeTimeAgo(if (showUpdated) note.updatedAt else note.createdAt, showUpdated),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (note.description.isNotBlank()) {
+                    Text(
+                        text = note.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 4,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
     }

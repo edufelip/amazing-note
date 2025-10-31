@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -22,6 +22,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.preview.Preview
@@ -87,14 +89,15 @@ fun ListScreen(
     emptyContent: (@Composable () -> Unit)? = null,
 ) {
     val appPrefs = LocalAppPreferences.current
+    val cupertinoLook = PlatformFlags.cupertinoLookEnabled
     var showFilters by rememberSaveable { mutableStateOf(false) }
 
     @Composable
     fun ContentScaffold() {
-        val scaffoldContainerColor = if (hasAnyNotes) {
-            MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp)
-        } else {
-            MaterialTheme.colorScheme.background
+        val scaffoldContainerColor = when {
+            cupertinoLook -> MaterialTheme.colorScheme.background
+            hasAnyNotes -> MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp)
+            else -> MaterialTheme.colorScheme.background
         }
         Scaffold(
             modifier = Modifier.fillMaxSize().background(scaffoldContainerColor),
@@ -112,11 +115,20 @@ fun ListScreen(
                                         title ?: stringResource(Res.string.your_notes)
                                     Text(text = resolvedTitle)
                                 },
-                                colors = TopAppBarDefaults.largeTopAppBarColors(
-                                    containerColor = MaterialTheme.colorScheme.surface,
-                                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                                ),
+                                colors = if (cupertinoLook) {
+                                    TopAppBarDefaults.largeTopAppBarColors(
+                                        containerColor = Color.Transparent,
+                                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp),
+                                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                } else {
+                                    TopAppBarDefaults.largeTopAppBarColors(
+                                        containerColor = MaterialTheme.colorScheme.surface,
+                                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                },
                             )
                         }
                         )
@@ -126,10 +138,17 @@ fun ListScreen(
             floatingActionButton = {
                 if (hasAnyNotes) {
                     FloatingActionButton(
-                        modifier = Modifier.padding(bottom = if (PlatformFlags.isIos) 0.dp else 24.dp),
+                        modifier = Modifier.padding(
+                            bottom = when {
+                                PlatformFlags.isIos && cupertinoLook -> 12.dp
+                                PlatformFlags.isIos -> 0.dp
+                                else -> 24.dp
+                            },
+                            end = if (cupertinoLook) 12.dp else 0.dp,
+                        ),
                         onClick = onAddClick,
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        shape = RoundedCornerShape(16.dp),
+                        shape = if (cupertinoLook) CircleShape else RoundedCornerShape(16.dp),
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
@@ -178,15 +197,22 @@ fun ListScreen(
                 val grouped: Map<Bucket, List<Note>> =
                     filtered.groupBy { bucket(if (useUpdated.value) it.updatedAt else it.createdAt) }
                 val listBottomPadding = if (PlatformFlags.isIos) 0.dp else 96.dp
+                val horizontalPadding = if (cupertinoLook) 0.dp else 12.dp
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = listBottomPadding),
+                    contentPadding = PaddingValues(
+                        bottom = listBottomPadding,
+                        top = if (cupertinoLook && showTopAppBar) 12.dp else 0.dp,
+                    ),
                 ) {
                     headerContent?.let { content ->
                         item(key = "list_header") {
                             Column(
                                 modifier = Modifier.fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    .padding(
+                                        horizontal = if (cupertinoLook) 20.dp else 16.dp,
+                                        vertical = 12.dp,
+                                    ),
                             ) {
                                 content()
                             }
@@ -194,15 +220,19 @@ fun ListScreen(
                     }
                     stickyHeader {
                         Surface(
-                            tonalElevation = 3.dp,
-                            shadowElevation = 1.dp,
+                            tonalElevation = if (cupertinoLook) 0.dp else 3.dp,
+                            shadowElevation = if (cupertinoLook) 0.dp else 1.dp,
+                            color = if (cupertinoLook) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.surface,
                         ) {
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
                                 Box(
                                     modifier = Modifier.fillMaxWidth()
-                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                                        .padding(
+                                            horizontal = if (cupertinoLook) 20.dp else 12.dp,
+                                            vertical = 8.dp,
+                                        ),
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     MaterialSearchBar(
@@ -224,13 +254,16 @@ fun ListScreen(
                                             style = MaterialTheme.typography.labelMedium,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier.padding(
-                                                horizontal = 16.dp,
+                                                horizontal = if (cupertinoLook) 20.dp else 16.dp,
                                                 vertical = 4.dp,
                                             ),
                                         )
                                         Row(
                                             modifier = Modifier.fillMaxWidth()
-                                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                                                .padding(
+                                                    horizontal = if (cupertinoLook) 20.dp else 16.dp,
+                                                    vertical = 4.dp,
+                                                ),
                                         ) {
                                             FilterChip(
                                                 selected = useUpdated.value,
@@ -291,7 +324,10 @@ fun ListScreen(
                     val orderedGroups = groupOrder.mapNotNull { b -> grouped[b]?.let { b to it } }
                     orderedGroups.forEach { (section, itemsInGroup) ->
                         item {
-                            Surface(tonalElevation = 2.dp) {
+                            Surface(
+                                tonalElevation = if (cupertinoLook) 0.dp else 2.dp,
+                                color = if (cupertinoLook) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.surface,
+                            ) {
                                 Text(
                                     text = when (section) {
                                         Bucket.TODAY -> stringResource(Res.string.today)
@@ -299,22 +335,35 @@ fun ListScreen(
                                         Bucket.THIS_MONTH -> stringResource(Res.string.this_month)
                                         Bucket.EARLIER -> stringResource(Res.string.earlier)
                                     },
-                                    style = MaterialTheme.typography.titleSmall,
+                                    style = if (cupertinoLook) {
+                                        MaterialTheme.typography.labelLarge
+                                    } else {
+                                        MaterialTheme.typography.titleSmall
+                                    },
                                     modifier = Modifier.padding(
-                                        horizontal = 16.dp,
-                                        vertical = 8.dp,
+                                        horizontal = if (cupertinoLook) 20.dp else 16.dp,
+                                        vertical = if (cupertinoLook) 10.dp else 8.dp,
                                     ),
                                 )
                             }
                         }
-                        items(itemsInGroup, key = { it.id }) { note ->
+                        itemsIndexed(itemsInGroup, key = { _, note -> note.id }) { index, note ->
                             NoteRow(
                                 note = note,
                                 onClick = onNoteClick,
                                 showUpdated = useUpdated.value,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                                modifier = Modifier
+                                    .padding(
+                                        horizontal = horizontalPadding,
+                                        vertical = if (cupertinoLook) 0.dp else 6.dp,
+                                    )
                                     .animateItem(),
                             )
+                            if (cupertinoLook && index < itemsInGroup.lastIndex) {
+                                HorizontalDivider(
+                                    modifier = Modifier.padding(horizontal = 20.dp),
+                                )
+                            }
                         }
                     }
                 }
