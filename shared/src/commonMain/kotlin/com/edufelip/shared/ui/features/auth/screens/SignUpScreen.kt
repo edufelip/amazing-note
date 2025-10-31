@@ -47,6 +47,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import com.edufelip.shared.preview.Preview
+import com.edufelip.shared.preview.PreviewParameter
+import com.edufelip.shared.preview.PreviewParameterProvider
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_back
 import com.edufelip.shared.resources.cd_hide_password
@@ -64,9 +67,6 @@ import com.edufelip.shared.resources.sign_up_title
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
-import com.edufelip.shared.preview.Preview
-import com.edufelip.shared.preview.PreviewParameter
-import com.edufelip.shared.preview.PreviewParameterProvider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

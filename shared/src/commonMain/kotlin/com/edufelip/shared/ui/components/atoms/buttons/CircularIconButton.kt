@@ -15,8 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.edufelip.shared.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.edufelip.shared.preview.Preview
 
 @Composable
 fun CircularIconButton(

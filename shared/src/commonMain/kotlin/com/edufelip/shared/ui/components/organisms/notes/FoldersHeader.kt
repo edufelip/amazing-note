@@ -16,8 +16,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.edufelip.shared.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.edufelip.shared.preview.Preview
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.folder_layout_grid_content_description
 import com.edufelip.shared.resources.folder_layout_list_content_description

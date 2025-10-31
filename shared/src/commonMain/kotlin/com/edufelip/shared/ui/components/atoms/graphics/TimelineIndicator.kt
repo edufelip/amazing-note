@@ -9,8 +9,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalDensity
-import com.edufelip.shared.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.edufelip.shared.preview.Preview
 
 @Composable
 fun TimelineIndicator(

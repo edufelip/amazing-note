@@ -68,10 +68,11 @@ fun FolderDetailScreen(
             notes
         } else {
             notes.filter { note ->
-                note.title.contains(query, ignoreCase = true) || note.description.contains(
-                    query,
-                    ignoreCase = true
-                )
+                note.title.contains(query, ignoreCase = true) ||
+                    note.description.contains(
+                        query,
+                        ignoreCase = true,
+                    )
             }
         }
     }
@@ -85,7 +86,7 @@ fun FolderDetailScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null
+                            contentDescription = null,
                         )
                     }
                 },
@@ -95,7 +96,9 @@ fun FolderDetailScreen(
                             Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
                         }
                         DropdownMenu(
-                            expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false },
+                        ) {
                             if (onRenameFolder != null) {
                                 DropdownMenuItem(
                                     text = { Text(text = stringResource(Res.string.folder_options_rename)) },
@@ -129,7 +132,7 @@ fun FolderDetailScreen(
             FloatingActionButton(onClick = onAddNote) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(Res.string.folder_add_note)
+                    contentDescription = stringResource(Res.string.folder_add_note),
                 )
             }
         },

@@ -104,19 +104,21 @@ fun ListScreen(
             containerColor = Color.Transparent,
             contentWindowInsets = if (PlatformFlags.isIos) WindowInsets(0) else ScaffoldDefaults.contentWindowInsets,
             topBar = if (showTopAppBar) {
-                ({
-                    LargeTopAppBar(
-                        title = {
-                            val resolvedTitle = title ?: stringResource(Res.string.your_notes)
-                            Text(text = resolvedTitle)
-                        },
-                        colors = TopAppBarDefaults.largeTopAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                            titleContentColor = MaterialTheme.colorScheme.onSurface,
-                        ),
+                (
+                    {
+                        LargeTopAppBar(
+                            title = {
+                                val resolvedTitle = title ?: stringResource(Res.string.your_notes)
+                                Text(text = resolvedTitle)
+                            },
+                            colors = TopAppBarDefaults.largeTopAppBarColors(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                            ),
+                        )
+                    }
                     )
-                })
             } else {
                 ({})
             },

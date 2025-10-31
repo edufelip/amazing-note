@@ -16,11 +16,21 @@ kotlin {
     targets.withType(KotlinNativeTarget::class.java).configureEach {
         binaries.executable {
             entryPoint = "com.edufelip.iosapp.main"
-            freeCompilerArgs += listOf(
-                "-linker-option", "-framework", "-linker-option", "Metal",
-                "-linker-option", "-framework", "-linker-option", "CoreText",
-                "-linker-option", "-framework", "-linker-option", "CoreGraphics"
-            )
+            freeCompilerArgs +=
+                listOf(
+                    "-linker-option",
+                    "-framework",
+                    "-linker-option",
+                    "Metal",
+                    "-linker-option",
+                    "-framework",
+                    "-linker-option",
+                    "CoreText",
+                    "-linker-option",
+                    "-framework",
+                    "-linker-option",
+                    "CoreGraphics",
+                )
         }
     }
 
@@ -50,7 +60,7 @@ tasks.register("runDebugExecutableIosSimulatorArm64") {
     doLast {
         logger.lifecycle(
             "To launch the iOS app, open iosApp/iosApp.xcodeproj in Xcode or run:\n" +
-                "  xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 15'"
+                "  xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 15'",
         )
     }
 }
@@ -60,7 +70,7 @@ tasks.register("runReleaseExecutableIosSimulatorArm64") {
     description = "Stub task so Android Studio can offer a run configuration for the Release simulator binary."
     doLast {
         logger.lifecycle(
-            "To launch the iOS app in Release, use Xcode with the Release configuration or run the corresponding xcodebuild command."
+            "To launch the iOS app in Release, use Xcode with the Release configuration or run the corresponding xcodebuild command.",
         )
     }
 }

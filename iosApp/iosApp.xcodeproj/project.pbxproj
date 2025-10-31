@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		1C81D6F669B7BB6D2FFCCEB3 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 617043448F4869026C2F0BB4 /* FirebaseAuth */; };
 		379D4C6DBBA934A8EF44CDDE /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = B6E18E1D8AEE3BF1FDA1E5E9 /* GoogleSignIn */; };
+		99D2B24B2F3E0A6D00C2D875 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 99D2B24A2F3E0A6D00C2D875 /* Assets.xcassets */; };
 		445C052442747365B7CB2124 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 84FCD721953CC33D9035BCCD /* FirebaseFirestore */; };
 		6F26ACE1E3C90FD234DE7A46 /* AppMain.swift in Sources */ = {isa = PBXBuildFile; fileRef = C678D2A4430FF615DBC7217B /* AppMain.swift */; };
 		88ABACE0259DE83261737B99 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1285E8A7B7E7359EA11B9591 /* SceneDelegate.swift */; };
@@ -21,6 +22,7 @@
 
 /* Begin PBXFileReference section */
 		1285E8A7B7E7359EA11B9591 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		99D2B24A2F3E0A6D00C2D875 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		245434685F34A9A15B1AC406 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		86038AE1032E284E79B32AD6 /* iosApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iosApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B6C1F485E0CF8BB70C9DDD2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -55,6 +57,7 @@
 				A55143988C4C8F291BE72E9A /* GoogleService-Info.plist */,
 				BDC2B4ED6760D21408C91A4A /* LiquidRoot.swift */,
 				1285E8A7B7E7359EA11B9591 /* SceneDelegate.swift */,
+				99D2B24A2F3E0A6D00C2D875 /* Assets.xcassets */,
 			);
 			name = iosApp;
 			path = ../iosApp/iosApp;
@@ -168,6 +171,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				99D2B24B2F3E0A6D00C2D875 /* Assets.xcassets in Resources */,
 				C87B4FA04BDA1DA04158D48E /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

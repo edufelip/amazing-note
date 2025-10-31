@@ -24,6 +24,9 @@ import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.TextBlock
+import com.edufelip.shared.preview.Preview
+import com.edufelip.shared.preview.PreviewParameter
+import com.edufelip.shared.preview.PreviewParameterProvider
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.description
 import com.edufelip.shared.ui.components.molecules.notes.NoteTitleField
@@ -34,9 +37,6 @@ import com.edufelip.shared.ui.editor.NoteEditor
 import com.edufelip.shared.ui.editor.NoteEditorState
 import com.edufelip.shared.ui.editor.rememberNoteEditorState
 import org.jetbrains.compose.resources.stringResource
-import com.edufelip.shared.preview.Preview
-import com.edufelip.shared.preview.PreviewParameter
-import com.edufelip.shared.preview.PreviewParameterProvider
 
 @Composable
 fun AddNoteScreen(

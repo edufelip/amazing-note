@@ -15,8 +15,8 @@ import com.edufelip.shared.ui.settings.Settings
 import com.edufelip.shared.ui.vm.DefaultNoteUiViewModel
 import platform.Foundation.NSUserDefaults
 import platform.UIKit.UIColor
-import platform.UIKit.systemBackgroundColor
 import platform.UIKit.UIViewController
+import platform.UIKit.systemBackgroundColor
 
 private class IosSettings : Settings {
     private val defaults = NSUserDefaults.standardUserDefaults()

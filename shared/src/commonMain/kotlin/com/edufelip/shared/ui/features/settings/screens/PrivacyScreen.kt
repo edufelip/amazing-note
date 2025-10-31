@@ -37,7 +37,7 @@ fun PrivacyScreen(
                         IconButton(onClick = onBack) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = null
+                                contentDescription = null,
                             )
                         }
                     },

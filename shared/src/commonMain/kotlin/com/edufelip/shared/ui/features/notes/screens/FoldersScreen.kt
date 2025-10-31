@@ -46,6 +46,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
+import com.edufelip.shared.preview.Preview
+import com.edufelip.shared.preview.PreviewParameter
+import com.edufelip.shared.preview.PreviewParameterProvider
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.delete_folder_message
 import com.edufelip.shared.resources.folders_empty_hint
@@ -66,9 +69,6 @@ import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.util.platform.PlatformFlags
 import org.jetbrains.compose.resources.stringResource
-import com.edufelip.shared.preview.Preview
-import com.edufelip.shared.preview.PreviewParameter
-import com.edufelip.shared.preview.PreviewParameterProvider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

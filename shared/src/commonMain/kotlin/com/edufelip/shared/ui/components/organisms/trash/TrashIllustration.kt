@@ -9,8 +9,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import com.edufelip.shared.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.edufelip.shared.preview.Preview
 
 /**
  * Simple empty-trash illustration inspired by the provided concept, drawn with Compose primitives
