@@ -43,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.preview.Preview
@@ -91,18 +92,45 @@ fun ListScreen(
 
     @Composable
     fun ContentScaffold() {
+        val isIos = PlatformFlags.isIos
         val scaffoldContainerColor = if (hasAnyNotes) {
             MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp)
         } else {
             MaterialTheme.colorScheme.background
         }
+        val scaffoldWindowInsets = if (isIos) {
+            WindowInsets(0)
+        } else {
+            ScaffoldDefaults.contentWindowInsets
+        }
+        val topAppBarInsets = if (isIos) {
+            WindowInsets(0)
+        } else {
+            TopAppBarDefaults.windowInsets
+        }
+        val topAppBarColors = if (isIos) {
+            TopAppBarDefaults.largeTopAppBarColors(
+                containerColor = Color.Transparent,
+                scrolledContainerColor = scaffoldContainerColor,
+                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                titleContentColor = MaterialTheme.colorScheme.onSurface,
+            )
+        } else {
+            TopAppBarDefaults.largeTopAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                titleContentColor = MaterialTheme.colorScheme.onSurface,
+            )
+        }
         Scaffold(
-            modifier = Modifier.fillMaxSize().background(scaffoldContainerColor),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(scaffoldContainerColor),
             snackbarHost = {
                 if (snackBarHostState != null) SnackbarHost(snackBarHostState)
             },
             containerColor = Color.Transparent,
-            contentWindowInsets = if (PlatformFlags.isIos) WindowInsets(0) else ScaffoldDefaults.contentWindowInsets,
+            contentWindowInsets = scaffoldWindowInsets,
             topBar = if (showTopAppBar) {
                 (
                         {
@@ -112,11 +140,8 @@ fun ListScreen(
                                         title ?: stringResource(Res.string.your_notes)
                                     Text(text = resolvedTitle)
                                 },
-                                colors = TopAppBarDefaults.largeTopAppBarColors(
-                                    containerColor = MaterialTheme.colorScheme.surface,
-                                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                                ),
+                                colors = topAppBarColors,
+                                windowInsets = topAppBarInsets,
                             )
                         }
                         )
@@ -177,10 +202,17 @@ fun ListScreen(
 
                 val grouped: Map<Bucket, List<Note>> =
                     filtered.groupBy { bucket(if (useUpdated.value) it.updatedAt else it.createdAt) }
-                val listBottomPadding = if (PlatformFlags.isIos) 0.dp else 96.dp
+                val listBottomPadding = if (isIos) 0.dp else 96.dp
+                val layoutDirection = LocalLayoutDirection.current
+                val listContentPadding = PaddingValues(
+                    top = padding.calculateTopPadding(),
+                    bottom = padding.calculateBottomPadding() + listBottomPadding,
+                    start = padding.calculateStartPadding(layoutDirection),
+                    end = padding.calculateEndPadding(layoutDirection),
+                )
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = listBottomPadding),
+                    contentPadding = listContentPadding,
                 ) {
                     headerContent?.let { content ->
                         item(key = "list_header") {
@@ -194,8 +226,9 @@ fun ListScreen(
                     }
                     stickyHeader {
                         Surface(
-                            tonalElevation = 3.dp,
-                            shadowElevation = 1.dp,
+                            modifier = Modifier.fillMaxWidth(),
+                            tonalElevation = if (isIos) 0.dp else 3.dp,
+                            shadowElevation = if (isIos) 0.dp else 1.dp,
                         ) {
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
@@ -291,7 +324,10 @@ fun ListScreen(
                     val orderedGroups = groupOrder.mapNotNull { b -> grouped[b]?.let { b to it } }
                     orderedGroups.forEach { (section, itemsInGroup) ->
                         item {
-                            Surface(tonalElevation = 2.dp) {
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                tonalElevation = if (isIos) 0.dp else 2.dp,
+                            ) {
                                 Text(
                                     text = when (section) {
                                         Bucket.TODAY -> stringResource(Res.string.today)
