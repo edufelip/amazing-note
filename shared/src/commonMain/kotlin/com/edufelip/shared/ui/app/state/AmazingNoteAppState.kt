@@ -84,7 +84,7 @@ class AmazingNoteAppState internal constructor(
         isBottomBarVisible = visible
     }
 
-    fun setBottomBarEnabled(enabled: Boolean) {
+    fun updateBottomBarEnabled(enabled: Boolean) {
         if (isBottomBarEnabled == enabled) return
         isBottomBarEnabled = enabled
         val shouldShow = bottomBarTargetVisible

@@ -10,9 +10,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,7 +30,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -45,9 +48,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Note
-import com.edufelip.shared.preview.Preview
-import com.edufelip.shared.preview.PreviewParameter
-import com.edufelip.shared.preview.PreviewParameterProvider
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
 import com.edufelip.shared.resources.created
@@ -65,7 +68,7 @@ import com.edufelip.shared.ui.components.organisms.common.NotesEmptyState
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.settings.LocalAppPreferences
-import com.edufelip.shared.ui.util.platform.PlatformFlags
+import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import org.jetbrains.compose.resources.stringResource
 
 private enum class Bucket { TODAY, THIS_WEEK, THIS_MONTH, EARLIER }
@@ -88,6 +91,7 @@ fun ListScreen(
 ) {
     val appPrefs = LocalAppPreferences.current
     var showFilters by rememberSaveable { mutableStateOf(false) }
+    val chrome = platformChromeStrategy()
 
     @Composable
     fun ContentScaffold() {
@@ -102,7 +106,7 @@ fun ListScreen(
                 if (snackBarHostState != null) SnackbarHost(snackBarHostState)
             },
             containerColor = Color.Transparent,
-            contentWindowInsets = if (PlatformFlags.isIos) WindowInsets(0) else ScaffoldDefaults.contentWindowInsets,
+            contentWindowInsets = chrome.contentWindowInsets,
             topBar = if (showTopAppBar) {
                 (
                     {
@@ -111,7 +115,7 @@ fun ListScreen(
                                 val resolvedTitle = title ?: stringResource(Res.string.your_notes)
                                 Text(text = resolvedTitle)
                             },
-                            colors = TopAppBarDefaults.largeTopAppBarColors(
+                            colors = TopAppBarDefaults.topAppBarColors(
                                 containerColor = MaterialTheme.colorScheme.surface,
                                 navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                                 titleContentColor = MaterialTheme.colorScheme.onSurface,
@@ -124,8 +128,9 @@ fun ListScreen(
             },
             floatingActionButton = {
                 if (hasAnyNotes) {
+                    val fabBottomPadding = if (chrome.bottomBarHeight == 0.dp) 0.dp else 24.dp
                     FloatingActionButton(
-                        modifier = Modifier.padding(bottom = if (PlatformFlags.isIos) 0.dp else 24.dp),
+                        modifier = Modifier.padding(bottom = fabBottomPadding),
                         onClick = onAddClick,
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         shape = RoundedCornerShape(16.dp),
@@ -140,7 +145,11 @@ fun ListScreen(
             },
         ) { padding ->
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
+                    ),
             ) {
                 val filtered = notes
                 // Only show empty state if user truly has no notes at all
@@ -176,7 +185,7 @@ fun ListScreen(
 
                 val grouped: Map<Bucket, List<Note>> =
                     filtered.groupBy { bucket(if (useUpdated.value) it.updatedAt else it.createdAt) }
-                val listBottomPadding = if (PlatformFlags.isIos) 0.dp else 96.dp
+                val listBottomPadding = if (chrome.bottomBarHeight == 0.dp) 0.dp else 96.dp
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = listBottomPadding),
@@ -382,6 +391,6 @@ internal object ListPreviewSamples {
     val states: List<ListPreviewState> = listOf(populated, empty, dark)
 }
 
-internal expect class ListScreenPreviewProvider() : PreviewParameterProvider<ListPreviewState> {
-    override val values: Sequence<ListPreviewState>
+internal class ListScreenPreviewProvider : PreviewParameterProvider<ListPreviewState> {
+    override val values: Sequence<ListPreviewState> = ListPreviewSamples.states.asSequence()
 }

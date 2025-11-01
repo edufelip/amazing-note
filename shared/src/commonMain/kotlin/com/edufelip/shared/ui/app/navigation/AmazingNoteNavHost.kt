@@ -13,22 +13,19 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.LayoutDirection
 import com.edufelip.shared.ui.app.chrome.AppChromeDefaults
 import com.edufelip.shared.ui.app.state.AmazingNoteAppState
 import com.edufelip.shared.ui.features.auth.routes.LoginRoute
@@ -41,7 +38,7 @@ import com.edufelip.shared.ui.features.settings.routes.PrivacyRoute
 import com.edufelip.shared.ui.features.settings.routes.SettingsRoute
 import com.edufelip.shared.ui.features.trash.routes.TrashRoute
 import com.edufelip.shared.ui.nav.AppRoutes
-import com.edufelip.shared.ui.util.platform.PlatformFlags
+import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.vm.NoteUiViewModel
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalLayoutApi::class)
@@ -57,76 +54,77 @@ fun AmazingNoteNavHost(
 ) {
     val environment = state.environment
     val layoutDirection = LocalLayoutDirection.current
+    val chrome = platformChromeStrategy()
 
     val safeAreaPadding = WindowInsets.safeDrawing.asPaddingValues()
-    val bottomPadding = remember(state.isBottomBarEnabled, state.bottomBarTargetVisible, safeAreaPadding, bottomBarHeight) {
-        when {
-            state.isBottomBarEnabled && !PlatformFlags.isIos -> bottomBarHeight
-            PlatformFlags.isIos -> 0.dp
-            else -> safeAreaPadding.bottomPadding()
-        }
+    val bottomPadding = remember(
+        state.isBottomBarEnabled,
+        state.bottomBarTargetVisible,
+        safeAreaPadding,
+        bottomBarHeight,
+    ) {
+        chrome.calculateBottomPadding(
+            isBottomBarEnabled = state.isBottomBarEnabled,
+            bottomBarTargetVisible = state.bottomBarTargetVisible,
+            safeAreaPadding = safeAreaPadding,
+            bottomBarHeight = bottomBarHeight,
+        )
     }
 
-    val contentModifier = Modifier
-        .fillMaxSize()
-        .consumeWindowInsets(padding)
-        .padding(
-            start = padding.startPadding(layoutDirection),
-            top = padding.topPadding(),
-            end = padding.endPadding(layoutDirection),
-            bottom = if (PlatformFlags.isIos) 0.dp else bottomPadding,
-        )
-        .then(
-            if (PlatformFlags.isIos) {
-                Modifier.windowInsetsPadding(
-                    WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
-                )
-            } else {
-                Modifier
-            },
-        )
-        .then(
-            if (PlatformFlags.isIos && !state.topBarVisible) Modifier.statusBarsPadding() else Modifier,
-        )
-        .then(modifier)
+    val contentModifier = with(chrome) {
+        Modifier
+            .fillMaxSize()
+            .consumeWindowInsets(padding)
+            .padding(
+                start = padding.startPadding(layoutDirection),
+                top = padding.topPadding(),
+                end = padding.endPadding(layoutDirection),
+                bottom = bottomPadding,
+            )
+            .applyAdditionalContentPadding(state.topBarVisible)
+    }
 
     AnimatedContent(
-        modifier = contentModifier,
-        targetState = state.currentRoute,
+        modifier = contentModifier.then(modifier),
+        targetState = NavScene(state.currentRoute, darkTheme),
         transitionSpec = {
-            val duration = 250
-            when {
-                initialState is AppRoutes.NoteDetail || targetState is AppRoutes.NoteDetail -> {
-                    slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith
-                        slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
-                }
+            if (initialState.themeVersion != targetState.themeVersion) {
+                EnterTransition.None togetherWith ExitTransition.None
+            } else {
+                val duration = 250
+                when {
+                    initialState.route is AppRoutes.NoteDetail || targetState.route is AppRoutes.NoteDetail -> {
+                        slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith
+                            slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
+                    }
 
-                initialState is AppRoutes.FolderDetail || targetState is AppRoutes.FolderDetail -> {
-                    slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith
-                        slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
-                }
+                    initialState.route is AppRoutes.FolderDetail || targetState.route is AppRoutes.FolderDetail -> {
+                        slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith
+                            slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
+                    }
 
-                state.isTab(initialState) && state.isTab(targetState) -> {
-                    val fadeDuration = 220
-                    fadeIn(animationSpec = tween(fadeDuration)) togetherWith
-                        fadeOut(animationSpec = tween(fadeDuration))
-                }
+                    state.isTab(initialState.route) && state.isTab(targetState.route) -> {
+                        val fadeDuration = 220
+                        fadeIn(animationSpec = tween(fadeDuration)) togetherWith
+                            fadeOut(animationSpec = tween(fadeDuration))
+                    }
 
-                initialState is AppRoutes.Login ||
-                    targetState is AppRoutes.Login ||
-                    initialState is AppRoutes.SignUp ||
-                    targetState is AppRoutes.SignUp ||
-                    initialState is AppRoutes.Trash ||
-                    targetState is AppRoutes.Trash -> {
-                    fadeIn(animationSpec = tween(duration)) togetherWith
-                        fadeOut(animationSpec = tween(duration))
-                }
+                    initialState.route is AppRoutes.Login ||
+                        targetState.route is AppRoutes.Login ||
+                        initialState.route is AppRoutes.SignUp ||
+                        targetState.route is AppRoutes.SignUp ||
+                        initialState.route is AppRoutes.Trash ||
+                        targetState.route is AppRoutes.Trash -> {
+                        fadeIn(animationSpec = tween(duration)) togetherWith
+                            fadeOut(animationSpec = tween(duration))
+                    }
 
-                else -> EnterTransition.None togetherWith ExitTransition.None
+                    else -> EnterTransition.None togetherWith ExitTransition.None
+                }
             }
         },
-    ) { route ->
-        when (route) {
+    ) { scene ->
+        when (val route = scene.route) {
             AppRoutes.Notes -> NotesRoute(
                 viewModel = viewModel,
                 authViewModel = state.authViewModel,
@@ -193,20 +191,10 @@ fun AmazingNoteNavHost(
     }
 }
 
+private data class NavScene(val route: AppRoutes, val themeVersion: Boolean)
+
 private fun PaddingValues.topPadding(): Dp = calculateTopPadding()
 
-private fun PaddingValues.bottomPadding(): Dp = calculateBottomPadding()
+private fun PaddingValues.startPadding(layoutDirection: LayoutDirection): Dp = calculateStartPadding(layoutDirection)
 
-private fun PaddingValues.startPadding(layoutDirection: LayoutDirection): Dp =
-    if (layoutDirection == LayoutDirection.Ltr) {
-        calculateLeftPadding(layoutDirection)
-    } else {
-        calculateRightPadding(layoutDirection)
-    }
-
-private fun PaddingValues.endPadding(layoutDirection: LayoutDirection): Dp =
-    if (layoutDirection == LayoutDirection.Ltr) {
-        calculateRightPadding(layoutDirection)
-    } else {
-        calculateLeftPadding(layoutDirection)
-    }
+private fun PaddingValues.endPadding(layoutDirection: LayoutDirection): Dp = calculateEndPadding(layoutDirection)

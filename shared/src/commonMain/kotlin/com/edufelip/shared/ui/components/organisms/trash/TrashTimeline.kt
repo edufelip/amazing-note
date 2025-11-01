@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,7 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Note
-import com.edufelip.shared.preview.Preview
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.empty_trash_description
 import com.edufelip.shared.resources.trash_deleted_days_ago
@@ -44,7 +43,7 @@ import com.edufelip.shared.resources.trash_recover_selected
 import com.edufelip.shared.ui.components.molecules.trash.DeletionHeader
 import com.edufelip.shared.ui.components.molecules.trash.TimelineTrashItem
 import com.edufelip.shared.ui.util.nowEpochMs
-import com.edufelip.shared.ui.util.platform.PlatformFlags
+import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import org.jetbrains.compose.resources.stringResource
 
 private const val DAY_IN_MILLIS = 24L * 60 * 60 * 1000
@@ -177,7 +176,9 @@ private fun deletionHeaderLabel(diffDays: Int): String = when (diffDays) {
     else -> stringResource(Res.string.trash_deleted_days_ago, diffDays)
 }
 
-private fun Modifier.navigationBarsPaddingIfAndroid(): Modifier = if (PlatformFlags.isIos) this else this.navigationBarsPadding()
+private fun Modifier.navigationBarsPaddingIfAndroid(): Modifier = with(platformChromeStrategy()) {
+    this@navigationBarsPaddingIfAndroid.applyNavigationBarsPadding()
+}
 
 @Preview
 @Composable

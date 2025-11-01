@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,14 +31,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.edufelip.shared.preview.Preview
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
 import com.edufelip.shared.resources.empty_notes_hint
 import com.edufelip.shared.resources.empty_notes_title
 import com.edufelip.shared.resources.notes_empty_action
 import com.edufelip.shared.resources.notes_empty_unlock_label
-import com.edufelip.shared.ui.util.platform.PlatformFlags
+import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -118,6 +117,7 @@ fun NotesEmptyState(
             Text(
                 text = stringResource(Res.string.empty_notes_title),
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -150,7 +150,9 @@ fun NotesEmptyState(
     }
 }
 
-private fun Modifier.navigationBarsPaddingIfAndroid(): Modifier = if (PlatformFlags.isIos) this else this.navigationBarsPadding()
+private fun Modifier.navigationBarsPaddingIfAndroid(): Modifier = with(platformChromeStrategy()) {
+    this@navigationBarsPaddingIfAndroid.applyNavigationBarsPadding()
+}
 
 @Preview
 @Composable

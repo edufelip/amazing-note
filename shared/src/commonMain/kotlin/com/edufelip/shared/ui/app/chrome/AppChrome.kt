@@ -17,10 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Folder
@@ -47,7 +43,7 @@ import com.edufelip.shared.ui.app.state.AmazingNoteAppState
 import com.edufelip.shared.ui.components.atoms.common.AvatarImage
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.util.platform.Haptics
-import com.edufelip.shared.ui.util.platform.PlatformFlags
+import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import io.github.alexzhirkevich.cupertino.CupertinoTopAppBarDefaults
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveNavigationBar
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveNavigationBarItem
@@ -57,7 +53,7 @@ import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import org.jetbrains.compose.resources.stringResource
 
 object AppChromeDefaults {
-    val bottomBarHeight = 72.dp
+    val bottomBarHeight get() = platformChromeStrategy().bottomBarHeight
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
@@ -69,21 +65,24 @@ fun AmazingNoteScaffold(
     onTabSelected: (AppRoutes) -> Unit,
     content: @Composable (PaddingValues) -> Unit,
 ) {
+    val chrome = platformChromeStrategy()
+
     Scaffold(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         containerColor = Color.Transparent,
-        contentWindowInsets = if (PlatformFlags.isIos) WindowInsets(0) else WindowInsets.safeDrawing,
+        contentWindowInsets = chrome.contentWindowInsets,
         topBar = topBar,
         bottomBar = {
             if (state.isBottomBarEnabled) {
-                Box(
-                    modifier = Modifier
+                val bottomBarModifier = with(chrome) {
+                    Modifier
                         .fillMaxWidth()
                         .heightIn(min = AppChromeDefaults.bottomBarHeight)
-                        .windowInsetsPadding(WindowInsets.navigationBars),
-                ) {
+                        .applyNavigationBarsPadding()
+                }
+                Box(modifier = bottomBarModifier) {
                     AnimatedVisibility(
                         visible = state.isBottomBarVisible,
                         enter = slideInVertically(
@@ -114,15 +113,17 @@ fun AmazingTopBar(user: AuthUser?) {
     val name = user?.displayName?.takeIf { it.isNotBlank() }
         ?: user?.email?.takeIf { it.isNotBlank() }
         ?: stringResource(Res.string.guest)
-    val isIos = PlatformFlags.isIos
+    val chrome = platformChromeStrategy()
 
-    val topBarModifier = Modifier
-        .fillMaxWidth()
-        .then(if (isIos) Modifier.statusBarsPadding() else Modifier)
+    val topBarModifier = with(chrome) {
+        Modifier
+            .fillMaxWidth()
+            .applyTopBarStatusPadding()
+    }
 
     AdaptiveTopAppBar(
         modifier = topBarModifier,
-        windowInsets = if (isIos) WindowInsets(0) else WindowInsets.statusBars,
+        windowInsets = chrome.topBarWindowInsets,
         navigationIcon = {
             Row(
                 modifier = Modifier.padding(start = 20.dp, end = 8.dp),
@@ -146,7 +147,7 @@ fun AmazingTopBar(user: AuthUser?) {
     ) {
         material {
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = if (isIos) Color.Transparent else MaterialTheme.colorScheme.surface,
+                containerColor = chrome.topBarContainerColor(MaterialTheme.colorScheme.surface),
                 titleContentColor = MaterialTheme.colorScheme.onSurface,
                 navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                 actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -8,11 +8,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,6 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -67,8 +73,8 @@ import com.edufelip.shared.ui.components.organisms.settings.PersonalizeHeroIllus
 import com.edufelip.shared.ui.ios.IosDatePicker
 import com.edufelip.shared.ui.settings.LocalSettings
 import com.edufelip.shared.ui.util.platform.Haptics
-import com.edufelip.shared.ui.util.platform.PlatformFlags
 import com.edufelip.shared.ui.util.platform.currentEpochMillis
+import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.vm.AuthViewModel
 import io.github.alexzhirkevich.cupertino.CupertinoButtonDefaults
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveButton
@@ -90,6 +96,7 @@ fun SettingsScreen(
     appVersion: String,
     modifier: Modifier = Modifier,
 ) {
+    val chrome = platformChromeStrategy()
     val userState = auth?.user?.collectAsState()?.value
     val itemsSpacing = 16.dp
     val settingsStore = LocalSettings.current
@@ -106,7 +113,8 @@ fun SettingsScreen(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)),
         verticalArrangement = Arrangement.spacedBy(itemsSpacing),
     ) {
         item {
@@ -114,6 +122,7 @@ fun SettingsScreen(
                 text = stringResource(Res.string.settings_header),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
             )
         }
@@ -149,7 +158,7 @@ fun SettingsScreen(
             )
         }
 
-        if (PlatformFlags.cupertinoLookEnabled) {
+        if (chrome.useCupertinoLook) {
             item {
                 Column(
                     modifier = Modifier
@@ -165,6 +174,7 @@ fun SettingsScreen(
                         text = "Review reminder date",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                     IosDatePicker(
                         epochMillis = reviewReminder,
@@ -317,6 +327,7 @@ private fun HeroCard() {
                     text = stringResource(Res.string.personalize_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -345,12 +356,13 @@ private fun SectionTitle(text: String) {
 private fun SettingRow(
     title: String,
     subtitle: String?,
-    materialIcon: androidx.compose.ui.graphics.vector.ImageVector,
+    materialIcon: ImageVector,
     cupertinoSymbol: String = "",
     onClick: (() -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
     enabled: Boolean = true,
 ) {
+    val chrome = platformChromeStrategy()
     val shape = RoundedCornerShape(24.dp)
     val interactionSource = remember { MutableInteractionSource() }
     val handleClick = onClick?.let {
@@ -371,7 +383,7 @@ private fun SettingRow(
         Modifier.clickable(
             enabled = enabled,
             interactionSource = interactionSource,
-            indication = if (PlatformFlags.cupertinoLookEnabled) null else LocalIndication.current,
+            indication = if (chrome.useCupertinoLook) null else LocalIndication.current,
         ) {
             handleClick()
         }

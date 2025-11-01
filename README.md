@@ -89,11 +89,11 @@ Minimal CI steps you can copy into your pipeline:
 
 - Android (GitHub Actions job snippet)
 ```
-    - name: Set up JDK 17
+    - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
-        distribution: temurin
-        java-version: '17'
+        distribution: /Users/eduardosantos/Library/Java/JavaVirtualMachines/jbr-21.0.8
+        java-version: '21'
     - name: Build Debug APK
       run: ./gradlew :app:assembleDebug --stacktrace
     - name: Spotless Check (format enforcement)
@@ -104,11 +104,11 @@ Minimal CI steps you can copy into your pipeline:
 
 - iOS (macOS runner) – SwiftPM + Shared framework
 ```
-    - name: Set up JDK 17
+    - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
-        distribution: temurin
-        java-version: '17'
+        distribution: /Users/eduardosantos/Library/Java/JavaVirtualMachines/jbr-21.0.8
+        java-version: '21'
     - name: Build shared framework and run xcodebuild
       run: ./scripts/rebuild_ios.sh
     - name: Spotless Check (format enforcement)

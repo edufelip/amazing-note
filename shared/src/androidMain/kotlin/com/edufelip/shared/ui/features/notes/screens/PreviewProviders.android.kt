@@ -1,6 +1,6 @@
 package com.edufelip.shared.ui.features.notes.screens
 
-import com.edufelip.shared.preview.PreviewParameterProvider
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 internal actual class AddNoteScreenPreviewProvider actual constructor() : PreviewParameterProvider<AddNoteScreenPreviewState> {
     actual override val values: Sequence<AddNoteScreenPreviewState> = AddNotePreviewSamples.states.asSequence()
@@ -8,8 +8,4 @@ internal actual class AddNoteScreenPreviewProvider actual constructor() : Previe
 
 internal actual class FoldersScreenPreviewProvider actual constructor() : PreviewParameterProvider<FoldersPreviewState> {
     actual override val values: Sequence<FoldersPreviewState> = FoldersPreviewSamples.states.asSequence()
-}
-
-internal actual class ListScreenPreviewProvider actual constructor() : PreviewParameterProvider<ListPreviewState> {
-    actual override val values: Sequence<ListPreviewState> = ListPreviewSamples.states.asSequence()
 }

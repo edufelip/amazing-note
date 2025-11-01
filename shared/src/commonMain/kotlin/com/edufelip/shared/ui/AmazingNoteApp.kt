@@ -35,7 +35,7 @@ import com.edufelip.shared.ui.settings.LocalSettings
 import com.edufelip.shared.ui.settings.Settings
 import com.edufelip.shared.ui.theme.AmazingNoteTheme
 import com.edufelip.shared.ui.util.OnSystemBack
-import com.edufelip.shared.ui.util.platform.PlatformFlags
+import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.vm.NoteUiViewModel
 
 @Composable
@@ -48,7 +48,7 @@ fun AmazingNoteApp(
     noteDatabase: NoteDatabase? = null,
     appVersion: String = "1.0.0",
     initialRoute: AppRoutes = AppRoutes.Notes,
-    showBottomBar: Boolean = !PlatformFlags.isIos,
+    showBottomBar: Boolean = platformChromeStrategy().defaultShowBottomBar,
     modifier: Modifier = Modifier,
 ) {
     setSingletonImageLoaderFactory { context ->

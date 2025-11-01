@@ -8,14 +8,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -46,9 +48,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
-import com.edufelip.shared.preview.Preview
-import com.edufelip.shared.preview.PreviewParameter
-import com.edufelip.shared.preview.PreviewParameterProvider
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.delete_folder_message
 import com.edufelip.shared.resources.folders_empty_hint
@@ -67,7 +69,7 @@ import com.edufelip.shared.ui.features.notes.dialogs.DeleteFolderDialog
 import com.edufelip.shared.ui.features.notes.dialogs.FolderNameDialog
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
-import com.edufelip.shared.ui.util.platform.PlatformFlags
+import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -123,19 +125,17 @@ fun FoldersScreen(
     )
 
     val isEmpty = folders.isEmpty()
+    val chrome = platformChromeStrategy()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
-        contentWindowInsets = if (PlatformFlags.isIos) {
-            WindowInsets(0)
-        } else {
-            WindowInsets.safeDrawing
-        },
+        contentWindowInsets = chrome.contentWindowInsets,
         floatingActionButton = {
             if (!isEmpty) {
+                val fabBottomPadding = if (chrome.bottomBarHeight == 0.dp) 0.dp else 24.dp
                 ExtendedFloatingActionButton(
-                    modifier = Modifier.padding(bottom = if (PlatformFlags.isIos) 0.dp else 24.dp),
+                    modifier = Modifier.padding(bottom = fabBottomPadding),
                     onClick = { openCreate() },
                     icon = { Icon(imageVector = Icons.Default.CreateNewFolder, contentDescription = null) },
                     text = { Text(text = stringResource(Res.string.home_new_folder)) },
@@ -146,13 +146,21 @@ fun FoldersScreen(
         if (isEmpty) {
             EmptyFoldersState(
                 modifier = Modifier
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
+                    )
+                    .navigationBarsPaddingIfAndroid(),
                 onCreateFolder = { openCreate() },
             )
         } else {
             Column(
                 modifier = Modifier
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
+                    )
+                    .navigationBarsPaddingIfAndroid(),
                 verticalArrangement = Arrangement.Top,
             ) {
                 if (hasFolders) {
@@ -412,7 +420,9 @@ private fun EmptyFoldersState(
     }
 }
 
-private fun Modifier.navigationBarsPaddingIfAndroid(): Modifier = if (PlatformFlags.isIos) this else this.navigationBarsPadding()
+private fun Modifier.navigationBarsPaddingIfAndroid(): Modifier = with(platformChromeStrategy()) {
+    this@navigationBarsPaddingIfAndroid.applyNavigationBarsPadding()
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(name = "Folders")

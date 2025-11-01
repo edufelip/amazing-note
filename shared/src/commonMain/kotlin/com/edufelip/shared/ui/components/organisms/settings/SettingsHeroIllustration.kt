@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
-import com.edufelip.shared.preview.Preview
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
  * Decorative illustration for the settings hero card. The face illustration is deliberately

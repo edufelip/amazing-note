@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Folder
-import com.edufelip.shared.preview.Preview
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import com.edufelip.shared.ui.components.molecules.notes.FolderListCard
 import com.edufelip.shared.ui.components.molecules.notes.folderCountLabel
 

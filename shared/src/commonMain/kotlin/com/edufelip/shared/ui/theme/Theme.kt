@@ -8,7 +8,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
-import com.edufelip.shared.ui.util.platform.PlatformFlags
+import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveTheme
 import io.github.alexzhirkevich.cupertino.adaptive.CupertinoThemeSpec
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
@@ -98,11 +98,12 @@ fun AmazingNoteTheme(
     useDynamicColor: Boolean = true,
     content: @Composable () -> Unit,
 ) {
+    val chrome = platformChromeStrategy()
     val platformScheme = rememberPlatformColorScheme(darkTheme, useDynamicColor)
     val colorScheme = platformScheme ?: if (darkTheme) darkScheme else lightScheme
     val dynamicActive = platformScheme != null && useDynamicColor
     val shapes = Shapes()
-    val target = if (PlatformFlags.cupertinoLookEnabled) Theme.Cupertino else Theme.Material3
+    val target = if (chrome.useCupertinoLook) Theme.Cupertino else Theme.Material3
     AdaptiveTheme(
         target = target,
         material = MaterialThemeSpec(

@@ -1,3 +1,4 @@
+import org.gradle.api.file.DirectoryProperty
 import org.jetbrains.kotlin.gradle.plugin.mpp.Framework
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
@@ -107,6 +108,17 @@ kotlin {
 compose {
     resources {
         packageOfResClass = "com.edufelip.shared.resources"
+    }
+}
+
+afterEvaluate {
+    tasks.named("syncComposeResourcesForIos") {
+        val syncTask = this
+        val outputDirProperty =
+            syncTask::class.java.getMethod("getOutputDir").invoke(syncTask) as DirectoryProperty
+        val targetDir = layout.buildDirectory.dir("compose/resources/${syncTask.name}").get()
+        logger.lifecycle("configure ${syncTask.name} outputDir=${targetDir.asFile.absolutePath}")
+        outputDirProperty.set(targetDir)
     }
 }
 

@@ -25,7 +25,7 @@ internal abstract class SyncComposeResourcesForIosTask : DefaultTask() {
             if (it == noProvidedValue) {
                 error(
                     "Could not infer iOS target $attribute. Make sure to build " +
-                            "via XCode (directly or via Kotlin Multiplatform Mobile plugin for Android Studio)"
+                        "via XCode (directly or via Kotlin Multiplatform Mobile plugin for Android Studio)",
                 )
             }
             it
@@ -43,7 +43,6 @@ internal abstract class SyncComposeResourcesForIosTask : DefaultTask() {
         providers.gradleProperty("compose.ios.resources.platform")
             .orElse(providers.environmentVariable("PLATFORM_NAME"))
             .orElseThrowMissingAttributeError("platform")
-
 
     @get:Input
     val xcodeTargetArchs: Provider<List<String>> =
@@ -100,32 +99,38 @@ private fun getRequestedKonanTargetsByXcode(platform: String, archs: List<String
 
     when {
         platform.startsWith("iphoneos") -> {
-            targets.addAll(archs.map { arch ->
-                when (arch) {
-                    "arm64", "arm64e" -> KonanTarget.IOS_ARM64
-                    else -> error("Unknown iOS device arch: '$arch'")
-                }
-            })
+            targets.addAll(
+                archs.map { arch ->
+                    when (arch) {
+                        "arm64", "arm64e" -> KonanTarget.IOS_ARM64
+                        else -> error("Unknown iOS device arch: '$arch'")
+                    }
+                },
+            )
         }
 
         platform.startsWith("iphonesimulator") -> {
-            targets.addAll(archs.map { arch ->
-                when (arch) {
-                    "arm64", "arm64e" -> KonanTarget.IOS_SIMULATOR_ARM64
-                    "x86_64" -> KonanTarget.IOS_X64
-                    else -> error("Unknown iOS simulator arch: '$arch'")
-                }
-            })
+            targets.addAll(
+                archs.map { arch ->
+                    when (arch) {
+                        "arm64", "arm64e" -> KonanTarget.IOS_SIMULATOR_ARM64
+                        "x86_64" -> KonanTarget.IOS_X64
+                        else -> error("Unknown iOS simulator arch: '$arch'")
+                    }
+                },
+            )
         }
 
         platform.startsWith("macosx") -> {
-            targets.addAll(archs.map { arch ->
-                when (arch) {
-                    "arm64" -> KonanTarget.MACOS_ARM64
-                    "x86_64" -> KonanTarget.MACOS_X64
-                    else -> error("Unknown macOS arch: '$arch'")
-                }
-            })
+            targets.addAll(
+                archs.map { arch ->
+                    when (arch) {
+                        "arm64" -> KonanTarget.MACOS_ARM64
+                        "x86_64" -> KonanTarget.MACOS_X64
+                        else -> error("Unknown macOS arch: '$arch'")
+                    }
+                },
+            )
         }
 
         else -> error("Unknown Apple platform: '$platform'")
@@ -153,12 +158,14 @@ internal abstract class CheckCanAccessComposeResourcesDirectory : DefaultTask() 
     @TaskAction
     fun run() {
         if (enabled.get()) {
-            logger.error("""
+            logger.error(
+                """
                 Failed to sync compose resources!
                 Please make sure ENABLE_USER_SCRIPT_SANDBOXING is set to 'NO' in 'project.pbxproj'
-            """.trimIndent())
+                """.trimIndent(),
+            )
             throw IllegalStateException(
-                "Sandbox environment detected (ENABLE_USER_SCRIPT_SANDBOXING = YES). It's not supported so far."
+                "Sandbox environment detected (ENABLE_USER_SCRIPT_SANDBOXING = YES). It's not supported so far.",
             )
         }
     }

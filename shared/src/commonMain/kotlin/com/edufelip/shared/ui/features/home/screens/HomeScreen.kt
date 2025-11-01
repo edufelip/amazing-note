@@ -17,9 +17,9 @@ import androidx.compose.ui.Modifier
 import com.edufelip.shared.data.sync.LocalNotesSyncManager
 import com.edufelip.shared.data.sync.SyncEvent
 import com.edufelip.shared.domain.model.Note
-import com.edufelip.shared.preview.Preview
-import com.edufelip.shared.preview.PreviewParameter
-import com.edufelip.shared.preview.PreviewParameterProvider
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 import com.edufelip.shared.ui.components.organisms.common.NotesEmptyState
 import com.edufelip.shared.ui.features.notes.components.ListScreen
 import com.edufelip.shared.ui.preview.DevicePreviewContainer

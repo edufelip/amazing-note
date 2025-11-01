@@ -104,7 +104,10 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.common.ktx)
     implementation(libs.gitlive.app)
+    implementation(libs.gitlive.auth)
 
     // Google Identity Services (Credential Manager + Google ID)
     implementation(libs.credentials.core)

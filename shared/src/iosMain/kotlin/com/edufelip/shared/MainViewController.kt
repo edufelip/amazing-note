@@ -10,6 +10,7 @@ import com.edufelip.shared.domain.usecase.buildNoteUseCases
 import com.edufelip.shared.domain.validation.NoteValidationRules
 import com.edufelip.shared.ui.AmazingNoteApp
 import com.edufelip.shared.ui.nav.AppRoutes
+import com.edufelip.shared.ui.settings.AppPreferences
 import com.edufelip.shared.ui.settings.DefaultAppPreferences
 import com.edufelip.shared.ui.settings.Settings
 import com.edufelip.shared.ui.vm.DefaultNoteUiViewModel
@@ -18,7 +19,7 @@ import platform.UIKit.UIColor
 import platform.UIKit.UIViewController
 import platform.UIKit.systemBackgroundColor
 
-private class IosSettings : Settings {
+private object IosSettings : Settings {
     private val defaults = NSUserDefaults.standardUserDefaults()
     override fun getBool(key: String, default: Boolean): Boolean {
         val obj = defaults.objectForKey(key)
@@ -34,6 +35,10 @@ private class IosSettings : Settings {
     override fun setString(key: String, value: String) {
         defaults.setObject(value, forKey = key)
     }
+}
+
+private val sharedAppPreferences: AppPreferences by lazy {
+    DefaultAppPreferences(IosSettings)
 }
 
 fun MainViewController(): UIViewController = createAmazingNoteViewController(
@@ -66,8 +71,8 @@ fun createAmazingNoteViewController(
         val useCases = buildNoteUseCases(repo, NoteValidationRules())
         val vm = DefaultNoteUiViewModel(useCases)
         val authService = remember { GitLiveAuthService() }
-        val settings = remember { IosSettings() }
-        val appPreferences = remember(settings) { DefaultAppPreferences(settings) }
+        val settings = IosSettings
+        val appPreferences = remember { sharedAppPreferences }
         AmazingNoteApp(
             viewModel = vm,
             authService = authService,
