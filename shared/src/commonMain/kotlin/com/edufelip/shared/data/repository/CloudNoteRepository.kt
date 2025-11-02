@@ -12,7 +12,7 @@ import com.edufelip.shared.domain.model.NoteTextSpan
 import com.edufelip.shared.domain.model.ensureContent
 import com.edufelip.shared.domain.model.toLegacyContent
 import com.edufelip.shared.domain.repository.NoteRepository
-import com.edufelip.shared.ui.util.nowEpochMs
+import com.edufelip.shared.core.time.nowEpochMs
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first

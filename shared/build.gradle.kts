@@ -1,4 +1,3 @@
-import org.gradle.api.file.DirectoryProperty
 import org.jetbrains.kotlin.gradle.plugin.mpp.Framework
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
@@ -18,8 +17,9 @@ kotlin {
 
     val iosArm64 = iosArm64()
     val iosSimArm64 = iosSimulatorArm64()
+    val iosX64 = iosX64()
 
-    listOf(iosArm64, iosSimArm64).forEach { t ->
+    listOf(iosArm64, iosSimArm64, iosX64).forEach { t ->
         t.binaries.framework {
             baseName = "Shared"
             isStatic = true
@@ -42,16 +42,7 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.coroutines.core)
                 implementation(compose.runtime)
-                implementation(compose.foundation)
-                implementation(compose.material3)
                 implementation(compose.ui)
-                implementation(compose.components.uiToolingPreview)
-                implementation(compose.components.resources)
-                implementation(libs.coil3.compose)
-                implementation(libs.coil3.network.ktor3)
-                implementation(compose.materialIconsExtended)
-                implementation(libs.cupertino.adaptive)
-                implementation(libs.cupertino.icons.extended)
                 implementation(libs.sqldelight.runtime)
                 implementation(libs.sqldelight.coroutines)
                 implementation(libs.kotlinx.serialization.json)
@@ -68,28 +59,11 @@ kotlin {
         androidMain {
             dependencies {
                 implementation(libs.sqldelight.android.driver)
-                implementation(compose.preview)
-                implementation(libs.bundles.preview)
-                implementation(compose.components.resources)
-                implementation(libs.activity.compose)
-                implementation(libs.credentials.core)
-                implementation(libs.credentials.play.services)
-                implementation(libs.googleid)
-                implementation(libs.ktor.client.okhttp)
-                implementation(platform("com.google.firebase:firebase-bom:${libs.versions.firebase.bom.get()}"))
-                implementation(libs.firebase.auth)
-                implementation(libs.firebase.firestore)
-                implementation(libs.firebase.storage)
-                implementation(libs.firebase.auth.ktx)
-                implementation(libs.firebase.common.ktx)
             }
         }
         iosMain {
             dependencies {
                 implementation(libs.sqldelight.native.driver)
-                implementation(libs.ktor.client.darwin)
-                implementation(compose.components.resources)
-                implementation(compose.components.uiToolingPreview)
             }
         }
     }
@@ -104,37 +78,6 @@ kotlin {
         }
     }
 }
-
-compose {
-    resources {
-        packageOfResClass = "com.edufelip.shared.resources"
-    }
-}
-
-afterEvaluate {
-    tasks.named("syncComposeResourcesForIos") {
-        val syncTask = this
-        val outputDirProperty =
-            syncTask::class.java.getMethod("getOutputDir").invoke(syncTask) as DirectoryProperty
-        val targetDir = layout.buildDirectory.dir("compose/resources/${syncTask.name}").get()
-        logger.lifecycle("configure ${syncTask.name} outputDir=${targetDir.asFile.absolutePath}")
-        outputDirProperty.set(targetDir)
-    }
-}
-
-// Ensure compose resource accessors are generated before Kotlin compilation for all targets
-tasks
-    .matching { it.name.startsWith("compile") && it.name.contains("Kotlin") && it.project.path == ":shared" }
-    .configureEach {
-        dependsOn(tasks.named("generateComposeResClass"))
-    }
-
-// Ensure Android target compiles after common metadata so generated accessors are available
-tasks
-    .matching { it.name == "compileDebugKotlinAndroid" || it.name == "compileReleaseKotlinAndroid" }
-    .configureEach {
-        dependsOn(tasks.named("compileKotlinMetadata"))
-    }
 
 android {
     namespace = "com.edufelip.amazing_note.shared"

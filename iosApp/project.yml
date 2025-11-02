@@ -36,16 +36,16 @@ targets:
       FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]:
         - "$(inherited)"
         - "$(CONFIGURATION_BUILD_DIR)"
-        - "$(SRCROOT)/../shared/build/bin/iosSimulatorArm64/debugFramework"
+        - "$(SRCROOT)/Frameworks/$(CONFIGURATION)-iphonesimulator"
       FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]:
         - "$(inherited)"
         - "$(CONFIGURATION_BUILD_DIR)"
-        - "$(SRCROOT)/../shared/build/bin/iosArm64/debugFramework"
+        - "$(SRCROOT)/Frameworks/$(CONFIGURATION)-iphoneos"
       EXCLUDED_ARCHS[sdk=iphonesimulator*]: x86_64
       OTHER_LDFLAGS:
         - "$(inherited)"
         - "-framework"
-        - "Shared"
+        - "ComposeApp"
     resources: []
     dependencies:
       - package: Firebase

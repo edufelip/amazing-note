@@ -1,6 +1,6 @@
 # iOS module
 
-The iOS host app consumes the shared Kotlin Multiplatform framework. Swift Package Manager supplies Firebase and other iOS dependencies—no CocoaPods required.
+The iOS host app consumes the Compose-based Kotlin Multiplatform UI (`ComposeApp.framework`) plus the shared data layer. Swift Package Manager supplies Firebase and other iOS dependencies—no CocoaPods required.
 
 ## Quick start
 
@@ -15,26 +15,28 @@ The iOS host app consumes the shared Kotlin Multiplatform framework. Swift Packa
    ```
    This compiles Firebase (and other SPM packages) into Xcode’s DerivedData folder so Gradle can link against them.
 
-2. **Link the shared framework via Gradle.**  
+2. **Build and sync the Compose framework via Gradle.**  
    Either use the helper script:
    ```bash
    ./scripts/rebuild_ios.sh
    ```
-   or invoke the link tasks directly:
+   or invoke the Gradle tasks directly (set `SDK_NAME` to `iphonesimulator` or `iphoneos`):
    ```bash
-   ./gradlew :shared:linkDebugFrameworkIosArm64 \
-             -PXCODE_FRAMEWORKS_BUILD_DIR=/absolute/path/to/DerivedData/.../Build/Products/Debug-iphoneos
-
-   ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64 \
-             -PXCODE_FRAMEWORKS_BUILD_DIR=/absolute/path/to/DerivedData/.../Build/Products/Debug-iphonesimulator
+   ./gradlew -PCONFIGURATION=Debug -PSDK_NAME=iphonesimulator \
+             :composeApp:packForXcode \
+             :iosApp:packForXcode
    ```
-   (Use `xcodebuild -showBuildSettings` to locate the `CONFIGURATION_BUILD_DIR` for your scheme/config.)
+   The task copies `ComposeApp.framework` into `iosApp/Frameworks/<CONFIGURATION>-<platform>/` for Xcode.
 
 3. **Embed the framework in Xcode.**  
-   In the **iosApp** target, open *General ▸ Frameworks, Libraries, and Embedded Content*, add `Shared.framework` from the build products, and set it to **Embed & Sign**. That removes the need for any extra embed shell script.
+   In the **iosApp** target, open *General ▸ Frameworks, Libraries, and Embedded Content*, add `ComposeApp.framework` from `iosApp/Frameworks/<CONFIGURATION>-<platform>/` and set it to **Embed & Sign**. No extra embed script is required.
 
 4. **Run from Xcode or the CLI.**  
-   After linking and embedding, regular Xcode builds (or `xcodebuild`) will pick up the fresh `Shared.framework`.
+   After syncing the framework, regular Xcode builds (or `xcodebuild`) pick up the fresh `ComposeApp.framework`.
+
+### Android Studio
+
+The `iosApp` Gradle module now applies the Kotlin Multiplatform plugin and publishes the usual `runDebugExecutableIosSimulatorArm64` task. The task itself is a no-op, but it allows the Android Studio KMM plug-in to surface an iOS run configuration again alongside the Android one.
 
 ## Notes
 

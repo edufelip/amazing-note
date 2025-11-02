@@ -1,5 +1,5 @@
 import SwiftUI
-import Shared
+import ComposeApp
 
 struct LiquidRoot: View {
     @State private var selection: Tab = .notes

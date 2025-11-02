@@ -29,8 +29,8 @@
 		A55143988C4C8F291BE72E9A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		BDC2B4ED6760D21408C91A4A /* LiquidRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidRoot.swift; sourceTree = "<group>"; };
 		C678D2A4430FF615DBC7217B /* AppMain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMain.swift; sourceTree = "<group>"; };
-		FB54EE8E2EB2691B007A2F0E /* Shared.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Shared.framework; sourceTree = "<group>"; };
-		FB54EE912EB2696A007A2F0E /* Shared.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Shared.framework; sourceTree = "<group>"; };
+		FB54EE8E2EB2691B007A2F0E /* ComposeApp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ComposeApp.framework; sourceTree = "<group>"; };
+		FB54EE912EB2696A007A2F0E /* ComposeApp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ComposeApp.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,7 +93,7 @@
 		FB54EE8F2EB2691B007A2F0E /* iphonesimulator */ = {
 			isa = PBXGroup;
 			children = (
-				FB54EE8E2EB2691B007A2F0E /* Shared.framework */,
+				FB54EE8E2EB2691B007A2F0E /* ComposeApp.framework */,
 			);
 			name = iphonesimulator;
 			path = "../shared/build/xcode-frameworks/Debug/iphonesimulator";
@@ -102,7 +102,7 @@
 		FB54EE922EB2696A007A2F0E /* iphonesimulator */ = {
 			isa = PBXGroup;
 			children = (
-				FB54EE912EB2696A007A2F0E /* Shared.framework */,
+				FB54EE912EB2696A007A2F0E /* ComposeApp.framework */,
 			);
 			name = iphonesimulator;
 			path = "../shared/build/xcode-frameworks/Debug/iphonesimulator";
@@ -362,7 +362,7 @@
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
-					Shared,
+				ComposeApp,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnote.iosApp;
 				SDKROOT = iphoneos;
@@ -398,7 +398,7 @@
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
-					Shared,
+				ComposeApp,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnote.iosApp;
 				SDKROOT = iphoneos;

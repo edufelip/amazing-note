@@ -2,11 +2,10 @@
 core = "2.2.0"
 core-ktx = "1.17.0"
 coroutines = "1.10.2"
-gradle-plugin = "8.13.0"
+gradle-plugin = "8.5.2"
 hilt = "2.57.2"
 junit = "4.13.2"
 kotlin = "2.1.21"
-ksp = "2.1.21-2.0.2"
 lifecycle = "2.9.4"
 truth = "1.4.5"
 compose-bom = "2025.10.00"
@@ -83,8 +82,8 @@ cupertino-icons-extended = { group = "io.github.alexzhirkevich", name = "cuperti
 preview = ["androidx-ui-tooling-preview", "androidx-ui-tooling"]
 
 [plugins]
-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 android-application = { id = "com.android.application", version.ref = "gradle-plugin" }
+android-library = { id = "com.android.library", version.ref = "gradle-plugin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
@@ -93,7 +92,6 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-mpp" }
 compose-compiler = { id = "org.jetbrains.compose.compiler", version.ref = "compose-mpp" }
-compose-hot-reload = { id = "org.jetbrains.compose.hot-reload", version.ref = "compose-mpp" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

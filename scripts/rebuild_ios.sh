@@ -15,17 +15,10 @@ chmod +x ./gradlew
 # Determine Gradle target suffix/output directory
 if [[ "$PLATFORM" == "iphoneos" ]]; then
   DEST="generic/platform=iOS"
-  SUFFIX="IosArm64"
-  OUTDIR="iosArm64"
+  SDK_NAME_SHORT="iphoneos"
 else
   DEST="generic/platform=iOS Simulator"
-  if [[ "$(uname -m)" == "arm64" ]]; then
-    SUFFIX="IosSimulatorArm64"
-    OUTDIR="iosSimulatorArm64"
-  else
-    SUFFIX="IosX64"
-    OUTDIR="iosX64"
-  fi
+  SDK_NAME_SHORT="iphonesimulator"
 fi
 
 # Ensure SwiftPM frameworks (Firebase, etc.) exist in DerivedData
@@ -62,20 +55,23 @@ if [[ ! -d "$PKG_DIR" ]]; then
   echo "WARNING: $PKG_DIR does not exist. Run an Xcode build first so SwiftPM frameworks are produced."
 fi
 
-# Link the Shared framework for this target
-./gradlew ":shared:link${CONFIG}Framework${SUFFIX}" \
-  -PXCODE_FRAMEWORKS_BUILD_DIR="$PKG_DIR"
+# Build and sync ComposeApp framework
+./gradlew \
+  -PCONFIGURATION="$CONFIG" \
+  -PSDK_NAME="$SDK_NAME_SHORT" \
+  :composeApp:packForXcode \
+  :iosApp:syncComposeFramework
 
-FRAMEWORK_PATH="shared/build/bin/${OUTDIR}/$(echo "$CONFIG" | tr '[:upper:]' '[:lower:]')Framework/Shared.framework"
+FRAMEWORK_PATH="iosApp/Frameworks/${CONFIG}-${SDK_NAME_SHORT}/ComposeApp.framework"
 if [[ ! -d "$FRAMEWORK_PATH" ]]; then
-  echo "ERROR: Linked framework not found at $FRAMEWORK_PATH"
+  echo "ERROR: ComposeApp.framework not found at $FRAMEWORK_PATH"
   exit 1
 fi
 
 # Copy result into Xcode build products
-rm -rf "$BUILD_DIR/Shared.framework"
+rm -rf "$BUILD_DIR/ComposeApp.framework"
 rsync -a "$FRAMEWORK_PATH" "$BUILD_DIR/"
-echo "Copied Shared.framework to $BUILD_DIR"
+echo "Copied ComposeApp.framework to $BUILD_DIR"
 
 # Final Xcode build to produce the app with the fresh framework embedded
 xcodebuild -project iosApp/iosApp.xcodeproj \

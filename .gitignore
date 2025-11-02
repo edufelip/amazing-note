@@ -21,6 +21,7 @@ local.properties
 
 # iOS
 iosApp/DerivedData/
+iosApp/Frameworks/
 **/xcuserdata/
 *.xcuserstate
 /.kotlin

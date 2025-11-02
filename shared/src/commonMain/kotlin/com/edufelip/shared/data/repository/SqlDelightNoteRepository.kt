@@ -17,7 +17,7 @@ import com.edufelip.shared.domain.model.toJson
 import com.edufelip.shared.domain.model.toLegacyContent
 import com.edufelip.shared.domain.model.withLegacyFieldsFromContent
 import com.edufelip.shared.domain.repository.NoteRepository
-import com.edufelip.shared.ui.util.nowEpochMs
+import com.edufelip.shared.core.time.nowEpochMs
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

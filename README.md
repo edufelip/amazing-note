@@ -59,13 +59,16 @@ Android
   - Lint: `./gradlew :app:lintDebug`
  - Gradle Wrapper: 9.0-milestone-1
 
-iOS (SwiftPM + Shared Framework)
+iOS (SwiftPM + ComposeApp Framework)
 - Requirements: Xcode 15+, JDK 17
 - First-time setup / refresh shared framework slices:
   - `./scripts/rebuild_ios.sh`
 - Open the project in Xcode:
   - `open iosApp/iosApp.xcodeproj`
-- Subsequent runs: the Xcode build phase automatically calls `embedAndSignAppleFrameworkForXcode` so you only need to hit Run.
+- Manual Gradle invocation if you prefer not to use the helper script:
+  - `./gradlew -PCONFIGURATION=Debug -PSDK_NAME=iphonesimulator :composeApp:packForXcode :iosApp:packForXcode`
+- Subsequent runs: Xcode picks up the freshly synced `ComposeApp.framework` from `iosApp/Frameworks/<CONFIGURATION>-<platform>/`, so hitting Run in Xcode is enough.
+- Android Studio integration: the `iosApp` Kotlin Multiplatform module now exposes the usual `runDebugExecutableIosSimulatorArm64` task, so the KMM plug-in restores the iOS run configuration (it still defers to Xcode/`run_ios_app.sh` for real execution).
 
 Notes
 - Ensure `GoogleService-Info.plist` is present in `iosApp/iosApp/` and your URL scheme (REVERSED_CLIENT_ID) is set in `Info.plist`.
@@ -102,14 +105,14 @@ Minimal CI steps you can copy into your pipeline:
       run: ./gradlew verifyL10n --stacktrace
 ```
 
-- iOS (macOS runner) – SwiftPM + Shared framework
+- iOS (macOS runner) – SwiftPM + ComposeApp framework
 ```
     - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
         distribution: /Users/eduardosantos/Library/Java/JavaVirtualMachines/jbr-21.0.8
         java-version: '21'
-    - name: Build shared framework and run xcodebuild
+    - name: Build Compose framework and run xcodebuild
       run: ./scripts/rebuild_ios.sh
     - name: Spotless Check (format enforcement)
       run: ./gradlew spotlessCheck --stacktrace
@@ -128,32 +131,33 @@ Minimal CI steps you can copy into your pipeline:
   - CI runs `spotlessCheck` as part of the `ci` task.
 
 ## Android Previews
-- Android previews need a strings provider. Use the helper wrapper:
-  - `PreviewLocalized { /* your composable */ }`
-  - See: `shared/src/androidMain/kotlin/com/edufelip/shared/ui/preview/PreviewWrappers.kt`
+- Android previews need the shared theme wrapper. Use:
+  - `DevicePreviewContainer { /* your composable */ }`
+  - Optional multi-device annotation: `@DevicePreviews`
+  - Source: `composeApp/src/commonMain/kotlin/com/edufelip/shared/ui/preview/PreviewScaffold.kt`
 
-## Navigation Helpers (shared UI)
+## Navigation Helpers (Compose UI)
 - In-memory navigation for the shared UI uses a simple back stack of `AppRoutes`.
-- Reusable helpers live in `shared/src/commonMain/kotlin/com/edufelip/shared/ui/nav/BackStackHelpers.kt`:
+- Reusable helpers live in `composeApp/src/commonMain/kotlin/com/edufelip/shared/ui/nav/BackStackHelpers.kt`:
   - `backStack.navigate(AppRoutes.SomeRoute)` – push (singleTop by default)
   - `backStack.goBack()` – pop if possible, returns `true` if popped
   - `backStack.popToRoot()` – clear to root
   - Prefer these over direct `add/remove` to keep behavior consistent.
 
-## Shared UI Structure
-- Compose UI follows an atomic hierarchy under `shared/src/commonMain/kotlin/com/edufelip/shared/ui/components/`:
+## Compose UI Structure
+- Compose UI follows an atomic hierarchy under `composeApp/src/commonMain/kotlin/com/edufelip/shared/ui/components/`:
   - `atoms/` for foundational controls (buttons, indicators, small visuals).
   - `molecules/` for small reusable clusters (e.g., note rows, folder cards).
   - `organisms/` for larger connected widgets, layouts, and empty states.
-- Feature-specific surfaces live in `shared/src/commonMain/kotlin/com/edufelip/shared/ui/features/<feature>/` with nested folders such as `screens/`, `components/`, and `dialogs/`.
-- Every reusable component and screen owns its own `@Preview`; platform-specific preview providers mirror the same feature structure under `shared/src/{androidMain,iosMain}/kotlin/com/edufelip/shared/ui/features/`.
+- Feature-specific surfaces live in `composeApp/src/commonMain/kotlin/com/edufelip/shared/ui/features/<feature>/` with nested folders such as `screens/`, `components/`, and `dialogs/`.
+- Every reusable component and screen owns its own `@Preview`; platform-specific preview providers mirror the same feature structure under `composeApp/src/{androidMain,iosMain}/kotlin/com/edufelip/shared/ui/features/`.
 - When creating new UI, start with an atom or molecule in `ui/components`, compose them into an organism if needed, and keep feature wiring inside `ui/features/.../screens`.
 
 ## Android DI (Hilt + SQLDelight)
 
 Architecture (Clean): UI → ViewModel → UseCases → Repository → Data Source
 
-- UI (shared Compose in `shared/ui`) now consumes a platform ViewModel via a shared interface `com.edufelip.shared.presentation.NoteUiViewModel`.
+- UI (Compose Multiplatform in `composeApp`) now consumes a platform ViewModel via a shared interface `com.edufelip.shared.presentation.NoteUiViewModel`.
 - ViewModel (Android: `KmpNoteViewModel`) depends on `NoteUseCases`.
 - UseCases depend on the domain `NoteRepository`.
 - Data layer (`SqlDelightNoteRepository`) implements the domain repository and talks to SQLDelight.

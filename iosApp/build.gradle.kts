@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.Sync
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
@@ -16,35 +17,23 @@ kotlin {
     targets.withType(KotlinNativeTarget::class.java).configureEach {
         binaries.executable {
             entryPoint = "com.edufelip.iosapp.main"
-            freeCompilerArgs +=
-                listOf(
-                    "-linker-option",
-                    "-framework",
-                    "-linker-option",
-                    "Metal",
-                    "-linker-option",
-                    "-framework",
-                    "-linker-option",
-                    "CoreText",
-                    "-linker-option",
-                    "-framework",
-                    "-linker-option",
-                    "CoreGraphics",
-                )
+            freeCompilerArgs += listOf(
+                "-linker-option", "-framework",
+                "-linker-option", "Metal",
+                "-linker-option", "-framework",
+                "-linker-option", "CoreText",
+                "-linker-option", "-framework",
+                "-linker-option", "CoreGraphics",
+            )
         }
     }
 
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(project(":shared"))
-                implementation(compose.runtime)
-                implementation(compose.foundation)
-                implementation(compose.material3)
-                implementation(compose.components.resources)
+                implementation(project(":composeApp"))
             }
         }
-
         val iosMain by getting {
             dependencies {
                 implementation(compose.animation)
@@ -54,23 +43,53 @@ kotlin {
     }
 }
 
+// Lightweight run stubs so Android Studio exposes iOS run configurations.
 tasks.register("runDebugExecutableIosSimulatorArm64") {
     group = "run"
-    description = "Stub task so Android Studio can offer a run configuration for the Debug simulator binary."
+    description = "Stub task: build via Gradle, then launch from Xcode or scripts/run_ios_app.sh."
+    dependsOn("linkDebugExecutableIosSimulatorArm64")
     doLast {
-        logger.lifecycle(
-            "To launch the iOS app, open iosApp/iosApp.xcodeproj in Xcode or run:\n" +
-                "  xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 15'",
-        )
+        logger.lifecycle("Debug executable linked: run from Xcode or ./scripts/run_ios_app.sh")
     }
 }
 
 tasks.register("runReleaseExecutableIosSimulatorArm64") {
     group = "run"
-    description = "Stub task so Android Studio can offer a run configuration for the Release simulator binary."
+    description = "Stub task for Release simulator builds."
+    dependsOn("linkReleaseExecutableIosSimulatorArm64")
     doLast {
-        logger.lifecycle(
-            "To launch the iOS app in Release, use Xcode with the Release configuration or run the corresponding xcodebuild command.",
-        )
+        logger.lifecycle("Release executable linked: run from Xcode if needed.")
+    }
+}
+
+val configuration = providers.gradleProperty("CONFIGURATION").orElse(System.getenv("CONFIGURATION") ?: "Debug")
+val sdkName = providers.gradleProperty("SDK_NAME").orElse(System.getenv("SDK_NAME") ?: "iphonesimulator")
+
+val composeAppProject = project(":composeApp")
+val frameworksOutput = layout.projectDirectory.dir("Frameworks")
+
+fun composeFrameworkDir(config: String, sdk: String) =
+    composeAppProject.layout.buildDirectory.dir("xcode-frameworks/$config/$sdk")
+
+tasks.register<Sync>("syncComposeFramework") {
+    val buildType = configuration.get()
+    val sdk = sdkName.get()
+    val sdkSegment = if (sdk.startsWith("iphoneos", ignoreCase = true)) "iphoneos" else "iphonesimulator"
+    description = "Copy ComposeApp.framework for $buildType ($sdk) into iosApp/Frameworks."
+    group = "build"
+    dependsOn(":composeApp:packForXcode")
+    from(composeFrameworkDir(buildType, sdk))
+    into(frameworksOutput.dir("$buildType-$sdkSegment").asFile)
+}
+
+tasks.register("packForXcode") {
+    group = "build"
+    description = "Prepare ComposeApp.framework for Xcode by syncing it into iosApp/Frameworks."
+    dependsOn("syncComposeFramework")
+    doLast {
+        val buildType = configuration.get()
+        val sdk = sdkName.get()
+        val sdkSegment = if (sdk.startsWith("iphoneos", ignoreCase = true)) "iphoneos" else "iphonesimulator"
+        logger.lifecycle("Framework synced to ${frameworksOutput.dir("$buildType-$sdkSegment").asFile}")
     }
 }

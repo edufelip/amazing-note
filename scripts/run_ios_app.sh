@@ -27,6 +27,14 @@ require_command xcrun
 require_command python3
 require_command /usr/libexec/PlistBuddy
 
+if command -v /usr/libexec/java_home >/dev/null 2>&1; then
+  JAVA_HOME_CANDIDATE=$(/usr/libexec/java_home -v 17 2>/dev/null || true)
+  if [[ -n "$JAVA_HOME_CANDIDATE" ]]; then
+    export JAVA_HOME="$JAVA_HOME_CANDIDATE"
+    export PATH="$JAVA_HOME/bin:$PATH"
+  fi
+fi
+
 DEVICE_JSON=$(mktemp)
 xcrun simctl list devices --json > "$DEVICE_JSON"
 PHYSICAL_TXT=$(mktemp)
@@ -235,7 +243,17 @@ EXTRA_ARGS=()
 if [[ "$TARGET_TYPE" == "device" ]]; then
   log "Preparing real device build for $TARGET_NAME"
   EXTRA_ARGS+=(-allowProvisioningUpdates)
+  EXTRA_ARGS+=(-allowProvisioningDeviceRegistration)
 fi
+
+if [[ "$TARGET_TYPE" == "device" ]]; then
+  SDK_SHORT="iphoneos"
+else
+  SDK_SHORT="iphonesimulator"
+fi
+
+log "Syncing Compose framework for $SDK_SHORT"
+(cd "$PROJECT_ROOT" && ./gradlew -PCONFIGURATION=Debug -PSDK_NAME="$SDK_SHORT" :composeApp:packForXcode :iosApp:packForXcode >/dev/null)
 
 log "Building $SCHEME for $TARGET_NAME"
 XCODE_CMD=(
@@ -281,8 +299,3 @@ fi
 log "Done"
 
 rm -f "$DEVICE_JSON" "$PHYSICAL_TXT"
-if [[ "$TARGET_TYPE" == "device" ]]; then
-  log "Preparing real device build for $TARGET_NAME"
-  EXTRA_ARGS+=(-allowProvisioningUpdates)
-  EXTRA_ARGS+=(-allowProvisioningDeviceRegistration)
-fi

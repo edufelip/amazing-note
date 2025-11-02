@@ -1,6 +1,6 @@
 import SwiftUI
 import UIKit
-import Shared
+import ComposeApp
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?

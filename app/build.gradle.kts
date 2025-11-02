@@ -2,8 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.hilt.android)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.google.services)
 }
 
@@ -91,7 +91,7 @@ dependencies {
 
     // Dagger - Hilt
     implementation(libs.hilt.android)
-    ksp(libs.hilt.android.compiler)
+    kapt(libs.hilt.android.compiler)
 
     // Local Unit Tests
     testImplementation(libs.junit)
@@ -116,6 +116,8 @@ dependencies {
 
     // Shared KMP module
     implementation(project(":shared"))
+    // Compose Multiplatform UI
+    implementation(project(":composeApp"))
 }
 
 kotlin {
