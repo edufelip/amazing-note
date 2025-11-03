@@ -8,16 +8,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -113,8 +108,7 @@ fun SettingsScreen(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp)
-            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)),
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(itemsSpacing),
     ) {
         item {
@@ -220,9 +214,13 @@ fun SettingsScreen(
                             )
                         }
                         Column(modifier = Modifier.padding(start = 12.dp)) {
-                            Text(text = userState.displayName ?: userState.email ?: "", fontWeight = FontWeight.SemiBold)
                             Text(
-                                text = userState.email ?: stringResource(Res.string.welcome_message),
+                                text = userState.displayName ?: userState.email ?: "",
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = userState.email
+                                    ?: stringResource(Res.string.welcome_message),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -293,7 +291,18 @@ fun SettingsScreen(
                 enabled = false,
             )
         }
-        item { Spacer(modifier = Modifier.height(48.dp)) }
+        item { Spacer(modifier = Modifier.height(56.dp)) }
+        if (chrome.useCupertinoLook) {
+            item {
+                Spacer(
+                    modifier = with(chrome) {
+                        Modifier
+                            .fillMaxWidth()
+                            .applyNavigationBarsPadding()
+                    },
+                )
+            }
+        }
     }
 }
 
@@ -301,7 +310,11 @@ fun SettingsScreen(
 private fun HeroCard() {
     Card(
         shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primary.copy(
+                alpha = 0.08f
+            )
+        ),
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
@@ -415,7 +428,11 @@ private fun SettingRow(
                     )
                 }
                 Column(modifier = Modifier.padding(start = 12.dp)) {
-                    Text(text = title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
                     subtitle?.let {
                         Text(
                             text = it,

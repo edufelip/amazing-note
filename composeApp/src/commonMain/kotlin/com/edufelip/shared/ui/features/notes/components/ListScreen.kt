@@ -9,14 +9,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,9 +43,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Note
-import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
-import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
 import com.edufelip.shared.resources.created
@@ -70,6 +62,9 @@ import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.settings.LocalAppPreferences
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 private enum class Bucket { TODAY, THIS_WEEK, THIS_MONTH, EARLIER }
 
@@ -109,20 +104,21 @@ fun ListScreen(
             contentWindowInsets = chrome.contentWindowInsets,
             topBar = if (showTopAppBar) {
                 (
-                    {
-                        LargeTopAppBar(
-                            title = {
-                                val resolvedTitle = title ?: stringResource(Res.string.your_notes)
-                                Text(text = resolvedTitle)
-                            },
-                            colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                                titleContentColor = MaterialTheme.colorScheme.onSurface,
-                            ),
+                        {
+                            LargeTopAppBar(
+                                title = {
+                                    val resolvedTitle =
+                                        title ?: stringResource(Res.string.your_notes)
+                                    Text(text = resolvedTitle)
+                                },
+                                colors = TopAppBarDefaults.topAppBarColors(
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                                ),
+                            )
+                        }
                         )
-                    }
-                    )
             } else {
                 ({})
             },
@@ -145,11 +141,7 @@ fun ListScreen(
             },
         ) { padding ->
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .windowInsetsPadding(
-                        WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
-                    ),
+                modifier = Modifier.fillMaxSize(),
             ) {
                 val filtered = notes
                 // Only show empty state if user truly has no notes at all

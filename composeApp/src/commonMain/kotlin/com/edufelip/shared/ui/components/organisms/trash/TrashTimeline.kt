@@ -55,11 +55,15 @@ fun TrashTimeline(
     onEmptyTrash: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val chrome = platformChromeStrategy()
+
     if (notes.isEmpty()) {
         EmptyTrashState(
-            modifier = modifier
-                .fillMaxSize()
-                .navigationBarsPaddingIfAndroid(),
+            modifier = with(chrome) {
+                modifier
+                    .fillMaxSize()
+                    .applyNavigationBarsPadding()
+            },
         )
         return
     }
@@ -73,9 +77,11 @@ fun TrashTimeline(
         .groupBy { ((now - it.updatedAt).coerceAtLeast(0L) / DAY_IN_MILLIS).toInt() }
 
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .navigationBarsPaddingIfAndroid(),
+        modifier = with(chrome) {
+            modifier
+                .fillMaxSize()
+                .applyNavigationBarsPadding()
+        },
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -174,10 +180,6 @@ private fun deletionHeaderLabel(diffDays: Int): String = when (diffDays) {
     0 -> stringResource(Res.string.trash_deleted_today)
     1 -> stringResource(Res.string.trash_deleted_yesterday)
     else -> stringResource(Res.string.trash_deleted_days_ago, diffDays)
-}
-
-private fun Modifier.navigationBarsPaddingIfAndroid(): Modifier = with(platformChromeStrategy()) {
-    this@navigationBarsPaddingIfAndroid.applyNavigationBarsPadding()
 }
 
 @Preview

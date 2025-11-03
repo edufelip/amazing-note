@@ -7,17 +7,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -48,9 +43,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
-import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
-import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.delete_folder_message
 import com.edufelip.shared.resources.folders_empty_hint
@@ -71,6 +63,9 @@ import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,12 +78,18 @@ fun FoldersScreen(
     onDeleteFolder: (Folder) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val notesByFolder = remember(notes) { notes.groupBy { it.folderId }.mapValues { it.value.size } }
+    val notesByFolder =
+        remember(notes) { notes.groupBy { it.folderId }.mapValues { it.value.size } }
     val hasFolders = folders.isNotEmpty()
 
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var layoutOrdinal by rememberSaveable { mutableStateOf(FolderLayout.Grid.ordinal) }
-    val layoutMode = remember(layoutOrdinal) { FolderLayout.entries[layoutOrdinal.coerceIn(0, FolderLayout.entries.size - 1)] }
+    val layoutMode = remember(layoutOrdinal) {
+        FolderLayout.entries[layoutOrdinal.coerceIn(
+            0,
+            FolderLayout.entries.size - 1
+        )]
+    }
 
     val filteredFolders = remember(folders, searchQuery) {
         if (searchQuery.isBlank()) {
@@ -137,7 +138,12 @@ fun FoldersScreen(
                 ExtendedFloatingActionButton(
                     modifier = Modifier.padding(bottom = fabBottomPadding),
                     onClick = { openCreate() },
-                    icon = { Icon(imageVector = Icons.Default.CreateNewFolder, contentDescription = null) },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.CreateNewFolder,
+                            contentDescription = null
+                        )
+                    },
                     text = { Text(text = stringResource(Res.string.home_new_folder)) },
                 )
             }
@@ -145,22 +151,20 @@ fun FoldersScreen(
     ) { padding ->
         if (isEmpty) {
             EmptyFoldersState(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .windowInsetsPadding(
-                        WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
-                    )
-                    .navigationBarsPaddingIfAndroid(),
+                modifier = with(chrome) {
+                    Modifier
+                        .fillMaxSize()
+                        .applyNavigationBarsPadding()
+                },
                 onCreateFolder = { openCreate() },
             )
         } else {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .windowInsetsPadding(
-                        WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
-                    )
-                    .navigationBarsPaddingIfAndroid(),
+                modifier = with(chrome) {
+                    Modifier
+                        .fillMaxSize()
+                        .applyNavigationBarsPadding()
+                },
                 verticalArrangement = Arrangement.Top,
             ) {
                 if (hasFolders) {
@@ -202,6 +206,7 @@ fun FoldersScreen(
                                     },
                                 )
                             }
+
                             FolderLayout.List -> {
                                 FoldersList(
                                     folders = filteredFolders,
@@ -221,10 +226,12 @@ fun FoldersScreen(
                     }
                 } else {
                     FoldersSearchEmptyState(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 32.dp)
-                            .navigationBarsPaddingIfAndroid(),
+                        modifier = with(chrome) {
+                            Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 32.dp)
+                                .applyNavigationBarsPadding()
+                        },
                         onReset = { searchQuery = "" },
                     )
                 }
@@ -315,10 +322,14 @@ private fun EmptyFoldersState(
     modifier: Modifier = Modifier,
     onCreateFolder: () -> Unit,
 ) {
+    val chrome = platformChromeStrategy()
+
     Column(
-        modifier = modifier
-            .padding(horizontal = 24.dp)
-            .navigationBarsPaddingIfAndroid(),
+        modifier = with(chrome) {
+            modifier
+                .padding(horizontal = 24.dp)
+                .applyNavigationBarsPadding()
+        },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -408,7 +419,10 @@ private fun EmptyFoldersState(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
             ),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 24.dp, vertical = 12.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                horizontal = 24.dp,
+                vertical = 12.dp
+            ),
         ) {
             Icon(
                 imageVector = Icons.Default.CreateNewFolder,
@@ -418,10 +432,6 @@ private fun EmptyFoldersState(
             Text(text = stringResource(Res.string.home_new_folder))
         }
     }
-}
-
-private fun Modifier.navigationBarsPaddingIfAndroid(): Modifier = with(platformChromeStrategy()) {
-    this@navigationBarsPaddingIfAndroid.applyNavigationBarsPadding()
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -456,8 +466,18 @@ internal data class FoldersPreviewState(
 internal object FoldersPreviewSamples {
     private val sampleFolders = listOf(
         Folder(id = 1, name = "Work", createdAt = 1_699_000_000_000, updatedAt = 1_699_100_000_000),
-        Folder(id = 2, name = "Personal", createdAt = 1_699_050_000_000, updatedAt = 1_699_150_000_000),
-        Folder(id = 3, name = "Reading List", createdAt = 1_699_060_000_000, updatedAt = 1_699_170_000_000),
+        Folder(
+            id = 2,
+            name = "Personal",
+            createdAt = 1_699_050_000_000,
+            updatedAt = 1_699_150_000_000
+        ),
+        Folder(
+            id = 3,
+            name = "Reading List",
+            createdAt = 1_699_060_000_000,
+            updatedAt = 1_699_170_000_000
+        ),
     )
 
     private val sampleNotes = buildList {
@@ -525,6 +545,7 @@ internal object FoldersPreviewSamples {
     val states: List<FoldersPreviewState> = listOf(empty, populated, darkLocalized)
 }
 
-internal expect class FoldersScreenPreviewProvider() : PreviewParameterProvider<FoldersPreviewState> {
+internal expect class FoldersScreenPreviewProvider() :
+    PreviewParameterProvider<FoldersPreviewState> {
     override val values: Sequence<FoldersPreviewState>
 }

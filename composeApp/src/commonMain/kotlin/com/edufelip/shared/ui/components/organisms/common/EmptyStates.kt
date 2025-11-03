@@ -46,11 +46,15 @@ fun NotesEmptyState(
     modifier: Modifier = Modifier,
     onCreateNote: (() -> Unit)? = null,
 ) {
+    val chrome = platformChromeStrategy()
+
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp)
-            .navigationBarsPaddingIfAndroid(),
+        modifier = with(chrome) {
+            modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp)
+                .applyNavigationBarsPadding()
+        },
         contentAlignment = Alignment.Center,
     ) {
         Column(
@@ -148,10 +152,6 @@ fun NotesEmptyState(
             }
         }
     }
-}
-
-private fun Modifier.navigationBarsPaddingIfAndroid(): Modifier = with(platformChromeStrategy()) {
-    this@navigationBarsPaddingIfAndroid.applyNavigationBarsPadding()
 }
 
 @Preview
