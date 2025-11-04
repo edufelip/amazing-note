@@ -31,7 +31,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
 import com.edufelip.shared.resources.empty_notes_hint
@@ -40,6 +39,7 @@ import com.edufelip.shared.resources.notes_empty_action
 import com.edufelip.shared.resources.notes_empty_unlock_label
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun NotesEmptyState(

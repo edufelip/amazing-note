@@ -13,10 +13,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.user_placeholder
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 actual fun AvatarImage(photoUrl: String?, size: Dp, modifier: Modifier) {

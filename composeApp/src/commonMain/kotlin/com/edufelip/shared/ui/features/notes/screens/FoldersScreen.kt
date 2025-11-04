@@ -34,6 +34,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -72,6 +73,7 @@ import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 fun FoldersScreen(
     folders: List<Folder>,
     notes: List<Note>,
+    isDarkTheme: Boolean,
     onOpenFolder: (Folder) -> Unit,
     onCreateFolder: (String) -> Unit,
     onRenameFolder: (Folder, String) -> Unit,
@@ -85,10 +87,12 @@ fun FoldersScreen(
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var layoutOrdinal by rememberSaveable { mutableStateOf(FolderLayout.Grid.ordinal) }
     val layoutMode = remember(layoutOrdinal) {
-        FolderLayout.entries[layoutOrdinal.coerceIn(
-            0,
-            FolderLayout.entries.size - 1
-        )]
+        FolderLayout.entries[
+            layoutOrdinal.coerceIn(
+                0,
+                FolderLayout.entries.size - 1,
+            ),
+        ]
     }
 
     val filteredFolders = remember(folders, searchQuery) {
@@ -141,7 +145,7 @@ fun FoldersScreen(
                     icon = {
                         Icon(
                             imageVector = Icons.Default.CreateNewFolder,
-                            contentDescription = null
+                            contentDescription = null,
                         )
                     },
                     text = { Text(text = stringResource(Res.string.home_new_folder)) },
@@ -184,43 +188,46 @@ fun FoldersScreen(
                 }
 
                 if (hasFilteredContent) {
-                    Crossfade(
-                        targetState = layoutMode,
-                        animationSpec = tween(durationMillis = 220),
-                        modifier = Modifier.fillMaxSize(),
-                    ) { activeLayout ->
-                        when (activeLayout) {
-                            FolderLayout.Grid -> {
-                                FoldersGrid(
-                                    modifier = Modifier.fillMaxSize(),
-                                    folders = filteredFolders,
-                                    notesByFolder = notesByFolder,
-                                    accentPalette = accentPalette,
-                                    onOpenFolder = onOpenFolder,
-                                    onRequestRename = { folder ->
-                                        nameInput = folder.name
-                                        renameTarget = folder
-                                    },
-                                    onRequestDelete = { folder ->
-                                        deleteTarget = folder
-                                    },
-                                )
-                            }
+                    key(isDarkTheme) {
+                        Crossfade(
+                            targetState = layoutMode,
+                            animationSpec = tween(durationMillis = 220),
+                            modifier = Modifier.fillMaxSize(),
+                            label = "folders_layout_crossfade",
+                        ) { activeLayout ->
+                            when (activeLayout) {
+                                FolderLayout.Grid -> {
+                                    FoldersGrid(
+                                        modifier = Modifier.fillMaxSize(),
+                                        folders = filteredFolders,
+                                        notesByFolder = notesByFolder,
+                                        accentPalette = accentPalette,
+                                        onOpenFolder = onOpenFolder,
+                                        onRequestRename = { folder ->
+                                            nameInput = folder.name
+                                            renameTarget = folder
+                                        },
+                                        onRequestDelete = { folder ->
+                                            deleteTarget = folder
+                                        },
+                                    )
+                                }
 
-                            FolderLayout.List -> {
-                                FoldersList(
-                                    folders = filteredFolders,
-                                    notesByFolder = notesByFolder,
-                                    accentPalette = accentPalette,
-                                    onOpenFolder = onOpenFolder,
-                                    onRequestRename = { folder ->
-                                        nameInput = folder.name
-                                        renameTarget = folder
-                                    },
-                                    onRequestDelete = { folder ->
-                                        deleteTarget = folder
-                                    },
-                                )
+                                FolderLayout.List -> {
+                                    FoldersList(
+                                        folders = filteredFolders,
+                                        notesByFolder = notesByFolder,
+                                        accentPalette = accentPalette,
+                                        onOpenFolder = onOpenFolder,
+                                        onRequestRename = { folder ->
+                                            nameInput = folder.name
+                                            renameTarget = folder
+                                        },
+                                        onRequestDelete = { folder ->
+                                            deleteTarget = folder
+                                        },
+                                    )
+                                }
                             }
                         }
                     }
@@ -421,7 +428,7 @@ private fun EmptyFoldersState(
             ),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(
                 horizontal = 24.dp,
-                vertical = 12.dp
+                vertical = 12.dp,
             ),
         ) {
             Icon(
@@ -448,6 +455,7 @@ internal fun FoldersScreenPreview(
         FoldersScreen(
             folders = state.folders,
             notes = state.notes,
+            isDarkTheme = state.isDarkTheme,
             onOpenFolder = {},
             onCreateFolder = {},
             onRenameFolder = { _, _ -> },
@@ -470,13 +478,13 @@ internal object FoldersPreviewSamples {
             id = 2,
             name = "Personal",
             createdAt = 1_699_050_000_000,
-            updatedAt = 1_699_150_000_000
+            updatedAt = 1_699_150_000_000,
         ),
         Folder(
             id = 3,
             name = "Reading List",
             createdAt = 1_699_060_000_000,
-            updatedAt = 1_699_170_000_000
+            updatedAt = 1_699_170_000_000,
         ),
     )
 
@@ -545,7 +553,6 @@ internal object FoldersPreviewSamples {
     val states: List<FoldersPreviewState> = listOf(empty, populated, darkLocalized)
 }
 
-internal expect class FoldersScreenPreviewProvider() :
-    PreviewParameterProvider<FoldersPreviewState> {
+internal expect class FoldersScreenPreviewProvider() : PreviewParameterProvider<FoldersPreviewState> {
     override val values: Sequence<FoldersPreviewState>
 }

@@ -2,11 +2,11 @@ package com.edufelip.shared.ui.components.molecules.notes
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.folder_note_count_one
 import com.edufelip.shared.resources.folder_note_count_other
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun folderCountLabel(count: Int): String = if (count == 1) {

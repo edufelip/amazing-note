@@ -1,5 +1,6 @@
 package com.edufelip.shared.ui.features.notes.dialogs
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,14 +36,34 @@ fun FolderNameDialog(
             Haptics.lightTap()
             onDismiss()
         },
-        title = { Text(text = resolvedTitle) },
+        title = {
+            Text(
+                text = resolvedTitle,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        },
         message = {
             OutlinedTextField(
                 value = value,
                 onValueChange = { value = it },
                 singleLine = true,
-                label = { Text(text = stringResource(Res.string.folder_name)) },
+                label = {
+                    Text(
+                        text = stringResource(Res.string.folder_name),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                },
             )
+        },
+        adaptation = {
+            material {
+                containerColor = MaterialTheme.colorScheme.surface
+            }
+            cupertino {
+                containerColor = MaterialTheme.colorScheme.surface
+            }
         },
     ) {
         cancel(onClick = {
@@ -74,8 +95,28 @@ fun DeleteFolderDialog(
             Haptics.lightTap()
             onDismiss()
         },
-        title = { Text(text = resolvedTitle) },
-        message = { Text(text = message) },
+        title = {
+            Text(
+                text = resolvedTitle,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        },
+        message = {
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        },
+        adaptation = {
+            material {
+                containerColor = MaterialTheme.colorScheme.surface
+            }
+            cupertino {
+                containerColor = MaterialTheme.colorScheme.surface
+            }
+        },
     ) {
         cancel(onClick = {
             Haptics.lightTap()

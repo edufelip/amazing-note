@@ -31,6 +31,12 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         get() = NoteContent(blockList.toList())
 
     fun setContent(newContent: NoteContent) {
+        if (newContent.blocks.isEmpty()) {
+            val existingText = blockList.singleOrNull() as? TextBlock
+            if (existingText != null && existingText.text.isEmpty() && existingText.spans.isEmpty()) {
+                return
+            }
+        }
         val normalized = newContent.normalizedBlocks()
         if (blockList.sameAs(normalized)) return
         blockList.clear()

@@ -10,6 +10,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
@@ -38,6 +39,7 @@ import com.edufelip.shared.ui.features.settings.routes.PrivacyRoute
 import com.edufelip.shared.ui.features.settings.routes.SettingsRoute
 import com.edufelip.shared.ui.features.trash.routes.TrashRoute
 import com.edufelip.shared.ui.nav.AppRoutes
+import com.edufelip.shared.ui.util.platform.isApplePlatform
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.vm.NoteUiViewModel
 
@@ -84,46 +86,8 @@ fun AmazingNoteNavHost(
             .applyAdditionalContentPadding(state.topBarVisible)
     }
 
-    AnimatedContent(
-        modifier = contentModifier.then(modifier),
-        targetState = NavScene(state.currentRoute, darkTheme),
-        transitionSpec = {
-            if (initialState.themeVersion != targetState.themeVersion) {
-                EnterTransition.None togetherWith ExitTransition.None
-            } else {
-                val duration = 250
-                when {
-                    initialState.route is AppRoutes.NoteDetail || targetState.route is AppRoutes.NoteDetail -> {
-                        slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith
-                            slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
-                    }
-
-                    initialState.route is AppRoutes.FolderDetail || targetState.route is AppRoutes.FolderDetail -> {
-                        slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith
-                            slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
-                    }
-
-                    state.isTab(initialState.route) && state.isTab(targetState.route) -> {
-                        val fadeDuration = 220
-                        fadeIn(animationSpec = tween(fadeDuration)) togetherWith
-                            fadeOut(animationSpec = tween(fadeDuration))
-                    }
-
-                    initialState.route is AppRoutes.Login ||
-                        targetState.route is AppRoutes.Login ||
-                        initialState.route is AppRoutes.SignUp ||
-                        targetState.route is AppRoutes.SignUp ||
-                        initialState.route is AppRoutes.Trash ||
-                        targetState.route is AppRoutes.Trash -> {
-                        fadeIn(animationSpec = tween(duration)) togetherWith
-                            fadeOut(animationSpec = tween(duration))
-                    }
-
-                    else -> EnterTransition.None togetherWith ExitTransition.None
-                }
-            }
-        },
-    ) { scene ->
+    @Composable
+    fun SceneContent(scene: NavScene) {
         when (val route = scene.route) {
             AppRoutes.Notes -> NotesRoute(
                 viewModel = viewModel,
@@ -138,6 +102,7 @@ fun AmazingNoteNavHost(
                 syncManager = environment.notesSyncManager,
                 coroutineScope = state.coroutineScope,
                 onNavigate = state::navigate,
+                isDarkTheme = darkTheme,
             )
 
             AppRoutes.Settings -> SettingsRoute(
@@ -188,6 +153,58 @@ fun AmazingNoteNavHost(
                 onBack = { state.popBack() },
             )
         }
+    }
+
+    val targetScene = NavScene(state.currentRoute, darkTheme)
+
+    if (isApplePlatform()) {
+        Box(modifier = contentModifier.then(modifier)) {
+            SceneContent(targetScene)
+        }
+        return
+    }
+
+    AnimatedContent(
+        modifier = contentModifier.then(modifier),
+        targetState = targetScene,
+        transitionSpec = {
+            if (initialState.themeVersion != targetState.themeVersion) {
+                EnterTransition.None togetherWith ExitTransition.None
+            } else {
+                val duration = 250
+                when {
+                    initialState.route is AppRoutes.NoteDetail || targetState.route is AppRoutes.NoteDetail -> {
+                        slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith
+                            slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
+                    }
+
+                    initialState.route is AppRoutes.FolderDetail || targetState.route is AppRoutes.FolderDetail -> {
+                        slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith
+                            slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
+                    }
+
+                    state.isTab(initialState.route) && state.isTab(targetState.route) -> {
+                        val fadeDuration = 220
+                        fadeIn(animationSpec = tween(fadeDuration)) togetherWith
+                            fadeOut(animationSpec = tween(fadeDuration))
+                    }
+
+                    initialState.route is AppRoutes.Login ||
+                        targetState.route is AppRoutes.Login ||
+                        initialState.route is AppRoutes.SignUp ||
+                        targetState.route is AppRoutes.SignUp ||
+                        initialState.route is AppRoutes.Trash ||
+                        targetState.route is AppRoutes.Trash -> {
+                        fadeIn(animationSpec = tween(duration)) togetherWith
+                            fadeOut(animationSpec = tween(duration))
+                    }
+
+                    else -> EnterTransition.None togetherWith ExitTransition.None
+                }
+            }
+        },
+    ) { scene ->
+        SceneContent(scene)
     }
 }
 

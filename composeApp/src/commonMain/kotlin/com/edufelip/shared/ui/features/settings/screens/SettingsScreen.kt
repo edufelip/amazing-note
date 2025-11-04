@@ -2,9 +2,11 @@ package com.edufelip.shared.ui.features.settings.screens
 
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,10 +14,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -30,7 +37,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,10 +48,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.resources.Res
@@ -73,7 +84,6 @@ import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.vm.AuthViewModel
 import io.github.alexzhirkevich.cupertino.CupertinoButtonDefaults
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveButton
-import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveSwitch
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import org.jetbrains.compose.resources.stringResource
@@ -133,19 +143,11 @@ fun SettingsScreen(
                 materialIcon = Icons.Default.DarkMode,
                 cupertinoSymbol = "moon.fill",
                 trailing = {
-                    AdaptiveSwitch(
+                    AnimatedThemeSwitch(
                         checked = darkTheme,
                         onCheckedChange = { checked ->
                             Haptics.lightTap()
                             onToggleDarkTheme(checked)
-                        },
-                        adaptation = {
-                            material {
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                                    checkedTrackColor = MaterialTheme.colorScheme.primary,
-                                )
-                            }
                         },
                     )
                 },
@@ -216,7 +218,7 @@ fun SettingsScreen(
                         Column(modifier = Modifier.padding(start = 12.dp)) {
                             Text(
                                 text = userState.displayName ?: userState.email ?: "",
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
                             )
                             Text(
                                 text = userState.email
@@ -312,8 +314,8 @@ private fun HeroCard() {
         shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primary.copy(
-                alpha = 0.08f
-            )
+                alpha = 0.08f,
+            ),
         ),
         modifier = Modifier.fillMaxWidth(),
     ) {
@@ -363,6 +365,64 @@ private fun SectionTitle(text: String) {
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.padding(top = 8.dp),
     )
+}
+
+@Composable
+private fun AnimatedThemeSwitch(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val trackWidth = 52.dp
+    val trackHeight = 30.dp
+    val thumbSize = 22.dp
+    val horizontalPadding = 4.dp
+    val transition = updateTransition(targetState = checked, label = "theme_switch")
+    val trackColor by transition.animateColor(label = "track_color") { isChecked ->
+        if (isChecked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+    }
+    val thumbBorderColor by transition.animateColor(label = "thumb_border") { isChecked ->
+        if (isChecked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+    }
+    val thumbBackground by transition.animateColor(label = "thumb_background") { isChecked ->
+        if (isChecked) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.surface
+    }
+    val thumbOffset by transition.animateDp(label = "thumb_offset") { isChecked ->
+        if (isChecked) trackWidth - thumbSize - horizontalPadding * 2 else 0.dp
+    }
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Box(
+        modifier = modifier
+            .size(trackWidth, trackHeight)
+            .clip(CircleShape)
+            .background(trackColor.copy(alpha = 0.85f))
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                role = Role.Switch,
+            ) {
+                onCheckedChange(!checked)
+            }
+            .semantics {
+                role = Role.Switch
+                onClick {
+                    onCheckedChange(!checked)
+                    true
+                }
+            }
+            .padding(horizontal = horizontalPadding, vertical = 4.dp),
+        contentAlignment = Alignment.CenterStart,
+    ) {
+        Box(
+            modifier = Modifier
+                .offset(x = thumbOffset)
+                .size(thumbSize)
+                .clip(CircleShape)
+                .background(thumbBackground)
+                .border(1.dp, thumbBorderColor.copy(alpha = 0.5f), CircleShape),
+        )
+    }
 }
 
 @Composable
@@ -431,7 +491,7 @@ private fun SettingRow(
                     Text(
                         text = title,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
                     )
                     subtitle?.let {
                         Text(

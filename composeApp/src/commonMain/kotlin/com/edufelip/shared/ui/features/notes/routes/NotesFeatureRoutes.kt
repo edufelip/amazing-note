@@ -23,6 +23,7 @@ fun FoldersRoute(
     syncManager: NotesSyncManager,
     coroutineScope: CoroutineScope,
     onNavigate: (AppRoutes) -> Unit,
+    isDarkTheme: Boolean,
 ) {
     val folders by viewModel.folders.collectAsState(initial = emptyList())
     val notes by viewModel.notes.collectAsState(initial = emptyList())
@@ -30,6 +31,7 @@ fun FoldersRoute(
     FoldersScreen(
         folders = folders,
         notes = notes,
+        isDarkTheme = isDarkTheme,
         onOpenFolder = { folder ->
             onNavigate(AppRoutes.FolderDetail(folder.id))
         },

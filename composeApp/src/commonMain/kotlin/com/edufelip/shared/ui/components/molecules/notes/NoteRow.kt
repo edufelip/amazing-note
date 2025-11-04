@@ -15,8 +15,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.edufelip.shared.core.time.nowEpochMs
 import com.edufelip.shared.domain.model.Note
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.created_days_ago
 import com.edufelip.shared.resources.created_hours_ago
@@ -26,8 +26,8 @@ import com.edufelip.shared.resources.updated_days_ago
 import com.edufelip.shared.resources.updated_hours_ago
 import com.edufelip.shared.resources.updated_just_now
 import com.edufelip.shared.resources.updated_minutes_ago
-import com.edufelip.shared.core.time.nowEpochMs
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun NoteRow(

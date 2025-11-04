@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
@@ -78,36 +79,38 @@ fun AmazingNoteApp(
         SyncOnUserChange(user, environment.notesSyncManager)
         BottomBarVisibilityEffect(state)
 
-        AmazingNoteTheme(darkTheme = darkTheme) {
-            OnSystemBack {
-                if (!state.popBack()) {
-                    state.setRoot(AppRoutes.Notes)
+        key(darkTheme) {
+            AmazingNoteTheme(darkTheme = darkTheme) {
+                OnSystemBack {
+                    if (!state.popBack()) {
+                        state.setRoot(AppRoutes.Notes)
+                    }
                 }
-            }
 
-            val topBar: @Composable () -> Unit = {
-                AnimatedVisibility(
-                    visible = state.topBarVisible,
-                    enter = fadeIn(animationSpec = tween(durationMillis = 220)),
-                    exit = fadeOut(animationSpec = tween(durationMillis = 220)),
-                ) {
-                    AmazingTopBar(user = user)
+                val topBar: @Composable () -> Unit = {
+                    AnimatedVisibility(
+                        visible = state.topBarVisible,
+                        enter = fadeIn(animationSpec = tween(durationMillis = 220)),
+                        exit = fadeOut(animationSpec = tween(durationMillis = 220)),
+                    ) {
+                        AmazingTopBar(user = user)
+                    }
                 }
-            }
 
-            AmazingNoteScaffold(
-                state = state,
-                modifier = modifier,
-                topBar = topBar,
-                onTabSelected = { route -> state.setRoot(route) },
-            ) { padding: PaddingValues ->
-                AmazingNoteNavHost(
-                    padding = padding,
+                AmazingNoteScaffold(
                     state = state,
-                    viewModel = viewModel,
-                    appVersion = appVersion,
-                    darkTheme = darkTheme,
-                )
+                    modifier = modifier,
+                    topBar = topBar,
+                    onTabSelected = { route -> state.setRoot(route) },
+                ) { padding: PaddingValues ->
+                    AmazingNoteNavHost(
+                        padding = padding,
+                        state = state,
+                        viewModel = viewModel,
+                        appVersion = appVersion,
+                        darkTheme = darkTheme,
+                    )
+                }
             }
         }
     }

@@ -17,14 +17,21 @@ kotlin {
     targets.withType(KotlinNativeTarget::class.java).configureEach {
         binaries.executable {
             entryPoint = "com.edufelip.iosapp.main"
-            freeCompilerArgs += listOf(
-                "-linker-option", "-framework",
-                "-linker-option", "Metal",
-                "-linker-option", "-framework",
-                "-linker-option", "CoreText",
-                "-linker-option", "-framework",
-                "-linker-option", "CoreGraphics",
-            )
+            freeCompilerArgs +=
+                listOf(
+                    "-linker-option",
+                    "-framework",
+                    "-linker-option",
+                    "Metal",
+                    "-linker-option",
+                    "-framework",
+                    "-linker-option",
+                    "CoreText",
+                    "-linker-option",
+                    "-framework",
+                    "-linker-option",
+                    "CoreGraphics",
+                )
         }
     }
 
@@ -68,8 +75,10 @@ val sdkName = providers.gradleProperty("SDK_NAME").orElse(System.getenv("SDK_NAM
 val composeAppProject = project(":composeApp")
 val frameworksOutput = layout.projectDirectory.dir("Frameworks")
 
-fun composeFrameworkDir(config: String, sdk: String) =
-    composeAppProject.layout.buildDirectory.dir("xcode-frameworks/$config/$sdk")
+fun composeFrameworkDir(
+    config: String,
+    sdk: String,
+) = composeAppProject.layout.buildDirectory.dir("xcode-frameworks/$config/$sdk")
 
 tasks.register<Sync>("syncComposeFramework") {
     val buildType = configuration.get()

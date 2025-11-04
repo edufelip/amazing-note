@@ -31,8 +31,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.edufelip.shared.core.time.nowEpochMs
 import com.edufelip.shared.domain.model.Note
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.empty_trash_description
 import com.edufelip.shared.resources.trash_deleted_days_ago
@@ -42,9 +42,9 @@ import com.edufelip.shared.resources.trash_empty_action
 import com.edufelip.shared.resources.trash_recover_selected
 import com.edufelip.shared.ui.components.molecules.trash.DeletionHeader
 import com.edufelip.shared.ui.components.molecules.trash.TimelineTrashItem
-import com.edufelip.shared.core.time.nowEpochMs
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 private const val DAY_IN_MILLIS = 24L * 60 * 60 * 1000
 

@@ -2,21 +2,28 @@ package com.edufelip.shared.ui.features.notes.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -24,9 +31,6 @@ import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.TextBlock
-import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
-import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.description
 import com.edufelip.shared.ui.components.molecules.notes.NoteTitleField
@@ -36,7 +40,11 @@ import com.edufelip.shared.ui.components.organisms.notes.NoteEditorTopBar
 import com.edufelip.shared.ui.editor.NoteEditor
 import com.edufelip.shared.ui.editor.NoteEditorState
 import com.edufelip.shared.ui.editor.rememberNoteEditorState
+import com.edufelip.shared.ui.util.platform.isApplePlatform
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 @Composable
 fun AddNoteScreen(
@@ -55,6 +63,8 @@ fun AddNoteScreen(
     isSaving: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val listState = rememberLazyListState()
+    val useSimpleEditor = isApplePlatform()
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -63,47 +73,61 @@ fun AddNoteScreen(
             .padding(horizontal = 20.dp),
     ) {
         NoteEditorTopBar(onBack = onBack, onSave = onSave, onDelete = onDelete, isSaving = isSaving)
-        Column(
+        LazyColumn(
             modifier = Modifier
-                .weight(1f, fill = true)
-                .verticalScroll(rememberScrollState()),
+                .weight(1f, fill = true),
+            state = listState,
             verticalArrangement = Arrangement.spacedBy(24.dp),
+            contentPadding = PaddingValues(vertical = 12.dp),
         ) {
-            NoteTitleField(
-                titleState = titleState,
-                onTitleChange = onTitleChange,
-                error = titleError,
-            )
-            FolderSelectionSection(
-                folders = folders,
-                selectedFolderId = selectedFolderId,
-                onFolderChange = onFolderChange,
-            )
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                tonalElevation = 1.dp,
-                color = MaterialTheme.colorScheme.surface,
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    NoteEditor(
-                        state = editorState,
-                        placeholder = stringResource(Res.string.description),
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    if (!contentError.isNullOrBlank()) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = contentError,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.error,
-                        )
+            item(key = "title") {
+                NoteTitleField(
+                    titleState = titleState,
+                    onTitleChange = onTitleChange,
+                    error = titleError,
+                )
+            }
+            item(key = "folder") {
+                FolderSelectionSection(
+                    folders = folders,
+                    selectedFolderId = selectedFolderId,
+                    onFolderChange = onFolderChange,
+                )
+            }
+            item(key = "editor") {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    tonalElevation = 1.dp,
+                    color = MaterialTheme.colorScheme.surface,
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        if (useSimpleEditor) {
+                            SimpleIosNoteEditor(
+                                editorState = editorState,
+                                placeholder = stringResource(Res.string.description),
+                            )
+                        } else {
+                            NoteEditor(
+                                state = editorState,
+                                placeholder = stringResource(Res.string.description),
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                        if (!contentError.isNullOrBlank()) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = contentError,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
                     }
                 }
             }
         }
-        NoteEditorActionBar(onAddImage = onAddImage)
+        NoteEditorActionBar(onAddImage = if (useSimpleEditor) null else onAddImage)
     }
 }
 
@@ -158,4 +182,41 @@ internal fun AddNoteScreenPreview(
 
 internal expect class AddNoteScreenPreviewProvider() : PreviewParameterProvider<AddNoteScreenPreviewState> {
     override val values: Sequence<AddNoteScreenPreviewState>
+}
+
+@Composable
+private fun SimpleIosNoteEditor(
+    editorState: NoteEditorState,
+    placeholder: String,
+) {
+    val textBlock = editorState.blockList.firstOrNull { it is TextBlock } as? TextBlock
+    if (textBlock == null) {
+        return
+    }
+    var value by remember(textBlock.id) {
+        mutableStateOf(TextFieldValue(textBlock.text, TextRange(textBlock.text.length)))
+    }
+    LaunchedEffect(textBlock.id, textBlock.text) {
+        if (value.text != textBlock.text) {
+            value = TextFieldValue(textBlock.text, TextRange(textBlock.text.length))
+        }
+    }
+    TextField(
+        value = value,
+        onValueChange = { newValue ->
+            value = newValue
+            editorState.onTextChanged(textBlock.id, newValue.text)
+            editorState.updateCaret(textBlock.id, newValue.selection.start, newValue.selection.end)
+        },
+        modifier = Modifier.fillMaxWidth(),
+        placeholder = { Text(text = placeholder) },
+        minLines = 6,
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = MaterialTheme.colorScheme.surface,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+            unfocusedIndicatorColor = MaterialTheme.colorScheme.outlineVariant,
+            cursorColor = MaterialTheme.colorScheme.primary,
+        ),
+    )
 }

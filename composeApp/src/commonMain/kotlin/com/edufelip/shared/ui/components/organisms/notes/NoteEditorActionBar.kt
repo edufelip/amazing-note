@@ -15,16 +15,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun NoteEditorActionBar(
     onAddImage: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
+    if (onAddImage == null) {
+        return
+    }
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -32,10 +35,7 @@ fun NoteEditorActionBar(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Button(
-            onClick = { onAddImage?.invoke() },
-            enabled = onAddImage != null,
-        ) {
+        Button(onClick = onAddImage) {
             Icon(imageVector = Icons.Outlined.Image, contentDescription = stringResource(Res.string.cd_add))
             Spacer(modifier = Modifier.size(8.dp))
             Text(text = stringResource(Res.string.cd_add))

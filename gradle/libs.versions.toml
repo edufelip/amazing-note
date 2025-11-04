@@ -2,7 +2,7 @@
 core = "2.2.0"
 core-ktx = "1.17.0"
 coroutines = "1.10.2"
-gradle-plugin = "8.5.2"
+gradle-plugin = "8.9.1"
 hilt = "2.57.2"
 junit = "4.13.2"
 kotlin = "2.1.21"

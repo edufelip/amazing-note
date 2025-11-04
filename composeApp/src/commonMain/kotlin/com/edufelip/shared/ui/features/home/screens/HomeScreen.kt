@@ -17,14 +17,14 @@ import androidx.compose.ui.Modifier
 import com.edufelip.shared.data.sync.LocalNotesSyncManager
 import com.edufelip.shared.data.sync.SyncEvent
 import com.edufelip.shared.domain.model.Note
-import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
-import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 import com.edufelip.shared.ui.components.organisms.common.NotesEmptyState
 import com.edufelip.shared.ui.features.notes.components.ListScreen
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.vm.AuthViewModel
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
+import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

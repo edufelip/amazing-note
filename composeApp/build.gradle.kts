@@ -95,10 +95,11 @@ val xcodeSdk = providers.gradleProperty("SDK_NAME").orElse(System.getenv("SDK_NA
 tasks.register<Sync>("packForXcode") {
     val buildType = xcodeConfiguration.get()
     val sdkName = xcodeSdk.get()
-    val target = when {
-        sdkName.startsWith("iphoneos", ignoreCase = true) -> iosArm64Target
-        else -> iosSimArm64Target
-    }
+    val target =
+        when {
+            sdkName.startsWith("iphoneos", ignoreCase = true) -> iosArm64Target
+            else -> iosSimArm64Target
+        }
     val framework = target.binaries.getFramework(buildType)
     dependsOn(framework.linkTaskProvider)
     val destinationDir = layout.buildDirectory.dir("xcode-frameworks/$buildType/$sdkName")

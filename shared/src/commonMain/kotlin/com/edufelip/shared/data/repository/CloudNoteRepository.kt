@@ -1,5 +1,6 @@
 package com.edufelip.shared.data.repository
 
+import com.edufelip.shared.core.time.nowEpochMs
 import com.edufelip.shared.data.cloud.CloudNotesDataSource
 import com.edufelip.shared.data.cloud.CurrentUserProvider
 import com.edufelip.shared.data.cloud.provideCloudNotesDataSource
@@ -12,7 +13,6 @@ import com.edufelip.shared.domain.model.NoteTextSpan
 import com.edufelip.shared.domain.model.ensureContent
 import com.edufelip.shared.domain.model.toLegacyContent
 import com.edufelip.shared.domain.repository.NoteRepository
-import com.edufelip.shared.core.time.nowEpochMs
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
