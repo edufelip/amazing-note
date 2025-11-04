@@ -26,6 +26,7 @@ spotless = "8.0.0"
 cupertino-adaptive = "0.1.0-alpha04"
 firebase-auth-ktx = "23.2.0"
 firebase-common-ktx = "21.0.0"
+firebase-crashlytics-ktx = "19.4.0"
 
 [libraries]
 
@@ -62,7 +63,7 @@ firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 firebase-storage = { module = "com.google.firebase:firebase-storage" }
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx", version.ref = "firebase-auth-ktx" }
 firebase-common-ktx = { module = "com.google.firebase:firebase-common-ktx", version.ref = "firebase-common-ktx" }
-firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics-ktx" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics-ktx", version.ref = "firebase-crashlytics-ktx" }
 
 gitlive-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "gitlive" }
 gitlive-auth = { module = "dev.gitlive:firebase-auth", version.ref = "gitlive" }

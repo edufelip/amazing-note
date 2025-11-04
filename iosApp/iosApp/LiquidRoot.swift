@@ -2,21 +2,29 @@ import SwiftUI
 import ComposeApp
 
 struct LiquidRoot: View {
+    @AppStorage("dark_theme") private var darkThemeEnabled: Bool = true
     @State private var selection: Tab = .notes
+
+    private var themeHostIdentifier: String {
+        darkThemeEnabled ? "theme-dark" : "theme-light"
+    }
 
     var body: some View {
         TabView(selection: $selection) {
             ComposeHost { MainViewControllerKt.makeNotesViewController() }
+            .id(themeHostIdentifier)
             .ignoresSafeArea(edges: .vertical)
             .tabItem { Label("Notes", systemImage: "note.text") }
             .tag(Tab.notes)
 
             ComposeHost { MainViewControllerKt.makeFoldersViewController() }
+            .id(themeHostIdentifier)
             .ignoresSafeArea(edges: .vertical)
             .tabItem { Label("Folders", systemImage: "folder") }
             .tag(Tab.folders)
 
             ComposeHost { MainViewControllerKt.makeSettingsViewController() }
+            .id(themeHostIdentifier)
             .ignoresSafeArea(edges: .vertical)
             .tabItem { Label("Settings", systemImage: "gearshape") }
             .tag(Tab.settings)

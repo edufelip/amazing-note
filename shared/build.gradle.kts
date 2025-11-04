@@ -59,6 +59,9 @@ kotlin {
         }
         androidMain {
             dependencies {
+                implementation(libs.firebase.auth.ktx)
+                implementation(libs.firebase.common.ktx)
+                implementation(libs.firebase.crashlytics)
                 implementation(libs.sqldelight.android.driver)
             }
         }

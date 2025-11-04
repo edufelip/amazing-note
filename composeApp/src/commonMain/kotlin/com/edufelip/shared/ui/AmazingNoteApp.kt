@@ -109,6 +109,7 @@ fun AmazingNoteApp(
                         viewModel = viewModel,
                         appVersion = appVersion,
                         darkTheme = darkTheme,
+                        themeKey = darkTheme,
                     )
                 }
             }
