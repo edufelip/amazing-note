@@ -1,6 +1,7 @@
 import UIKit
 import FirebaseCore
 import GoogleSignIn
+import FirebaseCrashlytics
 
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(
@@ -8,6 +9,11 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         FirebaseApp.configure()
+        #if DEBUG
+        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(false)
+        #else
+        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
+        #endif
         return true
     }
 

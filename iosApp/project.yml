@@ -54,9 +54,42 @@ targets:
         product: FirebaseFirestore
       - package: Firebase
         product: FirebaseStorage
+      - package: Firebase
+        product: FirebaseCrashlytics
       - package: GoogleSignIn
         product: GoogleSignIn
       - sdk: libsqlite3.tbd
+    postbuildScripts:
+      - name: Crashlytics dSYM Upload
+        shellPath: /bin/sh
+        basedOnDependencyAnalysis: false
+        script: |
+          set -euo pipefail
+
+          if [[ "${CONFIGURATION}" == "Debug" ]]; then
+            echo "Crashlytics dSYM upload skipped for Debug configuration."
+            exit 0
+          fi
+
+          GOOGLE_SERVICE_INFO_PLIST="${SRCROOT}/iosApp/GoogleService-Info.plist"
+
+          if [[ ! -f "${GOOGLE_SERVICE_INFO_PLIST}" ]]; then
+            echo "warning: GoogleService-Info.plist not found at ${GOOGLE_SERVICE_INFO_PLIST}. Skipping Crashlytics upload."
+            exit 0
+          fi
+
+          if [[ -z "${DWARF_DSYM_FOLDER_PATH:-}" || -z "${DWARF_DSYM_FILE_NAME:-}" ]]; then
+            echo "warning: dSYM information not available. Skipping Crashlytics upload."
+            exit 0
+          fi
+
+          "${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run" \
+            -gsp "${GOOGLE_SERVICE_INFO_PLIST}" \
+            -d "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}"
+        inputFiles:
+          - "$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)"
+          - "$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)/Contents/Resources/DWARF/$(PRODUCT_NAME)"
+          - "$(SRCROOT)/iosApp/GoogleService-Info.plist"
     scheme:
       testTargets: []
       gatherCoverageData: false

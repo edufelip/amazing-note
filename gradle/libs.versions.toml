@@ -15,6 +15,7 @@ uiTooling = "1.9.1"
 sqldelight = "2.1.0"
 firebase-bom = "34.4.0"
 google-services = "4.4.4"
+firebase-crashlytics-gradle = "3.0.6"
 credentials = "1.5.0"
 googleid = "1.1.1"
 coil3 = "3.2.0"
@@ -61,11 +62,13 @@ firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 firebase-storage = { module = "com.google.firebase:firebase-storage" }
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx", version.ref = "firebase-auth-ktx" }
 firebase-common-ktx = { module = "com.google.firebase:firebase-common-ktx", version.ref = "firebase-common-ktx" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics-ktx" }
 
 gitlive-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "gitlive" }
 gitlive-auth = { module = "dev.gitlive:firebase-auth", version.ref = "gitlive" }
 gitlive-app = { module = "dev.gitlive:firebase-app", version.ref = "gitlive" }
 gitlive-storage = { module = "dev.gitlive:firebase-storage", version.ref = "gitlive" }
+gitlive-crashlytics = { module = "dev.gitlive:firebase-crashlytics", version.ref = "gitlive" }
 
 credentials-core = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 credentials-play-services = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
@@ -94,5 +97,6 @@ compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-m
 compose-compiler = { id = "org.jetbrains.compose.compiler", version.ref = "compose-mpp" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-gradle" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }

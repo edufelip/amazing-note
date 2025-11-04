@@ -57,6 +57,7 @@ kotlin {
             implementation(libs.gitlive.firestore)
             implementation(libs.gitlive.auth)
             implementation(libs.gitlive.storage)
+            implementation(libs.gitlive.crashlytics)
             implementation(projects.shared)
         }
         commonTest.dependencies {
