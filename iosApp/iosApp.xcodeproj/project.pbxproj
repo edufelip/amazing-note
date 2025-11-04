@@ -17,6 +17,7 @@
 		C87B4FA04BDA1DA04158D48E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A55143988C4C8F291BE72E9A /* GoogleService-Info.plist */; };
 		F6407843737A5AC3042BDDF5 /* LiquidRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC2B4ED6760D21408C91A4A /* LiquidRoot.swift */; };
 		F7C33B50A94DA01F2E82C280 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 245434685F34A9A15B1AC406 /* libsqlite3.tbd */; };
+		FB0A0DBD2EBA95660061D43C /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = FB0A0DBC2EBA95660061D43C /* FirebaseCrashlytics */; };
 		FB613E562EBA80C700CBDFF5 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = FB613E552EBA80C700CBDFF5 /* FirebaseDatabase */; };
 		FDE52B8D57A097A60A4CF366 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6C1F485E0CF8BB70C9DDD2 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
@@ -42,6 +43,7 @@
 				FB613E562EBA80C700CBDFF5 /* FirebaseDatabase in Frameworks */,
 				1C81D6F669B7BB6D2FFCCEB3 /* FirebaseAuth in Frameworks */,
 				445C052442747365B7CB2124 /* FirebaseFirestore in Frameworks */,
+				FB0A0DBD2EBA95660061D43C /* FirebaseCrashlytics in Frameworks */,
 				B7C4F6137AC8345E71E92063 /* FirebaseStorage in Frameworks */,
 				379D4C6DBBA934A8EF44CDDE /* GoogleSignIn in Frameworks */,
 				F7C33B50A94DA01F2E82C280 /* libsqlite3.tbd in Frameworks */,
@@ -133,6 +135,7 @@
 				A61EAF9635BFCCA5966D2AE0 /* FirebaseStorage */,
 				B6E18E1D8AEE3BF1FDA1E5E9 /* GoogleSignIn */,
 				FB613E552EBA80C700CBDFF5 /* FirebaseDatabase */,
+				FB0A0DBC2EBA95660061D43C /* FirebaseCrashlytics */,
 			);
 			productName = iosApp;
 			productReference = 86038AE1032E284E79B32AD6 /* iosApp.app */;
@@ -471,6 +474,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DF1BCD5B98717A06C1B5AE17 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignIn;
+		};
+		FB0A0DBC2EBA95660061D43C /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseCrashlytics;
 		};
 		FB613E552EBA80C700CBDFF5 /* FirebaseDatabase */ = {
 			isa = XCSwiftPackageProductDependency;

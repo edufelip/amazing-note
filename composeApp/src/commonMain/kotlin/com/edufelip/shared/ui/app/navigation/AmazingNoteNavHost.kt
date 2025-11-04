@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -52,6 +53,7 @@ fun AmazingNoteNavHost(
     viewModel: NoteUiViewModel,
     appVersion: String,
     darkTheme: Boolean,
+    themeKey: Boolean,
     bottomBarHeight: Dp = AppChromeDefaults.bottomBarHeight,
 ) {
     val environment = state.environment
@@ -88,74 +90,76 @@ fun AmazingNoteNavHost(
 
     @Composable
     fun SceneContent(scene: NavScene) {
-        when (val route = scene.route) {
-            AppRoutes.Notes -> NotesRoute(
-                viewModel = viewModel,
-                authViewModel = state.authViewModel,
-                syncManager = environment.notesSyncManager,
-                coroutineScope = state.coroutineScope,
-                onNavigate = state::navigate,
-            )
+        key(scene.route, scene.themeVersion) {
+            when (val route = scene.route) {
+                AppRoutes.Notes -> NotesRoute(
+                    viewModel = viewModel,
+                    authViewModel = state.authViewModel,
+                    syncManager = environment.notesSyncManager,
+                    coroutineScope = state.coroutineScope,
+                    onNavigate = state::navigate,
+                )
 
-            AppRoutes.Folders -> FoldersRoute(
-                viewModel = viewModel,
-                syncManager = environment.notesSyncManager,
-                coroutineScope = state.coroutineScope,
-                onNavigate = state::navigate,
-                isDarkTheme = darkTheme,
-            )
+                AppRoutes.Folders -> FoldersRoute(
+                    viewModel = viewModel,
+                    syncManager = environment.notesSyncManager,
+                    coroutineScope = state.coroutineScope,
+                    onNavigate = state::navigate,
+                    isDarkTheme = darkTheme,
+                )
 
-            AppRoutes.Settings -> SettingsRoute(
-                state = state,
-                darkTheme = darkTheme,
-                appVersion = appVersion,
-                onNavigate = state::navigate,
-            )
+                AppRoutes.Settings -> SettingsRoute(
+                    state = state,
+                    darkTheme = darkTheme,
+                    appVersion = appVersion,
+                    onNavigate = state::navigate,
+                )
 
-            is AppRoutes.FolderDetail -> FolderDetailRoute(
-                route = route,
-                viewModel = viewModel,
-                syncManager = environment.notesSyncManager,
-                coroutineScope = state.coroutineScope,
-                onNavigate = state::navigate,
-                onBack = { state.popBack() },
-            )
+                is AppRoutes.FolderDetail -> FolderDetailRoute(
+                    route = route,
+                    viewModel = viewModel,
+                    syncManager = environment.notesSyncManager,
+                    coroutineScope = state.coroutineScope,
+                    onNavigate = state::navigate,
+                    onBack = { state.popBack() },
+                )
 
-            is AppRoutes.NoteDetail -> NoteDetailRoute(
-                route = route,
-                viewModel = viewModel,
-                syncManager = environment.notesSyncManager,
-                coroutineScope = state.coroutineScope,
-                attachmentPicker = environment.attachmentPicker,
-                onBack = { state.popBack() },
-            )
+                is AppRoutes.NoteDetail -> NoteDetailRoute(
+                    route = route,
+                    viewModel = viewModel,
+                    syncManager = environment.notesSyncManager,
+                    coroutineScope = state.coroutineScope,
+                    attachmentPicker = environment.attachmentPicker,
+                    onBack = { state.popBack() },
+                )
 
-            AppRoutes.Trash -> TrashRoute(
-                viewModel = viewModel,
-                syncManager = environment.notesSyncManager,
-                coroutineScope = state.coroutineScope,
-                onBack = { state.popBack() },
-            )
+                AppRoutes.Trash -> TrashRoute(
+                    viewModel = viewModel,
+                    syncManager = environment.notesSyncManager,
+                    coroutineScope = state.coroutineScope,
+                    onBack = { state.popBack() },
+                )
 
-            AppRoutes.Privacy -> PrivacyRoute(
-                onBack = { state.popBack() },
-            )
+                AppRoutes.Privacy -> PrivacyRoute(
+                    onBack = { state.popBack() },
+                )
 
-            AppRoutes.Login -> LoginRoute(
-                state = state,
-                googleSignInLauncher = environment.googleSignInLauncher,
-                onNavigate = state::navigate,
-                onBack = { state.popBack() },
-            )
+                AppRoutes.Login -> LoginRoute(
+                    state = state,
+                    googleSignInLauncher = environment.googleSignInLauncher,
+                    onNavigate = state::navigate,
+                    onBack = { state.popBack() },
+                )
 
-            AppRoutes.SignUp -> SignUpRoute(
-                state = state,
-                onBack = { state.popBack() },
-            )
+                AppRoutes.SignUp -> SignUpRoute(
+                    state = state,
+                    onBack = { state.popBack() },
+                )
+            }
         }
     }
 
-    val targetScene = NavScene(state.currentRoute, darkTheme)
+    val targetScene = NavScene(state.currentRoute, themeKey)
 
     if (isApplePlatform()) {
         Box(modifier = contentModifier.then(modifier)) {
@@ -164,47 +168,50 @@ fun AmazingNoteNavHost(
         return
     }
 
-    AnimatedContent(
-        modifier = contentModifier.then(modifier),
-        targetState = targetScene,
-        transitionSpec = {
-            if (initialState.themeVersion != targetState.themeVersion) {
-                EnterTransition.None togetherWith ExitTransition.None
-            } else {
-                val duration = 250
-                when {
-                    initialState.route is AppRoutes.NoteDetail || targetState.route is AppRoutes.NoteDetail -> {
-                        slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith
-                            slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
-                    }
+    key(themeKey) {
+        AnimatedContent(
+            modifier = contentModifier.then(modifier),
+            targetState = targetScene,
+            contentKey = { scene -> scene.route to scene.themeVersion },
+            transitionSpec = {
+                if (initialState.themeVersion != targetState.themeVersion) {
+                    EnterTransition.None togetherWith ExitTransition.None
+                } else {
+                    val duration = 250
+                    when {
+                        initialState.route is AppRoutes.NoteDetail || targetState.route is AppRoutes.NoteDetail -> {
+                            slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith
+                                slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
+                        }
 
-                    initialState.route is AppRoutes.FolderDetail || targetState.route is AppRoutes.FolderDetail -> {
-                        slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith
-                            slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
-                    }
+                        initialState.route is AppRoutes.FolderDetail || targetState.route is AppRoutes.FolderDetail -> {
+                            slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith
+                                slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
+                        }
 
-                    state.isTab(initialState.route) && state.isTab(targetState.route) -> {
-                        val fadeDuration = 220
-                        fadeIn(animationSpec = tween(fadeDuration)) togetherWith
-                            fadeOut(animationSpec = tween(fadeDuration))
-                    }
+                        state.isTab(initialState.route) && state.isTab(targetState.route) -> {
+                            val fadeDuration = 220
+                            fadeIn(animationSpec = tween(fadeDuration)) togetherWith
+                                fadeOut(animationSpec = tween(fadeDuration))
+                        }
 
-                    initialState.route is AppRoutes.Login ||
-                        targetState.route is AppRoutes.Login ||
-                        initialState.route is AppRoutes.SignUp ||
-                        targetState.route is AppRoutes.SignUp ||
-                        initialState.route is AppRoutes.Trash ||
-                        targetState.route is AppRoutes.Trash -> {
-                        fadeIn(animationSpec = tween(duration)) togetherWith
-                            fadeOut(animationSpec = tween(duration))
-                    }
+                        initialState.route is AppRoutes.Login ||
+                            targetState.route is AppRoutes.Login ||
+                            initialState.route is AppRoutes.SignUp ||
+                            targetState.route is AppRoutes.SignUp ||
+                            initialState.route is AppRoutes.Trash ||
+                            targetState.route is AppRoutes.Trash -> {
+                            fadeIn(animationSpec = tween(duration)) togetherWith
+                                fadeOut(animationSpec = tween(duration))
+                        }
 
-                    else -> EnterTransition.None togetherWith ExitTransition.None
+                        else -> EnterTransition.None togetherWith ExitTransition.None
+                    }
                 }
-            }
-        },
-    ) { scene ->
-        SceneContent(scene)
+            },
+        ) { scene ->
+            SceneContent(scene)
+        }
     }
 }
 
