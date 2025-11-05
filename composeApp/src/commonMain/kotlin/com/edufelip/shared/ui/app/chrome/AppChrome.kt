@@ -44,12 +44,12 @@ import com.edufelip.shared.ui.components.atoms.common.AvatarImage
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.util.platform.Haptics
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
-import io.github.alexzhirkevich.cupertino.CupertinoTopAppBarDefaults
-import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveNavigationBar
-import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveNavigationBarItem
-import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveTopAppBar
-import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
-import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
+import com.slapps.cupertino.CupertinoTopAppBarDefaults
+import com.slapps.cupertino.adaptive.AdaptiveNavigationBar
+import com.slapps.cupertino.adaptive.AdaptiveNavigationBarItem
+import com.slapps.cupertino.adaptive.AdaptiveTopAppBar
+import com.slapps.cupertino.adaptive.ExperimentalAdaptiveApi
+import com.slapps.cupertino.adaptive.icons.AdaptiveIcons
 import org.jetbrains.compose.resources.stringResource
 
 object AppChromeDefaults {

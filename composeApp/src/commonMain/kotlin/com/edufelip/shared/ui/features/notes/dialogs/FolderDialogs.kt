@@ -15,10 +15,10 @@ import com.edufelip.shared.resources.dialog_ok
 import com.edufelip.shared.resources.folder_name
 import com.edufelip.shared.resources.rename_folder
 import com.edufelip.shared.ui.util.platform.Haptics
-import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveAlertDialog
-import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
-import io.github.alexzhirkevich.cupertino.cancel
-import io.github.alexzhirkevich.cupertino.default
+import com.slapps.cupertino.adaptive.AdaptiveAlertDialog
+import com.slapps.cupertino.adaptive.ExperimentalAdaptiveApi
+import com.slapps.cupertino.cancel
+import com.slapps.cupertino.default
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalAdaptiveApi::class)

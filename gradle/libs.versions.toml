@@ -5,12 +5,12 @@ coroutines = "1.10.2"
 gradle-plugin = "8.9.1"
 hilt = "2.57.2"
 junit = "4.13.2"
-kotlin = "2.1.21"
+kotlin = "2.2.21"
 lifecycle = "2.9.4"
 truth = "1.4.5"
 compose-bom = "2025.10.00"
 activity-compose = "1.11.0"
-compose-mpp = "1.9.1"
+compose-mpp = "1.9.2"
 uiTooling = "1.9.1"
 sqldelight = "2.1.0"
 firebase-bom = "34.4.0"
@@ -23,7 +23,7 @@ ktor = "3.2.3"
 kotlinx-serialization = "1.8.1"
 gitlive = "2.1.0"
 spotless = "8.0.0"
-cupertino-adaptive = "0.1.0-alpha04"
+cupertino = "2.3.1"
 firebase-auth-ktx = "23.2.0"
 firebase-common-ktx = "21.0.0"
 firebase-crashlytics-ktx = "19.4.0"
@@ -79,8 +79,8 @@ coil3-network-ktor3 = { group = "io.coil-kt.coil3", name = "coil-network-ktor3",
 ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
-cupertino-adaptive = { group = "io.github.alexzhirkevich", name = "cupertino-adaptive", version.ref = "cupertino-adaptive" }
-cupertino-icons-extended = { group = "io.github.alexzhirkevich", name = "cupertino-icons-extended", version.ref = "cupertino-adaptive" }
+cupertino-adaptive = { group = "io.github.schott12521", name = "cupertino-adaptive", version.ref = "cupertino" }
+cupertino-icons-extended = { group = "io.github.schott12521", name = "cupertino-icons-extended", version.ref = "cupertino" }
 
 [bundles]
 preview = ["androidx-ui-tooling-preview", "androidx-ui-tooling"]

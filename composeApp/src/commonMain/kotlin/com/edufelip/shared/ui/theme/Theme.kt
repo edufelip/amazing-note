@@ -9,11 +9,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
-import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveTheme
-import io.github.alexzhirkevich.cupertino.adaptive.CupertinoThemeSpec
-import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
-import io.github.alexzhirkevich.cupertino.adaptive.MaterialThemeSpec
-import io.github.alexzhirkevich.cupertino.adaptive.Theme
+import com.slapps.cupertino.adaptive.AdaptiveTheme
+import com.slapps.cupertino.adaptive.CupertinoThemeSpec
+import com.slapps.cupertino.adaptive.ExperimentalAdaptiveApi
+import com.slapps.cupertino.adaptive.MaterialThemeSpec
+import com.slapps.cupertino.adaptive.Theme
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,

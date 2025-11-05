@@ -82,10 +82,10 @@ import com.edufelip.shared.ui.util.platform.Haptics
 import com.edufelip.shared.ui.util.platform.currentEpochMillis
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.vm.AuthViewModel
-import io.github.alexzhirkevich.cupertino.CupertinoButtonDefaults
-import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveButton
-import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
-import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
+import com.slapps.cupertino.CupertinoButtonDefaults
+import com.slapps.cupertino.adaptive.AdaptiveButton
+import com.slapps.cupertino.adaptive.ExperimentalAdaptiveApi
+import com.slapps.cupertino.adaptive.icons.AdaptiveIcons
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalAdaptiveApi::class)
