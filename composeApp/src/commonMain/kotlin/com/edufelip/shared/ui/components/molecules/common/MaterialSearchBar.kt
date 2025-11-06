@@ -24,6 +24,8 @@ import com.edufelip.shared.resources.cd_search
 import com.edufelip.shared.resources.filters
 import com.edufelip.shared.resources.search
 import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)

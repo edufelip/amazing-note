@@ -65,6 +65,7 @@
     <string name="empty_trash_title">Trash is empty</string>
     <string name="empty_trash_hint">Notes you delete will appear here</string>
     <string name="empty_trash_description">Notes in the trash are permanently deleted after 7 days.</string>
+    <string name="select_a_note_to_start">Select a note to get started</string>
     <string name="trash_deleted_today">Deleted today</string>
     <string name="trash_deleted_yesterday">Deleted yesterday</string>
     <string name="trash_deleted_days_ago">Deleted %1$d days ago</string>

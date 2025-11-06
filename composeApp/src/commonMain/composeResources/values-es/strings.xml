@@ -49,6 +49,7 @@
     <string name="empty_trash_title">La papelera está vacía</string>
     <string name="empty_trash_hint">Las notas eliminadas aparecerán aquí</string>
     <string name="empty_trash_description">Las notas en la papelera se eliminan permanentemente después de 7 días.</string>
+    <string name="select_a_note_to_start">Selecciona una nota para empezar</string>
     <string name="trash_deleted_today">Eliminada hoy</string>
     <string name="trash_deleted_yesterday">Eliminada ayer</string>
     <string name="trash_deleted_days_ago">Eliminada hace %1$d días</string>

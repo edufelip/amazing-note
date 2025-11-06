@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.parcelize)
 }
 
 lateinit var iosArm64Target: KotlinNativeTarget
@@ -40,6 +41,8 @@ kotlin {
             implementation(libs.credentials.core)
             implementation(libs.credentials.play.services)
             implementation(libs.googleid)
+            implementation(libs.compose.material3.adaptive)
+            implementation(libs.compose.material3.window.size)
         }
         commonMain.dependencies {
             implementation(compose.runtime)

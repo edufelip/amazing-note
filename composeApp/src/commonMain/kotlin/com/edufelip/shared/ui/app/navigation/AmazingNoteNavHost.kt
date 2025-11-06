@@ -98,6 +98,7 @@ fun AmazingNoteNavHost(
                     syncManager = environment.notesSyncManager,
                     coroutineScope = state.coroutineScope,
                     onNavigate = state::navigate,
+                    attachmentPicker = environment.attachmentPicker,
                 )
 
                 AppRoutes.Folders -> FoldersRoute(

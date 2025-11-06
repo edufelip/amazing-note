@@ -4,12 +4,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.edufelip.shared.data.sync.NotesSyncManager
-import com.edufelip.shared.ui.features.home.screens.HomeScreen
+import com.edufelip.shared.domain.model.Folder
+import com.edufelip.shared.domain.model.Note
+import com.edufelip.shared.ui.attachments.AttachmentPicker
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.vm.AuthViewModel
 import com.edufelip.shared.ui.vm.NoteUiViewModel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 @Composable
 fun NotesRoute(
@@ -18,23 +19,35 @@ fun NotesRoute(
     syncManager: NotesSyncManager,
     coroutineScope: CoroutineScope,
     onNavigate: (AppRoutes) -> Unit,
+    attachmentPicker: AttachmentPicker?,
 ) {
     val notes by viewModel.notes.collectAsState(initial = emptyList())
 
-    HomeScreen(
+    val folders by viewModel.folders.collectAsState(initial = emptyList())
+    val trash by viewModel.trash.collectAsState(initial = emptyList())
+
+    PlatformNotesRoute(
         notes = notes,
-        auth = authViewModel,
-        onOpenNote = { note ->
-            onNavigate(AppRoutes.NoteDetail(note.id, note.folderId))
-        },
-        onAdd = {
-            onNavigate(AppRoutes.NoteDetail(null, null))
-        },
-        onDelete = { note ->
-            coroutineScope.launch {
-                viewModel.setDeleted(note.id, true)
-                syncManager.syncLocalToRemoteOnly()
-            }
-        },
+        folders = folders,
+        trash = trash,
+        authViewModel = authViewModel,
+        attachmentPicker = attachmentPicker,
+        viewModel = viewModel,
+        syncManager = syncManager,
+        coroutineScope = coroutineScope,
+        onNavigate = onNavigate,
     )
 }
+
+@Composable
+expect fun PlatformNotesRoute(
+    notes: List<Note>,
+    folders: List<Folder>,
+    trash: List<Note>,
+    authViewModel: AuthViewModel,
+    attachmentPicker: AttachmentPicker?,
+    viewModel: NoteUiViewModel,
+    syncManager: NotesSyncManager,
+    coroutineScope: CoroutineScope,
+    onNavigate: (AppRoutes) -> Unit,
+)

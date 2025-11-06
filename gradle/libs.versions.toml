@@ -27,6 +27,8 @@ cupertino = "2.3.1"
 firebase-auth-ktx = "23.2.0"
 firebase-common-ktx = "21.0.0"
 firebase-crashlytics-ktx = "19.4.0"
+compose-material3-adaptive = "1.0.0-alpha06"
+compose-material3-window-size = "1.5.0-alpha08"
 
 [libraries]
 
@@ -48,6 +50,8 @@ compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = 
 compose-ui = { group = "androidx.compose.ui", name = "ui" }
 compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+compose-material3-adaptive = { group = "androidx.compose.material3", name = "material3-adaptive-android", version.ref = "compose-material3-adaptive" }
+compose-material3-window-size = { group = "androidx.compose.material3", name = "material3-window-size-class-android", version.ref = "compose-material3-window-size" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "uiTooling" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "uiTooling" }

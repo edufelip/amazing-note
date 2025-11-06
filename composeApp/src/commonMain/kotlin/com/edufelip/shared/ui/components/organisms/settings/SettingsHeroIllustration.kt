@@ -34,11 +34,11 @@ fun PersonalizeHeroIllustration(
     val tertiary = colorScheme.tertiary
     val surfaceColor = colorScheme.surface
     val tokens = designTokens()
-    val size = tokens.spacing.xxl * 4.5f
+    val canvasSize = tokens.spacing.xxl * 4.5f
 
     Box(
         modifier = modifier
-            .size(size),
+            .size(canvasSize),
         contentAlignment = Alignment.Center,
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {

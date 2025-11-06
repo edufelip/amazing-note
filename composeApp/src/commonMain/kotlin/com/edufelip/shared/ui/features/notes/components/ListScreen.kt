@@ -41,7 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
@@ -128,7 +128,7 @@ fun ListScreen(
             },
             floatingActionButton = {
                 if (hasAnyNotes) {
-                    val fabBottomPadding = if (chrome.bottomBarHeight == Dp.Zero) Dp.Zero else tokens.spacing.xxl
+                    val fabBottomPadding = if (chrome.bottomBarHeight == 0.dp) 0.dp else tokens.spacing.xxl
                     FloatingActionButton(
                         modifier = Modifier.padding(bottom = fabBottomPadding),
                         onClick = onAddClick,
@@ -181,7 +181,7 @@ fun ListScreen(
 
                 val grouped: Map<Bucket, List<Note>> =
                     filtered.groupBy { bucket(if (useUpdated.value) it.updatedAt else it.createdAt) }
-                val listBottomPadding = if (chrome.bottomBarHeight == Dp.Zero) Dp.Zero else tokens.spacing.xxl * 3
+                val listBottomPadding = if (chrome.bottomBarHeight == 0.dp) 0.dp else tokens.spacing.xxl * 3
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = listBottomPadding),

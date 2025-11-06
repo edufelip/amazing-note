@@ -90,7 +90,7 @@ fun AmazingNoteApp(
                     modifier = modifier,
                     topBar = {},
                     onTabSelected = { route -> state.setRoot(route) },
-                ) { padding: PaddingValues ->
+                ) { padding: PaddingValues, bottomBarHeight ->
                     AmazingNoteNavHost(
                         padding = padding,
                         state = state,
@@ -98,6 +98,7 @@ fun AmazingNoteApp(
                         appVersion = appVersion,
                         darkTheme = darkTheme,
                         themeKey = darkTheme,
+                        bottomBarHeight = bottomBarHeight,
                     )
                 }
             }

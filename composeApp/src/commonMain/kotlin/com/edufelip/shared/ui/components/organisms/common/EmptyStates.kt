@@ -38,10 +38,10 @@ import com.edufelip.shared.resources.empty_notes_title
 import com.edufelip.shared.resources.notes_empty_action
 import com.edufelip.shared.resources.notes_empty_unlock_label
 import com.edufelip.shared.ui.designsystem.designTokens
-import com.edufelip.shared.ui.util.platform.platformChromeStrategy
-import org.jetbrains.compose.resources.stringResource
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.util.platform.platformChromeStrategy
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun NotesEmptyState(

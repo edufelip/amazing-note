@@ -42,7 +42,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
@@ -148,7 +148,7 @@ fun FoldersScreen(
         contentWindowInsets = chrome.contentWindowInsets,
         floatingActionButton = {
             if (!isEmpty) {
-                val fabBottomPadding = if (chrome.bottomBarHeight == Dp.Zero) Dp.Zero else tokens.spacing.xl
+                val fabBottomPadding = if (chrome.bottomBarHeight == 0.dp) 0.dp else tokens.spacing.xl
                 ExtendedFloatingActionButton(
                     modifier = Modifier.padding(bottom = fabBottomPadding),
                     onClick = { openCreate() },
