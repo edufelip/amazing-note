@@ -2,19 +2,19 @@
 
 package com.edufelip.shared.ui.web
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.interop.UIKitView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProgressIndicatorDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.interop.UIKitView
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSError
 import platform.Foundation.NSURL
@@ -64,7 +64,8 @@ actual fun WebView(url: String, modifier: Modifier) {
 private class ComposeNavigationDelegate(
     private val onFinished: () -> Unit,
     private val onStarted: () -> Unit,
-) : NSObject(), WKNavigationDelegateProtocol {
+) : NSObject(),
+    WKNavigationDelegateProtocol {
     override fun webView(webView: WKWebView, didStartProvisionalNavigation: WKNavigation?) {
         onStarted()
     }

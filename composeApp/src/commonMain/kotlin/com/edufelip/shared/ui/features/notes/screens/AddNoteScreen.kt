@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -95,14 +96,20 @@ fun AddNoteScreen(
                 )
             }
             item(key = "editor") {
+                val editorMinHeight = 320.dp
                 Surface(
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .heightIn(min = editorMinHeight),
                     shape = RoundedCornerShape(20.dp),
                     tonalElevation = 1.dp,
                     color = MaterialTheme.colorScheme.surface,
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxSize(),
+                    ) {
                         if (useSimpleEditor) {
                             SimpleIosNoteEditor(
                                 editorState = editorState,
@@ -112,7 +119,7 @@ fun AddNoteScreen(
                             NoteEditor(
                                 state = editorState,
                                 placeholder = stringResource(Res.string.description),
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxSize(),
                             )
                         }
                         if (!contentError.isNullOrBlank()) {

@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -193,8 +194,12 @@ fun AmazingNoteNavHost(
 
                         state.isTab(initialState.route) && state.isTab(targetState.route) -> {
                             val fadeDuration = 220
-                            fadeIn(animationSpec = tween(fadeDuration)) togetherWith
-                                fadeOut(animationSpec = tween(fadeDuration))
+                            (
+                                fadeIn(animationSpec = tween(fadeDuration)) togetherWith
+                                    fadeOut(animationSpec = tween(fadeDuration))
+                                ).using(
+                                SizeTransform(clip = false),
+                            )
                         }
 
                         initialState.route is AppRoutes.Login ||
@@ -204,8 +209,12 @@ fun AmazingNoteNavHost(
                             initialState.route is AppRoutes.Trash ||
                             targetState.route is AppRoutes.Trash -> {
                             val fadeDuration = 200
-                            fadeIn(animationSpec = tween(fadeDuration)) togetherWith
-                                fadeOut(animationSpec = tween(fadeDuration))
+                            (
+                                fadeIn(animationSpec = tween(fadeDuration)) togetherWith
+                                    fadeOut(animationSpec = tween(fadeDuration))
+                                ).using(
+                                SizeTransform(clip = false),
+                            )
                         }
 
                         else -> EnterTransition.None togetherWith ExitTransition.None

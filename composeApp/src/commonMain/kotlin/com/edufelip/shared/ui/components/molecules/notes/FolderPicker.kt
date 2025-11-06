@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Folder
@@ -19,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.no_folder_label
@@ -75,9 +77,23 @@ fun FolderPicker(
     DropdownMenu(
         expanded = expanded.value,
         onDismissRequest = { expanded.value = false },
+        modifier = Modifier.widthIn(min = 240.dp),
     ) {
         DropdownMenuItem(
-            text = { Text(text = stringResource(Res.string.no_folder_label)) },
+            modifier = Modifier.fillMaxWidth(),
+            text = {
+                Text(
+                    text = stringResource(Res.string.no_folder_label),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Outlined.Folder,
+                    contentDescription = null,
+                    tint = tokens.colors.muted,
+                )
+            },
             onClick = {
                 onFolderChange(null)
                 expanded.value = false
@@ -85,7 +101,20 @@ fun FolderPicker(
         )
         ordered.forEach { folder ->
             DropdownMenuItem(
-                text = { Text(folder.name) },
+                modifier = Modifier.fillMaxWidth(),
+                text = {
+                    Text(
+                        text = folder.name,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Folder,
+                        contentDescription = null,
+                        tint = tokens.colors.muted,
+                    )
+                },
                 onClick = {
                     onFolderChange(folder.id)
                     expanded.value = false

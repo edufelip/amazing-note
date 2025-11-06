@@ -48,7 +48,7 @@
 
     <!-- Notes - Fields -->
     <string name="title">Title</string>
-    <string name="description">Description</string>
+    <string name="description">Body</string>
     <string name="attachment_uploading">Uploading %1$s… %2$d%%</string>
     <string name="attachment_upload_failed">Attachment upload failed.</string>
     <string name="attachment_upload_failed_with_detail">Attachment upload failed: %1$s</string>

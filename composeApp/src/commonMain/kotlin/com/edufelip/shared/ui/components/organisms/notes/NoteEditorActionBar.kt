@@ -15,6 +15,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
 import com.edufelip.shared.ui.designsystem.designTokens
@@ -38,16 +40,22 @@ fun NoteEditorActionBar(
         horizontalArrangement = Arrangement.spacedBy(tokens.spacing.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        val accent = tokens.colors.accent
+        val contentColor = if (accent.luminance() > 0.4f) Color.Black else Color.White
         Button(
             onClick = onAddImage,
             colors = ButtonDefaults.buttonColors(
-                containerColor = tokens.colors.accent,
-                contentColor = tokens.colors.onSurface,
+                containerColor = accent,
+                contentColor = contentColor,
             ),
         ) {
-            Icon(imageVector = Icons.Outlined.Image, contentDescription = stringResource(Res.string.cd_add))
+            Icon(
+                imageVector = Icons.Outlined.Image,
+                contentDescription = stringResource(Res.string.cd_add),
+                tint = contentColor,
+            )
             Spacer(modifier = Modifier.size(tokens.spacing.sm))
-            Text(text = stringResource(Res.string.cd_add))
+            Text(text = stringResource(Res.string.cd_add), color = contentColor)
         }
     }
 }

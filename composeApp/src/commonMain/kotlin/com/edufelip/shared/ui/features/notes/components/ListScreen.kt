@@ -128,9 +128,13 @@ fun ListScreen(
             },
             floatingActionButton = {
                 if (hasAnyNotes) {
-                    val fabBottomPadding = if (chrome.bottomBarHeight == 0.dp) 0.dp else tokens.spacing.xxl
+                    val navAwarePadding = if (chrome.bottomBarHeight == 0.dp) {
+                        tokens.spacing.lg
+                    } else {
+                        maxOf(tokens.spacing.lg, chrome.bottomBarHeight / 2)
+                    }
                     FloatingActionButton(
-                        modifier = Modifier.padding(bottom = fabBottomPadding),
+                        modifier = Modifier.padding(bottom = navAwarePadding),
                         onClick = onAddClick,
                         containerColor = tokens.colors.accent,
                         contentColor = tokens.colors.onSurface,
@@ -181,7 +185,12 @@ fun ListScreen(
 
                 val grouped: Map<Bucket, List<Note>> =
                     filtered.groupBy { bucket(if (useUpdated.value) it.updatedAt else it.createdAt) }
-                val listBottomPadding = if (chrome.bottomBarHeight == 0.dp) 0.dp else tokens.spacing.xxl * 3
+                val navAwarePadding = if (chrome.bottomBarHeight == 0.dp) {
+                    tokens.spacing.lg
+                } else {
+                    maxOf(tokens.spacing.lg, chrome.bottomBarHeight / 2)
+                }
+                val listBottomPadding = navAwarePadding + tokens.spacing.xxl
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = listBottomPadding),
@@ -210,7 +219,7 @@ fun ListScreen(
                                 Box(
                                     modifier = Modifier.fillMaxWidth()
                                         .padding(
-                                            horizontal = tokens.spacing.md + tokens.spacing.sm,
+                                            horizontal = tokens.spacing.xl,
                                             vertical = tokens.spacing.sm,
                                         ),
                                     contentAlignment = Alignment.Center,

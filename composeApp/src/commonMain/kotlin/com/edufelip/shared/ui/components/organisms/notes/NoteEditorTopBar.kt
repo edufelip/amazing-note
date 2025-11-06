@@ -59,7 +59,6 @@ fun NoteEditorTopBar(
             onClick = onSave,
             enabled = !isSaving,
             background = tokens.colors.accent,
-            tint = tokens.colors.onSurface,
         )
     }
 }

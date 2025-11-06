@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
@@ -31,7 +32,7 @@ fun CircularIconButton(
     val tokens = designTokens()
     val buttonSize = tokens.spacing.xxl + tokens.spacing.md
     val appliedBackground = background ?: tokens.colors.elevatedSurface
-    val appliedTint = tint ?: tokens.colors.onSurface
+    val appliedTint = tint ?: if (appliedBackground.luminance() < 0.5f) Color.White else Color.Black
     Surface(
         modifier = modifier
             .size(buttonSize)
