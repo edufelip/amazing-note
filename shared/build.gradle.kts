@@ -18,12 +18,35 @@ kotlin {
     val iosArm64 = iosArm64()
     val iosSimArm64 = iosSimulatorArm64()
     val iosX64 = iosX64()
+    val firebaseIosFrameworksDir: String? = project.findProperty("firebase.ios.frameworks.dir") as String?
+    if (firebaseIosFrameworksDir == null) {
+        logger.warn("firebase.ios.frameworks.dir is not set; relying on Xcode toolchain search paths for Firebase frameworks.")
+    }
+    fun KotlinNativeTarget.configureFirebaseLinkerOpts() {
+        binaries.all {
+            linkerOpts(
+                "-framework", "FirebaseCore",
+                "-framework", "FirebaseAuth",
+                "-framework", "FirebaseFirestore",
+                "-framework", "FirebaseStorage",
+                "-framework", "FirebaseCrashlytics",
+            )
+            firebaseIosFrameworksDir?.let { linkerOpts("-F", it) }
+        }
+    }
 
     listOf(iosArm64, iosSimArm64, iosX64).forEach { t ->
         t.binaries.framework {
             baseName = "Shared"
             isStatic = true
             linkerOpts("-lsqlite3")
+        }
+        t.configureFirebaseLinkerOpts()
+        t.compilations.getByName("main") {
+            cinterops.create("commonCrypto") {
+                defFile(project.file("src/nativeInterop/cinterop/commonCrypto.def"))
+                includeDirs(project.file("src/nativeInterop/cinterop"))
+            }
         }
     }
 
@@ -55,6 +78,7 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(kotlin("test"))
+                implementation(libs.kotlin.coroutines.test)
             }
         }
         androidMain {
@@ -63,6 +87,7 @@ kotlin {
                 implementation(libs.firebase.common.ktx)
                 implementation(libs.firebase.crashlytics)
                 implementation(libs.sqldelight.android.driver)
+                implementation(libs.android.security.crypto)
             }
         }
         iosMain {
@@ -82,6 +107,7 @@ kotlin {
         }
     }
 }
+
 
 android {
     namespace = "com.edufelip.amazing_note.shared"

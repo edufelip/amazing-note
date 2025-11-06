@@ -3,6 +3,8 @@ package com.edufelip.shared.data.repository
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.edufelip.shared.core.time.nowEpochMs
+import com.edufelip.shared.data.db.decryptField
+import com.edufelip.shared.data.db.encryptField
 import com.edufelip.shared.db.NoteDatabase
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
@@ -33,15 +35,20 @@ class SqlDelightNoteRepository(
     private fun currentTimeMillis(): Long = nowEpochMs()
 
     private fun mapRowToNote(row: com.edufelip.shared.db.Note): Note {
-        val spans = spansFromJson(row.description_spans)
-        val attachments = attachmentsFromJson(row.attachments)
-        val parsedContent = noteContentFromJson(row.content_json)
+        val title = decryptField(row.title)
+        val description = decryptField(row.description)
+        val spansJson = decryptField(row.description_spans)
+        val attachmentsJson = decryptField(row.attachments)
+        val contentJson = row.content_json?.let(::decryptField)
+        val spans = spansFromJson(spansJson)
+        val attachments = attachmentsFromJson(attachmentsJson)
+        val parsedContent = noteContentFromJson(contentJson)
         val legacyContent = if (parsedContent.blocks.isNotEmpty()) parsedContent else noteContentFromLegacyBlocksJson(row.blocks)
-        val ensuredContent = ensureContent(row.description, spans, attachments, legacyContent)
+        val ensuredContent = ensureContent(description, spans, attachments, legacyContent)
         return Note(
             id = row.id.toInt(),
-            title = row.title,
-            description = row.description,
+            title = title,
+            description = description,
             deleted = row.deleted != 0L,
             createdAt = row.created_at,
             updatedAt = row.updated_at,
@@ -84,12 +91,12 @@ class SqlDelightNoteRepository(
         val normalizedAttachments = if (legacy.attachments.isNotEmpty()) legacy.attachments else attachments
         val now = currentTimeMillis()
         queries.insertNote(
-            title = title,
-            description = legacy.description.ifBlank { description },
-            description_spans = legacy.spans.ifEmpty { spans }.toJson(),
-            attachments = normalizedAttachments.toJson(),
+            title = encryptField(title),
+            description = encryptField(legacy.description.ifBlank { description }),
+            description_spans = encryptField(legacy.spans.ifEmpty { spans }.toJson()),
+            attachments = encryptField(normalizedAttachments.toJson()),
             blocks = "[]",
-            content_json = finalContent.toJson(),
+            content_json = encryptField(finalContent.toJson()),
             created_at = now,
             updated_at = now,
             local_updated_at = now,
@@ -112,12 +119,12 @@ class SqlDelightNoteRepository(
         val normalizedAttachments = if (legacy.attachments.isNotEmpty()) legacy.attachments else attachments
         val now = currentTimeMillis()
         queries.updateNote(
-            title = title,
-            description = legacy.description.ifBlank { description },
-            description_spans = legacy.spans.ifEmpty { spans }.toJson(),
-            attachments = normalizedAttachments.toJson(),
+            title = encryptField(title),
+            description = encryptField(legacy.description.ifBlank { description }),
+            description_spans = encryptField(legacy.spans.ifEmpty { spans }.toJson()),
+            attachments = encryptField(normalizedAttachments.toJson()),
             blocks = "[]",
-            content_json = finalContent.toJson(),
+            content_json = encryptField(finalContent.toJson()),
             deleted = if (deleted) 1 else 0,
             updated_at = now,
             local_updated_at = now,

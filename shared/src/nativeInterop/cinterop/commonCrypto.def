@@ -1,0 +1,4 @@
+language = Objective-C
+headers = NoteCipherBridge.h
+sources = note_cipher_ios.c
+package = noteCipher.bridge

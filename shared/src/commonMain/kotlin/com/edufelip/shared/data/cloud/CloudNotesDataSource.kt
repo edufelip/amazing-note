@@ -14,6 +14,9 @@ import dev.gitlive.firebase.firestore.DocumentSnapshot
 import dev.gitlive.firebase.firestore.FieldValue
 import dev.gitlive.firebase.firestore.Timestamp
 import dev.gitlive.firebase.firestore.firestore
+import dev.gitlive.firebase.firestore.firestoreSettings
+import dev.gitlive.firebase.firestore.memoryCacheSettings
+import dev.gitlive.firebase.firestore.memoryEagerGcSettings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -36,6 +39,14 @@ interface CurrentUserProvider {
 fun provideCurrentUserProvider(): CurrentUserProvider = GitLiveCurrentUserProvider
 
 private object GitLiveCloudNotesDataSource : CloudNotesDataSource {
+    init {
+        Firebase.firestore.settings = firestoreSettings {
+            cacheSettings = memoryCacheSettings {
+                gcSettings = memoryEagerGcSettings { }
+            }
+        }
+    }
+
     override fun observe(uid: String): Flow<List<Note>> = notesCollection(uid)
         .snapshots
         .map { snapshot ->

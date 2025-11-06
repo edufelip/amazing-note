@@ -36,6 +36,8 @@ Key recent changes
 - Firestore `createdAt`/`updatedAt` are stored as Timestamp; push-only preserves `updatedAt` to keep list order stable.
 - Swipe-to-delete removed; delete/restore are explicit actions.
 - Notes list uses a single simple scroll; section labels (Today/This week/This month/Earlier) are not sticky.
+- Shared scaffold abstraction now powers adaptive navigation: Android switches between a glass bottom bar (phones) and navigation rail + list/detail layout on larger devices, while iOS keeps platform-specific chrome through the same contract.
+- Local SQLDelight storage is now encrypted end-to-end with AES-CTR + HMAC; keys are fetched from Android EncryptedSharedPreferences and the iOS Keychain (legacy data is migrated on first launch).
 
 ## Installation
 Clone this repository and import into **Android Studio**
@@ -73,6 +75,30 @@ iOS (SwiftPM + ComposeApp Framework)
 Notes
 - Ensure `GoogleService-Info.plist` is present in `iosApp/iosApp/` and your URL scheme (REVERSED_CLIENT_ID) is set in `Info.plist`.
 - Google Sign-In currently falls back to Android only (the iOS launcher returns `null` until a native integration is added).
+
+### iOS Firebase frameworks
+
+GitLive’s Firebase KMP bindings do **not** bundle the native Firebase Apple binaries. When linking the iOS targets (including tests) make sure the following pods or SPM packages are available to Xcode:
+
+```kotlin
+cocoapods {
+    pod("FirebaseCore")
+    pod("FirebaseAuth")
+    pod("FirebaseFirestore")
+    pod("FirebaseStorage")
+    pod("FirebaseCrashlytics")
+}
+```
+
+Without them the linker will fail with `framework 'FirebaseCore' not found` when Gradle builds the Kotlin/Native test executables.
+
+Expose the directory containing the built xcframeworks to Gradle at build time:
+
+```bash
+./gradlew :shared:check -Pfirebase.ios.frameworks.dir="/path/to/FirebaseXCFrameworks"
+```
+
+Point it at the folder that contains `FirebaseCore.xcframework`, `FirebaseAuth.xcframework`, etc. (If you use SwiftPM, Xcode caches them under `~/Library/Developer/Xcode/DerivedData/.../SourcePackages/artifacts`).
 
 Firestore rules
 - Per-user access is required or Firestore will reject writes (PERMISSION_DENIED). Example rules:

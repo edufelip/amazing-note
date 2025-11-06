@@ -4,6 +4,8 @@ import com.edufelip.shared.data.cloud.CloudNotesDataSource
 import com.edufelip.shared.data.cloud.CurrentUserProvider
 import com.edufelip.shared.data.cloud.provideCloudNotesDataSource
 import com.edufelip.shared.data.cloud.provideCurrentUserProvider
+import com.edufelip.shared.data.db.decryptField
+import com.edufelip.shared.data.db.encryptField
 import com.edufelip.shared.db.NoteDatabase
 import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.Note
@@ -134,7 +136,11 @@ class NotesSyncManager(
         val remoteIds = remoteById.keys
         for ((id, l) in localById) {
             if (id !in remoteIds) {
-                toPushDistinct[id] = l
+                if (l.dirty) {
+                    toPushDistinct[id] = l
+                } else {
+                    deleteLocal(id)
+                }
             }
         }
 
@@ -161,15 +167,18 @@ class NotesSyncManager(
     }
 
     private fun rowToNote(row: com.edufelip.shared.db.Note): Note {
-        val spans = spansFromJson(row.description_spans)
-        val attachments = attachmentsFromJson(row.attachments)
-        val parsedContent = noteContentFromJson(row.content_json)
+        val title = decryptField(row.title)
+        val description = decryptField(row.description)
+        val spans = spansFromJson(decryptField(row.description_spans))
+        val attachments = attachmentsFromJson(decryptField(row.attachments))
+        val contentJson = row.content_json?.let(::decryptField)
+        val parsedContent = noteContentFromJson(contentJson)
         val legacyContent = if (parsedContent.blocks.isNotEmpty()) parsedContent else noteContentFromLegacyBlocksJson(row.blocks)
-        val ensuredContent = ensureContent(row.description, spans, attachments, legacyContent)
+        val ensuredContent = ensureContent(description, spans, attachments, legacyContent)
         return Note(
             id = row.id.toInt(),
-            title = row.title,
-            description = row.description,
+            title = title,
+            description = description,
             deleted = row.deleted != 0L,
             createdAt = row.created_at,
             updatedAt = row.updated_at,
@@ -186,12 +195,12 @@ class NotesSyncManager(
         val normalized = n.ensureContent().withLegacyFieldsFromContent()
         db.noteQueries.insertWithId(
             id = normalized.id.toLong(),
-            title = normalized.title,
-            description = normalized.description,
-            description_spans = normalized.descriptionSpans.toJson(),
-            attachments = normalized.attachments.toJson(),
+            title = encryptField(normalized.title),
+            description = encryptField(normalized.description),
+            description_spans = encryptField(normalized.descriptionSpans.toJson()),
+            attachments = encryptField(normalized.attachments.toJson()),
             blocks = "[]",
-            content_json = normalized.content.toJson(),
+            content_json = encryptField(normalized.content.toJson()),
             deleted = if (normalized.deleted) 1 else 0,
             created_at = normalized.createdAt,
             updated_at = normalized.updatedAt,
@@ -202,12 +211,12 @@ class NotesSyncManager(
     private fun updateLocalFromRemote(id: Int, note: Note) {
         val normalized = note.ensureContent().withLegacyFieldsFromContent()
         db.noteQueries.updateFromRemote(
-            title = normalized.title,
-            description = normalized.description,
-            description_spans = normalized.descriptionSpans.toJson(),
-            attachments = normalized.attachments.toJson(),
+            title = encryptField(normalized.title),
+            description = encryptField(normalized.description),
+            description_spans = encryptField(normalized.descriptionSpans.toJson()),
+            attachments = encryptField(normalized.attachments.toJson()),
             blocks = "[]",
-            content_json = normalized.content.toJson(),
+            content_json = encryptField(normalized.content.toJson()),
             deleted = if (normalized.deleted) 1 else 0,
             updated_at = normalized.updatedAt,
             folder_id = normalized.folderId,
@@ -219,6 +228,10 @@ class NotesSyncManager(
         mergeCallCount = 0
         mergingDisabled = false
         storedRemoteHash = null
+    }
+
+    private fun deleteLocal(id: Int) {
+        db.noteQueries.deleteById(id.toLong())
     }
 
     private fun listHash(list: List<Note>): Long {

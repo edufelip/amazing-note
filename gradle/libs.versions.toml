@@ -29,6 +29,7 @@ firebase-common-ktx = "21.0.0"
 firebase-crashlytics-ktx = "19.4.0"
 compose-material3-adaptive = "1.0.0-alpha06"
 compose-material3-window-size = "1.5.0-alpha08"
+security-crypto = "1.1.0-alpha06"
 
 [libraries]
 
@@ -74,6 +75,7 @@ gitlive-auth = { module = "dev.gitlive:firebase-auth", version.ref = "gitlive" }
 gitlive-app = { module = "dev.gitlive:firebase-app", version.ref = "gitlive" }
 gitlive-storage = { module = "dev.gitlive:firebase-storage", version.ref = "gitlive" }
 gitlive-crashlytics = { module = "dev.gitlive:firebase-crashlytics", version.ref = "gitlive" }
+android-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security-crypto" }
 
 credentials-core = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 credentials-play-services = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
