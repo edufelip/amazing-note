@@ -19,7 +19,7 @@ private object AndroidPlatformChromeStrategy : PlatformChromeStrategy {
 
     override fun topBarContainerColor(defaultColor: Color): Color = defaultColor
 
-    override fun Modifier.applyNavigationBarsPadding(): Modifier = navigationBarsPadding()
+    override fun Modifier.applyNavigationBarsPadding(): Modifier = navigationBarsPadding(bottom = false)
     override fun Modifier.applyAdditionalContentPadding(topBarVisible: Boolean): Modifier = this
 
     override fun calculateBottomPadding(
@@ -30,7 +30,7 @@ private object AndroidPlatformChromeStrategy : PlatformChromeStrategy {
     ): Dp = if (isBottomBarEnabled && bottomBarTargetVisible) {
         bottomBarHeight
     } else {
-        safeAreaPadding.calculateBottomPadding()
+        safeAreaPadding.calculateBottomPadding() / 2
     }
 
     override val useCupertinoLook: Boolean = false
