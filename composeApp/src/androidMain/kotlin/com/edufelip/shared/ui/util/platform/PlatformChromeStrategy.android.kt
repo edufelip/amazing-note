@@ -2,6 +2,7 @@ package com.edufelip.shared.ui.util.platform
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -13,7 +14,7 @@ private object AndroidPlatformChromeStrategy : PlatformChromeStrategy {
     override val bottomBarHeight: Dp = 72.dp
     override val contentWindowInsets: WindowInsets = WindowInsets(0)
 
-    override fun Modifier.applyTopBarStatusPadding(): Modifier = this
+    override fun Modifier.applyTopBarStatusPadding(): Modifier = statusBarsPadding()
     override val topBarWindowInsets: WindowInsets = WindowInsets(0)
 
     override fun topBarContainerColor(defaultColor: Color): Color = defaultColor
