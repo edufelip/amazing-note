@@ -9,7 +9,8 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 
 @Composable
 fun FolderPattern(
@@ -69,8 +70,10 @@ fun FolderPattern(
     }
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun FolderPatternPreview() {
-    FolderPattern(accent = Color(0xFF6750A4), variant = 2)
+    DevicePreviewContainer {
+        FolderPattern(accent = Color(0xFF6750A4), variant = 2)
+    }
 }

@@ -15,30 +15,33 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.empty_trash_description
 import com.edufelip.shared.resources.empty_trash_hint
 import com.edufelip.shared.resources.empty_trash_title
+import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun EmptyTrashState(modifier: Modifier = Modifier) {
+    val tokens = designTokens()
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 32.dp),
+            .padding(horizontal = tokens.spacing.xxl),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        val illustrationSize = tokens.spacing.xxl * 6
         Box(
-            modifier = Modifier.size(200.dp),
+            modifier = Modifier.size(illustrationSize),
             contentAlignment = Alignment.Center,
         ) {
-            TrashIllustration(modifier = Modifier.size(200.dp))
+            TrashIllustration(modifier = Modifier.size(illustrationSize))
         }
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(tokens.spacing.xxl))
         Text(
             text = stringResource(Res.string.empty_trash_title),
             style = MaterialTheme.typography.headlineSmall,
@@ -46,14 +49,14 @@ fun EmptyTrashState(modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(tokens.spacing.sm))
         Text(
             text = stringResource(Res.string.empty_trash_hint),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(tokens.spacing.md))
         Text(
             text = stringResource(Res.string.empty_trash_description),
             style = MaterialTheme.typography.bodySmall,
@@ -63,8 +66,10 @@ fun EmptyTrashState(modifier: Modifier = Modifier) {
     }
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun EmptyTrashStatePreview() {
-    EmptyTrashState()
+    DevicePreviewContainer {
+        EmptyTrashState()
+    }
 }

@@ -29,6 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -41,7 +42,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.times
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
@@ -54,15 +56,18 @@ import com.edufelip.shared.resources.new_folder
 import com.edufelip.shared.resources.rename_folder
 import com.edufelip.shared.resources.search_no_results
 import com.edufelip.shared.resources.search_reset
+import com.edufelip.shared.ui.app.chrome.AmazingTopBar
 import com.edufelip.shared.ui.components.organisms.notes.FolderLayout
 import com.edufelip.shared.ui.components.organisms.notes.FoldersGrid
 import com.edufelip.shared.ui.components.organisms.notes.FoldersHeader
 import com.edufelip.shared.ui.components.organisms.notes.FoldersList
+import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.features.notes.dialogs.DeleteFolderDialog
 import com.edufelip.shared.ui.features.notes.dialogs.FolderNameDialog
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
+import com.edufelip.shared.ui.vm.AuthViewModel
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
@@ -74,6 +79,7 @@ fun FoldersScreen(
     folders: List<Folder>,
     notes: List<Note>,
     isDarkTheme: Boolean,
+    auth: AuthViewModel? = null,
     onOpenFolder: (Folder) -> Unit,
     onCreateFolder: (String) -> Unit,
     onRenameFolder: (Folder, String) -> Unit,
@@ -121,24 +127,28 @@ fun FoldersScreen(
         nameInput = ""
     }
 
+    val tokens = designTokens()
     val accentPalette = listOf(
-        MaterialTheme.colorScheme.primary,
-        MaterialTheme.colorScheme.secondary,
-        MaterialTheme.colorScheme.tertiary,
-        MaterialTheme.colorScheme.inversePrimary,
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.85f),
+        tokens.colors.accent,
+        tokens.colors.accentMuted,
+        tokens.colors.info,
+        tokens.colors.success,
+        tokens.colors.accent.copy(alpha = 0.85f),
     )
+
+    val currentUser = auth?.user?.collectAsState()?.value
 
     val isEmpty = folders.isEmpty()
     val chrome = platformChromeStrategy()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
+        topBar = { AmazingTopBar(user = currentUser) },
+        containerColor = tokens.colors.canvas,
         contentWindowInsets = chrome.contentWindowInsets,
         floatingActionButton = {
             if (!isEmpty) {
-                val fabBottomPadding = if (chrome.bottomBarHeight == 0.dp) 0.dp else 24.dp
+                val fabBottomPadding = if (chrome.bottomBarHeight == Dp.Zero) Dp.Zero else tokens.spacing.xl
                 ExtendedFloatingActionButton(
                     modifier = Modifier.padding(bottom = fabBottomPadding),
                     onClick = { openCreate() },
@@ -153,22 +163,21 @@ fun FoldersScreen(
             }
         },
     ) { padding ->
+        val contentModifier = with(chrome) {
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .applyNavigationBarsPadding()
+        }
+
         if (isEmpty) {
             EmptyFoldersState(
-                modifier = with(chrome) {
-                    Modifier
-                        .fillMaxSize()
-                        .applyNavigationBarsPadding()
-                },
+                modifier = contentModifier,
                 onCreateFolder = { openCreate() },
             )
         } else {
             Column(
-                modifier = with(chrome) {
-                    Modifier
-                        .fillMaxSize()
-                        .applyNavigationBarsPadding()
-                },
+                modifier = contentModifier,
                 verticalArrangement = Arrangement.Top,
             ) {
                 if (hasFolders) {
@@ -184,7 +193,7 @@ fun FoldersScreen(
                             }
                         },
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(tokens.spacing.sm))
                 }
 
                 if (hasFilteredContent) {
@@ -236,7 +245,7 @@ fun FoldersScreen(
                         modifier = with(chrome) {
                             Modifier
                                 .fillMaxSize()
-                                .padding(horizontal = 32.dp)
+                                .padding(horizontal = tokens.spacing.xxl)
                                 .applyNavigationBarsPadding()
                         },
                         onReset = { searchQuery = "" },
@@ -287,6 +296,7 @@ private fun FoldersSearchEmptyState(
     modifier: Modifier = Modifier,
     onReset: () -> Unit,
 ) {
+    val tokens = designTokens()
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Center,
@@ -297,28 +307,29 @@ private fun FoldersSearchEmptyState(
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = tokens.colors.onSurface,
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(tokens.spacing.md))
         Text(
             text = stringResource(Res.string.folders_empty_hint),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = tokens.colors.muted,
             textAlign = TextAlign.Center,
         )
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(tokens.spacing.xl))
         Button(
             onClick = onReset,
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                containerColor = tokens.colors.accentMuted,
+                contentColor = tokens.colors.onSurface,
             ),
         ) {
             Icon(
                 imageVector = Icons.Outlined.Search,
                 contentDescription = null,
+                tint = tokens.colors.accent,
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(tokens.spacing.sm))
             Text(text = stringResource(Res.string.search_reset))
         }
     }
@@ -330,19 +341,22 @@ private fun EmptyFoldersState(
     onCreateFolder: () -> Unit,
 ) {
     val chrome = platformChromeStrategy()
+    val tokens = designTokens()
+    val haloSize = tokens.spacing.xxl * 6
+    val cardSize = tokens.spacing.xxl * 5
+    val iconSize = tokens.spacing.lg * 3
 
     Column(
         modifier = with(chrome) {
             modifier
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = tokens.spacing.xl)
                 .applyNavigationBarsPadding()
         },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         FoldersHeader(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             query = "",
             onQueryChange = {},
             layoutMode = FolderLayout.Grid,
@@ -350,17 +364,16 @@ private fun EmptyFoldersState(
             showControls = false,
         )
         Box(
-            modifier = Modifier
-                .size(200.dp),
+            modifier = Modifier.size(haloSize),
             contentAlignment = Alignment.Center,
         ) {
             Box(
                 modifier = Modifier
-                    .size(180.dp)
+                    .size(haloSize * 0.9f)
                     .background(
                         brush = Brush.radialGradient(
                             colors = listOf(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+                                tokens.colors.accent.copy(alpha = 0.25f),
                                 Color.Transparent,
                             ),
                         ),
@@ -368,36 +381,36 @@ private fun EmptyFoldersState(
                     ),
             )
             Surface(
-                modifier = Modifier.size(160.dp),
-                shape = RoundedCornerShape(28.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                tonalElevation = 2.dp,
-                shadowElevation = 8.dp,
+                modifier = Modifier.size(cardSize),
+                shape = RoundedCornerShape(tokens.radius.lg * 2),
+                color = tokens.colors.elevatedSurface.copy(alpha = 0.6f),
+                tonalElevation = tokens.elevation.card,
+                shadowElevation = tokens.elevation.popover,
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(10.dp)
+                        .padding(tokens.spacing.md)
                         .background(
-                            color = MaterialTheme.colorScheme.surface,
-                            shape = RoundedCornerShape(22.dp),
+                            color = tokens.colors.surface,
+                            shape = RoundedCornerShape(tokens.radius.lg + tokens.radius.sm),
                         ),
                     contentAlignment = Alignment.Center,
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(tokens.spacing.sm),
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.FolderOpen,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                            modifier = Modifier.size(48.dp),
+                            tint = tokens.colors.accent.copy(alpha = 0.7f),
+                            modifier = Modifier.size(iconSize),
                         )
                         Text(
                             text = stringResource(Res.string.folders_empty_unlock_label),
                             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = tokens.colors.muted,
                             textAlign = TextAlign.Center,
                         )
                     }
@@ -405,37 +418,38 @@ private fun EmptyFoldersState(
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(tokens.spacing.xxl))
         Text(
             text = stringResource(Res.string.folders_empty_title),
             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+            color = tokens.colors.onSurface,
             textAlign = TextAlign.Center,
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(tokens.spacing.sm))
         Text(
             text = stringResource(Res.string.folders_empty_hint),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = tokens.colors.muted,
             textAlign = TextAlign.Center,
         )
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(tokens.spacing.xxl))
         Button(
             onClick = onCreateFolder,
             shape = CircleShape,
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
+                containerColor = tokens.colors.accent,
+                contentColor = tokens.colors.onSurface,
             ),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                horizontal = 24.dp,
-                vertical = 12.dp,
+                horizontal = tokens.spacing.xl,
+                vertical = tokens.spacing.md,
             ),
         ) {
             Icon(
                 imageVector = Icons.Default.CreateNewFolder,
                 contentDescription = null,
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(tokens.spacing.sm))
             Text(text = stringResource(Res.string.home_new_folder))
         }
     }

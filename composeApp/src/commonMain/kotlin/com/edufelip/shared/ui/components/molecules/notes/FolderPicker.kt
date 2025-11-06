@@ -19,12 +19,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.no_folder_label
+import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun FolderPicker(
@@ -37,25 +38,30 @@ fun FolderPicker(
     val ordered = remember(folders) { folders.sortedBy { it.name } }
     val label = selectedFolderId?.let { id -> ordered.firstOrNull { it.id == id }?.name }
         ?: stringResource(Res.string.no_folder_label)
+    val tokens = designTokens()
+    val shape = RoundedCornerShape(tokens.radius.lg + tokens.radius.sm)
 
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .clickable { expanded.value = true },
-        shape = RoundedCornerShape(24.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        shape = shape,
+        color = tokens.colors.elevatedSurface.copy(alpha = 0.5f),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(
+                    horizontal = tokens.spacing.xl,
+                    vertical = tokens.spacing.md,
+                ),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(tokens.spacing.md),
         ) {
             Icon(
                 imageVector = Icons.Outlined.Folder,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = tokens.colors.muted,
             )
             Text(
                 text = label,
@@ -89,16 +95,18 @@ fun FolderPicker(
     }
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun FolderPickerPreview() {
     val folders = listOf(
         Folder(id = 1, name = "Personal", createdAt = 0L, updatedAt = 0L),
         Folder(id = 2, name = "Work", createdAt = 0L, updatedAt = 0L),
     )
-    FolderPicker(
-        folders = folders,
-        selectedFolderId = 1L,
-        onFolderChange = {},
-    )
+    DevicePreviewContainer {
+        FolderPicker(
+            folders = folders,
+            selectedFolderId = 1L,
+            onFolderChange = {},
+        )
+    }
 }

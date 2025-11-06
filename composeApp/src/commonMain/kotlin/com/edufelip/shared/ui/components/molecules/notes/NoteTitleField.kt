@@ -14,11 +14,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.dp
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.title
+import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun NoteTitleField(
@@ -28,6 +29,7 @@ fun NoteTitleField(
     error: String? = null,
     textStyle: TextStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
 ) {
+    val tokens = designTokens()
     Column(modifier = modifier) {
         TextField(
             value = titleState,
@@ -47,7 +49,7 @@ fun NoteTitleField(
             isError = error != null,
         )
         if (!error.isNullOrBlank()) {
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(tokens.spacing.sm))
             Text(
                 text = error,
                 style = MaterialTheme.typography.bodySmall,
@@ -57,12 +59,14 @@ fun NoteTitleField(
     }
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun NoteTitleFieldPreview() {
-    NoteTitleField(
-        titleState = TextFieldValue("Meeting notes"),
-        onTitleChange = {},
-        error = null,
-    )
+    DevicePreviewContainer {
+        NoteTitleField(
+            titleState = TextFieldValue("Meeting notes"),
+            onTitleChange = {},
+            error = null,
+        )
+    }
 }

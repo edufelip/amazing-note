@@ -35,3 +35,14 @@ fun BottomBarVisibilityEffect(state: AmazingNoteAppState) {
         }
     }
 }
+
+@Composable
+fun PlatformTabBarVisibilityEffect(
+    state: AmazingNoteAppState,
+    onVisibilityChanged: (Boolean) -> Unit,
+) {
+    val isTabVisible = state.isTab(state.currentRoute)
+    LaunchedEffect(isTabVisible) {
+        onVisibilityChanged(isTabVisible)
+    }
+}

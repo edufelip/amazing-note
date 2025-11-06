@@ -9,8 +9,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 
 @Composable
 fun TimelineIndicator(
@@ -20,13 +21,14 @@ fun TimelineIndicator(
     modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
-    val circleRadius = with(density) { 6.dp.toPx() }
-    val strokeWidth = with(density) { 2.dp.toPx() }
+    val tokens = designTokens()
+    val circleRadius = with(density) { (tokens.spacing.sm * 0.75f).toPx() }
+    val strokeWidth = with(density) { (tokens.spacing.xs * 0.5f).toPx() }
 
     Canvas(
         modifier = modifier
             .fillMaxHeight()
-            .width(32.dp),
+            .width(tokens.spacing.xxl),
     ) {
         val centerX = size.width / 2f
         val centerY = size.height / 2f
@@ -59,8 +61,10 @@ fun TimelineIndicator(
     }
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun TimelineIndicatorPreview() {
-    TimelineIndicator(lineColor = Color(0xFF6750A4), isFirst = false, isLast = false)
+    DevicePreviewContainer {
+        TimelineIndicator(lineColor = Color(0xFF6750A4), isFirst = false, isLast = false)
+    }
 }

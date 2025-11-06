@@ -21,8 +21,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 
 @Composable
 fun FolderListCard(
@@ -36,14 +37,17 @@ fun FolderListCard(
     supporting: String? = null,
     modifier: Modifier = Modifier,
 ) {
+    val tokens = designTokens()
     val chipColor = accent.copy(alpha = 0.18f)
     val menuAvailable = onRename != null || onDelete != null
+    val cardShape = RoundedCornerShape(tokens.radius.lg + tokens.radius.sm)
+    val chipShape = RoundedCornerShape(tokens.radius.md + tokens.radius.sm)
 
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
+        shape = cardShape,
         color = Color.Transparent,
-        tonalElevation = 0.dp,
+        tonalElevation = tokens.elevation.card,
         onClick = onOpen,
     ) {
         Row(
@@ -55,30 +59,33 @@ fun FolderListCard(
                             accent.copy(alpha = 0.05f),
                         ),
                     ),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = cardShape,
                 )
                 .border(
-                    BorderStroke(1.dp, accent.copy(alpha = 0.15f)),
-                    RoundedCornerShape(20.dp),
+                    BorderStroke(androidx.compose.ui.unit.Dp.Hairline, accent.copy(alpha = 0.15f)),
+                    cardShape,
                 )
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(
+                    horizontal = tokens.spacing.xl,
+                    vertical = tokens.spacing.md,
+                ),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(tokens.spacing.md + tokens.spacing.sm),
         ) {
             Surface(
-                shape = RoundedCornerShape(16.dp),
+                shape = chipShape,
                 color = chipColor,
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
                     tint = accent,
-                    modifier = Modifier.padding(10.dp),
+                    modifier = Modifier.padding(tokens.spacing.md),
                 )
             }
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
+                verticalArrangement = Arrangement.spacedBy(tokens.spacing.xs),
             ) {
                 Text(
                     text = title,
@@ -110,16 +117,18 @@ fun FolderListCard(
     }
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun FolderListCardPreview() {
-    FolderListCard(
-        title = "Archive",
-        noteCountLabel = "3 notes",
-        accent = Color(0xFF00897B),
-        icon = Icons.Outlined.Folder,
-        onOpen = {},
-        onRename = {},
-        onDelete = {},
-    )
+    DevicePreviewContainer {
+        FolderListCard(
+            title = "Archive",
+            noteCountLabel = "3 notes",
+            accent = Color(0xFF00897B),
+            icon = Icons.Outlined.Folder,
+            onOpen = {},
+            onRename = {},
+            onDelete = {},
+        )
+    }
 }

@@ -1,9 +1,5 @@
 package com.edufelip.shared.ui
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -20,8 +16,8 @@ import com.edufelip.shared.data.auth.NoAuthService
 import com.edufelip.shared.data.sync.LocalNotesSyncManager
 import com.edufelip.shared.db.NoteDatabase
 import com.edufelip.shared.ui.app.chrome.AmazingNoteScaffold
-import com.edufelip.shared.ui.app.chrome.AmazingTopBar
 import com.edufelip.shared.ui.app.effects.BottomBarVisibilityEffect
+import com.edufelip.shared.ui.app.effects.PlatformTabBarVisibilityEffect
 import com.edufelip.shared.ui.app.effects.ScheduleInitialSync
 import com.edufelip.shared.ui.app.effects.SyncOnUserChange
 import com.edufelip.shared.ui.app.navigation.AmazingNoteNavHost
@@ -50,6 +46,7 @@ fun AmazingNoteApp(
     appVersion: String = "1.0.0",
     initialRoute: AppRoutes = AppRoutes.Notes,
     showBottomBar: Boolean = platformChromeStrategy().defaultShowBottomBar,
+    onTabBarVisibilityChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     setSingletonImageLoaderFactory { context ->
@@ -78,6 +75,7 @@ fun AmazingNoteApp(
         ScheduleInitialSync(environment.notesSyncManager)
         SyncOnUserChange(user, environment.notesSyncManager)
         BottomBarVisibilityEffect(state)
+        PlatformTabBarVisibilityEffect(state, onTabBarVisibilityChanged)
 
         key(darkTheme) {
             AmazingNoteTheme(darkTheme = darkTheme) {
@@ -87,20 +85,10 @@ fun AmazingNoteApp(
                     }
                 }
 
-                val topBar: @Composable () -> Unit = {
-                    AnimatedVisibility(
-                        visible = state.topBarVisible,
-                        enter = fadeIn(animationSpec = tween(durationMillis = 220)),
-                        exit = fadeOut(animationSpec = tween(durationMillis = 220)),
-                    ) {
-                        AmazingTopBar(user = user)
-                    }
-                }
-
                 AmazingNoteScaffold(
                     state = state,
                     modifier = modifier,
-                    topBar = topBar,
+                    topBar = {},
                     onTabSelected = { route -> state.setRoot(route) },
                 ) { padding: PaddingValues ->
                     AmazingNoteNavHost(

@@ -14,11 +14,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
+import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun NoteEditorActionBar(
@@ -28,23 +29,32 @@ fun NoteEditorActionBar(
     if (onAddImage == null) {
         return
     }
+    val tokens = designTokens()
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+            .padding(vertical = tokens.spacing.lg),
+        horizontalArrangement = Arrangement.spacedBy(tokens.spacing.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Button(onClick = onAddImage) {
+        Button(
+            onClick = onAddImage,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = tokens.colors.accent,
+                contentColor = tokens.colors.onSurface,
+            ),
+        ) {
             Icon(imageVector = Icons.Outlined.Image, contentDescription = stringResource(Res.string.cd_add))
-            Spacer(modifier = Modifier.size(8.dp))
+            Spacer(modifier = Modifier.size(tokens.spacing.sm))
             Text(text = stringResource(Res.string.cd_add))
         }
     }
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun NoteEditorActionBarPreview() {
-    NoteEditorActionBar(onAddImage = {})
+    DevicePreviewContainer {
+        NoteEditorActionBar(onAddImage = {})
+    }
 }

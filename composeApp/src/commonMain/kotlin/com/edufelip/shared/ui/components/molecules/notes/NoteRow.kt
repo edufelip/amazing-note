@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import com.edufelip.shared.core.time.nowEpochMs
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
@@ -26,8 +25,10 @@ import com.edufelip.shared.resources.updated_days_ago
 import com.edufelip.shared.resources.updated_hours_ago
 import com.edufelip.shared.resources.updated_just_now
 import com.edufelip.shared.resources.updated_minutes_ago
+import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun NoteRow(
@@ -36,19 +37,23 @@ fun NoteRow(
     onClick: (Note) -> Unit = {},
     showUpdated: Boolean = true,
 ) {
+    val tokens = designTokens()
     ElevatedCard(
         modifier = modifier
             .fillMaxWidth()
             .clickable { onClick(note) },
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
-        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = tokens.elevation.card),
+        colors = CardDefaults.elevatedCardColors(containerColor = tokens.colors.surface),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .padding(
+                    horizontal = tokens.spacing.xl,
+                    vertical = tokens.spacing.md,
+                )
                 .animateContentSize(),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(tokens.spacing.sm),
         ) {
             Text(
                 text = note.title,
@@ -59,7 +64,7 @@ fun NoteRow(
             Text(
                 text = relativeTimeAgo(if (showUpdated) note.updatedAt else note.createdAt, showUpdated),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = tokens.colors.muted,
             )
             if (note.description.isNotBlank()) {
                 Text(
@@ -73,7 +78,7 @@ fun NoteRow(
     }
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun NoteRowPreview() {
     val note = remember {
@@ -87,7 +92,9 @@ private fun NoteRowPreview() {
             folderId = 2,
         )
     }
-    NoteRow(note = note)
+    DevicePreviewContainer {
+        NoteRow(note = note)
+    }
 }
 
 @Composable

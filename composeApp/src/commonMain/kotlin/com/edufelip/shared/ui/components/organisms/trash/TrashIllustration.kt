@@ -9,8 +9,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 
 /**
  * Simple empty-trash illustration inspired by the provided concept, drawn with Compose primitives
@@ -73,8 +74,11 @@ fun TrashIllustration(modifier: Modifier = Modifier) {
     }
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun TrashIllustrationPreview() {
-    TrashIllustration(modifier = Modifier.size(200.dp))
+    val tokens = designTokens()
+    DevicePreviewContainer {
+        TrashIllustration(modifier = Modifier.size(tokens.spacing.xxl * 6))
+    }
 }

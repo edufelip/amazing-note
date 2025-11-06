@@ -8,15 +8,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 
 @Composable
 fun CircularIconButton(
@@ -24,30 +24,36 @@ fun CircularIconButton(
     contentDescription: String?,
     onClick: () -> Unit,
     enabled: Boolean = true,
-    background: Color = MaterialTheme.colorScheme.surfaceVariant,
-    tint: Color = MaterialTheme.colorScheme.onSurface,
+    background: Color? = null,
+    tint: Color? = null,
     modifier: Modifier = Modifier,
 ) {
+    val tokens = designTokens()
+    val buttonSize = tokens.spacing.xxl + tokens.spacing.md
+    val appliedBackground = background ?: tokens.colors.elevatedSurface
+    val appliedTint = tint ?: tokens.colors.onSurface
     Surface(
         modifier = modifier
-            .size(44.dp)
+            .size(buttonSize)
             .background(Color.Transparent, CircleShape)
             .clickable(enabled = enabled, onClick = onClick),
         shape = CircleShape,
-        color = background,
+        color = appliedBackground,
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Icon(imageVector = icon, contentDescription = contentDescription, tint = tint)
+            Icon(imageVector = icon, contentDescription = contentDescription, tint = appliedTint)
         }
     }
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun CircularIconButtonPreview() {
-    CircularIconButton(
-        icon = Icons.Filled.Check,
-        contentDescription = null,
-        onClick = {},
-    )
+    DevicePreviewContainer {
+        CircularIconButton(
+            icon = Icons.Filled.Check,
+            contentDescription = null,
+            onClick = {},
+        )
+    }
 }

@@ -5,8 +5,9 @@ import androidx.compose.runtime.Composable
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.folder_note_count_one
 import com.edufelip.shared.resources.folder_note_count_other
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun folderCountLabel(count: Int): String = if (count == 1) {
@@ -15,8 +16,10 @@ fun folderCountLabel(count: Int): String = if (count == 1) {
     stringResource(Res.string.folder_note_count_other, count)
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun FolderCountLabelPreview() {
-    Text(text = folderCountLabel(count = 3))
+    DevicePreviewContainer {
+        Text(text = folderCountLabel(count = 3))
+    }
 }

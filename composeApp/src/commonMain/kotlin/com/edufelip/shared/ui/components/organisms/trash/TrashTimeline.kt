@@ -30,7 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import com.edufelip.shared.core.time.nowEpochMs
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
@@ -42,9 +42,11 @@ import com.edufelip.shared.resources.trash_empty_action
 import com.edufelip.shared.resources.trash_recover_selected
 import com.edufelip.shared.ui.components.molecules.trash.DeletionHeader
 import com.edufelip.shared.ui.components.molecules.trash.TimelineTrashItem
+import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 private const val DAY_IN_MILLIS = 24L * 60 * 60 * 1000
 
@@ -56,6 +58,7 @@ fun TrashTimeline(
     modifier: Modifier = Modifier,
 ) {
     val chrome = platformChromeStrategy()
+    val tokens = designTokens()
 
     if (notes.isEmpty()) {
         EmptyTrashState(
@@ -85,7 +88,10 @@ fun TrashTimeline(
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+            contentPadding = PaddingValues(
+                horizontal = tokens.spacing.xl,
+                vertical = tokens.spacing.lg,
+            ),
         ) {
             item { HeaderRow(onEmptyTrash, onClearSelection = { selectedIds = emptySet() }) }
 
@@ -112,7 +118,12 @@ fun TrashTimeline(
                 }
             }
 
-            item { Spacer(modifier = Modifier.height(if (selectedNotes.isNotEmpty()) 120.dp else 24.dp)) }
+            val bottomSpacerHeight: Dp = if (selectedNotes.isNotEmpty()) {
+                tokens.spacing.xxl * 4
+            } else {
+                tokens.spacing.xl
+            }
+            item { Spacer(modifier = Modifier.height(bottomSpacerHeight)) }
         }
 
         if (selectedNotes.isNotEmpty()) {
@@ -120,10 +131,10 @@ fun TrashTimeline(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                shape = RoundedCornerShape(28.dp),
-                tonalElevation = 6.dp,
-                shadowElevation = 6.dp,
+                    .padding(horizontal = tokens.spacing.xl, vertical = tokens.spacing.lg),
+                shape = RoundedCornerShape(tokens.radius.lg * 2),
+                tonalElevation = tokens.elevation.sheet,
+                shadowElevation = tokens.elevation.sheet,
             ) {
                 Button(
                     modifier = Modifier.fillMaxWidth(),
@@ -132,12 +143,12 @@ fun TrashTimeline(
                         selectedIds = emptySet()
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        containerColor = tokens.colors.accent,
+                        contentColor = tokens.colors.onSurface,
                     ),
                 ) {
                     Icon(imageVector = Icons.Filled.Restore, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(tokens.spacing.sm))
                     Text(text = stringResource(Res.string.trash_recover_selected, selectedNotes.size))
                 }
             }
@@ -147,6 +158,7 @@ fun TrashTimeline(
 
 @Composable
 private fun HeaderRow(onEmptyTrash: () -> Unit, onClearSelection: () -> Unit) {
+    val tokens = designTokens()
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -166,7 +178,7 @@ private fun HeaderRow(onEmptyTrash: () -> Unit, onClearSelection: () -> Unit) {
             colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
         ) {
             Icon(imageVector = Icons.Filled.DeleteForever, contentDescription = null)
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(tokens.spacing.sm))
             Text(text = stringResource(Res.string.trash_empty_action))
         }
     }
@@ -182,7 +194,7 @@ private fun deletionHeaderLabel(diffDays: Int): String = when (diffDays) {
     else -> stringResource(Res.string.trash_deleted_days_ago, diffDays)
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun TrashTimelinePreview() {
     val notes = List(3) { index ->
@@ -195,5 +207,7 @@ private fun TrashTimelinePreview() {
             updatedAt = nowEpochMs() - index * DAY_IN_MILLIS,
         )
     }
-    TrashTimeline(notes = notes, onRestore = {}, onEmptyTrash = {})
+    DevicePreviewContainer {
+        TrashTimeline(notes = notes, onRestore = {}, onEmptyTrash = {})
+    }
 }

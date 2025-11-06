@@ -30,16 +30,18 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
 import com.edufelip.shared.resources.empty_notes_hint
 import com.edufelip.shared.resources.empty_notes_title
 import com.edufelip.shared.resources.notes_empty_action
 import com.edufelip.shared.resources.notes_empty_unlock_label
+import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 
 @Composable
 fun NotesEmptyState(
@@ -47,12 +49,16 @@ fun NotesEmptyState(
     onCreateNote: (() -> Unit)? = null,
 ) {
     val chrome = platformChromeStrategy()
+    val tokens = designTokens()
+    val haloSize = tokens.spacing.xxl * 6
+    val cardSize = tokens.spacing.xxl * 5
+    val iconSize = tokens.spacing.lg * 3
 
     Box(
         modifier = with(chrome) {
             modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = tokens.spacing.xl)
                 .applyNavigationBarsPadding()
         },
         contentAlignment = Alignment.Center,
@@ -63,16 +69,16 @@ fun NotesEmptyState(
             verticalArrangement = Arrangement.Center,
         ) {
             Box(
-                modifier = Modifier.size(200.dp),
+                modifier = Modifier.size(haloSize),
                 contentAlignment = Alignment.Center,
             ) {
                 Box(
                     modifier = Modifier
-                        .size(180.dp)
+                        .size(haloSize * 0.9f)
                         .background(
                             brush = Brush.radialGradient(
                                 colors = listOf(
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+                                    tokens.colors.accent.copy(alpha = 0.25f),
                                     Color.Transparent,
                                 ),
                             ),
@@ -80,36 +86,36 @@ fun NotesEmptyState(
                         ),
                 )
                 Surface(
-                    modifier = Modifier.size(160.dp),
-                    shape = RoundedCornerShape(28.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                    tonalElevation = 2.dp,
-                    shadowElevation = 8.dp,
+                    modifier = Modifier.size(cardSize),
+                    shape = RoundedCornerShape(tokens.radius.lg * 2),
+                    color = tokens.colors.elevatedSurface.copy(alpha = 0.6f),
+                    tonalElevation = tokens.elevation.card,
+                    shadowElevation = tokens.elevation.popover,
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(12.dp)
+                            .padding(tokens.spacing.md)
                             .background(
-                                color = MaterialTheme.colorScheme.surface,
-                                shape = RoundedCornerShape(22.dp),
+                                color = tokens.colors.surface,
+                                shape = RoundedCornerShape(tokens.radius.lg + tokens.radius.sm),
                             ),
                         contentAlignment = Alignment.Center,
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(tokens.spacing.sm),
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Description,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                                modifier = Modifier.size(48.dp),
+                                tint = tokens.colors.accent.copy(alpha = 0.7f),
+                                modifier = Modifier.size(iconSize),
                             )
                             Text(
                                 text = stringResource(Res.string.notes_empty_unlock_label),
                                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = tokens.colors.muted,
                                 textAlign = TextAlign.Center,
                             )
                         }
@@ -117,36 +123,39 @@ fun NotesEmptyState(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(tokens.spacing.xxl))
             Text(
                 text = stringResource(Res.string.empty_notes_title),
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface,
+                color = tokens.colors.onSurface,
                 textAlign = TextAlign.Center,
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(tokens.spacing.sm))
             Text(
                 text = stringResource(Res.string.empty_notes_hint),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = tokens.colors.muted,
                 textAlign = TextAlign.Center,
             )
             if (onCreateNote != null) {
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(tokens.spacing.xxl))
                 Button(
                     onClick = onCreateNote,
                     shape = CircleShape,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        containerColor = tokens.colors.accent,
+                        contentColor = tokens.colors.onSurface,
                     ),
-                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
+                    contentPadding = PaddingValues(
+                        horizontal = tokens.spacing.xl,
+                        vertical = tokens.spacing.md,
+                    ),
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = stringResource(Res.string.cd_add),
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(tokens.spacing.sm))
                     Text(text = stringResource(Res.string.notes_empty_action))
                 }
             }
@@ -154,8 +163,10 @@ fun NotesEmptyState(
     }
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun NotesEmptyStatePreview() {
-    NotesEmptyState()
+    DevicePreviewContainer {
+        NotesEmptyState()
+    }
 }

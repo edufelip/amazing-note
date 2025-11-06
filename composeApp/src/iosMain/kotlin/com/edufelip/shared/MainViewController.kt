@@ -1,5 +1,9 @@
 package com.edufelip.shared
 
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.window.ComposeUIViewController
 import com.edufelip.shared.data.auth.GitLiveAuthService
@@ -9,6 +13,8 @@ import com.edufelip.shared.data.repository.SqlDelightNoteRepository
 import com.edufelip.shared.domain.usecase.buildNoteUseCases
 import com.edufelip.shared.domain.validation.NoteValidationRules
 import com.edufelip.shared.ui.AmazingNoteApp
+import com.edufelip.shared.ui.app.navigation.currentRouteAsState
+import com.edufelip.shared.ui.indication.NoFeedbackIndication
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.settings.AppPreferences
 import com.edufelip.shared.ui.settings.DefaultAppPreferences
@@ -41,29 +47,51 @@ private val sharedAppPreferences: AppPreferences by lazy {
     DefaultAppPreferences(IosSettings)
 }
 
-fun MainViewController(): UIViewController = createAmazingNoteViewController(
+fun MainViewController(
+    tabBarVisibility: ((Boolean) -> Unit)? = null,
+    onRouteChanged: ((String) -> Unit)? = null,
+): UIViewController = createAmazingNoteViewController(
     initialRoute = AppRoutes.Notes,
     showBottomBar = false,
+    tabBarVisibility = tabBarVisibility,
+    onRouteChanged = onRouteChanged,
 )
 
-fun makeNotesViewController(): UIViewController = createAmazingNoteViewController(
+fun makeNotesViewController(
+    tabBarVisibility: ((Boolean) -> Unit)? = null,
+    onRouteChanged: ((String) -> Unit)? = null,
+): UIViewController = createAmazingNoteViewController(
     initialRoute = AppRoutes.Notes,
     showBottomBar = false,
+    tabBarVisibility = tabBarVisibility,
+    onRouteChanged = onRouteChanged,
 )
 
-fun makeFoldersViewController(): UIViewController = createAmazingNoteViewController(
+fun makeFoldersViewController(
+    tabBarVisibility: ((Boolean) -> Unit)? = null,
+    onRouteChanged: ((String) -> Unit)? = null,
+): UIViewController = createAmazingNoteViewController(
     initialRoute = AppRoutes.Folders,
     showBottomBar = false,
+    tabBarVisibility = tabBarVisibility,
+    onRouteChanged = onRouteChanged,
 )
 
-fun makeSettingsViewController(): UIViewController = createAmazingNoteViewController(
+fun makeSettingsViewController(
+    tabBarVisibility: ((Boolean) -> Unit)? = null,
+    onRouteChanged: ((String) -> Unit)? = null,
+): UIViewController = createAmazingNoteViewController(
     initialRoute = AppRoutes.Settings,
     showBottomBar = false,
+    tabBarVisibility = tabBarVisibility,
+    onRouteChanged = onRouteChanged,
 )
 
 fun createAmazingNoteViewController(
     initialRoute: AppRoutes,
     showBottomBar: Boolean,
+    tabBarVisibility: ((Boolean) -> Unit)? = null,
+    onRouteChanged: ((String) -> Unit)? = null,
 ): UIViewController {
     val controller = ComposeUIViewController {
         val db = createDatabase(DatabaseDriverFactory())
@@ -73,15 +101,24 @@ fun createAmazingNoteViewController(
         val authService = remember { GitLiveAuthService() }
         val settings = IosSettings
         val appPreferences = remember { sharedAppPreferences }
-        AmazingNoteApp(
-            viewModel = vm,
-            authService = authService,
-            settings = settings,
-            appPreferences = appPreferences,
-            noteDatabase = db,
-            initialRoute = initialRoute,
-            showBottomBar = showBottomBar,
-        )
+        CompositionLocalProvider(LocalIndication provides NoFeedbackIndication) {
+            val currentRoute by currentRouteAsState()
+            LaunchedEffect(currentRoute) {
+                onRouteChanged?.invoke(currentRoute)
+            }
+            AmazingNoteApp(
+                viewModel = vm,
+                authService = authService,
+                settings = settings,
+                appPreferences = appPreferences,
+                noteDatabase = db,
+                initialRoute = initialRoute,
+                showBottomBar = showBottomBar,
+                onTabBarVisibilityChanged = { isVisible ->
+                    tabBarVisibility?.invoke(isVisible)
+                },
+            )
+        }
     }
     return controller.apply {
         view.insetsLayoutMarginsFromSafeArea = false

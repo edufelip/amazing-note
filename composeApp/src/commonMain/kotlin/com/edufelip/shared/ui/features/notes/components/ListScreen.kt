@@ -41,7 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
@@ -57,6 +57,7 @@ import com.edufelip.shared.resources.your_notes
 import com.edufelip.shared.ui.components.molecules.common.MaterialSearchBar
 import com.edufelip.shared.ui.components.molecules.notes.NoteRow
 import com.edufelip.shared.ui.components.organisms.common.NotesEmptyState
+import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.settings.LocalAppPreferences
@@ -87,16 +88,19 @@ fun ListScreen(
     val appPrefs = LocalAppPreferences.current
     var showFilters by rememberSaveable { mutableStateOf(false) }
     val chrome = platformChromeStrategy()
+    val tokens = designTokens()
 
     @Composable
     fun ContentScaffold() {
         val scaffoldContainerColor = if (hasAnyNotes) {
-            MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp)
+            MaterialTheme.colorScheme.surfaceColorAtElevation(tokens.elevation.sheet)
         } else {
-            MaterialTheme.colorScheme.background
+            tokens.colors.canvas
         }
         Scaffold(
-            modifier = Modifier.fillMaxSize().background(scaffoldContainerColor),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(scaffoldContainerColor),
             snackbarHost = {
                 if (snackBarHostState != null) SnackbarHost(snackBarHostState)
             },
@@ -124,17 +128,17 @@ fun ListScreen(
             },
             floatingActionButton = {
                 if (hasAnyNotes) {
-                    val fabBottomPadding = if (chrome.bottomBarHeight == 0.dp) 0.dp else 24.dp
+                    val fabBottomPadding = if (chrome.bottomBarHeight == Dp.Zero) Dp.Zero else tokens.spacing.xxl
                     FloatingActionButton(
                         modifier = Modifier.padding(bottom = fabBottomPadding),
                         onClick = onAddClick,
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        shape = RoundedCornerShape(16.dp),
+                        containerColor = tokens.colors.accent,
+                        contentColor = tokens.colors.onSurface,
+                        shape = RoundedCornerShape(tokens.radius.lg),
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = stringResource(Res.string.cd_add),
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
                         )
                     }
                 }
@@ -177,7 +181,7 @@ fun ListScreen(
 
                 val grouped: Map<Bucket, List<Note>> =
                     filtered.groupBy { bucket(if (useUpdated.value) it.updatedAt else it.createdAt) }
-                val listBottomPadding = if (chrome.bottomBarHeight == 0.dp) 0.dp else 96.dp
+                val listBottomPadding = if (chrome.bottomBarHeight == Dp.Zero) Dp.Zero else tokens.spacing.xxl * 3
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = listBottomPadding),
@@ -186,7 +190,10 @@ fun ListScreen(
                         item(key = "list_header") {
                             Column(
                                 modifier = Modifier.fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    .padding(
+                                        horizontal = tokens.spacing.xl,
+                                        vertical = tokens.spacing.lg,
+                                    ),
                             ) {
                                 content()
                             }
@@ -194,15 +201,18 @@ fun ListScreen(
                     }
                     stickyHeader {
                         Surface(
-                            tonalElevation = 3.dp,
-                            shadowElevation = 1.dp,
+                            tonalElevation = tokens.elevation.card,
+                            shadowElevation = tokens.elevation.card / 2f,
                         ) {
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
                                 Box(
                                     modifier = Modifier.fillMaxWidth()
-                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                                        .padding(
+                                            horizontal = tokens.spacing.md + tokens.spacing.sm,
+                                            vertical = tokens.spacing.sm,
+                                        ),
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     MaterialSearchBar(
@@ -224,13 +234,13 @@ fun ListScreen(
                                             style = MaterialTheme.typography.labelMedium,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier.padding(
-                                                horizontal = 16.dp,
-                                                vertical = 4.dp,
+                                                horizontal = tokens.spacing.lg,
+                                                vertical = tokens.spacing.xs,
                                             ),
                                         )
                                         Row(
                                             modifier = Modifier.fillMaxWidth()
-                                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                                                .padding(horizontal = tokens.spacing.lg, vertical = tokens.spacing.xs),
                                         ) {
                                             FilterChip(
                                                 selected = useUpdated.value,
@@ -243,7 +253,7 @@ fun ListScreen(
                                                     selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
                                                     selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
                                                 ),
-                                                modifier = Modifier.padding(end = 8.dp),
+                                                modifier = Modifier.padding(end = tokens.spacing.sm),
                                             )
                                             FilterChip(
                                                 selected = !useUpdated.value,
@@ -269,14 +279,14 @@ fun ListScreen(
                         item {
                             Column(
                                 modifier = Modifier.fillMaxWidth()
-                                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                                    .padding(horizontal = tokens.spacing.xl, vertical = tokens.spacing.lg),
                                 verticalArrangement = Center,
                                 horizontalAlignment = CenterHorizontally,
                             ) {
                                 Text(
                                     text = stringResource(Res.string.no_notes_match_search),
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurface,
+                                    color = tokens.colors.onSurface,
                                 )
                             }
                         }
@@ -291,7 +301,7 @@ fun ListScreen(
                     val orderedGroups = groupOrder.mapNotNull { b -> grouped[b]?.let { b to it } }
                     orderedGroups.forEach { (section, itemsInGroup) ->
                         item {
-                            Surface(tonalElevation = 2.dp) {
+                            Surface(tonalElevation = tokens.elevation.card) {
                                 Text(
                                     text = when (section) {
                                         Bucket.TODAY -> stringResource(Res.string.today)
@@ -301,8 +311,8 @@ fun ListScreen(
                                     },
                                     style = MaterialTheme.typography.titleSmall,
                                     modifier = Modifier.padding(
-                                        horizontal = 16.dp,
-                                        vertical = 8.dp,
+                                        horizontal = tokens.spacing.lg,
+                                        vertical = tokens.spacing.sm,
                                     ),
                                 )
                             }
@@ -312,7 +322,10 @@ fun ListScreen(
                                 note = note,
                                 onClick = onNoteClick,
                                 showUpdated = useUpdated.value,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                                modifier = Modifier.padding(
+                                    horizontal = tokens.spacing.lg,
+                                    vertical = tokens.spacing.sm,
+                                )
                                     .animateItem(),
                             )
                         }

@@ -14,37 +14,44 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 
 @Composable
 fun DeletionHeader(label: String, modifier: Modifier = Modifier) {
+    val tokens = designTokens()
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, top = 24.dp),
+            .padding(start = tokens.spacing.xl, top = tokens.spacing.xxl),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Spacer(modifier = Modifier.width(32.dp))
+        Spacer(modifier = Modifier.width(tokens.spacing.xxl))
         Surface(
-            shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp),
+            shape = RoundedCornerShape(topStart = tokens.radius.md, bottomStart = tokens.radius.md),
             color = MaterialTheme.colorScheme.background,
             tonalElevation = 0.dp,
             shadowElevation = 0.dp,
-            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+            border = BorderStroke(tokens.spacing.xs / 2, MaterialTheme.colorScheme.primary),
         ) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                modifier = Modifier.padding(
+                    horizontal = tokens.spacing.md,
+                    vertical = tokens.spacing.xs,
+                ),
             )
         }
     }
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun DeletionHeaderPreview() {
-    DeletionHeader(label = "Deleted today")
+    DevicePreviewContainer {
+        DeletionHeader(label = "Deleted today")
+    }
 }

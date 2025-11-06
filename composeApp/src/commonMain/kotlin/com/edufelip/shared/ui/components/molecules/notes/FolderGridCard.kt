@@ -23,9 +23,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
 import com.edufelip.shared.ui.components.atoms.graphics.FolderPattern
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 
 @Composable
 fun FolderGridCard(
@@ -40,15 +42,19 @@ fun FolderGridCard(
     supporting: String? = null,
     modifier: Modifier = Modifier,
 ) {
+    val tokens = designTokens()
     val borderColor = accent.copy(alpha = 0.25f)
     val chipColor = accent.copy(alpha = 0.18f)
     val menuAvailable = onRename != null || onDelete != null
+    val cardShape = RoundedCornerShape(tokens.radius.lg * 2)
+    val chipShape = RoundedCornerShape(tokens.radius.lg)
+    val patternHeight = tokens.spacing.xxl * 2f + tokens.spacing.md
 
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(24.dp),
+        shape = cardShape,
         color = Color.Transparent,
-        tonalElevation = 0.dp,
+        tonalElevation = tokens.elevation.card,
         onClick = onOpen,
     ) {
         Column(
@@ -60,23 +66,23 @@ fun FolderGridCard(
                             accent.copy(alpha = 0.08f),
                         ),
                     ),
-                    shape = RoundedCornerShape(24.dp),
+                    shape = cardShape,
                 )
-                .border(BorderStroke(1.dp, borderColor), RoundedCornerShape(24.dp))
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .border(BorderStroke(androidx.compose.ui.unit.Dp.Hairline, borderColor), cardShape)
+                .padding(tokens.spacing.xl),
+            verticalArrangement = Arrangement.spacedBy(tokens.spacing.md),
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
                 Surface(
                     modifier = Modifier.align(Alignment.CenterStart),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = chipShape,
                     color = chipColor,
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
                         tint = accent,
-                        modifier = Modifier.padding(12.dp),
+                        modifier = Modifier.padding(tokens.spacing.md),
                     )
                 }
                 FolderActionsMenu(
@@ -111,23 +117,25 @@ fun FolderGridCard(
                 variant = variant,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(72.dp),
+                    .height(patternHeight),
             )
         }
     }
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun FolderGridCardPreview() {
-    FolderGridCard(
-        title = "Personal",
-        noteCountLabel = "12 notes",
-        accent = Color(0xFF4E6CEF),
-        icon = Icons.Outlined.Folder,
-        variant = 1,
-        onOpen = {},
-        onRename = {},
-        onDelete = {},
-    )
+    DevicePreviewContainer {
+        FolderGridCard(
+            title = "Personal",
+            noteCountLabel = "12 notes",
+            accent = Color(0xFF4E6CEF),
+            icon = Icons.Outlined.Folder,
+            variant = 1,
+            onOpen = {},
+            onRename = {},
+            onDelete = {},
+        )
+    }
 }

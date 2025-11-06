@@ -14,6 +14,7 @@ import com.edufelip.shared.data.sync.NotesSyncManager
 import com.edufelip.shared.db.NoteDatabase
 import com.edufelip.shared.ui.app.core.AmazingNoteAppEnvironment
 import com.edufelip.shared.ui.app.core.rememberAmazingNoteAppEnvironment
+import com.edufelip.shared.ui.app.navigation.reportRoute
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.nav.goBack
 import com.edufelip.shared.ui.nav.navigate
@@ -34,6 +35,10 @@ class AmazingNoteAppState internal constructor(
     private val tabRoutes = listOf(AppRoutes.Notes, AppRoutes.Folders, AppRoutes.Settings)
 
     val backStack: SnapshotStateList<AppRoutes> = mutableStateListOf(initialRoute)
+
+    init {
+        reportRoute(currentRoute)
+    }
 
     val currentRoute: AppRoutes
         get() = backStack.last()
@@ -57,18 +62,27 @@ class AmazingNoteAppState internal constructor(
 
     fun navigate(route: AppRoutes, singleTop: Boolean = true) {
         backStack.navigate(route, singleTop)
+        reportRoute(currentRoute)
     }
 
-    fun popBack(): Boolean = backStack.goBack()
+    fun popBack(): Boolean {
+        val popped = backStack.goBack()
+        if (popped) {
+            reportRoute(currentRoute)
+        }
+        return popped
+    }
 
     fun popToRoot() {
         backStack.popToRoot()
+        reportRoute(currentRoute)
     }
 
     fun setRoot(destination: AppRoutes) {
         if (backStack.size == 1 && backStack.last() == destination) return
         backStack.clear()
         backStack.add(destination)
+        reportRoute(currentRoute)
     }
 
     fun toggleTheme(enabled: Boolean? = null) {
@@ -82,17 +96,6 @@ class AmazingNoteAppState internal constructor(
             return
         }
         isBottomBarVisible = visible
-    }
-
-    fun updateBottomBarEnabled(enabled: Boolean) {
-        if (isBottomBarEnabled == enabled) return
-        isBottomBarEnabled = enabled
-        val shouldShow = bottomBarTargetVisible
-        isBottomBarVisible = enabled && shouldShow
-    }
-
-    fun resetToHome() {
-        setRoot(AppRoutes.Notes)
     }
 
     fun isTab(route: AppRoutes): Boolean = route in tabRoutes

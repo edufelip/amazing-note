@@ -36,6 +36,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -75,7 +76,9 @@ import com.edufelip.shared.resources.theme_subtitle
 import com.edufelip.shared.resources.trash
 import com.edufelip.shared.resources.trash_subtitle
 import com.edufelip.shared.resources.welcome_message
+import com.edufelip.shared.ui.app.chrome.AmazingTopBar
 import com.edufelip.shared.ui.components.organisms.settings.PersonalizeHeroIllustration
+import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.ios.IosDatePicker
 import com.edufelip.shared.ui.settings.LocalSettings
 import com.edufelip.shared.ui.util.platform.Haptics
@@ -103,7 +106,8 @@ fun SettingsScreen(
 ) {
     val chrome = platformChromeStrategy()
     val userState = auth?.user?.collectAsState()?.value
-    val itemsSpacing = 16.dp
+    val tokens = designTokens()
+    val itemsSpacing = tokens.spacing.lg
     val settingsStore = LocalSettings.current
     val reviewDateKey = "daily_review_epoch"
     var reviewReminder by rememberSaveable(reviewDateKey) {
@@ -115,194 +119,206 @@ fun SettingsScreen(
         settingsStore.setString(reviewDateKey, reviewReminder.toString())
     }
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(itemsSpacing),
-    ) {
-        item {
-            Text(
-                text = stringResource(Res.string.settings_header),
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
-            )
-        }
-
-        item {
-            HeroCard()
-        }
-
-        item { SectionTitle(text = stringResource(Res.string.appearance_section)) }
-        item {
-            SettingRow(
-                title = stringResource(Res.string.theme_option),
-                subtitle = stringResource(Res.string.theme_subtitle),
-                materialIcon = Icons.Default.DarkMode,
-                cupertinoSymbol = "moon.fill",
-                trailing = {
-                    AnimatedThemeSwitch(
-                        checked = darkTheme,
-                        onCheckedChange = { checked ->
-                            Haptics.lightTap()
-                            onToggleDarkTheme(checked)
-                        },
-                    )
-                },
-            )
-        }
-
-        if (chrome.useCupertinoLook) {
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        topBar = { AmazingTopBar(user = userState) },
+        containerColor = tokens.colors.canvas,
+        contentWindowInsets = chrome.contentWindowInsets,
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = tokens.spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(itemsSpacing),
+        ) {
             item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            MaterialTheme.colorScheme.surfaceVariant,
-                            RoundedCornerShape(20.dp),
+                Text(
+                    text = stringResource(Res.string.settings_header),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = tokens.colors.onSurface,
+                    modifier = Modifier.padding(top = tokens.spacing.xl, bottom = tokens.spacing.sm),
+                )
+            }
+
+            item {
+                HeroCard()
+            }
+
+            item { SectionTitle(text = stringResource(Res.string.appearance_section)) }
+            item {
+                SettingRow(
+                    title = stringResource(Res.string.theme_option),
+                    subtitle = stringResource(Res.string.theme_subtitle),
+                    materialIcon = Icons.Default.DarkMode,
+                    cupertinoSymbol = "moon.fill",
+                    trailing = {
+                        AnimatedThemeSwitch(
+                            checked = darkTheme,
+                            onCheckedChange = { checked ->
+                                Haptics.lightTap()
+                                onToggleDarkTheme(checked)
+                            },
                         )
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Text(
-                        text = "Review reminder date",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    IosDatePicker(
-                        epochMillis = reviewReminder,
-                        onChange = { reviewReminder = it },
-                    )
+                    },
+                )
+            }
+
+            if (chrome.useCupertinoLook) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                tokens.colors.elevatedSurface,
+                                RoundedCornerShape(tokens.radius.lg + tokens.radius.sm),
+                            )
+                            .padding(tokens.spacing.lg),
+                        verticalArrangement = Arrangement.spacedBy(tokens.spacing.md),
+                    ) {
+                        Text(
+                            text = "Review reminder date",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = tokens.colors.onSurface,
+                        )
+                        IosDatePicker(
+                            epochMillis = reviewReminder,
+                            onChange = { reviewReminder = it },
+                        )
+                    }
                 }
             }
-        }
 
-        item { SectionTitle(text = stringResource(Res.string.account_section)) }
-        item {
-            if (userState == null) {
-                SettingRow(
-                    title = stringResource(Res.string.login),
-                    subtitle = stringResource(Res.string.welcome_message),
-                    materialIcon = Icons.AutoMirrored.Filled.Login,
-                    cupertinoSymbol = "rectangle.portrait.and.arrow.forward",
-                    onClick = onLogin,
-                )
-            } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            MaterialTheme.colorScheme.surfaceVariant,
-                            RoundedCornerShape(20.dp),
-                        )
-                        .padding(16.dp),
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                            shape = CircleShape,
+            item { SectionTitle(text = stringResource(Res.string.account_section)) }
+            item {
+                if (userState == null) {
+                    SettingRow(
+                        title = stringResource(Res.string.login),
+                        subtitle = stringResource(Res.string.welcome_message),
+                        materialIcon = Icons.AutoMirrored.Filled.Login,
+                        cupertinoSymbol = "rectangle.portrait.and.arrow.forward",
+                        onClick = onLogin,
+                    )
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                tokens.colors.elevatedSurface,
+                                RoundedCornerShape(tokens.radius.lg + tokens.radius.sm),
+                            )
+                            .padding(tokens.spacing.lg),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
+                                color = tokens.colors.accent.copy(alpha = 0.15f),
+                                shape = CircleShape,
+                            ) {
+                                Icon(
+                                    painter = AdaptiveIcons.painter(
+                                        material = { Icons.Default.Person },
+                                        cupertino = { "person.crop.circle" },
+                                    ),
+                                    contentDescription = null,
+                                    tint = tokens.colors.accent,
+                                    modifier = Modifier.padding(tokens.spacing.md),
+                                )
+                            }
+                            Column(modifier = Modifier.padding(start = tokens.spacing.md)) {
+                                Text(
+                                    text = userState.displayName ?: userState.email ?: "",
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                                Text(
+                                    text = userState.email
+                                        ?: stringResource(Res.string.welcome_message),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = tokens.colors.muted,
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(tokens.spacing.md))
+                        AdaptiveButton(
+                            onClick = {
+                                Haptics.lightTap()
+                                onLogout()
+                            },
+                            adaptation = {
+                                material {
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = tokens.colors.danger,
+                                        contentColor = tokens.colors.onDanger,
+                                    )
+                                }
+                                cupertino {
+                                    colors = CupertinoButtonDefaults.filledButtonColors(
+                                        containerColor = tokens.colors.danger,
+                                        contentColor = tokens.colors.onDanger,
+                                    )
+                                }
+                            },
                         ) {
                             Icon(
                                 painter = AdaptiveIcons.painter(
-                                    material = { Icons.Default.Person },
-                                    cupertino = { "person.crop.circle" },
+                                    material = { Icons.AutoMirrored.Filled.Logout },
+                                    cupertino = { "rectangle.portrait.and.arrow.right" },
                                 ),
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(12.dp),
                             )
+                            Spacer(modifier = Modifier.width(tokens.spacing.sm))
+                            Text(text = stringResource(Res.string.logout))
                         }
-                        Column(modifier = Modifier.padding(start = 12.dp)) {
-                            Text(
-                                text = userState.displayName ?: userState.email ?: "",
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                            Text(
-                                text = userState.email
-                                    ?: stringResource(Res.string.welcome_message),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    AdaptiveButton(
-                        onClick = {
-                            Haptics.lightTap()
-                            onLogout()
-                        },
-                        adaptation = {
-                            material {
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.error,
-                                    contentColor = MaterialTheme.colorScheme.onError,
-                                )
-                            }
-                            cupertino {
-                                colors = CupertinoButtonDefaults.filledButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.error,
-                                    contentColor = MaterialTheme.colorScheme.onError,
-                                )
-                            }
-                        },
-                    ) {
-                        Icon(
-                            painter = AdaptiveIcons.painter(
-                                material = { Icons.AutoMirrored.Filled.Logout },
-                                cupertino = { "rectangle.portrait.and.arrow.right" },
-                            ),
-                            contentDescription = null,
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = stringResource(Res.string.logout))
                     }
                 }
             }
-        }
 
-        item { SectionTitle(text = stringResource(Res.string.management_section)) }
-        item {
-            SettingRow(
-                title = stringResource(Res.string.trash),
-                subtitle = stringResource(Res.string.trash_subtitle),
-                materialIcon = Icons.Default.AutoDelete,
-                cupertinoSymbol = "trash",
-                onClick = onOpenTrash,
-            )
-        }
-        item {
-            SettingRow(
-                title = stringResource(Res.string.privacy_policy),
-                subtitle = null,
-                materialIcon = Icons.Default.PrivacyTip,
-                cupertinoSymbol = "lock.shield",
-                onClick = onOpenPrivacy,
-            )
-        }
+            item { SectionTitle(text = stringResource(Res.string.management_section)) }
+            item {
+                SettingRow(
+                    title = stringResource(Res.string.trash),
+                    subtitle = stringResource(Res.string.trash_subtitle),
+                    materialIcon = Icons.Default.AutoDelete,
+                    cupertinoSymbol = "trash",
+                    onClick = onOpenTrash,
+                )
+            }
+            item {
+                SettingRow(
+                    title = stringResource(Res.string.privacy_policy),
+                    subtitle = null,
+                    materialIcon = Icons.Default.PrivacyTip,
+                    cupertinoSymbol = "lock.shield",
+                    onClick = onOpenPrivacy,
+                )
+            }
 
-        item { SectionTitle(text = stringResource(Res.string.app_version_label)) }
-        item {
-            SettingRow(
-                title = stringResource(Res.string.app_version_label),
-                subtitle = appVersion,
-                materialIcon = Icons.Default.Info,
-                cupertinoSymbol = "info.circle",
-                enabled = false,
-            )
-        }
-        item { Spacer(modifier = Modifier.height(56.dp)) }
-        if (chrome.useCupertinoLook) {
+            item { SectionTitle(text = stringResource(Res.string.app_version_label)) }
+            item {
+                SettingRow(
+                    title = stringResource(Res.string.app_version_label),
+                    subtitle = appVersion,
+                    materialIcon = Icons.Default.Info,
+                    cupertinoSymbol = "info.circle",
+                    enabled = false,
+                )
+            }
             item {
                 Spacer(
-                    modifier = with(chrome) {
-                        Modifier
-                            .fillMaxWidth()
-                            .applyNavigationBarsPadding()
-                    },
+                    modifier = Modifier.height(tokens.spacing.xxl + tokens.spacing.xl),
                 )
+            }
+            if (chrome.useCupertinoLook) {
+                item {
+                    Spacer(
+                        modifier = with(chrome) {
+                            Modifier
+                                .fillMaxWidth()
+                                .applyNavigationBarsPadding()
+                        },
+                    )
+                }
             }
         }
     }
@@ -310,12 +326,11 @@ fun SettingsScreen(
 
 @Composable
 private fun HeroCard() {
+    val tokens = designTokens()
     Card(
-        shape = RoundedCornerShape(28.dp),
+        shape = RoundedCornerShape(tokens.radius.lg * 2),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primary.copy(
-                alpha = 0.08f,
-            ),
+            containerColor = tokens.colors.accent.copy(alpha = 0.08f),
         ),
         modifier = Modifier.fillMaxWidth(),
     ) {
@@ -325,14 +340,17 @@ private fun HeroCard() {
                 .background(
                     Brush.linearGradient(
                         listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.28f),
+                            tokens.colors.accent.copy(alpha = 0.28f),
                             Color.Transparent,
                         ),
                     ),
                 )
-                .padding(horizontal = 24.dp, vertical = 20.dp),
+                .padding(
+                    horizontal = tokens.spacing.xl,
+                    vertical = tokens.spacing.lg + tokens.spacing.xs,
+                ),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(tokens.spacing.xl - tokens.spacing.sm),
         ) {
             Column(
                 modifier = Modifier.weight(1f),
@@ -342,13 +360,13 @@ private fun HeroCard() {
                     text = stringResource(Res.string.personalize_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = tokens.colors.onSurface,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(tokens.spacing.sm))
                 Text(
                     text = stringResource(Res.string.personalize_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = tokens.colors.muted,
                 )
             }
 
@@ -359,11 +377,12 @@ private fun HeroCard() {
 
 @Composable
 private fun SectionTitle(text: String) {
+    val tokens = designTokens()
     Text(
         text = text,
         style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(top = 8.dp),
+        color = tokens.colors.accent,
+        modifier = Modifier.padding(top = tokens.spacing.sm),
     )
 }
 
@@ -373,19 +392,20 @@ private fun AnimatedThemeSwitch(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val tokens = designTokens()
     val trackWidth = 52.dp
     val trackHeight = 30.dp
     val thumbSize = 22.dp
-    val horizontalPadding = 4.dp
+    val horizontalPadding = tokens.spacing.xs
     val transition = updateTransition(targetState = checked, label = "theme_switch")
     val trackColor by transition.animateColor(label = "track_color") { isChecked ->
-        if (isChecked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+        if (isChecked) tokens.colors.accent else tokens.colors.elevatedSurface
     }
     val thumbBorderColor by transition.animateColor(label = "thumb_border") { isChecked ->
-        if (isChecked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+        if (isChecked) tokens.colors.accent else tokens.colors.divider
     }
     val thumbBackground by transition.animateColor(label = "thumb_background") { isChecked ->
-        if (isChecked) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.surface
+        if (isChecked) tokens.colors.onSurface else tokens.colors.surface
     }
     val thumbOffset by transition.animateDp(label = "thumb_offset") { isChecked ->
         if (isChecked) trackWidth - thumbSize - horizontalPadding * 2 else 0.dp
@@ -436,7 +456,8 @@ private fun SettingRow(
     enabled: Boolean = true,
 ) {
     val chrome = platformChromeStrategy()
-    val shape = RoundedCornerShape(24.dp)
+    val tokens = designTokens()
+    val shape = RoundedCornerShape(tokens.radius.lg + tokens.radius.md)
     val interactionSource = remember { MutableInteractionSource() }
     val handleClick = onClick?.let {
         {
@@ -465,29 +486,29 @@ private fun SettingRow(
     }
     Surface(
         shape = shape,
-        tonalElevation = 2.dp,
+        tonalElevation = tokens.elevation.card,
     ) {
         Row(
             modifier = Modifier
                 .then(clickableModifier)
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(tokens.spacing.lg),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Surface(
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-                    shape = RoundedCornerShape(16.dp),
+                    color = tokens.colors.accent.copy(alpha = 0.12f),
+                    shape = RoundedCornerShape(tokens.radius.md + tokens.radius.sm),
                 ) {
                     Icon(
                         painter = iconPainter,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(12.dp),
+                        tint = tokens.colors.accent,
+                        modifier = Modifier.padding(tokens.spacing.md),
                     )
                 }
-                Column(modifier = Modifier.padding(start = 12.dp)) {
+                Column(modifier = Modifier.padding(start = tokens.spacing.md)) {
                     Text(
                         text = title,
                         style = MaterialTheme.typography.titleMedium,
@@ -497,7 +518,7 @@ private fun SettingRow(
                         Text(
                             text = it,
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = tokens.colors.muted,
                         )
                     }
                 }

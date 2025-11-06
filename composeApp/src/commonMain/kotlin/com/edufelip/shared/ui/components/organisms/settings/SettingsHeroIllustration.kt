@@ -16,8 +16,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 
 /**
  * Decorative illustration for the settings hero card. The face illustration is deliberately
@@ -32,10 +33,12 @@ fun PersonalizeHeroIllustration(
     val secondary = colorScheme.secondary
     val tertiary = colorScheme.tertiary
     val surfaceColor = colorScheme.surface
+    val tokens = designTokens()
+    val size = tokens.spacing.xxl * 4.5f
 
     Box(
         modifier = modifier
-            .size(140.dp),
+            .size(size),
         contentAlignment = Alignment.Center,
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -113,9 +116,10 @@ fun HeroBackdrop(
     modifier: Modifier = Modifier,
     tint: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
 ) {
+    val tokens = designTokens()
     Box(
         modifier = modifier
-            .size(160.dp)
+            .size(tokens.spacing.xxl * 5f)
             .background(
                 brush = Brush.radialGradient(
                     colors = listOf(tint, Color.Transparent),
@@ -125,11 +129,13 @@ fun HeroBackdrop(
     )
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun SettingsHeroIllustrationPreview() {
-    Box(contentAlignment = Alignment.Center) {
-        HeroBackdrop()
-        PersonalizeHeroIllustration()
+    DevicePreviewContainer {
+        Box(contentAlignment = Alignment.Center) {
+            HeroBackdrop()
+            PersonalizeHeroIllustration()
+        }
     }
 }

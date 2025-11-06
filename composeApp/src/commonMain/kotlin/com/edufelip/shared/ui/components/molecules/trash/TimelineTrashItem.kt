@@ -26,14 +26,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.restore
 import com.edufelip.shared.resources.title
 import com.edufelip.shared.ui.components.atoms.graphics.TimelineIndicator
+import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun TimelineTrashItem(
@@ -47,11 +48,12 @@ fun TimelineTrashItem(
     onRestore: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val tokens = designTokens()
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
-            .padding(top = 16.dp),
+            .padding(top = tokens.spacing.lg),
         verticalAlignment = Alignment.Top,
     ) {
         TimelineIndicator(
@@ -59,19 +61,19 @@ fun TimelineTrashItem(
             isFirst = isFirst,
             isLast = isLast,
         )
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(tokens.spacing.md))
         Surface(
             modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
-            tonalElevation = if (selected) 2.dp else 1.dp,
-            shadowElevation = if (selected) 4.dp else 2.dp,
+            shape = RoundedCornerShape(tokens.radius.lg),
+            tonalElevation = if (selected) tokens.elevation.popover else tokens.elevation.card,
+            shadowElevation = if (selected) tokens.elevation.popover else tokens.elevation.card,
             color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
             border = BorderStroke(
-                width = 1.dp,
+                width = androidx.compose.ui.unit.Dp.Hairline,
                 color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
             ),
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(tokens.spacing.xl)) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -87,7 +89,7 @@ fun TimelineTrashItem(
                             contentDescription = null,
                             tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(tokens.spacing.md))
                         Column(modifier = Modifier.weight(1f)) {
                             val titleText = note.title.ifBlank { stringResource(Res.string.title) }
                             Text(
@@ -96,7 +98,7 @@ fun TimelineTrashItem(
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
                             if (note.description.isNotBlank()) {
-                                Spacer(modifier = Modifier.height(6.dp))
+                                Spacer(modifier = Modifier.height(tokens.spacing.sm))
                                 Text(
                                     text = note.description,
                                     style = MaterialTheme.typography.bodySmall,
@@ -105,7 +107,7 @@ fun TimelineTrashItem(
                                     overflow = TextOverflow.Ellipsis,
                                 )
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(tokens.spacing.sm))
                             Text(
                                 text = deletedLabel,
                                 style = MaterialTheme.typography.labelSmall,
@@ -114,7 +116,7 @@ fun TimelineTrashItem(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(tokens.spacing.md))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
@@ -128,7 +130,7 @@ fun TimelineTrashItem(
     }
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun TimelineTrashItemPreview() {
     val note = Note(
@@ -139,14 +141,16 @@ private fun TimelineTrashItemPreview() {
         createdAt = 0L,
         updatedAt = 0L,
     )
-    TimelineTrashItem(
-        note = note,
-        deletedLabel = "Deleted today",
-        selected = true,
-        indicatorColor = Color(0xFF6750A4),
-        isFirst = false,
-        isLast = false,
-        onToggleSelection = {},
-        onRestore = {},
-    )
+    DevicePreviewContainer {
+        TimelineTrashItem(
+            note = note,
+            deletedLabel = "Deleted today",
+            selected = true,
+            indicatorColor = Color(0xFF6750A4),
+            isFirst = false,
+            isLast = false,
+            onToggleSelection = {},
+            onRestore = {},
+        )
+    }
 }

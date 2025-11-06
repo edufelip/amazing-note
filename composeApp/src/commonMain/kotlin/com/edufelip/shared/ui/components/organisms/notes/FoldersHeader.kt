@@ -10,19 +10,19 @@ import androidx.compose.material.icons.outlined.ViewAgenda
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.folder_layout_grid_content_description
 import com.edufelip.shared.resources.folder_layout_list_content_description
 import com.edufelip.shared.ui.components.molecules.common.MaterialSearchBar
+import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 enum class FolderLayout {
     Grid,
@@ -38,15 +38,20 @@ fun FoldersHeader(
     modifier: Modifier = Modifier,
     showControls: Boolean = true,
 ) {
+    val tokens = designTokens()
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(tokens.spacing.lg),
     ) {
         if (showControls) {
             Row(
-                modifier = Modifier.padding(top = 16.dp, start = 8.dp, end = 8.dp),
+                modifier = Modifier.padding(
+                    top = tokens.spacing.xl,
+                    start = tokens.spacing.sm,
+                    end = tokens.spacing.sm,
+                ),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(tokens.spacing.md),
             ) {
                 MaterialSearchBar(
                     modifier = Modifier.weight(1f),
@@ -56,8 +61,8 @@ fun FoldersHeader(
                 FilledTonalIconButton(
                     onClick = onToggleLayout,
                     colors = IconButtonDefaults.filledTonalIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        containerColor = tokens.colors.accentMuted,
+                        contentColor = tokens.colors.onSurface,
                     ),
                 ) {
                     val (icon, description) = when (layoutMode) {
@@ -71,14 +76,16 @@ fun FoldersHeader(
     }
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun FoldersHeaderPreview() {
     val (query, setQuery) = remember { mutableStateOf("Work") }
-    FoldersHeader(
-        query = query,
-        onQueryChange = setQuery,
-        layoutMode = FolderLayout.Grid,
-        onToggleLayout = {},
-    )
+    DevicePreviewContainer {
+        FoldersHeader(
+            query = query,
+            onQueryChange = setQuery,
+            layoutMode = FolderLayout.Grid,
+            onToggleLayout = {},
+        )
+    }
 }

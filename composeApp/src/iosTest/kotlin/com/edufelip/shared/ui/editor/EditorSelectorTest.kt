@@ -11,7 +11,7 @@ class EditorSelectorTest {
     fun `ios uses simple editor`() {
         assertTrue(
             shouldUseSimpleEditor(),
-            message = "iOS must use SimpleIosNoteEditor to avoid the crashy rich editor path"
+            message = "iOS must use SimpleIosNoteEditor to avoid the crashy rich editor path",
         )
     }
 }

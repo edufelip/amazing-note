@@ -106,6 +106,7 @@ fun AmazingNoteNavHost(
                     coroutineScope = state.coroutineScope,
                     onNavigate = state::navigate,
                     isDarkTheme = darkTheme,
+                    authViewModel = state.authViewModel,
                 )
 
                 AppRoutes.Settings -> SettingsRoute(
@@ -201,8 +202,7 @@ fun AmazingNoteNavHost(
                             targetState.route is AppRoutes.SignUp ||
                             initialState.route is AppRoutes.Trash ||
                             targetState.route is AppRoutes.Trash -> {
-                            fadeIn(animationSpec = tween(duration)) togetherWith
-                                fadeOut(animationSpec = tween(duration))
+                            EnterTransition.None togetherWith ExitTransition.None
                         }
 
                         else -> EnterTransition.None togetherWith ExitTransition.None

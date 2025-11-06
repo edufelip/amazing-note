@@ -105,10 +105,12 @@ fun LoginScreen(
     val scrollState = rememberScrollState()
     var forgotPasswordDialogVisible by rememberSaveable { mutableStateOf(false) }
     var resetEmail by rememberSaveable { mutableStateOf("") }
+    var loginRequested by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(user) {
-        if (user != null) {
+    LaunchedEffect(user, loginRequested) {
+        if (loginRequested && user != null) {
             onLoginSuccess()
+            loginRequested = false
         }
     }
 
@@ -135,6 +137,7 @@ fun LoginScreen(
         if (currentError != null) {
             snackbarHostState.showSnackbar(currentError)
             auth.clearError()
+            loginRequested = false
         }
     }
 
@@ -209,7 +212,10 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.height(20.dp))
             Button(
-                onClick = { auth.loginWithEmail(email.trim(), password) },
+                onClick = {
+                    loginRequested = true
+                    auth.loginWithEmail(email.trim(), password)
+                },
                 enabled = email.isNotBlank() && password.isNotBlank() && !loading,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -237,11 +243,13 @@ fun LoginScreen(
                         val result = launcher.signIn()
                         when {
                             !result.idToken.isNullOrBlank() -> {
+                                loginRequested = true
                                 auth.signInWithGoogleToken(result.idToken)
                             }
                             !result.errorMessage.isNullOrBlank() -> {
                                 auth.setError(result.errorMessage)
                                 snackbarHostState.showSnackbar(result.errorMessage)
+                                loginRequested = false
                             }
                             else -> snackbarHostState.showSnackbar(googleCanceledText)
                         }

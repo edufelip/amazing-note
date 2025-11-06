@@ -13,14 +13,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_back
 import com.edufelip.shared.resources.cd_delete
 import com.edufelip.shared.resources.cd_save
 import com.edufelip.shared.ui.components.atoms.buttons.CircularIconButton
+import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun NoteEditorTopBar(
@@ -30,12 +31,13 @@ fun NoteEditorTopBar(
     isSaving: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val tokens = designTokens()
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 16.dp),
+            .padding(vertical = tokens.spacing.lg),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(tokens.spacing.md),
     ) {
         CircularIconButton(
             icon = Icons.AutoMirrored.Filled.ArrowBack,
@@ -56,14 +58,16 @@ fun NoteEditorTopBar(
             contentDescription = stringResource(Res.string.cd_save),
             onClick = onSave,
             enabled = !isSaving,
-            background = MaterialTheme.colorScheme.primary,
-            tint = MaterialTheme.colorScheme.onPrimary,
+            background = tokens.colors.accent,
+            tint = tokens.colors.onSurface,
         )
     }
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun NoteEditorTopBarPreview() {
-    NoteEditorTopBar(onBack = {}, onSave = {}, onDelete = {}, isSaving = false)
+    DevicePreviewContainer {
+        NoteEditorTopBar(onBack = {}, onSave = {}, onDelete = {}, isSaving = false)
+    }
 }

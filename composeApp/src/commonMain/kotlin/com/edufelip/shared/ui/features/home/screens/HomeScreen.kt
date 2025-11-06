@@ -3,8 +3,10 @@ package com.edufelip.shared.ui.features.home.screens
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -14,13 +16,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.edufelip.shared.data.sync.LocalNotesSyncManager
 import com.edufelip.shared.data.sync.SyncEvent
 import com.edufelip.shared.domain.model.Note
+import com.edufelip.shared.ui.app.chrome.AmazingTopBar
 import com.edufelip.shared.ui.components.organisms.common.NotesEmptyState
+import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.features.notes.components.ListScreen
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.vm.AuthViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
@@ -67,28 +73,44 @@ fun HomeScreen(
         }
 
     val hasNotes = notes.isNotEmpty()
+    val chrome = platformChromeStrategy()
+    val tokens = designTokens()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        ListScreen(
-            notes = filteredNotes,
-            onNoteClick = onOpenNote,
-            onAddClick = onAdd,
-            searchQuery = query.value,
-            onSearchQueryChange = { query.value = it },
-            onDelete = onDelete,
-            snackBarHostState = snackBarHostState,
-            showTopAppBar = false,
-            hasAnyNotes = hasNotes,
-            headerContent = null,
-            emptyContent = {
-                NotesEmptyState(
-                    onCreateNote = onAdd,
+    Scaffold(
+        topBar = { AmazingTopBar(user = currentUser) },
+        containerColor = Color.Transparent,
+        contentWindowInsets = chrome.contentWindowInsets,
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+        ) {
+            ListScreen(
+                notes = filteredNotes,
+                onNoteClick = onOpenNote,
+                onAddClick = onAdd,
+                searchQuery = query.value,
+                onSearchQueryChange = { query.value = it },
+                onDelete = onDelete,
+                snackBarHostState = snackBarHostState,
+                showTopAppBar = false,
+                hasAnyNotes = hasNotes,
+                headerContent = null,
+                emptyContent = {
+                    NotesEmptyState(
+                        onCreateNote = onAdd,
+                    )
+                },
+            )
+
+            if (syncing) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = tokens.colors.accent,
+                    trackColor = tokens.colors.accentMuted.copy(alpha = 0.35f),
                 )
-            },
-        )
-
-        if (syncing) {
-            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
         }
     }
 }

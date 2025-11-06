@@ -19,7 +19,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,13 +27,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_more
 import com.edufelip.shared.resources.folder_options_delete
 import com.edufelip.shared.resources.folder_options_rename
+import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun FolderActionsMenu(
@@ -43,22 +44,23 @@ fun FolderActionsMenu(
     onDelete: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
+    val tokens = designTokens()
     var menuExpanded by remember { mutableStateOf(false) }
 
-    val menuShape = RoundedCornerShape(16.dp)
-    val menuContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp)
-    val menuBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+    val menuShape = RoundedCornerShape(tokens.radius.lg)
+    val menuContainerColor = tokens.colors.elevatedSurface
+    val menuBorderColor = tokens.colors.divider.copy(alpha = 0.35f)
 
     Box(modifier = modifier) {
         IconButton(
             onClick = { if (menuAvailable) menuExpanded = true },
             enabled = menuAvailable,
-            modifier = Modifier.size(36.dp),
+            modifier = Modifier.size(tokens.spacing.xxl),
         ) {
             val tint = if (menuAvailable) {
-                MaterialTheme.colorScheme.onSurface
+                tokens.colors.onSurface
             } else {
-                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                tokens.colors.muted.copy(alpha = 0.4f)
             }
             Icon(
                 imageVector = Icons.Outlined.MoreVert,
@@ -72,10 +74,10 @@ fun FolderActionsMenu(
                 expanded = menuExpanded,
                 onDismissRequest = { menuExpanded = false },
                 modifier = Modifier
-                    .shadow(12.dp, menuShape, clip = false)
+                    .shadow(tokens.elevation.popover, menuShape, clip = false)
                     .clip(menuShape)
                     .background(menuContainerColor)
-                    .border(BorderStroke(1.dp, menuBorderColor), menuShape),
+                    .border(BorderStroke(androidx.compose.ui.unit.Dp.Hairline, menuBorderColor), menuShape),
             ) {
                 onRename?.let {
                     DropdownMenuItem(
@@ -89,21 +91,24 @@ fun FolderActionsMenu(
                             Icon(
                                 imageVector = Icons.Outlined.Edit,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                tint = tokens.colors.muted,
                             )
                         },
                         onClick = {
                             menuExpanded = false
                             it()
                         },
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+                        contentPadding = PaddingValues(
+                            horizontal = tokens.spacing.xl,
+                            vertical = tokens.spacing.md,
+                        ),
                     )
                 }
 
                 if (onRename != null && onDelete != null) {
                     HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 12.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                        modifier = Modifier.padding(horizontal = tokens.spacing.md),
+                        color = menuBorderColor.copy(alpha = 0.5f),
                     )
                 }
 
@@ -127,7 +132,10 @@ fun FolderActionsMenu(
                             menuExpanded = false
                             it()
                         },
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+                        contentPadding = PaddingValues(
+                            horizontal = tokens.spacing.xl,
+                            vertical = tokens.spacing.md,
+                        ),
                     )
                 }
             }
@@ -135,8 +143,10 @@ fun FolderActionsMenu(
     }
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun FolderActionsMenuPreview() {
-    FolderActionsMenu(menuAvailable = true, onRename = {}, onDelete = {})
+    DevicePreviewContainer {
+        FolderActionsMenu(menuAvailable = true, onRename = {}, onDelete = {})
+    }
 }

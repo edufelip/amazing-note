@@ -11,7 +11,6 @@ import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,14 +18,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_clear_search
 import com.edufelip.shared.resources.cd_search
 import com.edufelip.shared.resources.filters
 import com.edufelip.shared.resources.search
+import com.edufelip.shared.ui.designsystem.designTokens
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +35,7 @@ fun MaterialSearchBar(
     onFiltersClick: () -> Unit = {},
     filtersActive: Boolean = false,
 ) {
+    val tokens = designTokens()
     DockedSearchBar(
         modifier = modifier,
         expanded = false,
@@ -51,8 +50,8 @@ fun MaterialSearchBar(
                 leadingIcon = {
                     Box(
                         modifier = Modifier
-                            .size(48.dp)
-                            .padding(12.dp),
+                            .size(tokens.spacing.xxl)
+                            .padding(tokens.spacing.md),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(Icons.Default.Search, contentDescription = stringResource(Res.string.cd_search))
@@ -70,9 +69,9 @@ fun MaterialSearchBar(
                                 imageVector = Icons.Filled.Tune,
                                 contentDescription = stringResource(Res.string.filters),
                                 tint = if (filtersActive) {
-                                    MaterialTheme.colorScheme.primary
+                                    tokens.colors.accent
                                 } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                    tokens.colors.muted
                                 },
                             )
                         }
@@ -85,13 +84,15 @@ fun MaterialSearchBar(
     )
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun MaterialSearchBarPreview() {
     val (query, setQuery) = remember { mutableStateOf("Folders") }
-    MaterialSearchBar(
-        query = query,
-        onQueryChange = setQuery,
-        filtersActive = true,
-    )
+    DevicePreviewContainer {
+        MaterialSearchBar(
+            query = query,
+            onQueryChange = setQuery,
+            filtersActive = true,
+        )
+    }
 }

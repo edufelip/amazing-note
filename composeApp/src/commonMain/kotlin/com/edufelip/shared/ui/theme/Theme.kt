@@ -2,12 +2,14 @@ package com.edufelip.shared.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
+import com.edufelip.shared.ui.designsystem.AmazingShapes
+import com.edufelip.shared.ui.designsystem.AmazingTypography
+import com.edufelip.shared.ui.designsystem.ProvideDesignSystem
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.slapps.cupertino.adaptive.AdaptiveTheme
 import com.slapps.cupertino.adaptive.CupertinoThemeSpec
@@ -102,19 +104,20 @@ fun AmazingNoteTheme(
     val platformScheme = rememberPlatformColorScheme(darkTheme, useDynamicColor)
     val colorScheme = platformScheme ?: if (darkTheme) darkScheme else lightScheme
     val dynamicActive = platformScheme != null && useDynamicColor
-    val shapes = Shapes()
     val target = if (chrome.useCupertinoLook) Theme.Cupertino else Theme.Material3
-    AdaptiveTheme(
-        target = target,
-        material = MaterialThemeSpec(
-            colorScheme = colorScheme,
-            shapes = shapes,
-            typography = Typography,
-        ),
-        cupertino = CupertinoThemeSpec.Default(),
-    ) {
-        CompositionLocalProvider(LocalDynamicColorActive provides dynamicActive) {
-            content()
+    ProvideDesignSystem(colorScheme = colorScheme, darkTheme = darkTheme) {
+        AdaptiveTheme(
+            target = target,
+            material = MaterialThemeSpec(
+                colorScheme = colorScheme,
+                shapes = AmazingShapes,
+                typography = AmazingTypography,
+            ),
+            cupertino = CupertinoThemeSpec.Default(),
+        ) {
+            CompositionLocalProvider(LocalDynamicColorActive provides dynamicActive) {
+                content()
+            }
         }
     }
 }
