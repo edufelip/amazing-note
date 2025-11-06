@@ -32,6 +32,9 @@ AGENTS.md
 .gradle-user
 .gradle-home
 
+# Local documentation
+docs/
+
 GoogleService-Info.plist
 google-services.json
 iosApp/xcodebuild-debug.log
