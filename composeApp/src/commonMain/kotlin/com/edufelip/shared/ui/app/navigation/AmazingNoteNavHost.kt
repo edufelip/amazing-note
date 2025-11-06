@@ -203,7 +203,9 @@ fun AmazingNoteNavHost(
                             targetState.route is AppRoutes.SignUp ||
                             initialState.route is AppRoutes.Trash ||
                             targetState.route is AppRoutes.Trash -> {
-                            EnterTransition.None togetherWith ExitTransition.None
+                            val fadeDuration = 200
+                            fadeIn(animationSpec = tween(fadeDuration)) togetherWith
+                                fadeOut(animationSpec = tween(fadeDuration))
                         }
 
                         else -> EnterTransition.None togetherWith ExitTransition.None
