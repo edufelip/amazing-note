@@ -41,6 +41,7 @@ fun FolderGridCard(
     onDelete: (() -> Unit)?,
     supporting: String? = null,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues? = null,
 ) {
     val tokens = designTokens()
     val borderColor = accent.copy(alpha = 0.25f)
@@ -69,7 +70,7 @@ fun FolderGridCard(
                     shape = cardShape,
                 )
                 .border(BorderStroke(androidx.compose.ui.unit.Dp.Hairline, borderColor), cardShape)
-                .padding(tokens.spacing.xl),
+                .padding(contentPadding ?: PaddingValues(tokens.spacing.xl)),
             verticalArrangement = Arrangement.spacedBy(tokens.spacing.md),
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {

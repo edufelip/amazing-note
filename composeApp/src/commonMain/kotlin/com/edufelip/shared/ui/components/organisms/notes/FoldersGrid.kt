@@ -50,6 +50,10 @@ fun FoldersGrid(
                 onOpen = { onOpenFolder(folder) },
                 onRename = { onRequestRename(folder) },
                 onDelete = { onRequestDelete(folder) },
+                contentPadding = PaddingValues(
+                    horizontal = tokens.spacing.lg,
+                    vertical = tokens.spacing.md,
+                ),
             )
         }
     }
