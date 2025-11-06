@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.times
@@ -144,7 +145,7 @@ fun NotesEmptyState(
                     shape = CircleShape,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = tokens.colors.accent,
-                        contentColor = tokens.colors.onSurface,
+                        contentColor = if (tokens.colors.accent.luminance() > 0.4f) Color.Black else Color.White,
                     ),
                     contentPadding = PaddingValues(
                         horizontal = tokens.spacing.xl,
