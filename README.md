@@ -38,6 +38,7 @@ Key recent changes
 - Notes list uses a single simple scroll; section labels (Today/This week/This month/Earlier) are not sticky.
 - Shared scaffold abstraction now powers adaptive navigation: Android switches between a glass bottom bar (phones) and navigation rail + list/detail layout on larger devices, while iOS keeps platform-specific chrome through the same contract.
 - Local SQLDelight storage is now encrypted end-to-end with AES-CTR + HMAC; keys are fetched from Android EncryptedSharedPreferences and the iOS Keychain (legacy data is migrated on first launch).
+- Folder experiences were tightened: folders search/header spacing is slimmer, grid cards are shorter, the empty-state CTA breathes, global navigation now fades between screens, and backing out of a new note prompts a localized "Discard" dialog.
 
 ## Installation
 Clone this repository and import into **Android Studio**
