@@ -25,10 +25,10 @@ class NoteEditorStateTest {
         val blocks = state.blockList
         assertEquals(3, blocks.size)
         val trailing = blocks.last() as TextBlock
-        assertEquals(" world", trailing.text)
+        assertEquals(" world\n", trailing.text)
         assertNotNull(caret)
         assertEquals(trailing.id, caret.blockId)
-        assertEquals(0, caret.start)
+        assertEquals(trailing.text.length, caret.start)
     }
 
     @Test
@@ -75,5 +75,21 @@ class NoteEditorStateTest {
         assertTrue(removed)
         assertTrue(state.blockList.none { it.id == image.id })
         assertTrue(!state.isImageSelected(image.id))
+    }
+
+    @Test
+    fun insertImageAddsTrailingBlankLineAndMovesCaret() {
+        val text = TextBlock(text = "Body")
+        val state = NoteEditorState(NoteContent(listOf(text)))
+        state.updateCaret(text.id, text.text.length, text.text.length)
+
+        state.insertImageAtCaret(uri = "file://local/image")
+
+        val trailing = state.blockList.last() as TextBlock
+        assertTrue(trailing.text.endsWith("\n"))
+        val caret = state.caret
+        assertNotNull(caret)
+        assertEquals(trailing.id, caret.blockId)
+        assertEquals(trailing.text.length, caret.start)
     }
 }

@@ -1,12 +1,18 @@
+@file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_BETA")
+
 package com.edufelip.shared.ui.features.notes.screens
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -17,12 +23,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Folder
+import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.TextBlock
 import com.edufelip.shared.resources.Res
@@ -39,6 +51,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AddNoteScreen(
     titleState: TextFieldValue,
@@ -57,6 +70,15 @@ fun AddNoteScreen(
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
+    val imageCount = editorState.content.blocks.count { it is ImageBlock }
+    var previousImageCount by remember { mutableStateOf(imageCount) }
+    LaunchedEffect(imageCount) {
+        if (imageCount > previousImageCount) {
+            val target = (listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0)
+            listState.animateScrollToItem(target)
+        }
+        previousImageCount = imageCount
+    }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -97,10 +119,12 @@ fun AddNoteScreen(
                 )
             }
             item(key = "editor") {
+                val editorMinHeight = 320.dp
                 Surface(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .weight(1f),
+                        .fillParentMaxHeight()
+                        .fillMaxWidth()
+                        .heightIn(min = editorMinHeight),
                     shape = RoundedCornerShape(20.dp),
                     tonalElevation = 1.dp,
                     color = MaterialTheme.colorScheme.surface,
@@ -108,7 +132,13 @@ fun AddNoteScreen(
                     Column(
                         modifier = Modifier
                             .padding(16.dp)
-                            .fillMaxSize(),
+                            .fillMaxSize()
+                            .pointerInput(editorState) {
+                                detectTapGestures {
+                                    editorState.clearImageSelection()
+                                    editorState.focusFirstTextBlock()
+                                }
+                            },
                     ) {
                         NoteEditor(
                             state = editorState,

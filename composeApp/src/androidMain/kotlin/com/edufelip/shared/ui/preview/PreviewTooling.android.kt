@@ -1,3 +1,5 @@
+@file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_BETA")
+
 package com.edufelip.shared.ui.preview
 
 import androidx.compose.runtime.Composable

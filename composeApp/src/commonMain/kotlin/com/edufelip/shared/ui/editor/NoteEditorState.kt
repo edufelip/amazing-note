@@ -152,7 +152,16 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         focusedBlockId = result.nextCaret.blockId
         clearImageSelection()
         ensureSelectedImageIsValid()
+        ensureTrailingBlankLine()
         return caret
+    }
+
+    fun moveCaretToEnd() {
+        val lastText = blockList.lastOrNull { it is TextBlock } as? TextBlock ?: return
+        val end = lastText.text.length
+        caret = Caret(lastText.id, end)
+        focusedBlockId = lastText.id
+        requestFocus(lastText.id)
     }
 
     fun removeBlockById(blockId: String): Boolean {
@@ -212,6 +221,19 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         val selectedId = selectedImageBlockId ?: return
         if (blockList.none { it.id == selectedId }) {
             selectedImageBlockId = null
+        }
+    }
+
+    private fun ensureTrailingBlankLine() {
+        val lastIndex = blockList.indexOfLast { it is TextBlock }
+        if (lastIndex == -1) return
+        val block = blockList[lastIndex] as TextBlock
+        if (!block.text.endsWith("\n")) {
+            val updated = block.copy(text = block.text + "\n")
+            blockList[lastIndex] = updated
+            caret = Caret(updated.id, updated.text.length)
+            focusedBlockId = updated.id
+            requestFocus(updated.id)
         }
     }
 
