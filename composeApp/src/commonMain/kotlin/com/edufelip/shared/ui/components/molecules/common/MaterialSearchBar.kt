@@ -1,7 +1,6 @@
 package com.edufelip.shared.ui.components.molecules.common
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -27,6 +26,7 @@ import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,11 +52,13 @@ fun MaterialSearchBar(
                 leadingIcon = {
                     Box(
                         modifier = Modifier
-                            .size(tokens.spacing.xxl)
-                            .padding(tokens.spacing.md),
+                            .size(tokens.spacing.xxl),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Icon(Icons.Default.Search, contentDescription = stringResource(Res.string.cd_search))
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = stringResource(Res.string.cd_search),
+                        )
                     }
                 },
                 trailingIcon = {
@@ -86,6 +88,7 @@ fun MaterialSearchBar(
     )
 }
 
+@Preview
 @DevicePreviews
 @Composable
 private fun MaterialSearchBarPreview() {

@@ -3,7 +3,6 @@ package com.edufelip.shared.ui.components.organisms.notes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.ViewAgenda
@@ -41,15 +40,9 @@ fun FoldersHeader(
     val tokens = designTokens()
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(tokens.spacing.lg),
     ) {
         if (showControls) {
             Row(
-                modifier = Modifier.padding(
-                    top = tokens.spacing.xl,
-                    start = tokens.spacing.sm,
-                    end = tokens.spacing.sm,
-                ),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(tokens.spacing.md),
             ) {

@@ -96,7 +96,6 @@ actual fun AmazingNoteScaffold(
                         Modifier
                             .fillMaxWidth()
                             .heightIn(min = AppChromeDefaults.bottomBarHeight)
-                            .applyNavigationBarsPadding()
                     }
                     Box(modifier = bottomBarModifier) {
                         AnimatedVisibility(
