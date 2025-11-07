@@ -82,7 +82,7 @@ fun NoteAttachment.toImageBlock(): ImageBlock = ImageBlock(
     thumbnailUri = thumbnailUrl,
     mimeType = mimeType,
     fileName = fileName,
-    remoteUri = downloadUrl,
+    remoteUri = downloadUrl.takeIf { it.startsWith("http", ignoreCase = true) || it.startsWith("https", ignoreCase = true) },
 )
 
 fun ImageBlock.toAttachment(): NoteAttachment = NoteAttachment(

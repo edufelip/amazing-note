@@ -63,3 +63,7 @@ private fun inferFileExtension(mimeType: String): String = when {
     mimeType.contains("heic", ignoreCase = true) -> "heic"
     else -> "img"
 }
+
+expect fun storageFileForLocalUri(localUri: String): StorageFile
+
+expect fun deleteLocalAttachment(localUri: String)

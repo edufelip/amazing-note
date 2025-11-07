@@ -16,7 +16,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.edufelip.shared.domain.model.NoteAttachment
 import kotlinx.coroutines.CompletableDeferred
-import dev.gitlive.firebase.storage.File as StorageFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
+import java.util.UUID
 
 @Composable
 actual fun rememberAttachmentPicker(): AttachmentPicker? {
@@ -35,35 +39,53 @@ actual fun rememberAttachmentPicker(): AttachmentPicker? {
     }
 
     return remember(context, launcher) {
-        AttachmentPicker { onProgress ->
+        AttachmentPicker { _ ->
             val deferred = CompletableDeferred<Uri?>()
             pendingRequest?.cancel()
             pendingRequest = deferred
             launcher.launch("image/*")
             val uri = deferred.await() ?: return@AttachmentPicker null
-            runCatching { uploadImage(context, uri, onProgress) }.getOrNull()
+            runCatching { persistLocally(context, uri) }.getOrNull()
         }
     }
 }
 
-private suspend fun uploadImage(
+private suspend fun persistLocally(
     context: Context,
-    uri: Uri,
-    onProgress: (Float, String?) -> Unit,
+    sourceUri: Uri,
 ): NoteAttachment? {
     val resolver = context.contentResolver
-    val fileName = resolver.resolveFileName(uri)
-    val mimeType = resolver.getType(uri) ?: "image/*"
-    val (width, height) = resolver.decodeImageSize(uri)
-    val payload = AttachmentUploadPayload(
-        file = StorageFile(uri),
+    val fileName = resolver.resolveFileName(sourceUri)
+    val mimeType = resolver.getType(sourceUri) ?: "image/*"
+    val (width, height) = resolver.decodeImageSize(sourceUri)
+    val localUri = copyToCache(context, sourceUri, fileName)
+    return NoteAttachment(
+        id = UUID.randomUUID().toString(),
+        downloadUrl = localUri,
         mimeType = mimeType,
         fileName = fileName,
         width = width,
         height = height,
     )
+}
 
-    return uploadAttachmentWithGitLive(payload, onProgress)
+private suspend fun copyToCache(context: Context, source: Uri, fileName: String?): String = withContext(Dispatchers.IO) {
+    val cacheDir = File(context.cacheDir, "note_attachments").apply { mkdirs() }
+    val extension = fileName?.substringAfterLast('.', missingDelimiterValue = "")
+    val targetName = buildString {
+        append(UUID.randomUUID().toString())
+        if (!extension.isNullOrBlank()) {
+            append('.')
+            append(extension)
+        }
+    }
+    val targetFile = File(cacheDir, targetName)
+    context.contentResolver.openInputStream(source)?.use { input ->
+        FileOutputStream(targetFile).use { output ->
+            input.copyTo(output)
+        }
+    }
+    targetFile.toURI().toString()
 }
 
 private fun ContentResolver.resolveFileName(uri: Uri): String? = query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->

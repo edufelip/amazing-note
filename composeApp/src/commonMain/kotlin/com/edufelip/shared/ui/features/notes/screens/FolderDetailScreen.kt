@@ -139,7 +139,7 @@ fun FolderDetailScreen(
                 onClick = onAddNote,
                 modifier = Modifier.padding(
                     bottom = tokens.spacing.lg + chrome.navigationBarBottomInset(),
-                    end = tokens.spacing.lg
+                    end = tokens.spacing.lg,
                 ),
             ) {
                 Icon(

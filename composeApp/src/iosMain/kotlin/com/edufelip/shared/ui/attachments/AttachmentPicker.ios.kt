@@ -26,18 +26,16 @@ import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import dev.gitlive.firebase.storage.File as StorageFile
 
 @Composable
 actual fun rememberAttachmentPicker(): AttachmentPicker? = remember {
-    AttachmentPicker { onProgress ->
+    AttachmentPicker { _ ->
         val pickedData = pickImageFromLibrary() ?: return@AttachmentPicker null
         runCatching {
-            uploadImageToStorage(
+            persistLocally(
                 data = pickedData.data,
                 typeIdentifier = pickedData.typeIdentifier,
                 fileName = pickedData.fileName,
-                onProgress = onProgress,
             )
         }.getOrNull()
     }
@@ -74,11 +72,10 @@ private suspend fun pickImageFromLibrary(): PickedData? = suspendCancellableCoro
     }
 }
 
-private suspend fun uploadImageToStorage(
+private suspend fun persistLocally(
     data: NSData,
     typeIdentifier: String,
     fileName: String?,
-    onProgress: (Float, String?) -> Unit,
 ): NoteAttachment {
     val mimeType = mimeTypeForTypeIdentifier(typeIdentifier)
     val image = UIImage(data = data)
@@ -88,15 +85,15 @@ private suspend fun uploadImageToStorage(
     val inferredExtension = fileExtension(typeIdentifier)
     val tempFileUrl = createTemporaryFile(data, inferredExtension)
     val effectiveFileName = fileName ?: tempFileUrl.lastPathComponent
-    val payload = AttachmentUploadPayload(
-        file = StorageFile(tempFileUrl),
+    return NoteAttachment(
+        id = NSUUID().UUIDString(),
+        downloadUrl = tempFileUrl.absoluteString,
+        thumbnailUrl = null,
         mimeType = mimeType,
         fileName = effectiveFileName,
         width = width,
         height = height,
-        cleanUp = { removeTemporaryFile(tempFileUrl) },
     )
-    return uploadAttachmentWithGitLive(payload, onProgress)
 }
 
 private data class PickedData(

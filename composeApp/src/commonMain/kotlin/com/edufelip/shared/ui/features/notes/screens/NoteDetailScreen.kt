@@ -130,6 +130,8 @@ fun NoteDetailScreen(
                     is NoteActionResult.Success -> if (navigateBack) latestOnBack()
                     is NoteActionResult.Invalid -> applyValidationErrors(result.errors)
                 }
+            } catch (t: Throwable) {
+                contentError = t.message ?: "Failed to save note"
             } finally {
                 isSaving = false
             }
@@ -156,6 +158,8 @@ fun NoteDetailScreen(
                         width = attachment.width,
                         height = attachment.height,
                         alt = attachment.fileName,
+                        mimeType = attachment.mimeType,
+                        fileName = attachment.fileName,
                     )
                 }
             }

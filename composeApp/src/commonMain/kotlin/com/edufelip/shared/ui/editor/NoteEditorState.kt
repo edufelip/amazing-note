@@ -72,12 +72,23 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         width: Int? = null,
         height: Int? = null,
         alt: String? = null,
+        mimeType: String? = null,
+        fileName: String? = null,
+        thumbnailUri: String? = null,
     ): Caret? {
         val snapshot = caret ?: defaultCaret()
         val result = insertImageAtCaret(
             content = content,
             caret = snapshot,
-            imageBlock = ImageBlock(uri = uri, width = width, height = height, alt = alt),
+            imageBlock = ImageBlock(
+                uri = uri,
+                width = width,
+                height = height,
+                alt = alt,
+                mimeType = mimeType,
+                fileName = fileName,
+                thumbnailUri = thumbnailUri,
+            ),
         )
         blockList.clear()
         blockList.addAll(result.content.normalizedBlocks())
