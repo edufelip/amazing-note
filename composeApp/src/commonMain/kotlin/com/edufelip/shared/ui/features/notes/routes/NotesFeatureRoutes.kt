@@ -8,7 +8,6 @@ import com.edufelip.shared.domain.model.toLegacyContent
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.unassigned_notes
 import com.edufelip.shared.ui.attachments.AttachmentPicker
-import com.edufelip.shared.ui.attachments.resolvePendingImageAttachments
 import com.edufelip.shared.ui.features.notes.screens.FolderDetailScreen
 import com.edufelip.shared.ui.features.notes.screens.FoldersScreen
 import com.edufelip.shared.ui.features.notes.screens.NoteDetailScreen
@@ -152,8 +151,7 @@ fun NoteDetailRoute(
         initialFolderId = initialFolderId,
         onBack = onBack,
         saveAndValidate = { noteId, title, content, folderId ->
-            val syncedContent = content.resolvePendingImageAttachments()
-            val legacy = syncedContent.toLegacyContent()
+            val legacy = content.toLegacyContent()
             val result = if (noteId == null) {
                 viewModel.insert(
                     title = title,
@@ -161,7 +159,7 @@ fun NoteDetailRoute(
                     spans = legacy.spans,
                     attachments = legacy.attachments,
                     folderId = folderId,
-                    content = syncedContent,
+                    content = content,
                 )
             } else {
                 viewModel.update(
@@ -172,7 +170,7 @@ fun NoteDetailRoute(
                     spans = legacy.spans,
                     attachments = legacy.attachments,
                     folderId = folderId,
-                    content = syncedContent,
+                    content = content,
                 )
             }
             syncManager.syncLocalToRemoteOnly()

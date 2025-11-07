@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -30,7 +31,9 @@ import com.edufelip.shared.resources.error_description_too_long
 import com.edufelip.shared.resources.error_title_required
 import com.edufelip.shared.resources.error_title_too_long
 import com.edufelip.shared.ui.attachments.AttachmentPicker
+import com.edufelip.shared.ui.attachments.deleteLocalAttachment
 import com.edufelip.shared.ui.attachments.pickImage
+import com.edufelip.shared.ui.attachments.resolvePendingImageAttachments
 import com.edufelip.shared.ui.editor.rememberNoteEditorState
 import com.edufelip.shared.ui.features.notes.dialogs.DiscardNoteDialog
 import com.edufelip.shared.ui.util.OnSystemBack
@@ -91,6 +94,7 @@ fun NoteDetailScreen(
 
     val isNewNote = id == null
     var discardDialogVisible by remember(noteKey) { mutableStateOf(false) }
+    val pendingLocalAttachments = remember { mutableStateListOf<String>() }
 
     val errorTitleRequiredTpl = stringResource(Res.string.error_title_required)
     val errorTitleTooLongTpl = stringResource(Res.string.error_title_too_long)
@@ -117,6 +121,20 @@ fun NoteDetailScreen(
         }
     }
 
+    fun cleanupPendingLocalAttachments() {
+        val snapshot = pendingLocalAttachments.toList()
+        pendingLocalAttachments.clear()
+        snapshot.forEach { deleteLocalAttachment(it) }
+    }
+
+    fun registerLocalAttachment(uri: String) {
+        if (uri.isBlank()) return
+        if (isRemoteUri(uri)) return
+        if (!pendingLocalAttachments.contains(uri)) {
+            pendingLocalAttachments += uri
+        }
+    }
+
     fun launchSave(navigateBack: Boolean) {
         if (isSaving) return
         isSaving = true
@@ -125,9 +143,14 @@ fun NoteDetailScreen(
         scope.launch {
             try {
                 val trimmedTitle = titleState.text.trim()
-                val result = saveAndValidate(id, trimmedTitle, currentContent, selectedFolderId)
+                val syncedContent = currentContent.resolvePendingImageAttachments()
+                val result = saveAndValidate(id, trimmedTitle, syncedContent, selectedFolderId)
+                currentContent = syncedContent
                 when (result) {
-                    is NoteActionResult.Success -> if (navigateBack) latestOnBack()
+                    is NoteActionResult.Success -> {
+                        cleanupPendingLocalAttachments()
+                        if (navigateBack) latestOnBack()
+                    }
                     is NoteActionResult.Invalid -> applyValidationErrors(result.errors)
                 }
             } catch (t: Throwable) {
@@ -143,7 +166,10 @@ fun NoteDetailScreen(
         when {
             isNewNote && hasUnsavedChanges -> discardDialogVisible = true
             hasUnsavedChanges -> launchSave(navigateBack = true)
-            else -> latestOnBack()
+            else -> {
+                cleanupPendingLocalAttachments()
+                latestOnBack()
+            }
         }
     }
 
@@ -161,6 +187,7 @@ fun NoteDetailScreen(
                         mimeType = attachment.mimeType,
                         fileName = attachment.fileName,
                     )
+                    registerLocalAttachment(attachment.downloadUrl)
                 }
             }
             Unit
@@ -193,8 +220,11 @@ fun NoteDetailScreen(
             onDismiss = { discardDialogVisible = false },
             onConfirm = {
                 discardDialogVisible = false
+                cleanupPendingLocalAttachments()
                 latestOnBack()
             },
         )
     }
 }
+
+private fun isRemoteUri(uri: String): Boolean = uri.startsWith("http", ignoreCase = true)

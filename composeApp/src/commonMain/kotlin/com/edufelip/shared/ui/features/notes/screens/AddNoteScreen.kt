@@ -17,14 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -41,7 +35,6 @@ import com.edufelip.shared.ui.components.organisms.notes.NoteEditorTopBar
 import com.edufelip.shared.ui.editor.NoteEditor
 import com.edufelip.shared.ui.editor.NoteEditorState
 import com.edufelip.shared.ui.editor.rememberNoteEditorState
-import com.edufelip.shared.ui.util.platform.isApplePlatform
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
@@ -65,7 +58,6 @@ fun AddNoteScreen(
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
-    val useSimpleEditor = isApplePlatform()
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -110,18 +102,11 @@ fun AddNoteScreen(
                             .padding(16.dp)
                             .fillMaxSize(),
                     ) {
-                        if (useSimpleEditor) {
-                            SimpleIosNoteEditor(
-                                editorState = editorState,
-                                placeholder = stringResource(Res.string.description),
-                            )
-                        } else {
-                            NoteEditor(
-                                state = editorState,
-                                placeholder = stringResource(Res.string.description),
-                                modifier = Modifier.fillMaxSize(),
-                            )
-                        }
+                        NoteEditor(
+                            state = editorState,
+                            placeholder = stringResource(Res.string.description),
+                            modifier = Modifier.fillMaxSize(),
+                        )
                         if (!contentError.isNullOrBlank()) {
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
@@ -134,7 +119,7 @@ fun AddNoteScreen(
                 }
             }
         }
-        NoteEditorActionBar(onAddImage = if (useSimpleEditor) null else onAddImage)
+        NoteEditorActionBar(onAddImage = onAddImage)
     }
 }
 
@@ -189,41 +174,4 @@ internal fun AddNoteScreenPreview(
 
 internal expect class AddNoteScreenPreviewProvider() : PreviewParameterProvider<AddNoteScreenPreviewState> {
     override val values: Sequence<AddNoteScreenPreviewState>
-}
-
-@Composable
-private fun SimpleIosNoteEditor(
-    editorState: NoteEditorState,
-    placeholder: String,
-) {
-    val textBlock = editorState.blockList.firstOrNull { it is TextBlock } as? TextBlock
-    if (textBlock == null) {
-        return
-    }
-    var value by remember(textBlock.id) {
-        mutableStateOf(TextFieldValue(textBlock.text, TextRange(textBlock.text.length)))
-    }
-    LaunchedEffect(textBlock.id, textBlock.text) {
-        if (value.text != textBlock.text) {
-            value = TextFieldValue(textBlock.text, TextRange(textBlock.text.length))
-        }
-    }
-    TextField(
-        value = value,
-        onValueChange = { newValue ->
-            value = newValue
-            editorState.onTextChanged(textBlock.id, newValue.text)
-            editorState.updateCaret(textBlock.id, newValue.selection.start, newValue.selection.end)
-        },
-        modifier = Modifier.fillMaxWidth(),
-        placeholder = { Text(text = placeholder) },
-        minLines = 6,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.surface,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-            unfocusedIndicatorColor = MaterialTheme.colorScheme.outlineVariant,
-            cursorColor = MaterialTheme.colorScheme.primary,
-        ),
-    )
 }
