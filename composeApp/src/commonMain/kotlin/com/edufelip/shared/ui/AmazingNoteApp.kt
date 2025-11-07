@@ -98,6 +98,7 @@ fun AmazingNoteApp(
                         appVersion = appVersion,
                         darkTheme = darkTheme,
                         themeKey = darkTheme,
+                        isUserAuthenticated = user != null,
                     )
                 }
             }

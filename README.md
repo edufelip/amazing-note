@@ -230,6 +230,7 @@ MainActivity follows this pattern and is the app launcher.
 - Persisted UI state:
   - Dark theme toggle
   - Date mode (Created vs. Updated)
+- Note editor now highlights tapped images, deletes them on any key press (including backspace when the caret sits after an image), renames the CTA to “Add Image,” and exposes centered undo/redo controls backed by a 20-step stack.
 
 Delete/Restore
 - Swipe gestures were removed to avoid accidental actions.
@@ -351,6 +352,8 @@ sequenceDiagram
   end
   SM-->>UI: SyncCompleted
 ```
+
+> **Offline-first:** When no Firebase user is signed in we skip `syncLocalToRemoteOnly()` and attachment uploads, so edits (and their local image files) stay on-device until the next authenticated save.
 
 Data Model
 

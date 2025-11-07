@@ -57,6 +57,7 @@
     <string name="attachment_upload_failed_with_detail">Attachment upload failed: %1$s</string>
     <string name="attachment_generic_name">attachment</string>
     <string name="attachments_label">Attachments</string>
+    <string name="editor_add_image">Add Image</string>
 
     <!-- Notes - Empty States -->
     <string name="empty_notes_greeting">Good morning</string>

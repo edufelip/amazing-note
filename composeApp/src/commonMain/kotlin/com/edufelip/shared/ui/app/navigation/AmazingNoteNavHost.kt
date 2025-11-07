@@ -45,6 +45,7 @@ fun AmazingNoteNavHost(
     appVersion: String,
     darkTheme: Boolean,
     themeKey: Boolean,
+    isUserAuthenticated: Boolean,
 ) {
     val environment = state.environment
     val layoutDirection = LocalLayoutDirection.current
@@ -73,6 +74,7 @@ fun AmazingNoteNavHost(
                     coroutineScope = state.coroutineScope,
                     onNavigate = state::navigate,
                     attachmentPicker = environment.attachmentPicker,
+                    isUserAuthenticated = isUserAuthenticated,
                 )
 
                 AppRoutes.Folders -> FoldersRoute(
@@ -82,6 +84,7 @@ fun AmazingNoteNavHost(
                     onNavigate = state::navigate,
                     isDarkTheme = darkTheme,
                     authViewModel = state.authViewModel,
+                    isUserAuthenticated = isUserAuthenticated,
                 )
 
                 AppRoutes.Settings -> SettingsRoute(
@@ -98,6 +101,7 @@ fun AmazingNoteNavHost(
                     coroutineScope = state.coroutineScope,
                     onNavigate = state::navigate,
                     onBack = { state.popBack() },
+                    isUserAuthenticated = isUserAuthenticated,
                 )
 
                 is AppRoutes.NoteDetail -> NoteDetailRoute(
@@ -107,6 +111,7 @@ fun AmazingNoteNavHost(
                     coroutineScope = state.coroutineScope,
                     attachmentPicker = environment.attachmentPicker,
                     onBack = { state.popBack() },
+                    isUserAuthenticated = isUserAuthenticated,
                 )
 
                 AppRoutes.Trash -> TrashRoute(
@@ -114,6 +119,7 @@ fun AmazingNoteNavHost(
                     syncManager = environment.notesSyncManager,
                     coroutineScope = state.coroutineScope,
                     onBack = { state.popBack() },
+                    isUserAuthenticated = isUserAuthenticated,
                 )
 
                 AppRoutes.Privacy -> PrivacyRoute(

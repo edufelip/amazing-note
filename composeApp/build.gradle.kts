@@ -66,6 +66,7 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(libs.kotlin.coroutines.test)
         }
         iosMain.dependencies {
             implementation(compose.components.resources)

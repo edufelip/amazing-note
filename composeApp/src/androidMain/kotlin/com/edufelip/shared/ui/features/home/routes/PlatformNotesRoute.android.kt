@@ -50,6 +50,7 @@ actual fun PlatformNotesRoute(
     syncManager: NotesSyncManager,
     coroutineScope: CoroutineScope,
     onNavigate: (AppRoutes) -> Unit,
+    isUserAuthenticated: Boolean,
 ) {
     val configuration = LocalConfiguration.current
     val isCompactWidth = remember(configuration) {
@@ -59,7 +60,9 @@ actual fun PlatformNotesRoute(
     val onDelete: (Note) -> Unit = { note ->
         coroutineScope.launch {
             viewModel.setDeleted(note.id, true)
-            syncManager.syncLocalToRemoteOnly()
+            if (isUserAuthenticated) {
+                syncManager.syncLocalToRemoteOnly()
+            }
         }
     }
 
@@ -106,6 +109,7 @@ actual fun PlatformNotesRoute(
                 coroutineScope = coroutineScope,
                 attachmentPicker = attachmentPicker,
                 onClose = { navigator.navigateBack() },
+                isUserAuthenticated = isUserAuthenticated,
             )
         },
     )
@@ -146,6 +150,7 @@ private fun NotesDetailPane(
     coroutineScope: CoroutineScope,
     attachmentPicker: AttachmentPicker?,
     onClose: () -> Unit,
+    isUserAuthenticated: Boolean,
 ) {
     if (destination == null) {
         NotesDetailPlaceholder()
@@ -164,6 +169,7 @@ private fun NotesDetailPane(
         folders = folders,
         initialFolderId = initialFolderId,
         onBack = onClose,
+        isUserAuthenticated = isUserAuthenticated,
         saveAndValidate = { id, title, content, folderId ->
             val legacy = content.toLegacyContent()
             val result = if (id == null) {
@@ -187,13 +193,17 @@ private fun NotesDetailPane(
                     content = content,
                 )
             }
-            syncManager.syncLocalToRemoteOnly()
+            if (isUserAuthenticated) {
+                syncManager.syncLocalToRemoteOnly()
+            }
             result
         },
         onDelete = { noteId ->
             coroutineScope.launch {
                 viewModel.setDeleted(noteId, true)
-                syncManager.syncLocalToRemoteOnly()
+                if (isUserAuthenticated) {
+                    syncManager.syncLocalToRemoteOnly()
+                }
                 onClose()
             }
         },

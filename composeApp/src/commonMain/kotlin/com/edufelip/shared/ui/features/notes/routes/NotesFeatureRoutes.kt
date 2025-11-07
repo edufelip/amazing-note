@@ -26,6 +26,7 @@ fun FoldersRoute(
     onNavigate: (AppRoutes) -> Unit,
     isDarkTheme: Boolean,
     authViewModel: AuthViewModel,
+    isUserAuthenticated: Boolean,
 ) {
     val folders by viewModel.folders.collectAsState(initial = emptyList())
     val notes by viewModel.notes.collectAsState(initial = emptyList())
@@ -43,7 +44,9 @@ fun FoldersRoute(
                 val trimmed = name.trim()
                 if (trimmed.isNotEmpty()) {
                     viewModel.createFolder(trimmed)
-                    syncManager.syncLocalToRemoteOnly()
+                    if (isUserAuthenticated) {
+                        syncManager.syncLocalToRemoteOnly()
+                    }
                 }
             }
         },
@@ -52,14 +55,18 @@ fun FoldersRoute(
                 val trimmed = newName.trim()
                 if (trimmed.isNotEmpty() && trimmed != folder.name) {
                     viewModel.renameFolder(folder.id, trimmed)
-                    syncManager.syncLocalToRemoteOnly()
+                    if (isUserAuthenticated) {
+                        syncManager.syncLocalToRemoteOnly()
+                    }
                 }
             }
         },
         onDeleteFolder = { folder ->
             coroutineScope.launch {
                 viewModel.deleteFolder(folder.id)
-                syncManager.syncLocalToRemoteOnly()
+                if (isUserAuthenticated) {
+                    syncManager.syncLocalToRemoteOnly()
+                }
             }
         },
     )
@@ -73,6 +80,7 @@ fun FolderDetailRoute(
     coroutineScope: CoroutineScope,
     onNavigate: (AppRoutes) -> Unit,
     onBack: () -> Unit,
+    isUserAuthenticated: Boolean,
 ) {
     val folders by viewModel.folders.collectAsState(initial = emptyList())
     val unassignedNotes by viewModel.notesWithoutFolder.collectAsState(initial = emptyList())
@@ -104,13 +112,18 @@ fun FolderDetailRoute(
         onDeleteNote = { note ->
             coroutineScope.launch {
                 viewModel.setDeleted(note.id, true)
-                syncManager.syncLocalToRemoteOnly()
+                if (isUserAuthenticated) {
+                    syncManager.syncLocalToRemoteOnly()
+                }
             }
         },
         onRenameFolder = folderId?.let { id ->
             { newName ->
                 coroutineScope.launch {
                     viewModel.renameFolder(id, newName)
+                    if (isUserAuthenticated) {
+                        syncManager.syncLocalToRemoteOnly()
+                    }
                 }
             }
         },
@@ -118,7 +131,9 @@ fun FolderDetailRoute(
             {
                 coroutineScope.launch {
                     viewModel.deleteFolder(id)
-                    syncManager.syncLocalToRemoteOnly()
+                    if (isUserAuthenticated) {
+                        syncManager.syncLocalToRemoteOnly()
+                    }
                     onBack()
                 }
             }
@@ -134,6 +149,7 @@ fun NoteDetailRoute(
     coroutineScope: CoroutineScope,
     attachmentPicker: AttachmentPicker?,
     onBack: () -> Unit,
+    isUserAuthenticated: Boolean,
 ) {
     val notes by viewModel.notes.collectAsState(initial = emptyList())
     val trash by viewModel.trash.collectAsState(initial = emptyList())
@@ -150,6 +166,7 @@ fun NoteDetailRoute(
         folders = folders,
         initialFolderId = initialFolderId,
         onBack = onBack,
+        isUserAuthenticated = isUserAuthenticated,
         saveAndValidate = { noteId, title, content, folderId ->
             val legacy = content.toLegacyContent()
             val result = if (noteId == null) {
@@ -173,13 +190,17 @@ fun NoteDetailRoute(
                     content = content,
                 )
             }
-            syncManager.syncLocalToRemoteOnly()
+            if (isUserAuthenticated) {
+                syncManager.syncLocalToRemoteOnly()
+            }
             result
         },
         onDelete = { noteId ->
             coroutineScope.launch {
                 viewModel.setDeleted(noteId, true)
-                syncManager.syncLocalToRemoteOnly()
+                if (isUserAuthenticated) {
+                    syncManager.syncLocalToRemoteOnly()
+                }
             }
         },
         attachmentPicker = attachmentPicker,

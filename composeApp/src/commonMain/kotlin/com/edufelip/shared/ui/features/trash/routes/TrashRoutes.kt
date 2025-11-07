@@ -15,6 +15,7 @@ fun TrashRoute(
     syncManager: NotesSyncManager,
     coroutineScope: CoroutineScope,
     onBack: () -> Unit,
+    isUserAuthenticated: Boolean,
 ) {
     val trash by viewModel.trash.collectAsState(initial = emptyList())
 
@@ -23,7 +24,9 @@ fun TrashRoute(
         onRestore = { note ->
             coroutineScope.launch {
                 viewModel.setDeleted(note.id, false)
-                syncManager.syncLocalToRemoteOnly()
+                if (isUserAuthenticated) {
+                    syncManager.syncLocalToRemoteOnly()
+                }
             }
         },
         onBack = onBack,

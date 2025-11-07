@@ -36,7 +36,7 @@ class AmazingNoteAppStateTest {
 
         state.navigate(AppRoutes.Folders)
 
-        assertEquals(listOf(AppRoutes.Notes, AppRoutes.Folders), state.backStack)
+        assertEquals(listOf(AppRoutes.Notes, AppRoutes.Folders), state.backStack.toList())
     }
 
     @Test
@@ -47,7 +47,7 @@ class AmazingNoteAppStateTest {
         val popped = state.popBack()
 
         assertTrue(popped)
-        assertEquals(listOf(AppRoutes.Notes), state.backStack)
+        assertEquals(listOf(AppRoutes.Notes), state.backStack.toList())
     }
 
     @Test
@@ -58,7 +58,7 @@ class AmazingNoteAppStateTest {
 
         state.setRoot(AppRoutes.Settings)
 
-        assertEquals(listOf(AppRoutes.Settings), state.backStack)
+        assertEquals(listOf(AppRoutes.Settings), state.backStack.toList())
     }
 
     @Test

@@ -41,6 +41,7 @@
     <string name="attachment_upload_failed_with_detail">Error al subir el archivo: %1$s</string>
     <string name="attachment_generic_name">archivo</string>
     <string name="attachments_label">Archivos adjuntos</string>
+    <string name="editor_add_image">Agregar imagen</string>
 
     <!-- Notas - Estados vacíos -->
     <string name="empty_notes_greeting">Buenos días</string>

@@ -1,13 +1,12 @@
 package com.edufelip.shared.ui.features.notes.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -63,9 +62,19 @@ fun AddNoteScreen(
             .fillMaxSize()
             .safeDrawingPadding()
             .imePadding()
+            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 20.dp),
     ) {
-        NoteEditorTopBar(onBack = onBack, onSave = onSave, onDelete = onDelete, isSaving = isSaving)
+        NoteEditorTopBar(
+            onBack = onBack,
+            onSave = onSave,
+            onDelete = onDelete,
+            isSaving = isSaving,
+            onUndo = { editorState.undo() },
+            onRedo = { editorState.redo() },
+            canUndo = editorState.canUndo,
+            canRedo = editorState.canRedo,
+        )
         LazyColumn(
             modifier = Modifier
                 .weight(1f, fill = true),
@@ -88,11 +97,10 @@ fun AddNoteScreen(
                 )
             }
             item(key = "editor") {
-                val editorMinHeight = 320.dp
                 Surface(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = editorMinHeight),
+                        .fillMaxSize()
+                        .weight(1f),
                     shape = RoundedCornerShape(20.dp),
                     tonalElevation = 1.dp,
                     color = MaterialTheme.colorScheme.surface,

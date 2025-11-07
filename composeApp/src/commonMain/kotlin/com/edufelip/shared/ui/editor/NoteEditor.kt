@@ -1,5 +1,11 @@
 package com.edufelip.shared.ui.editor
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,11 +28,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.awaitPointerEvent
-import androidx.compose.ui.input.pointer.awaitPointerEventScope
-import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
-import androidx.compose.ui.input.pointer.isConsumed
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextRange
@@ -35,7 +41,9 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.TextBlock
+import com.edufelip.shared.ui.designsystem.designTokens
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NoteEditor(
     state: NoteEditorState,
@@ -47,16 +55,13 @@ fun NoteEditor(
             state.insertImageAtCaret(uri = uri)
         }
         .pointerInput(state) {
-            awaitPointerEventScope {
-                while (true) {
-                    val event = awaitPointerEvent(PointerEventPass.Final)
-                    val shouldFocus = event.changes.any { change ->
-                        change.changedToUpIgnoreConsumed() && !change.isConsumed
-                    }
-                    if (shouldFocus) {
-                        state.focusFirstTextBlock()
-                    }
-                }
+            awaitEachGesture {
+                val down = awaitFirstDown(requireUnconsumed = false)
+                if (down.isConsumed) return@awaitEachGesture
+                val up = waitForUpOrCancellation()
+                if (up == null || up.isConsumed) return@awaitEachGesture
+                state.clearImageSelection()
+                state.focusFirstTextBlock()
             }
         }
     val blocks by remember(state) { derivedStateOf { state.blockList.toList() } }
@@ -75,7 +80,11 @@ fun NoteEditor(
                         showPlaceholder = block.id == firstTextBlockId,
                     )
 
-                    is ImageBlock -> ImageBlockView(block)
+                    is ImageBlock -> ImageBlockView(
+                        block = block,
+                        selected = state.isImageSelected(block.id),
+                        onSelect = { state.toggleImageSelection(block.id) },
+                    )
                 }
             }
         }
@@ -110,6 +119,7 @@ private fun TextBlockEditor(
     BasicTextField(
         value = value,
         onValueChange = { newValue ->
+            state.consumeSelectedImageBeforeTextInput()
             value = newValue
             state.onTextChanged(block.id, newValue.text)
             state.updateCaret(block.id, newValue.selection.start, newValue.selection.end)
@@ -119,10 +129,31 @@ private fun TextBlockEditor(
             .fillMaxWidth()
             .focusRequester(focusRequester)
             .padding(horizontal = 4.dp)
+            .onPreviewKeyEvent { event ->
+                if (event.type == KeyEventType.KeyDown) {
+                    val pressedKey = event.key
+                    if (state.selectedImageBlockId != null) {
+                        val removed = state.removeSelectedImage()
+                        if (pressedKey == Key.Backspace || pressedKey == Key.Delete) {
+                            return@onPreviewKeyEvent removed
+                        }
+                        return@onPreviewKeyEvent false
+                    }
+                    if (pressedKey == Key.Backspace || pressedKey == Key.Delete) {
+                        val selection = value.selection
+                        val collapsedAtStart = selection.start == selection.end && selection.start == 0
+                        if (collapsedAtStart && state.removeImageBefore(block.id)) {
+                            return@onPreviewKeyEvent true
+                        }
+                    }
+                }
+                false
+            }
             .onFocusChanged { focusState ->
                 if (focusState.isFocused) {
                     state.consumePendingFocus(block.id)
                     state.markFocus(block.id)
+                    state.clearImageSelection()
                 }
             },
         decorationBox = { innerField ->
@@ -141,13 +172,20 @@ private fun TextBlockEditor(
 }
 
 @Composable
-private fun ImageBlockView(block: ImageBlock) {
+private fun ImageBlockView(
+    block: ImageBlock,
+    selected: Boolean,
+    onSelect: () -> Unit,
+) {
+    val tokens = designTokens()
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp),
+            .padding(horizontal = 4.dp)
+            .clickable(onClick = onSelect),
         shape = RoundedCornerShape(18.dp),
         tonalElevation = 1.dp,
+        border = if (selected) BorderStroke(2.dp, tokens.colors.accent) else null,
     ) {
         AsyncImage(
             model = block.remoteUri ?: block.uri,

@@ -20,6 +20,7 @@ fun NotesRoute(
     coroutineScope: CoroutineScope,
     onNavigate: (AppRoutes) -> Unit,
     attachmentPicker: AttachmentPicker?,
+    isUserAuthenticated: Boolean,
 ) {
     val notes by viewModel.notes.collectAsState(initial = emptyList())
 
@@ -36,6 +37,7 @@ fun NotesRoute(
         syncManager = syncManager,
         coroutineScope = coroutineScope,
         onNavigate = onNavigate,
+        isUserAuthenticated = isUserAuthenticated,
     )
 }
 
@@ -50,4 +52,5 @@ expect fun PlatformNotesRoute(
     syncManager: NotesSyncManager,
     coroutineScope: CoroutineScope,
     onNavigate: (AppRoutes) -> Unit,
+    isUserAuthenticated: Boolean,
 )

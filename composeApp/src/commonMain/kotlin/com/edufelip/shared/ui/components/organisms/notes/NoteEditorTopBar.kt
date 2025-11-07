@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.rounded.Redo
+import androidx.compose.material.icons.rounded.Undo
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,7 +18,9 @@ import androidx.compose.ui.Modifier
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_back
 import com.edufelip.shared.resources.cd_delete
+import com.edufelip.shared.resources.cd_redo
 import com.edufelip.shared.resources.cd_save
+import com.edufelip.shared.resources.cd_undo
 import com.edufelip.shared.ui.components.atoms.buttons.CircularIconButton
 import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
@@ -29,6 +33,10 @@ fun NoteEditorTopBar(
     onSave: () -> Unit,
     onDelete: (() -> Unit)?,
     isSaving: Boolean,
+    onUndo: () -> Unit,
+    onRedo: () -> Unit,
+    canUndo: Boolean,
+    canRedo: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val tokens = designTokens()
@@ -44,6 +52,24 @@ fun NoteEditorTopBar(
             contentDescription = stringResource(Res.string.cd_back),
             onClick = onBack,
         )
+        Spacer(modifier = Modifier.weight(1f))
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(tokens.spacing.sm),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            CircularIconButton(
+                icon = Icons.Rounded.Undo,
+                contentDescription = stringResource(Res.string.cd_undo),
+                onClick = onUndo,
+                enabled = canUndo,
+            )
+            CircularIconButton(
+                icon = Icons.Rounded.Redo,
+                contentDescription = stringResource(Res.string.cd_redo),
+                onClick = onRedo,
+                enabled = canRedo,
+            )
+        }
         Spacer(modifier = Modifier.weight(1f))
         if (onDelete != null) {
             CircularIconButton(
@@ -67,6 +93,15 @@ fun NoteEditorTopBar(
 @Composable
 private fun NoteEditorTopBarPreview() {
     DevicePreviewContainer {
-        NoteEditorTopBar(onBack = {}, onSave = {}, onDelete = {}, isSaving = false)
+        NoteEditorTopBar(
+            onBack = {},
+            onSave = {},
+            onDelete = {},
+            isSaving = false,
+            onUndo = {},
+            onRedo = {},
+            canUndo = true,
+            canRedo = false,
+        )
     }
 }

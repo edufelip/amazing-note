@@ -56,6 +56,7 @@ fun NoteDetailScreen(
     ) -> NoteActionResult,
     onDelete: (Int) -> Unit,
     attachmentPicker: AttachmentPicker? = null,
+    isUserAuthenticated: Boolean,
 ) {
     val noteKey = editing?.id ?: "new"
     val normalizedNote = remember(noteKey) { editing?.ensureContent()?.withLegacyFieldsFromContent() }
@@ -144,12 +145,19 @@ fun NoteDetailScreen(
         scope.launch {
             try {
                 val trimmedTitle = titleState.text.trim()
-                val syncedContent = currentContent.resolvePendingImageAttachments()
+                val shouldUploadAttachments = isUserAuthenticated
+                val syncedContent = if (shouldUploadAttachments) {
+                    currentContent.resolvePendingImageAttachments()
+                } else {
+                    currentContent
+                }
                 val result = saveAndValidate(id, trimmedTitle, syncedContent, selectedFolderId)
                 currentContent = syncedContent
                 when (result) {
                     is NoteActionResult.Success -> {
-                        cleanupPendingLocalAttachments()
+                        if (shouldUploadAttachments) {
+                            cleanupPendingLocalAttachments()
+                        }
                         if (navigateBack) latestOnBack()
                     }
                     is NoteActionResult.Invalid -> applyValidationErrors(result.errors)
@@ -217,7 +225,8 @@ fun NoteDetailScreen(
         modifier = Modifier.fillMaxSize(),
     )
 
-    LaunchedEffect(noteKey) {
+    LaunchedEffect(noteKey, isUserAuthenticated) {
+        if (!isUserAuthenticated) return@LaunchedEffect
         runCatching {
             val resolved = currentContent.resolvePendingImageAttachments()
             if (resolved != currentContent) {

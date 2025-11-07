@@ -24,6 +24,14 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         private set
     internal var pendingFocusId: String? by mutableStateOf(null)
         private set
+    var selectedImageBlockId: String? by mutableStateOf(null)
+        private set
+    var canUndo by mutableStateOf(false)
+        private set
+    var canRedo by mutableStateOf(false)
+        private set
+    private val undoStack = ArrayDeque<EditorSnapshot>()
+    private val redoStack = ArrayDeque<EditorSnapshot>()
 
     init {
         setContent(initialContent)
@@ -43,6 +51,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         if (blockList.sameAs(normalized)) return
         blockList.clear()
         blockList.addAll(normalized)
+        ensureSelectedImageIsValid()
         ensureCaretWithinBounds()
     }
 
@@ -51,6 +60,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         if (index < 0) return
         val block = blockList[index]
         if (block is TextBlock && block.text != updatedText) {
+            pushUndoSnapshot()
             blockList[index] = block.copy(text = updatedText)
         }
     }
@@ -61,6 +71,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
 
     fun markFocus(blockId: String) {
         focusedBlockId = blockId
+        clearImageSelection()
         if (pendingFocusId == blockId) {
             pendingFocusId = null
         }
@@ -87,6 +98,30 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         requestFocus(first.id)
     }
 
+    fun focusTextAdjacentTo(blockId: String) {
+        val index = blockList.indexOfFirst { it.id == blockId }
+        if (index == -1) return
+        val after = blockList.subList(index + 1, blockList.size).firstOrNull { it is TextBlock } as? TextBlock
+        val before = blockList.subList(0, index).lastOrNull { it is TextBlock } as? TextBlock
+        val target = after ?: before ?: blockList.firstOrNull { it is TextBlock } as? TextBlock ?: return
+        requestFocus(target.id)
+    }
+
+    fun toggleImageSelection(blockId: String) {
+        selectedImageBlockId = if (selectedImageBlockId == blockId) {
+            null
+        } else {
+            focusTextAdjacentTo(blockId)
+            blockId
+        }
+    }
+
+    fun clearImageSelection() {
+        selectedImageBlockId = null
+    }
+
+    fun isImageSelected(blockId: String): Boolean = selectedImageBlockId == blockId
+
     fun insertImageAtCaret(
         uri: String,
         width: Int? = null,
@@ -97,6 +132,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         thumbnailUri: String? = null,
     ): Caret? {
         val snapshot = caret ?: defaultCaret()
+        pushUndoSnapshot()
         val result = insertImageAtCaret(
             content = content,
             caret = snapshot,
@@ -114,17 +150,43 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         blockList.addAll(result.content.normalizedBlocks())
         caret = result.nextCaret
         focusedBlockId = result.nextCaret.blockId
+        clearImageSelection()
+        ensureSelectedImageIsValid()
         return caret
     }
 
-    fun removeBlockById(blockId: String) {
+    fun removeBlockById(blockId: String): Boolean {
         val index = blockList.indexOfFirst { it.id == blockId }
-        if (index < 0) return
+        if (index < 0) return false
+        pushUndoSnapshot()
         blockList.removeAt(index)
         if (blockList.none { it is TextBlock }) {
             blockList.add(TextBlock(text = ""))
         }
+        if (selectedImageBlockId == blockId) {
+            selectedImageBlockId = null
+        }
+        ensureSelectedImageIsValid()
         ensureCaretWithinBounds()
+        return true
+    }
+
+    fun consumeSelectedImageBeforeTextInput(): Boolean {
+        val selectedId = selectedImageBlockId ?: return false
+        return removeBlockById(selectedId)
+    }
+
+    fun removeSelectedImage(): Boolean = consumeSelectedImageBeforeTextInput()
+
+    fun removeImageBefore(blockId: String): Boolean {
+        val index = blockList.indexOfFirst { it.id == blockId }
+        if (index <= 0) return false
+        val previous = blockList[index - 1]
+        return if (previous is ImageBlock) {
+            removeBlockById(previous.id)
+        } else {
+            false
+        }
     }
 
     private fun ensureCaretWithinBounds() {
@@ -144,6 +206,76 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         val lastText = blockList.lastOrNull { it is TextBlock } as? TextBlock
             ?: TextBlock(text = "").also { blockList += it }
         return Caret(lastText.id, lastText.text.length)
+    }
+
+    private fun ensureSelectedImageIsValid() {
+        val selectedId = selectedImageBlockId ?: return
+        if (blockList.none { it.id == selectedId }) {
+            selectedImageBlockId = null
+        }
+    }
+
+    fun undo(): Boolean {
+        val previous = undoStack.removeLastOrNull() ?: return false
+        redoStack.addLast(captureSnapshot())
+        trimStackIfNeeded(redoStack)
+        applySnapshot(previous)
+        updateHistoryFlags()
+        return true
+    }
+
+    fun redo(): Boolean {
+        val snapshot = redoStack.removeLastOrNull() ?: return false
+        undoStack.addLast(captureSnapshot())
+        trimStackIfNeeded(undoStack)
+        applySnapshot(snapshot)
+        updateHistoryFlags()
+        return true
+    }
+
+    private fun pushUndoSnapshot() {
+        undoStack.addLast(captureSnapshot())
+        trimStackIfNeeded(undoStack)
+        redoStack.clear()
+        updateHistoryFlags()
+    }
+
+    private fun captureSnapshot(): EditorSnapshot = EditorSnapshot(
+        content = content,
+        caret = caret,
+        focusedBlockId = focusedBlockId,
+    )
+
+    private fun applySnapshot(snapshot: EditorSnapshot) {
+        blockList.clear()
+        blockList.addAll(snapshot.content.normalizedBlocks())
+        caret = snapshot.caret
+        focusedBlockId = snapshot.focusedBlockId
+        pendingFocusId = snapshot.focusedBlockId
+        clearImageSelection()
+        ensureSelectedImageIsValid()
+        ensureCaretWithinBounds()
+    }
+
+    private fun trimStackIfNeeded(stack: ArrayDeque<EditorSnapshot>) {
+        while (stack.size > MAX_HISTORY) {
+            stack.removeFirst()
+        }
+    }
+
+    private fun updateHistoryFlags() {
+        canUndo = undoStack.isNotEmpty()
+        canRedo = redoStack.isNotEmpty()
+    }
+
+    private data class EditorSnapshot(
+        val content: NoteContent,
+        val caret: Caret?,
+        val focusedBlockId: String?,
+    )
+
+    private companion object {
+        private const val MAX_HISTORY = 20
     }
 }
 

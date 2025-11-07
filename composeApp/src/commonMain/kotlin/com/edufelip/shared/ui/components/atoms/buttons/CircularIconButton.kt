@@ -12,6 +12,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -36,6 +37,7 @@ fun CircularIconButton(
     Surface(
         modifier = modifier
             .size(buttonSize)
+            .alpha(if (enabled) 1f else 0.4f)
             .background(Color.Transparent, CircleShape)
             .clickable(enabled = enabled, onClick = onClick),
         shape = CircleShape,

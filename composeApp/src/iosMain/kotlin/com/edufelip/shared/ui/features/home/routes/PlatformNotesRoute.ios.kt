@@ -23,6 +23,7 @@ actual fun PlatformNotesRoute(
     syncManager: NotesSyncManager,
     coroutineScope: CoroutineScope,
     onNavigate: (AppRoutes) -> Unit,
+    isUserAuthenticated: Boolean,
 ) {
     HomeScreen(
         notes = notes,
@@ -34,7 +35,9 @@ actual fun PlatformNotesRoute(
         onDelete = { note ->
             coroutineScope.launch {
                 viewModel.setDeleted(note.id, true)
-                syncManager.syncLocalToRemoteOnly()
+                if (isUserAuthenticated) {
+                    syncManager.syncLocalToRemoteOnly()
+                }
             }
         },
     )

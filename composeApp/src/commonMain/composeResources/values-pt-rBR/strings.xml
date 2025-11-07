@@ -57,6 +57,7 @@
     <string name="attachment_upload_failed_with_detail">Falha ao enviar o arquivo: %1$s</string>
     <string name="attachment_generic_name">arquivo</string>
     <string name="attachments_label">Anexos</string>
+    <string name="editor_add_image">Adicionar imagem</string>
 
     <!-- Notas - Estados vazios -->
     <string name="empty_notes_greeting">Bom dia</string>
