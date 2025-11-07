@@ -6,6 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.edufelip.shared.domain.model.Folder
+import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.ensureContent
@@ -32,9 +34,17 @@ import com.edufelip.shared.resources.error_description_too_long
 import com.edufelip.shared.resources.error_title_required
 import com.edufelip.shared.resources.error_title_too_long
 import com.edufelip.shared.ui.attachments.AttachmentPicker
+import com.edufelip.shared.ui.attachments.AttachmentProcessingRequest
+import com.edufelip.shared.ui.attachments.AttachmentProcessingResult
+import com.edufelip.shared.ui.attachments.AttachmentUploadCoordinator
+import com.edufelip.shared.ui.attachments.AttachmentUploadPayload
+import com.edufelip.shared.ui.attachments.UploadedImage
 import com.edufelip.shared.ui.attachments.deleteLocalAttachment
 import com.edufelip.shared.ui.attachments.pickImage
+import com.edufelip.shared.ui.attachments.rememberAttachmentProcessor
 import com.edufelip.shared.ui.attachments.resolvePendingImageAttachments
+import com.edufelip.shared.ui.attachments.storageFileForLocalUri
+import com.edufelip.shared.ui.attachments.uploadAttachmentWithGitLive
 import com.edufelip.shared.ui.editor.rememberNoteEditorState
 import com.edufelip.shared.ui.features.notes.dialogs.DiscardNoteDialog
 import com.edufelip.shared.ui.util.OnSystemBack
@@ -85,6 +95,9 @@ fun NoteDetailScreen(
         onContentChanged = { updated -> currentContent = updated },
     )
     var baselineContent by remember(noteKey) { mutableStateOf(editorState.content) }
+    val attachmentProcessor = rememberAttachmentProcessor()
+    val pendingRenditions = remember(noteKey) { mutableStateMapOf<String, AttachmentProcessingResult>() }
+    val uploadCoordinator = remember { AttachmentUploadCoordinator() }
 
     val hasUnsavedChanges by remember(titleState.text, selectedFolderId, currentContent) {
         derivedStateOf {
@@ -127,6 +140,7 @@ fun NoteDetailScreen(
         val snapshot = pendingLocalAttachments.toList()
         pendingLocalAttachments.clear()
         snapshot.forEach { deleteLocalAttachment(it) }
+        pendingRenditions.clear()
     }
 
     fun registerLocalAttachment(uri: String) {
@@ -135,6 +149,47 @@ fun NoteDetailScreen(
         if (!pendingLocalAttachments.contains(uri)) {
             pendingLocalAttachments += uri
         }
+    }
+
+    val renditionAwareUploader: suspend (ImageBlock) -> UploadedImage = { block ->
+        val processed = pendingRenditions.remove(block.uri)
+        val displayCandidate = processed?.display ?: processed?.original
+        val displayUpload = if (displayCandidate != null) {
+            val payload = AttachmentUploadPayload(
+                file = storageFileForLocalUri(displayCandidate.localUri),
+                mimeType = displayCandidate.mimeType,
+                fileName = block.fileName ?: block.alt ?: "image_${block.id}",
+                width = displayCandidate.width,
+                height = displayCandidate.height,
+                cleanUp = null,
+            )
+            uploadAttachmentWithGitLive(payload) { _, _ -> }
+        } else {
+            val payload = AttachmentUploadPayload(
+                file = storageFileForLocalUri(block.uri),
+                mimeType = block.mimeType ?: "image/*",
+                fileName = block.fileName ?: block.alt ?: "image_${block.id}",
+                width = block.width,
+                height = block.height,
+                cleanUp = null,
+            )
+            uploadAttachmentWithGitLive(payload) { _, _ -> }
+        }
+        val thumbUrl = processed?.tiny?.let { tiny ->
+            val payload = AttachmentUploadPayload(
+                file = storageFileForLocalUri(tiny.localUri),
+                mimeType = tiny.mimeType,
+                fileName = "thumb_${block.id}",
+                width = tiny.width,
+                height = tiny.height,
+                cleanUp = null,
+            )
+            uploadAttachmentWithGitLive(payload) { _, _ -> }.downloadUrl
+        }
+        UploadedImage(
+            remoteUrl = displayUpload.downloadUrl,
+            thumbnailUrl = thumbUrl,
+        )
     }
 
     fun launchSave(navigateBack: Boolean) {
@@ -147,7 +202,9 @@ fun NoteDetailScreen(
                 val trimmedTitle = titleState.text.trim()
                 val shouldUploadAttachments = isUserAuthenticated
                 val syncedContent = if (shouldUploadAttachments) {
-                    currentContent.resolvePendingImageAttachments()
+                    currentContent.resolvePendingImageAttachments(
+                        uploader = renditionAwareUploader,
+                    )
                 } else {
                     currentContent
                 }
@@ -188,15 +245,44 @@ fun NoteDetailScreen(
         {
             scope.launch {
                 picker.pickImage()?.let { attachment ->
+                    val processed = attachmentProcessor?.let { processor ->
+                        runCatching {
+                            processor.process(
+                                AttachmentProcessingRequest(
+                                    sourceUri = attachment.downloadUrl,
+                                    mimeType = attachment.mimeType,
+                                    width = attachment.width,
+                                    height = attachment.height,
+                                ),
+                            )
+                        }.getOrNull()
+                    }
+
+                    val displayRendition = processed?.display ?: processed?.original
+                    val insertUri = displayRendition?.localUri ?: attachment.downloadUrl
+                    val insertWidth = displayRendition?.width ?: attachment.width
+                    val insertHeight = displayRendition?.height ?: attachment.height
+                    val insertMime = displayRendition?.mimeType ?: attachment.mimeType
+                    val tinyUri = processed?.tiny?.localUri
+                    processed?.let { pendingRenditions[insertUri] = it }
+
                     editorState.insertImageAtCaret(
-                        uri = attachment.downloadUrl,
-                        width = attachment.width,
-                        height = attachment.height,
+                        uri = insertUri,
+                        width = insertWidth,
+                        height = insertHeight,
                         alt = attachment.fileName,
-                        mimeType = attachment.mimeType,
+                        mimeType = insertMime,
                         fileName = attachment.fileName,
+                        thumbnailUri = tinyUri,
                     )
-                    registerLocalAttachment(attachment.downloadUrl)
+
+                    buildSet {
+                        add(insertUri)
+                        add(attachment.downloadUrl)
+                        tinyUri?.let { add(it) }
+                        processed?.display?.localUri?.let { add(it) }
+                        processed?.original?.localUri?.let { add(it) }
+                    }.forEach { registerLocalAttachment(it) }
                 }
             }
             Unit
@@ -228,7 +314,9 @@ fun NoteDetailScreen(
     LaunchedEffect(noteKey, isUserAuthenticated) {
         if (!isUserAuthenticated) return@LaunchedEffect
         runCatching {
-            val resolved = currentContent.resolvePendingImageAttachments()
+            val resolved = currentContent.resolvePendingImageAttachments(
+                uploader = renditionAwareUploader,
+            )
             if (resolved != currentContent) {
                 currentContent = resolved
                 baselineContent = resolved
