@@ -77,7 +77,6 @@ fun AmazingTopBar(user: AuthUser?) {
         Modifier
             .fillMaxWidth()
             .applyTopBarStatusPadding()
-            .padding(vertical = tokens.spacing.sm * 0.5f)
     }
 
     AdaptiveTopAppBar(

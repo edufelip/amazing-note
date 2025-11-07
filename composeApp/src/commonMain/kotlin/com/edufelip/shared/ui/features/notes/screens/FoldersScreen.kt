@@ -149,12 +149,13 @@ fun FoldersScreen(
         contentWindowInsets = chrome.contentWindowInsets,
         floatingActionButton = {
             if (!isEmpty) {
+                val navigationBottom = chrome.navigationBarBottomInset()
                 val fabBottomPadding = when {
                     chrome.bottomBarHeight == 0.dp -> tokens.spacing.lg
-                    else -> chrome.bottomBarHeight / 2
+                    else -> chrome.bottomBarHeight + (navigationBottom * 2)
                 }
                 ExtendedFloatingActionButton(
-                    modifier = Modifier.padding(bottom = fabBottomPadding),
+                    modifier = Modifier.padding(bottom = fabBottomPadding, end = tokens.spacing.sm),
                     onClick = { openCreate() },
                     icon = {
                         Icon(

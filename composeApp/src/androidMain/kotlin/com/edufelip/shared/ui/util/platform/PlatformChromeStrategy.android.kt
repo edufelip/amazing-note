@@ -2,10 +2,14 @@ package com.edufelip.shared.ui.util.platform
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -19,8 +23,17 @@ private object AndroidPlatformChromeStrategy : PlatformChromeStrategy {
 
     override fun topBarContainerColor(defaultColor: Color): Color = defaultColor
 
-    override fun Modifier.applyNavigationBarsPadding(): Modifier = navigationBarsPadding(bottom = false)
+    override fun Modifier.applyNavigationBarsPadding(): Modifier = composed {
+        navigationBarsPadding()
+    }
     override fun Modifier.applyAdditionalContentPadding(topBarVisible: Boolean): Modifier = this
+
+    @Composable
+    override fun navigationBarBottomInset(): Dp {
+        val density = LocalDensity.current
+        val px = WindowInsets.navigationBars.getBottom(density)
+        return (px / density.density).dp
+    }
 
     override fun calculateBottomPadding(
         isBottomBarEnabled: Boolean,
@@ -30,7 +43,7 @@ private object AndroidPlatformChromeStrategy : PlatformChromeStrategy {
     ): Dp = if (isBottomBarEnabled && bottomBarTargetVisible) {
         bottomBarHeight
     } else {
-        safeAreaPadding.calculateBottomPadding() / 2
+        0.dp
     }
 
     override val useCupertinoLook: Boolean = false

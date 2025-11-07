@@ -32,6 +32,7 @@ import com.edufelip.shared.resources.error_title_too_long
 import com.edufelip.shared.ui.attachments.AttachmentPicker
 import com.edufelip.shared.ui.attachments.pickImage
 import com.edufelip.shared.ui.editor.rememberNoteEditorState
+import com.edufelip.shared.ui.features.notes.dialogs.DiscardNoteDialog
 import com.edufelip.shared.ui.util.OnSystemBack
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -88,6 +89,9 @@ fun NoteDetailScreen(
         }
     }
 
+    val isNewNote = id == null
+    var discardDialogVisible by remember(noteKey) { mutableStateOf(false) }
+
     val errorTitleRequiredTpl = stringResource(Res.string.error_title_required)
     val errorTitleTooLongTpl = stringResource(Res.string.error_title_too_long)
     val errorDescriptionRequiredTpl = stringResource(Res.string.error_description_required)
@@ -132,14 +136,16 @@ fun NoteDetailScreen(
         }
     }
 
-    OnSystemBack {
-        if (isSaving) return@OnSystemBack
-        if (hasUnsavedChanges) {
-            launchSave(navigateBack = true)
-        } else {
-            latestOnBack()
+    fun requestNavigateBack() {
+        if (isSaving) return
+        when {
+            isNewNote && hasUnsavedChanges -> discardDialogVisible = true
+            hasUnsavedChanges -> launchSave(navigateBack = true)
+            else -> latestOnBack()
         }
     }
+
+    OnSystemBack { requestNavigateBack() }
 
     val addImageHandler = attachmentPicker?.let { picker ->
         {
@@ -164,7 +170,7 @@ fun NoteDetailScreen(
         selectedFolderId = selectedFolderId,
         onFolderChange = { selectedFolderId = it },
         editorState = editorState,
-        onBack = { latestOnBack() },
+        onBack = { requestNavigateBack() },
         onSave = { launchSave(navigateBack = true) },
         onDelete = id?.let { noteId ->
             {
@@ -178,4 +184,13 @@ fun NoteDetailScreen(
         isSaving = isSaving,
         modifier = Modifier.fillMaxSize(),
     )
+    if (discardDialogVisible) {
+        DiscardNoteDialog(
+            onDismiss = { discardDialogVisible = false },
+            onConfirm = {
+                discardDialogVisible = false
+                latestOnBack()
+            },
+        )
+    }
 }

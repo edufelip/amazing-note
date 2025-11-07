@@ -39,9 +39,13 @@ import com.edufelip.shared.resources.folder_detail_empty_hint
 import com.edufelip.shared.resources.folder_detail_empty_title
 import com.edufelip.shared.resources.folder_options_delete
 import com.edufelip.shared.resources.folder_options_rename
+import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.features.notes.components.ListScreen
 import com.edufelip.shared.ui.features.notes.dialogs.DeleteFolderDialog
 import com.edufelip.shared.ui.features.notes.dialogs.FolderNameDialog
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,11 +61,13 @@ fun FolderDetailScreen(
     onDeleteFolder: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
+    val tokens = designTokens()
     var query by rememberSaveable { mutableStateOf("") }
     var renameDialog by remember { mutableStateOf(false) }
     var deleteDialog by remember { mutableStateOf(false) }
     var nameInput by rememberSaveable { mutableStateOf(title) }
     var menuExpanded by remember { mutableStateOf(false) }
+    val chrome = platformChromeStrategy()
 
     val filteredNotes = remember(notes, query) {
         if (query.isBlank()) {
@@ -129,7 +135,13 @@ fun FolderDetailScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddNote) {
+            FloatingActionButton(
+                onClick = onAddNote,
+                modifier = Modifier.padding(
+                    bottom = tokens.spacing.lg + chrome.navigationBarBottomInset(),
+                    end = tokens.spacing.lg
+                ),
+            ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = stringResource(Res.string.folder_add_note),
@@ -190,6 +202,43 @@ fun FolderDetailScreen(
                 onDeleteFolder()
                 deleteDialog = false
             },
+        )
+    }
+}
+
+@DevicePreviews
+@Composable
+private fun FolderDetailScreenPreview() {
+    val notes = listOf(
+        Note(
+            id = 1,
+            title = "Meeting notes",
+            description = "Sync action items and blockers.",
+            deleted = false,
+            createdAt = 1_700_000_000_000,
+            updatedAt = 1_700_050_000_000,
+            folderId = 1,
+        ),
+        Note(
+            id = 2,
+            title = "Article ideas",
+            description = "Outline new blog post topics.",
+            deleted = false,
+            createdAt = 1_700_060_000_000,
+            updatedAt = 1_700_090_000_000,
+            folderId = 1,
+        ),
+    )
+    DevicePreviewContainer {
+        FolderDetailScreen(
+            title = "Work",
+            notes = notes,
+            onBack = {},
+            onOpenNote = {},
+            onAddNote = {},
+            onDeleteNote = {},
+            onRenameFolder = {},
+            onDeleteFolder = {},
         )
     }
 }

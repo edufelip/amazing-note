@@ -2,6 +2,7 @@ package com.edufelip.shared.ui.util.platform
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -17,6 +18,9 @@ interface PlatformChromeStrategy {
 
     fun Modifier.applyNavigationBarsPadding(): Modifier
     fun Modifier.applyAdditionalContentPadding(topBarVisible: Boolean): Modifier
+
+    @Composable
+    fun navigationBarBottomInset(): Dp
 
     fun calculateBottomPadding(
         isBottomBarEnabled: Boolean,

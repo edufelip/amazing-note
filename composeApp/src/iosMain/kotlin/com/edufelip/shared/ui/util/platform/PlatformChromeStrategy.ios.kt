@@ -3,6 +3,7 @@ package com.edufelip.shared.ui.util.platform
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -28,6 +29,9 @@ private object IosPlatformChromeStrategy : PlatformChromeStrategy {
 
     override fun Modifier.applyNavigationBarsPadding(): Modifier = this
     override fun Modifier.applyAdditionalContentPadding(topBarVisible: Boolean): Modifier = this
+
+    @Composable
+    override fun navigationBarBottomInset(): Dp = 0.dp
 
     override fun calculateBottomPadding(
         isBottomBarEnabled: Boolean,

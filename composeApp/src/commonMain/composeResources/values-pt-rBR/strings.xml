@@ -49,6 +49,9 @@
     <!-- Notas - Campos -->
     <string name="title">Título</string>
     <string name="description">Corpo</string>
+    <string name="note_discard_title">Descartar nota?</string>
+    <string name="note_discard_message">Você tem alterações não salvas. Se sair agora, elas serão perdidas.</string>
+    <string name="note_discard_confirm">Descartar</string>
     <string name="attachment_uploading">Enviando %1$s… %2$d%%</string>
     <string name="attachment_upload_failed">Falha ao enviar o arquivo.</string>
     <string name="attachment_upload_failed_with_detail">Falha ao enviar o arquivo: %1$s</string>

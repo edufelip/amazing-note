@@ -1,35 +1,25 @@
 package com.edufelip.shared.ui.app.navigation
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
-import com.edufelip.shared.ui.app.chrome.AppChromeDefaults
 import com.edufelip.shared.ui.app.state.AmazingNoteAppState
 import com.edufelip.shared.ui.features.auth.routes.LoginRoute
 import com.edufelip.shared.ui.features.auth.routes.SignUpRoute
@@ -55,26 +45,10 @@ fun AmazingNoteNavHost(
     appVersion: String,
     darkTheme: Boolean,
     themeKey: Boolean,
-    bottomBarHeight: Dp = AppChromeDefaults.bottomBarHeight,
 ) {
     val environment = state.environment
     val layoutDirection = LocalLayoutDirection.current
     val chrome = platformChromeStrategy()
-
-    val safeAreaPadding = WindowInsets.safeDrawing.asPaddingValues()
-    val bottomPadding = remember(
-        state.isBottomBarEnabled,
-        state.bottomBarTargetVisible,
-        safeAreaPadding,
-        bottomBarHeight,
-    ) {
-        chrome.calculateBottomPadding(
-            isBottomBarEnabled = state.isBottomBarEnabled,
-            bottomBarTargetVisible = state.bottomBarTargetVisible,
-            safeAreaPadding = safeAreaPadding,
-            bottomBarHeight = bottomBarHeight,
-        )
-    }
 
     val contentModifier = with(chrome) {
         Modifier
@@ -84,7 +58,6 @@ fun AmazingNoteNavHost(
                 start = padding.startPadding(layoutDirection),
                 top = padding.topPadding(),
                 end = padding.endPadding(layoutDirection),
-                bottom = bottomPadding,
             )
             .applyAdditionalContentPadding(state.topBarVisible)
     }
@@ -177,49 +150,9 @@ fun AmazingNoteNavHost(
             targetState = targetScene,
             contentKey = { scene -> scene.route to scene.themeVersion },
             transitionSpec = {
-                if (initialState.themeVersion != targetState.themeVersion) {
-                    EnterTransition.None togetherWith ExitTransition.None
-                } else {
-                    val duration = 250
-                    when {
-                        initialState.route is AppRoutes.NoteDetail || targetState.route is AppRoutes.NoteDetail -> {
-                            slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith
-                                slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
-                        }
-
-                        initialState.route is AppRoutes.FolderDetail || targetState.route is AppRoutes.FolderDetail -> {
-                            slideInHorizontally(animationSpec = tween(duration)) { it } togetherWith
-                                slideOutHorizontally(animationSpec = tween(duration)) { -it / 3 }
-                        }
-
-                        state.isTab(initialState.route) && state.isTab(targetState.route) -> {
-                            val fadeDuration = 220
-                            (
-                                fadeIn(animationSpec = tween(fadeDuration)) togetherWith
-                                    fadeOut(animationSpec = tween(fadeDuration))
-                                ).using(
-                                SizeTransform(clip = false),
-                            )
-                        }
-
-                        initialState.route is AppRoutes.Login ||
-                            targetState.route is AppRoutes.Login ||
-                            initialState.route is AppRoutes.SignUp ||
-                            targetState.route is AppRoutes.SignUp ||
-                            initialState.route is AppRoutes.Trash ||
-                            targetState.route is AppRoutes.Trash -> {
-                            val fadeDuration = 200
-                            (
-                                fadeIn(animationSpec = tween(fadeDuration)) togetherWith
-                                    fadeOut(animationSpec = tween(fadeDuration))
-                                ).using(
-                                SizeTransform(clip = false),
-                            )
-                        }
-
-                        else -> EnterTransition.None togetherWith ExitTransition.None
-                    }
-                }
+                val fadeDuration = 200
+                fadeIn(animationSpec = tween(fadeDuration)) togetherWith
+                    fadeOut(animationSpec = tween(fadeDuration))
             },
         ) { scene ->
             SceneContent(scene)

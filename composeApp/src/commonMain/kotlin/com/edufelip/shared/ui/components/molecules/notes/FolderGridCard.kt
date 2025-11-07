@@ -50,7 +50,7 @@ fun FolderGridCard(
     val menuAvailable = onRename != null || onDelete != null
     val cardShape = RoundedCornerShape(tokens.radius.lg * 2)
     val chipShape = RoundedCornerShape(tokens.radius.lg)
-    val patternHeight = tokens.spacing.xxl * 2f + tokens.spacing.md
+    val patternHeight = (tokens.spacing.xxl * 2f + tokens.spacing.md) * 0.6f
 
     Surface(
         modifier = modifier,

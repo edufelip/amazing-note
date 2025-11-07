@@ -185,12 +185,9 @@ fun ListScreen(
 
                 val grouped: Map<Bucket, List<Note>> =
                     filtered.groupBy { bucket(if (useUpdated.value) it.updatedAt else it.createdAt) }
-                val navAwarePadding = if (chrome.bottomBarHeight == 0.dp) {
-                    tokens.spacing.lg
-                } else {
-                    maxOf(tokens.spacing.lg, chrome.bottomBarHeight / 2)
-                }
-                val listBottomPadding = navAwarePadding + tokens.spacing.xxl
+                val navAwarePadding = 0.dp
+                val listBottomPadding = 0.dp
+                val searchHorizontalPadding = tokens.spacing.xl - 4.dp
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = listBottomPadding),
@@ -200,7 +197,7 @@ fun ListScreen(
                             Column(
                                 modifier = Modifier.fillMaxWidth()
                                     .padding(
-                                        horizontal = tokens.spacing.xl,
+                                        horizontal = searchHorizontalPadding,
                                         vertical = tokens.spacing.lg,
                                     ),
                             ) {
@@ -219,7 +216,7 @@ fun ListScreen(
                                 Box(
                                     modifier = Modifier.fillMaxWidth()
                                         .padding(
-                                            horizontal = tokens.spacing.xl,
+                                            horizontal = searchHorizontalPadding,
                                             vertical = tokens.spacing.sm,
                                         ),
                                     contentAlignment = Alignment.Center,
