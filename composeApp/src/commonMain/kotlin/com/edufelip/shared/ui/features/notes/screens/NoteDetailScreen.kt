@@ -82,7 +82,7 @@ fun NoteDetailScreen(
         initialContent = initialContent,
         onContentChanged = { updated -> currentContent = updated },
     )
-    val baselineContent = remember(noteKey) { editorState.content }
+    var baselineContent by remember(noteKey) { mutableStateOf(editorState.content) }
 
     val hasUnsavedChanges by remember(titleState.text, selectedFolderId, currentContent) {
         derivedStateOf {
@@ -94,7 +94,7 @@ fun NoteDetailScreen(
 
     val isNewNote = id == null
     var discardDialogVisible by remember(noteKey) { mutableStateOf(false) }
-    val pendingLocalAttachments = remember { mutableStateListOf<String>() }
+    val pendingLocalAttachments = remember(noteKey) { mutableStateListOf<String>() }
 
     val errorTitleRequiredTpl = stringResource(Res.string.error_title_required)
     val errorTitleTooLongTpl = stringResource(Res.string.error_title_too_long)
@@ -215,6 +215,20 @@ fun NoteDetailScreen(
         isSaving = isSaving,
         modifier = Modifier.fillMaxSize(),
     )
+
+    LaunchedEffect(noteKey) {
+        runCatching {
+            val resolved = currentContent.resolvePendingImageAttachments()
+            if (resolved != currentContent) {
+                currentContent = resolved
+                baselineContent = resolved
+                editorState.setContent(resolved)
+            }
+        }.onFailure { throwable ->
+            contentError = throwable.message ?: "Failed to prepare attachments"
+        }
+    }
+
     if (discardDialogVisible) {
         DiscardNoteDialog(
             onDismiss = { discardDialogVisible = false },
