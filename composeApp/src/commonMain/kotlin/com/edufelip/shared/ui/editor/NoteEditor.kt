@@ -19,7 +19,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.awaitPointerEvent
+import androidx.compose.ui.input.pointer.awaitPointerEventScope
+import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
+import androidx.compose.ui.input.pointer.isConsumed
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -34,9 +42,23 @@ fun NoteEditor(
     modifier: Modifier = Modifier,
     placeholder: String = "",
 ) {
-    val contentAwareModifier = modifier.noteEditorReceiveContent { uri ->
-        state.insertImageAtCaret(uri = uri)
-    }
+    val contentAwareModifier = modifier
+        .noteEditorReceiveContent { uri ->
+            state.insertImageAtCaret(uri = uri)
+        }
+        .pointerInput(state) {
+            awaitPointerEventScope {
+                while (true) {
+                    val event = awaitPointerEvent(PointerEventPass.Final)
+                    val shouldFocus = event.changes.any { change ->
+                        change.changedToUpIgnoreConsumed() && !change.isConsumed
+                    }
+                    if (shouldFocus) {
+                        state.focusFirstTextBlock()
+                    }
+                }
+            }
+        }
     val blocks by remember(state) { derivedStateOf { state.blockList.toList() } }
     val firstTextBlockId = blocks.firstOrNull { it is TextBlock }?.id
     Column(
@@ -74,6 +96,13 @@ private fun TextBlockEditor(
             value = TextFieldValue(block.text, TextRange(block.text.length))
         }
     }
+    val focusRequester = remember { FocusRequester() }
+    LaunchedEffect(state.pendingFocusId, block.id) {
+        if (state.pendingFocusId == block.id) {
+            focusRequester.requestFocus()
+            state.consumePendingFocus(block.id)
+        }
+    }
 
     val typography = MaterialTheme.typography.bodyLarge
     val textColor = MaterialTheme.colorScheme.onSurface
@@ -88,9 +117,11 @@ private fun TextBlockEditor(
         textStyle = typography.copy(color = textColor),
         modifier = modifier
             .fillMaxWidth()
+            .focusRequester(focusRequester)
             .padding(horizontal = 4.dp)
             .onFocusChanged { focusState ->
                 if (focusState.isFocused) {
+                    state.consumePendingFocus(block.id)
                     state.markFocus(block.id)
                 }
             },

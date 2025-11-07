@@ -22,6 +22,8 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         private set
     var focusedBlockId: String? by mutableStateOf(null)
         private set
+    internal var pendingFocusId: String? by mutableStateOf(null)
+        private set
 
     init {
         setContent(initialContent)
@@ -59,12 +61,30 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
 
     fun markFocus(blockId: String) {
         focusedBlockId = blockId
+        if (pendingFocusId == blockId) {
+            pendingFocusId = null
+        }
         if (caret?.blockId != blockId) {
             val block = blockList.firstOrNull { it.id == blockId }
             if (block is TextBlock) {
                 caret = Caret(blockId, block.text.length)
             }
         }
+    }
+
+    fun requestFocus(blockId: String) {
+        pendingFocusId = blockId
+    }
+
+    fun consumePendingFocus(blockId: String) {
+        if (pendingFocusId == blockId) {
+            pendingFocusId = null
+        }
+    }
+
+    fun focusFirstTextBlock() {
+        val first = blockList.firstOrNull { it is TextBlock } as? TextBlock ?: return
+        requestFocus(first.id)
     }
 
     fun insertImageAtCaret(
