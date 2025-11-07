@@ -14,11 +14,9 @@ import noteCipher.bridge.noteCipherHmacSha256
 private const val STATUS_SUCCESS = 0
 private const val SHA256_LENGTH = 32
 
-internal actual fun aesCtrEncrypt(key: ByteArray, iv: ByteArray, plaintext: ByteArray): ByteArray =
-    processAesCtr(encrypt = true, key = key, iv = iv, input = plaintext)
+internal actual fun aesCtrEncrypt(key: ByteArray, iv: ByteArray, plaintext: ByteArray): ByteArray = processAesCtr(encrypt = true, key = key, iv = iv, input = plaintext)
 
-internal actual fun aesCtrDecrypt(key: ByteArray, iv: ByteArray, ciphertext: ByteArray): ByteArray =
-    processAesCtr(encrypt = false, key = key, iv = iv, input = ciphertext)
+internal actual fun aesCtrDecrypt(key: ByteArray, iv: ByteArray, ciphertext: ByteArray): ByteArray = processAesCtr(encrypt = false, key = key, iv = iv, input = ciphertext)
 
 internal actual fun hmacSha256(key: ByteArray, data: ByteArray): ByteArray {
     val output = ByteArray(SHA256_LENGTH)

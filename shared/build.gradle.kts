@@ -22,14 +22,20 @@ kotlin {
     if (firebaseIosFrameworksDir == null) {
         logger.warn("firebase.ios.frameworks.dir is not set; relying on Xcode toolchain search paths for Firebase frameworks.")
     }
+
     fun KotlinNativeTarget.configureFirebaseLinkerOpts() {
         binaries.all {
             linkerOpts(
-                "-framework", "FirebaseCore",
-                "-framework", "FirebaseAuth",
-                "-framework", "FirebaseFirestore",
-                "-framework", "FirebaseStorage",
-                "-framework", "FirebaseCrashlytics",
+                "-framework",
+                "FirebaseCore",
+                "-framework",
+                "FirebaseAuth",
+                "-framework",
+                "FirebaseFirestore",
+                "-framework",
+                "FirebaseStorage",
+                "-framework",
+                "FirebaseCrashlytics",
             )
             firebaseIosFrameworksDir?.let { linkerOpts("-F", it) }
         }
@@ -107,7 +113,6 @@ kotlin {
         }
     }
 }
-
 
 android {
     namespace = "com.edufelip.amazing_note.shared"

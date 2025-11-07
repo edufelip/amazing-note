@@ -1,11 +1,11 @@
 package com.edufelip.shared.data.sync
 
 import app.cash.sqldelight.Query
+import app.cash.sqldelight.Transacter
 import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlPreparedStatement
-import app.cash.sqldelight.Transacter
 import com.edufelip.shared.data.cloud.CloudNotesDataSource
 import com.edufelip.shared.data.cloud.CurrentUserProvider
 import com.edufelip.shared.data.db.decryptField
@@ -226,11 +226,9 @@ private class FakeCloudNotesDataSource : CloudNotesDataSource {
 
     val upsertCalls = mutableListOf<Pair<String, Note>>()
 
-    override fun observe(uid: String): Flow<List<Note>> =
-        flows.getOrPut(uid) { MutableStateFlow(remoteByUser[uid]?.values?.sortedBy { it.updatedAt } ?: emptyList()) }
+    override fun observe(uid: String): Flow<List<Note>> = flows.getOrPut(uid) { MutableStateFlow(remoteByUser[uid]?.values?.sortedBy { it.updatedAt } ?: emptyList()) }
 
-    override suspend fun getAll(uid: String): List<Note> =
-        remoteByUser[uid]?.values?.sortedBy { it.updatedAt } ?: emptyList()
+    override suspend fun getAll(uid: String): List<Note> = remoteByUser[uid]?.values?.sortedBy { it.updatedAt } ?: emptyList()
 
     override suspend fun upsert(uid: String, note: Note) {
         val userNotes = remoteByUser.getOrPut(uid) { mutableMapOf() }
