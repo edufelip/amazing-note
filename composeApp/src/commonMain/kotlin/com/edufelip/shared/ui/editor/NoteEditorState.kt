@@ -4,11 +4,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import com.edufelip.shared.domain.model.Caret
 import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.NoteBlock
@@ -21,7 +24,10 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
     private val documentHandle = EditorDocument(blockList)
     val document: EditorDocument
         get() = documentHandle
+    private val textFieldValues = mutableStateMapOf<String, TextFieldValue>()
     var caret: Caret? by mutableStateOf(null)
+        private set
+    var docSelection: DocSelection? by mutableStateOf(null)
         private set
     var focusedBlockId: String? by mutableStateOf(null)
         private set
@@ -43,6 +49,30 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
     val content: NoteContent
         get() = NoteContent(blockList.toList())
 
+    fun textFieldValueFor(block: TextBlock): TextFieldValue {
+        val existing = textFieldValues[block.id]
+        if (existing == null) {
+            val created = TextFieldValue(block.text, TextRange(block.text.length))
+            textFieldValues[block.id] = created
+            return created
+        }
+        if (existing.text != block.text) {
+            val selection = existing.selection.clampTo(block.text.length)
+            val updated = existing.copy(text = block.text, selection = selection)
+            textFieldValues[block.id] = updated
+            return updated
+        }
+        return existing
+    }
+
+    fun onTextFieldValueChange(blockId: String, newValue: TextFieldValue) {
+        val current = textFieldValues[blockId]
+        if (current == newValue) return
+        textFieldValues[blockId] = newValue
+        onTextChanged(blockId, newValue.text)
+        updateCaret(blockId, newValue.selection.start, newValue.selection.end)
+    }
+
     fun setContent(newContent: NoteContent) {
         if (newContent.blocks.isEmpty()) {
             val existingText = blockList.singleOrNull() as? TextBlock
@@ -54,6 +84,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         if (blockList.sameAs(normalized)) return
         blockList.clear()
         blockList.addAll(normalized)
+        refreshTextFieldState()
         ensureSelectedImageIsValid()
         ensureCaretWithinBounds()
     }
@@ -65,11 +96,19 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         if (block is TextBlock && block.text != updatedText) {
             pushUndoSnapshot()
             blockList[index] = block.copy(text = updatedText)
+            textFieldValues[blockId]?.let { current ->
+                if (current.text != updatedText) {
+                    textFieldValues[blockId] = current.copy(
+                        text = updatedText,
+                        selection = current.selection.clampTo(updatedText.length),
+                    )
+                }
+            }
         }
     }
 
     fun updateCaret(blockId: String, selectionStart: Int, selectionEnd: Int) {
-        caret = Caret(blockId, selectionStart, selectionEnd)
+        setCaretFrom(Caret(blockId, selectionStart, selectionEnd))
     }
 
     fun markFocus(blockId: String) {
@@ -81,7 +120,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         if (caret?.blockId != blockId) {
             val block = blockList.firstOrNull { it.id == blockId }
             if (block is TextBlock) {
-                caret = Caret(blockId, block.text.length)
+                setCaretFrom(Caret(blockId, block.text.length))
             }
         }
     }
@@ -151,7 +190,8 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         )
         blockList.clear()
         blockList.addAll(result.content.normalizedBlocks())
-        caret = result.nextCaret
+        refreshTextFieldState()
+        setCaretFrom(result.nextCaret)
         focusedBlockId = result.nextCaret.blockId
         clearImageSelection()
         ensureSelectedImageIsValid()
@@ -162,7 +202,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
     fun moveCaretToEnd() {
         val lastText = blockList.lastOrNull { it is TextBlock } as? TextBlock ?: return
         val end = lastText.text.length
-        caret = Caret(lastText.id, end)
+        setCaretFrom(Caret(lastText.id, end))
         focusedBlockId = lastText.id
         requestFocus(lastText.id)
     }
@@ -170,11 +210,16 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
     fun removeBlockById(blockId: String): Boolean {
         val index = blockList.indexOfFirst { it.id == blockId }
         if (index < 0) return false
+        val removed = blockList[index]
         pushUndoSnapshot()
         blockList.removeAt(index)
         if (blockList.none { it is TextBlock }) {
             blockList.add(TextBlock(text = ""))
         }
+        if (removed is TextBlock) {
+            textFieldValues.remove(removed.id)
+        }
+        refreshTextFieldState()
         if (selectedImageBlockId == blockId) {
             selectedImageBlockId = null
         }
@@ -208,16 +253,19 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
             val end = block.text.length
             val clampedStart = current.start.coerceIn(0, end)
             val clampedEnd = current.end.coerceIn(0, end)
-            caret = Caret(current.blockId, clampedStart, clampedEnd)
+            setCaretFrom(Caret(current.blockId, clampedStart, clampedEnd))
         } else {
-            caret = defaultCaret()
+            setCaretFrom(defaultCaret())
         }
     }
 
     private fun defaultCaret(): Caret {
-        val lastText = blockList.lastOrNull { it is TextBlock } as? TextBlock
-            ?: TextBlock(text = "").also { blockList += it }
-        return Caret(lastText.id, lastText.text.length)
+        val existing = blockList.lastOrNull { it is TextBlock } as? TextBlock
+        val target = existing ?: TextBlock(text = "").also {
+            blockList += it
+            refreshTextFieldState()
+        }
+        return Caret(target.id, target.text.length)
     }
 
     private fun ensureSelectedImageIsValid() {
@@ -234,9 +282,43 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         if (!block.text.endsWith("\n")) {
             val updated = block.copy(text = block.text + "\n")
             blockList[lastIndex] = updated
-            caret = Caret(updated.id, updated.text.length)
+            refreshTextFieldState()
+            setCaretFrom(Caret(updated.id, updated.text.length))
             focusedBlockId = updated.id
             requestFocus(updated.id)
+        }
+    }
+
+    private fun refreshTextFieldState() {
+        val textBlocks = blockList.filterIsInstance<TextBlock>()
+        val validIds = textBlocks.map { it.id }.toSet()
+        val iterator = textFieldValues.keys.iterator()
+        while (iterator.hasNext()) {
+            val id = iterator.next()
+            if (id !in validIds) {
+                iterator.remove()
+            }
+        }
+        textBlocks.forEach { block ->
+            val existing = textFieldValues[block.id]
+            if (existing == null) {
+                textFieldValues[block.id] = TextFieldValue(block.text, TextRange(block.text.length))
+            } else if (existing.text != block.text) {
+                textFieldValues[block.id] = existing.copy(
+                    text = block.text,
+                    selection = existing.selection.clampTo(block.text.length),
+                )
+            }
+        }
+    }
+
+    private fun setCaretFrom(newCaret: Caret?) {
+        caret = newCaret
+        docSelection = newCaret?.let {
+            DocSelection(
+                anchor = BlockCursor(it.blockId, it.start),
+                focus = BlockCursor(it.blockId, it.end),
+            )
         }
     }
 
@@ -274,7 +356,8 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
     private fun applySnapshot(snapshot: EditorSnapshot) {
         blockList.clear()
         blockList.addAll(snapshot.content.normalizedBlocks())
-        caret = snapshot.caret
+        refreshTextFieldState()
+        setCaretFrom(snapshot.caret)
         focusedBlockId = snapshot.focusedBlockId
         pendingFocusId = snapshot.focusedBlockId
         clearImageSelection()
@@ -348,4 +431,10 @@ private fun List<NoteBlock>.sameAs(other: List<NoteBlock>): Boolean {
         }
     }
     return true
+}
+
+private fun TextRange.clampTo(maxLength: Int): TextRange {
+    val newStart = start.coerceIn(0, maxLength)
+    val newEnd = end.coerceIn(newStart, maxLength)
+    return if (newStart == start && newEnd == end) this else TextRange(newStart, newEnd)
 }

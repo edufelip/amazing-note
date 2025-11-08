@@ -20,9 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -34,8 +32,6 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.edufelip.shared.domain.model.ImageBlock
@@ -99,12 +95,7 @@ private fun TextBlockEditor(
     placeholder: String,
     showPlaceholder: Boolean,
 ) {
-    var value by remember(block.id) { mutableStateOf(TextFieldValue(block.text, TextRange(block.text.length))) }
-    LaunchedEffect(block.id, block.text) {
-        if (value.text != block.text) {
-            value = TextFieldValue(block.text, TextRange(block.text.length))
-        }
-    }
+    val value = state.textFieldValueFor(block)
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(state.pendingFocusId, block.id) {
         if (state.pendingFocusId == block.id) {
@@ -120,9 +111,7 @@ private fun TextBlockEditor(
         value = value,
         onValueChange = { newValue ->
             state.consumeSelectedImageBeforeTextInput()
-            value = newValue
-            state.onTextChanged(block.id, newValue.text)
-            state.updateCaret(block.id, newValue.selection.start, newValue.selection.end)
+            state.onTextFieldValueChange(block.id, newValue)
         },
         textStyle = typography.copy(color = textColor),
         modifier = modifier

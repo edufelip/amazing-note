@@ -6,14 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.TextFieldValue
 import com.edufelip.shared.domain.model.TextBlock
 
 /**
@@ -27,20 +20,11 @@ fun SimpleIosNoteEditor(
     modifier: Modifier = Modifier,
 ) {
     val textBlock = editorState.blockList.firstOrNull { it is TextBlock } as? TextBlock ?: return
-    var value by remember(textBlock.id) {
-        mutableStateOf(TextFieldValue(textBlock.text, TextRange(textBlock.text.length)))
-    }
-    LaunchedEffect(textBlock.id, textBlock.text) {
-        if (value.text != textBlock.text) {
-            value = TextFieldValue(textBlock.text, TextRange(textBlock.text.length))
-        }
-    }
+    val value = editorState.textFieldValueFor(textBlock)
     TextField(
         value = value,
         onValueChange = { newValue ->
-            value = newValue
-            editorState.onTextChanged(textBlock.id, newValue.text)
-            editorState.updateCaret(textBlock.id, newValue.selection.start, newValue.selection.end)
+            editorState.onTextFieldValueChange(textBlock.id, newValue)
         },
         modifier = modifier.fillMaxWidth(),
         placeholder = { Text(text = placeholder) },
