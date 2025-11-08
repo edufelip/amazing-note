@@ -39,8 +39,9 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         private set
     var canRedo by mutableStateOf(false)
         private set
-    private val undoStack = ArrayDeque<EditorSnapshot>()
-    private val redoStack = ArrayDeque<EditorSnapshot>()
+    private val undoStack = ArrayDeque<DocOp>()
+    private val redoStack = ArrayDeque<DocOp>()
+    private var suppressHistory = false
 
     init {
         setContent(initialContent)
@@ -66,11 +67,18 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
     }
 
     fun onTextFieldValueChange(blockId: String, newValue: TextFieldValue) {
-        val current = textFieldValues[blockId]
-        if (current == newValue) return
+        val previousValue = textFieldValues[blockId]
+        if (previousValue == newValue) return
         textFieldValues[blockId] = newValue
-        onTextChanged(blockId, newValue.text)
-        updateCaret(blockId, newValue.selection.start, newValue.selection.end)
+        val beforeSelection = previousValue?.selection
+            ?: TextRange((blockList.firstOrNull { it.id == blockId } as? TextBlock)?.text?.length ?: 0)
+        onTextChanged(
+            blockId = blockId,
+            updatedText = newValue.text,
+            beforeSelection = beforeSelection,
+            afterSelection = newValue.selection,
+        )
+        setCaretFrom(Caret(blockId, newValue.selection.start, newValue.selection.end))
     }
 
     fun setContent(newContent: NoteContent) {
@@ -89,12 +97,16 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         ensureCaretWithinBounds()
     }
 
-    fun onTextChanged(blockId: String, updatedText: String) {
+    fun onTextChanged(
+        blockId: String,
+        updatedText: String,
+        beforeSelection: TextRange? = null,
+        afterSelection: TextRange? = null,
+    ) {
         val index = blockList.indexOfFirst { it.id == blockId }
         if (index < 0) return
         val block = blockList[index]
         if (block is TextBlock && block.text != updatedText) {
-            pushUndoSnapshot()
             blockList[index] = block.copy(text = updatedText)
             textFieldValues[blockId]?.let { current ->
                 if (current.text != updatedText) {
@@ -103,6 +115,16 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
                         selection = current.selection.clampTo(updatedText.length),
                     )
                 }
+            }
+            if (!suppressHistory) {
+                val op = TextChangeOp(
+                    blockId = blockId,
+                    beforeText = block.text,
+                    afterText = updatedText,
+                    beforeSelection = beforeSelection ?: TextRange(block.text.length),
+                    afterSelection = afterSelection ?: TextRange(updatedText.length),
+                )
+                recordOperation(op)
             }
         }
     }
@@ -173,8 +195,9 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         fileName: String? = null,
         thumbnailUri: String? = null,
     ): Caret? {
+        val beforeContent = content
+        val beforeCaret = caret
         val snapshot = caret ?: defaultCaret()
-        pushUndoSnapshot()
         val result = insertImageAtCaret(
             content = content,
             caret = snapshot,
@@ -196,6 +219,16 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         clearImageSelection()
         ensureSelectedImageIsValid()
         ensureTrailingBlankLine()
+        if (!suppressHistory) {
+            recordOperation(
+                ContentReplaceOp(
+                    beforeContent = beforeContent,
+                    afterContent = content,
+                    beforeCaret = beforeCaret,
+                    afterCaret = caret,
+                ),
+            )
+        }
         return caret
     }
 
@@ -211,7 +244,8 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         val index = blockList.indexOfFirst { it.id == blockId }
         if (index < 0) return false
         val removed = blockList[index]
-        pushUndoSnapshot()
+        val beforeContent = content
+        val beforeCaret = caret
         blockList.removeAt(index)
         if (blockList.none { it is TextBlock }) {
             blockList.add(TextBlock(text = ""))
@@ -225,6 +259,16 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         }
         ensureSelectedImageIsValid()
         ensureCaretWithinBounds()
+        if (!suppressHistory) {
+            recordOperation(
+                ContentReplaceOp(
+                    beforeContent = beforeContent,
+                    afterContent = content,
+                    beforeCaret = beforeCaret,
+                    afterCaret = caret,
+                ),
+            )
+        }
         return true
     }
 
@@ -322,50 +366,73 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         }
     }
 
-    fun undo(): Boolean {
-        val previous = undoStack.removeLastOrNull() ?: return false
-        redoStack.addLast(captureSnapshot())
-        trimStackIfNeeded(redoStack)
-        applySnapshot(previous)
-        updateHistoryFlags()
-        return true
-    }
-
-    fun redo(): Boolean {
-        val snapshot = redoStack.removeLastOrNull() ?: return false
-        undoStack.addLast(captureSnapshot())
-        trimStackIfNeeded(undoStack)
-        applySnapshot(snapshot)
-        updateHistoryFlags()
-        return true
-    }
-
-    private fun pushUndoSnapshot() {
-        undoStack.addLast(captureSnapshot())
-        trimStackIfNeeded(undoStack)
+    private fun recordOperation(operation: DocOp) {
+        if (suppressHistory) return
+        val merged = undoStack.lastOrNull()?.mergeWith(operation)
+        if (merged != null) {
+            undoStack.removeLast()
+            undoStack.addLast(merged)
+        } else {
+            undoStack.addLast(operation)
+            trimStackIfNeeded(undoStack)
+        }
         redoStack.clear()
         updateHistoryFlags()
     }
 
-    private fun captureSnapshot(): EditorSnapshot = EditorSnapshot(
-        content = content,
-        caret = caret,
-        focusedBlockId = focusedBlockId,
-    )
+    internal fun applyTextChangeFromHistory(blockId: String, newText: String, selection: TextRange) {
+        val index = blockList.indexOfFirst { it.id == blockId }
+        if (index < 0) return
+        val block = blockList[index]
+        if (block is TextBlock) {
+            val clampedSelection = selection.clampTo(newText.length)
+            blockList[index] = block.copy(text = newText)
+            textFieldValues[blockId] = TextFieldValue(newText, clampedSelection)
+            setCaretFrom(Caret(blockId, clampedSelection.start, clampedSelection.end))
+        }
+    }
 
-    private fun applySnapshot(snapshot: EditorSnapshot) {
+    internal fun replaceContentFromHistory(contentSnapshot: NoteContent, caretSnapshot: Caret?) {
         blockList.clear()
-        blockList.addAll(snapshot.content.normalizedBlocks())
+        blockList.addAll(contentSnapshot.normalizedBlocks())
         refreshTextFieldState()
-        setCaretFrom(snapshot.caret)
-        focusedBlockId = snapshot.focusedBlockId
-        pendingFocusId = snapshot.focusedBlockId
+        setCaretFrom(caretSnapshot)
+        focusedBlockId = caretSnapshot?.blockId
+        pendingFocusId = caretSnapshot?.blockId
         clearImageSelection()
         ensureSelectedImageIsValid()
         ensureCaretWithinBounds()
     }
 
-    private fun trimStackIfNeeded(stack: ArrayDeque<EditorSnapshot>) {
+    fun undo(): Boolean {
+        val operation = undoStack.removeLastOrNull() ?: return false
+        suppressHistory = true
+        try {
+            operation.undo(this)
+        } finally {
+            suppressHistory = false
+        }
+        redoStack.addLast(operation)
+        trimStackIfNeeded(redoStack)
+        updateHistoryFlags()
+        return true
+    }
+
+    fun redo(): Boolean {
+        val operation = redoStack.removeLastOrNull() ?: return false
+        suppressHistory = true
+        try {
+            operation.redo(this)
+        } finally {
+            suppressHistory = false
+        }
+        undoStack.addLast(operation)
+        trimStackIfNeeded(undoStack)
+        updateHistoryFlags()
+        return true
+    }
+
+    private fun trimStackIfNeeded(stack: ArrayDeque<DocOp>) {
         while (stack.size > MAX_HISTORY) {
             stack.removeFirst()
         }
@@ -375,12 +442,6 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         canUndo = undoStack.isNotEmpty()
         canRedo = redoStack.isNotEmpty()
     }
-
-    private data class EditorSnapshot(
-        val content: NoteContent,
-        val caret: Caret?,
-        val focusedBlockId: String?,
-    )
 
     private companion object {
         private const val MAX_HISTORY = 20
