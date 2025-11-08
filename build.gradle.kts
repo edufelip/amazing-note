@@ -8,8 +8,22 @@ plugins {
     alias(libs.plugins.compose.multiplatform) apply false
     alias(libs.plugins.sqldelight) apply false
     alias(libs.plugins.google.services) apply false
+    alias(libs.plugins.git.versioner)
     alias(libs.plugins.spotless)
 }
+
+versioner {
+    startFrom {
+        major = 1
+        minor = 1
+        patch = 0
+    }
+    tag {
+        prefix = "v"
+    }
+}
+
+versioner.apply()
 
 // Code formatting & import optimization (approx. Android Studio Cmd+Opt+L / Ctrl+Alt+O)
 spotless {

@@ -6,6 +6,17 @@ plugins {
     alias(libs.plugins.firebase.crashlytics)
 }
 
+fun String.toVersionCode(): Int {
+    val numeric = substringBefore("-")
+    val segments = numeric.split('.')
+    val major = segments.getOrNull(0)?.toIntOrNull() ?: 0
+    val minor = segments.getOrNull(1)?.toIntOrNull() ?: 0
+    val patch = segments.getOrNull(2)?.toIntOrNull() ?: 0
+    return (major * 10000) + (minor * 100) + patch
+}
+
+val gitVersionName = rootProject.version.toString()
+
 android {
     namespace = "com.edufelip.amazing_note"
     compileSdk = 36
@@ -14,8 +25,8 @@ android {
         applicationId = "com.edufelip.amazing_note"
         minSdk = 30
         targetSdk = 36
-        versionCode = 8
-        versionName = "1.1.0"
+        versionName = gitVersionName
+        versionCode = gitVersionName.toVersionCode()
     }
 
     buildTypes {

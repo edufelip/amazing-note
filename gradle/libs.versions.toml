@@ -30,6 +30,7 @@ firebase-crashlytics-ktx = "19.4.0"
 compose-material3-adaptive = "1.0.0-alpha06"
 compose-material3-window-size = "1.5.0-alpha08"
 security-crypto = "1.1.0-alpha06"
+git-versioner = "1.6.7"
 
 [libraries]
 
@@ -107,3 +108,4 @@ google-services = { id = "com.google.gms.google-services", version.ref = "google
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-gradle" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+git-versioner = { id = "io.toolebox.git-versioner", version.ref = "git-versioner" }
