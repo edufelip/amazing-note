@@ -132,3 +132,16 @@ private fun NoteEditorActionBarPreview() {
         )
     }
 }
+
+@DevicePreviews
+@Composable
+private fun NoteEditorActionBarPastePreview() {
+    DevicePreviewContainer {
+        NoteEditorActionBar(
+            onAddImage = null,
+            onPaste = {},
+            onCopy = null,
+            onCut = null,
+        )
+    }
+}
