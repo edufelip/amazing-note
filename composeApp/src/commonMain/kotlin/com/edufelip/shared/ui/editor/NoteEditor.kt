@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,18 +21,24 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.edufelip.shared.domain.model.ImageBlock
@@ -81,6 +88,7 @@ fun NoteEditor(
                     block = block,
                     selected = state.isImageSelected(block.id),
                     onSelect = { state.toggleImageSelection(block.id) },
+                    onMove = { id, delta -> state.moveBlockBy(id, delta) },
                 )
             }
         }
@@ -120,6 +128,25 @@ private fun TextBlockEditor(
             .padding(horizontal = 4.dp)
             .onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown) {
+                    when {
+                        event.isCopyShortcut() -> {
+                            if (state.copySelectedBlocks()) {
+                                return@onPreviewKeyEvent true
+                            }
+                        }
+
+                        event.isCutShortcut() -> {
+                            if (state.cutSelectedBlocks()) {
+                                return@onPreviewKeyEvent true
+                            }
+                        }
+
+                        event.isPasteShortcut() -> {
+                            if (state.pasteBlocks()) {
+                                return@onPreviewKeyEvent true
+                            }
+                        }
+                    }
                     val pressedKey = event.key
                     if (state.selectedImageBlockId != null) {
                         val removed = state.removeSelectedImage()
@@ -165,16 +192,54 @@ private fun ImageBlockView(
     block: ImageBlock,
     selected: Boolean,
     onSelect: () -> Unit,
+    onMove: (String, Int) -> Unit,
 ) {
     val tokens = designTokens()
+    val dragThreshold = with(LocalDensity.current) { 36.dp.toPx() }
+    var dragDelta by remember(block.id) { mutableStateOf(0f) }
+    var dragging by remember(block.id) { mutableStateOf(false) }
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 4.dp)
-            .clickable(onClick = onSelect),
+            .clickable(onClick = onSelect)
+            .pointerInput(block.id) {
+                detectDragGesturesAfterLongPress(
+                    onDragStart = {
+                        dragging = true
+                        dragDelta = 0f
+                    },
+                    onDragCancel = {
+                        dragging = false
+                        dragDelta = 0f
+                    },
+                    onDragEnd = {
+                        dragging = false
+                        dragDelta = 0f
+                    },
+                    onDrag = { change, amount ->
+                        dragDelta += amount.y
+                        when {
+                            dragDelta <= -dragThreshold -> {
+                                onMove(block.id, -1)
+                                dragDelta += dragThreshold
+                            }
+
+                            dragDelta >= dragThreshold -> {
+                                onMove(block.id, 1)
+                                dragDelta -= dragThreshold
+                            }
+                        }
+                    },
+                )
+            },
         shape = RoundedCornerShape(18.dp),
-        tonalElevation = 1.dp,
-        border = if (selected) BorderStroke(2.dp, tokens.colors.accent) else null,
+        tonalElevation = if (dragging) 4.dp else 1.dp,
+        border = when {
+            dragging -> BorderStroke(2.dp, tokens.colors.accent)
+            selected -> BorderStroke(2.dp, tokens.colors.accent)
+            else -> null
+        },
     ) {
         AsyncImage(
             model = block.remoteUri ?: block.uri,
@@ -184,3 +249,11 @@ private fun ImageBlockView(
         )
     }
 }
+
+private fun KeyEvent.isCopyShortcut(): Boolean = isShortcut(Key.C)
+
+private fun KeyEvent.isCutShortcut(): Boolean = isShortcut(Key.X)
+
+private fun KeyEvent.isPasteShortcut(): Boolean = isShortcut(Key.V)
+
+private fun KeyEvent.isShortcut(targetKey: Key): Boolean = type == KeyEventType.KeyDown && (isCtrlPressed || isMetaPressed) && key == targetKey

@@ -186,6 +186,64 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
 
     fun isImageSelected(blockId: String): Boolean = selectedImageBlockId == blockId
 
+    fun copySelectedBlocks(): Boolean {
+        val selectedId = selectedImageBlockId ?: return false
+        val block = blockList.firstOrNull { it.id == selectedId } as? ImageBlock ?: return false
+        EditorClipboard.storeImages(listOf(block))
+        return true
+    }
+
+    fun cutSelectedBlocks(): Boolean {
+        val copied = copySelectedBlocks()
+        if (!copied) return false
+        return removeSelectedImage()
+    }
+
+    fun pasteBlocks(): Boolean {
+        val payload = EditorClipboard.spawnImages() ?: return false
+        var updated = false
+        payload.forEach { block ->
+            insertImageAtCaret(
+                uri = block.uri,
+                width = block.width,
+                height = block.height,
+                alt = block.alt,
+                mimeType = block.mimeType,
+                fileName = block.fileName,
+                thumbnailUri = block.thumbnailUri,
+            )
+            updated = true
+        }
+        return updated
+    }
+
+    fun moveBlockBy(blockId: String, delta: Int): Boolean {
+        if (delta == 0) return false
+        val currentIndex = blockList.indexOfFirst { it.id == blockId }
+        if (currentIndex == -1) return false
+        val block = blockList[currentIndex]
+        if (block !is ImageBlock) return false
+        val maxIndex = blockList.lastIndex.takeIf { it >= 0 } ?: return false
+        val targetIndex = (currentIndex + delta).coerceIn(0, maxIndex)
+        if (targetIndex == currentIndex) return false
+        val beforeContent = content
+        val beforeCaret = caret
+        blockList.removeAt(currentIndex)
+        blockList.add(targetIndex, block)
+        refreshTextFieldState()
+        if (!suppressHistory) {
+            recordOperation(
+                ContentReplaceOp(
+                    beforeContent = beforeContent,
+                    afterContent = content,
+                    beforeCaret = beforeCaret,
+                    afterCaret = caret,
+                ),
+            )
+        }
+        return true
+    }
+
     fun insertImageAtCaret(
         uri: String,
         width: Int? = null,
