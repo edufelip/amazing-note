@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +35,7 @@ import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
@@ -105,6 +108,14 @@ private fun TextBlockEditor(
 ) {
     val value = state.textFieldValueFor(block)
     val focusRequester = remember { FocusRequester() }
+    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+    var pendingBringIntoView by remember { mutableStateOf(false) }
+    LaunchedEffect(pendingBringIntoView) {
+        if (pendingBringIntoView) {
+            bringIntoViewRequester.bringIntoView()
+            pendingBringIntoView = false
+        }
+    }
     LaunchedEffect(state.pendingFocusId, block.id) {
         if (state.pendingFocusId == block.id) {
             focusRequester.requestFocus()
@@ -125,6 +136,7 @@ private fun TextBlockEditor(
         modifier = modifier
             .fillMaxWidth()
             .focusRequester(focusRequester)
+            .bringIntoViewRequester(bringIntoViewRequester)
             .padding(horizontal = 4.dp)
             .onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown) {
@@ -137,6 +149,18 @@ private fun TextBlockEditor(
 
                         event.isCutShortcut() -> {
                             if (state.cutSelectedBlocks()) {
+                                return@onPreviewKeyEvent true
+                            }
+                        }
+
+                        event.isUndoShortcut() -> {
+                            if (state.undo()) {
+                                return@onPreviewKeyEvent true
+                            }
+                        }
+
+                        event.isRedoShortcut() -> {
+                            if (state.redo()) {
                                 return@onPreviewKeyEvent true
                             }
                         }
@@ -170,6 +194,7 @@ private fun TextBlockEditor(
                     state.consumePendingFocus(block.id)
                     state.markFocus(block.id)
                     state.clearImageSelection()
+                    pendingBringIntoView = true
                 }
             },
         decorationBox = { innerField ->
@@ -255,5 +280,9 @@ private fun KeyEvent.isCopyShortcut(): Boolean = isShortcut(Key.C)
 private fun KeyEvent.isCutShortcut(): Boolean = isShortcut(Key.X)
 
 private fun KeyEvent.isPasteShortcut(): Boolean = isShortcut(Key.V)
+
+private fun KeyEvent.isUndoShortcut(): Boolean = isShortcut(Key.Z) && !isShiftPressed
+
+private fun KeyEvent.isRedoShortcut(): Boolean = (isShortcut(Key.Z) && isShiftPressed) || isShortcut(Key.Y)
 
 private fun KeyEvent.isShortcut(targetKey: Key): Boolean = type == KeyEventType.KeyDown && (isCtrlPressed || isMetaPressed) && key == targetKey

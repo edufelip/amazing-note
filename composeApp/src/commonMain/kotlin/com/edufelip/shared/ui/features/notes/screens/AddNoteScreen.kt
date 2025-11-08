@@ -43,8 +43,11 @@ import com.edufelip.shared.ui.components.molecules.notes.NoteTitleField
 import com.edufelip.shared.ui.components.organisms.notes.FolderSelectionSection
 import com.edufelip.shared.ui.components.organisms.notes.NoteEditorActionBar
 import com.edufelip.shared.ui.components.organisms.notes.NoteEditorTopBar
+import com.edufelip.shared.ui.editor.EditorImplementation
 import com.edufelip.shared.ui.editor.NoteEditor
 import com.edufelip.shared.ui.editor.NoteEditorState
+import com.edufelip.shared.ui.editor.SimpleIosNoteEditor
+import com.edufelip.shared.ui.editor.currentEditor
 import com.edufelip.shared.ui.editor.rememberNoteEditorState
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -70,6 +73,7 @@ fun AddNoteScreen(
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
+    val editorImplementation = remember { currentEditor() }
     val imageCount = editorState.content.blocks.count { it is ImageBlock }
     var previousImageCount by remember { mutableStateOf(imageCount) }
     LaunchedEffect(imageCount) {
@@ -140,11 +144,23 @@ fun AddNoteScreen(
                                 }
                             },
                     ) {
-                        NoteEditor(
-                            state = editorState,
-                            placeholder = stringResource(Res.string.description),
-                            modifier = Modifier.fillMaxSize(),
-                        )
+                        when (editorImplementation) {
+                            EditorImplementation.Simple -> {
+                                SimpleIosNoteEditor(
+                                    editorState = editorState,
+                                    placeholder = stringResource(Res.string.description),
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+
+                            EditorImplementation.Rich -> {
+                                NoteEditor(
+                                    state = editorState,
+                                    placeholder = stringResource(Res.string.description),
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+                        }
                         if (!contentError.isNullOrBlank()) {
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
@@ -157,7 +173,12 @@ fun AddNoteScreen(
                 }
             }
         }
-        NoteEditorActionBar(onAddImage = onAddImage)
+        NoteEditorActionBar(
+            onAddImage = onAddImage,
+            onPaste = { editorState.pasteBlocks() },
+            onCopy = { editorState.copySelectedBlocks() },
+            onCut = { editorState.cutSelectedBlocks() },
+        )
     }
 }
 

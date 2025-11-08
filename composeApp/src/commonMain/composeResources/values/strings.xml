@@ -58,6 +58,9 @@
     <string name="attachment_generic_name">attachment</string>
     <string name="attachments_label">Attachments</string>
     <string name="editor_add_image">Add Image</string>
+    <string name="editor_copy_image">Copy Image</string>
+    <string name="editor_cut_image">Cut Image</string>
+    <string name="editor_paste_image">Paste Image</string>
 
     <!-- Notes - Empty States -->
     <string name="empty_notes_greeting">Good morning</string>

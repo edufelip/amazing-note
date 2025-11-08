@@ -42,6 +42,9 @@
     <string name="attachment_generic_name">archivo</string>
     <string name="attachments_label">Archivos adjuntos</string>
     <string name="editor_add_image">Agregar imagen</string>
+    <string name="editor_copy_image">Copiar imagen</string>
+    <string name="editor_cut_image">Cortar imagen</string>
+    <string name="editor_paste_image">Pegar imagen</string>
 
     <!-- Notas - Estados vacíos -->
     <string name="empty_notes_greeting">Buenos días</string>
