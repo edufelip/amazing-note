@@ -18,6 +18,9 @@ import com.edufelip.shared.domain.model.insertImageAtCaret
 
 class NoteEditorState internal constructor(initialContent: NoteContent) {
     internal val blockList = mutableStateListOf<NoteBlock>()
+    private val documentHandle = EditorDocument(blockList)
+    val document: EditorDocument
+        get() = documentHandle
     var caret: Caret? by mutableStateOf(null)
         private set
     var focusedBlockId: String? by mutableStateOf(null)

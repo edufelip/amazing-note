@@ -8,9 +8,10 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.MaterialTheme
@@ -18,9 +19,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -64,28 +63,29 @@ fun NoteEditor(
                 state.focusFirstTextBlock()
             }
         }
-    val blocks by remember(state) { derivedStateOf { state.blockList.toList() } }
-    val firstTextBlockId = blocks.firstOrNull { it is TextBlock }?.id
-    Column(
+    val document = state.document
+    val firstTextBlockId = document.firstOrNull { it is TextBlock }?.id
+    LazyColumn(
         modifier = contentAwareModifier,
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        blocks.forEach { block ->
-            key(block.id) {
-                when (block) {
-                    is TextBlock -> TextBlockEditor(
-                        block = block,
-                        state = state,
-                        placeholder = placeholder,
-                        showPlaceholder = block.id == firstTextBlockId,
-                    )
+        items(
+            items = document,
+            key = { it.id },
+        ) { block ->
+            when (block) {
+                is TextBlock -> TextBlockEditor(
+                    block = block,
+                    state = state,
+                    placeholder = placeholder,
+                    showPlaceholder = block.id == firstTextBlockId,
+                )
 
-                    is ImageBlock -> ImageBlockView(
-                        block = block,
-                        selected = state.isImageSelected(block.id),
-                        onSelect = { state.toggleImageSelection(block.id) },
-                    )
-                }
+                is ImageBlock -> ImageBlockView(
+                    block = block,
+                    selected = state.isImageSelected(block.id),
+                    onSelect = { state.toggleImageSelection(block.id) },
+                )
             }
         }
     }
