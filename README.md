@@ -21,24 +21,14 @@
 Go to [Google Play](https://play.google.com/store/apps/details?id=com.edufelip.amazing_note) to download the latest App version.
 
 ## This project uses
-* Compose Multiplatform UI (shared Android/iOS), Material 3 (Material You)
-* SQLDelight (shared persistence)
+* Compose Multiplatform UI (shared Android/iOS)
+* SQLDelight (Shared Persistence)
 * Kotlin Coroutines
-* Koin (multiplatform DI)
-* Firebase Authentication (Android/iOS)
+* Koin (Multiplatform DI)
+* Git Versioner (Git-driven semantic versioning)
+* Firebase Authentication, Cloud Storage and Firestore
 * Google Identity Services (Android sign-in via Credential Manager + Google ID)
 * JUnit and Mockito for unit tests
-
-Key recent changes
-- One shared SQLDelight database instance is used by UI and sync to avoid state drift.
-- Logout or account switch clears the local DB and Firestore offline cache so notes are not visible across sessions.
-- Sync can run in push-only mode (local → remote): only dirty local changes are uploaded, and remote is not merged back.
-- Firestore `createdAt`/`updatedAt` are stored as Timestamp; push-only preserves `updatedAt` to keep list order stable.
-- Swipe-to-delete removed; delete/restore are explicit actions.
-- Notes list uses a single simple scroll; section labels (Today/This week/This month/Earlier) are not sticky.
-- Shared scaffold abstraction now powers adaptive navigation: Android switches between a glass bottom bar (phones) and navigation rail + list/detail layout on larger devices, while iOS keeps platform-specific chrome through the same contract.
-- Local SQLDelight storage is now encrypted end-to-end with AES-CTR + HMAC; keys are fetched from Android EncryptedSharedPreferences and the iOS Keychain (legacy data is migrated on first launch).
-- Folder experiences were tightened: folders search/header spacing is slimmer, grid cards are shorter, the empty-state CTA breathes, global navigation now fades between screens, and backing out of a new note prompts a localized "Discard" dialog.
 
 ## Installation
 Clone this repository and import into **Android Studio**
@@ -59,8 +49,9 @@ Android
   - Build debug APK: `./gradlew :app:assembleDebug`
   - Install on device: `./gradlew :app:installDebug`
   - Unit tests: `./gradlew :app:testDebugUnitTest`
-  - Lint: `./gradlew :app:lintDebug`
- - Gradle Wrapper: 9.0-milestone-1
+- Lint: `./gradlew :app:lintDebug`
+- Gradle Wrapper: 9.0-milestone-1
+- Versioning: Android `versionName`/`versionCode` come from Git Versioner; tag commits with `[major]`, `[minor]`, or `[patch]` (or adjust the matcher) instead of bumping Gradle properties manually.
 
 iOS (SwiftPM + ComposeApp Framework)
 - Requirements: Xcode 15+, JDK 17
@@ -277,17 +268,17 @@ Architecture Overview
 
 ```mermaid
 flowchart LR
-  subgraph UI[Compose UI (shared)]
+  subgraph UI [Compose UI Shared]
     A[Home/List/Detail/Trash]
   end
-  VM[NoteUiViewModel (shared via Koin)]
+  VM[NoteUiViewModel - shared via Koin]
   UC[NoteUseCases]
   REP[NoteRepository]
   subgraph Local[Local Persistence]
-    SQL[SQLDelight NoteDatabase\n(note table)]
+    SQL[SQLDelight NoteDatabase\n - note table]
   end
   subgraph Cloud[Cloud]
-    FS[Firestore\nusers/{uid}/notes/{id}]
+    FS[Firestore\nusers/uid/notes/id]
   end
   SYNC[NotesSyncManager]
 
@@ -384,7 +375,3 @@ About SQLDelight query result types
 - Named queries that list columns generate a named result type (e.g., `SelectAll`).
 - To get the generated table row type (`com.edufelip.shared.db.Note`), write `SELECT *`.
 - You can also provide a mapper to return your domain model directly from a query.
-
-QA checklists
-- Full test plan: `docs/QA_TEST_PLAN.md`
-- Quick regression list: `docs/QA_CHECKLIST.md`
