@@ -4,27 +4,23 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import com.edufelip.amazing_note.R
-import com.edufelip.amazing_note.ui.viewmodels.KmpNoteViewModel
 import com.edufelip.shared.data.auth.GitLiveAuthService
 import com.edufelip.shared.data.auth.GoogleSignInConfig
 import com.edufelip.shared.db.NoteDatabase
+import com.edufelip.shared.di.getSharedKoin
 import com.edufelip.shared.ui.AmazingNoteApp
 import com.edufelip.shared.ui.settings.Settings
-import dagger.hilt.android.AndroidEntryPoint
+import com.edufelip.shared.ui.vm.NoteUiViewModel
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.initialize
-import javax.inject.Inject
 
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val vm: KmpNoteViewModel by viewModels()
+    private val koin by lazy { getSharedKoin() }
+    private val vm by lazy { koin.get<NoteUiViewModel>() }
     private val authService by lazy { GitLiveAuthService() }
-
-    @Inject lateinit var settings: Settings
-
-    @Inject lateinit var noteDb: NoteDatabase
+    private val settings by lazy { koin.get<Settings>() }
+    private val noteDb by lazy { koin.get<NoteDatabase>() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

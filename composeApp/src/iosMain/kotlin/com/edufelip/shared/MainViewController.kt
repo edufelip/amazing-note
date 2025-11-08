@@ -7,45 +7,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.window.ComposeUIViewController
 import com.edufelip.shared.data.auth.GitLiveAuthService
-import com.edufelip.shared.data.db.DatabaseDriverFactory
-import com.edufelip.shared.data.db.createDatabase
-import com.edufelip.shared.data.repository.SqlDelightNoteRepository
-import com.edufelip.shared.domain.usecase.buildNoteUseCases
-import com.edufelip.shared.domain.validation.NoteValidationRules
+import com.edufelip.shared.db.NoteDatabase
+import com.edufelip.shared.di.getSharedKoin
+import com.edufelip.shared.di.initKoin
 import com.edufelip.shared.ui.AmazingNoteApp
 import com.edufelip.shared.ui.app.navigation.currentRouteAsState
 import com.edufelip.shared.ui.indication.NoFeedbackIndication
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.settings.AppPreferences
-import com.edufelip.shared.ui.settings.DefaultAppPreferences
 import com.edufelip.shared.ui.settings.Settings
-import com.edufelip.shared.ui.vm.DefaultNoteUiViewModel
-import platform.Foundation.NSUserDefaults
+import com.edufelip.shared.ui.vm.NoteUiViewModel
 import platform.UIKit.UIColor
 import platform.UIKit.UIViewController
 import platform.UIKit.systemBackgroundColor
-
-private object IosSettings : Settings {
-    private val defaults = NSUserDefaults.standardUserDefaults()
-    override fun getBool(key: String, default: Boolean): Boolean {
-        val obj = defaults.objectForKey(key)
-        return if (obj == null) default else defaults.boolForKey(key)
-    }
-    override fun setBool(key: String, value: Boolean) {
-        defaults.setBool(value, forKey = key)
-    }
-    override fun getString(key: String, default: String): String {
-        val obj = defaults.stringForKey(key)
-        return obj ?: default
-    }
-    override fun setString(key: String, value: String) {
-        defaults.setObject(value, forKey = key)
-    }
-}
-
-private val sharedAppPreferences: AppPreferences by lazy {
-    DefaultAppPreferences(IosSettings)
-}
 
 fun MainViewController(
     tabBarVisibility: ((Boolean) -> Unit)? = null,
@@ -93,14 +67,14 @@ fun createAmazingNoteViewController(
     tabBarVisibility: ((Boolean) -> Unit)? = null,
     onRouteChanged: ((String) -> Unit)? = null,
 ): UIViewController {
+    initKoin()
     val controller = ComposeUIViewController {
-        val db = createDatabase(DatabaseDriverFactory())
-        val repo = SqlDelightNoteRepository(db)
-        val useCases = buildNoteUseCases(repo, NoteValidationRules())
-        val vm = DefaultNoteUiViewModel(useCases)
+        val koin = remember { getSharedKoin() }
+        val vm = remember { koin.get<NoteUiViewModel>() }
         val authService = remember { GitLiveAuthService() }
-        val settings = IosSettings
-        val appPreferences = remember { sharedAppPreferences }
+        val settings = remember { koin.get<Settings>() }
+        val appPreferences = remember { koin.get<AppPreferences>() }
+        val db = remember { koin.get<NoteDatabase>() }
         CompositionLocalProvider(LocalIndication provides NoFeedbackIndication) {
             val currentRoute by currentRouteAsState()
             LaunchedEffect(currentRoute) {

@@ -43,6 +43,7 @@ kotlin {
             implementation(libs.googleid)
             implementation(libs.compose.material3.adaptive)
             implementation(libs.compose.material3.window.size)
+            implementation(libs.koin.android)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -63,6 +64,7 @@ kotlin {
             implementation(libs.gitlive.storage)
             implementation(libs.gitlive.crashlytics)
             implementation(projects.shared)
+            implementation(libs.koin.core)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

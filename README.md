@@ -24,7 +24,7 @@ Go to [Google Play](https://play.google.com/store/apps/details?id=com.edufelip.a
 * Compose Multiplatform UI (shared Android/iOS), Material 3 (Material You)
 * SQLDelight (shared persistence)
 * Kotlin Coroutines
-* Dagger Hilt (Android DI)
+* Koin (multiplatform DI)
 * Firebase Authentication (Android/iOS)
 * Google Identity Services (Android sign-in via Credential Manager + Google ID)
 * JUnit and Mockito for unit tests
@@ -180,45 +180,23 @@ Minimal CI steps you can copy into your pipeline:
 - Every reusable component and screen owns its own `@Preview`; platform-specific preview providers mirror the same feature structure under `composeApp/src/{androidMain,iosMain}/kotlin/com/edufelip/shared/ui/features/`.
 - When creating new UI, start with an atom or molecule in `ui/components`, compose them into an organism if needed, and keep feature wiring inside `ui/features/.../screens`.
 
-## Android DI (Hilt + SQLDelight)
+## Dependency Injection (Koin + SQLDelight)
 
 Architecture (Clean): UI → ViewModel → UseCases → Repository → Data Source
 
-- UI (Compose Multiplatform in `composeApp`) now consumes a platform ViewModel via a shared interface `com.edufelip.shared.presentation.NoteUiViewModel`.
-- ViewModel (Android: `KmpNoteViewModel`) depends on `NoteUseCases`.
-- UseCases depend on the domain `NoteRepository`.
-- Data layer (`SqlDelightNoteRepository`) implements the domain repository and talks to SQLDelight.
+- UI (Compose Multiplatform in `composeApp`) consumes the shared `NoteUiViewModel` interface.
+- `DefaultNoteUiViewModel` lives in `composeApp` and depends only on `NoteUseCases`.
+- `NoteUseCases` depend on the domain `NoteRepository` (implemented by `SqlDelightNoteRepository`).
+- All of the above are registered inside the Koin modules under `composeApp/src/commonMain/kotlin/com/edufelip/shared/di/`.
 
-The Android app injects `NoteUseCases` and exposes `KmpNoteViewModel` to the shared UI, keeping the layering intact.
+Each platform contributes a `platformModule()` implementation:
 
-Authentication on Android uses FirebaseAuth and Google Identity Services:
-- Credential Manager + Google ID retrieves an ID token which is exchanged with FirebaseAuth.
+- Android installs `AndroidSettings`, the SQLDelight driver, and the repository, then starts Koin from `ItemApplication` using `androidContext`.
+- iOS registers `IosSettings`, the native SQLDelight driver, and the repository when `MainViewController` launches.
 
-- Provider: see `app/src/main/java/com/edufelip/amazing_note/di/AppModule.kt`
-- Usage example in an Activity:
+Whichever shell needs a dependency (Android Activity, iOS controller, previews) simply grabs it from `getSharedKoin()` and hands it to `AmazingNoteApp`. No platform-specific ViewModel wrapper is required any longer.
 
-```kotlin
-@AndroidEntryPoint
-class SomeActivity : ComponentActivity() {
-    // Android ViewModel exposed to shared UI
-    private val vm: KmpNoteViewModel by viewModels()
-
-    setContent {
-        ProvideAndroidStrings {
-            AmazingNoteApp(
-                viewModel = vm,
-                // FirebaseAuth service is provided in MainActivity
-                onRequestGoogleSignIn = { /* delegated to MainActivity */ }
-            )
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent { /* see above */ }
-    }
-}
-```
+Authentication on Android still uses FirebaseAuth + Google Identity Services. Credential Manager retrieves an ID token which is exchanged with FirebaseAuth; `MainActivity` wires that into the shared UI alongside the `NoteUiViewModel` pulled from Koin.
 
 MainActivity follows this pattern and is the app launcher.
 
@@ -302,7 +280,7 @@ flowchart LR
   subgraph UI[Compose UI (shared)]
     A[Home/List/Detail/Trash]
   end
-  VM[NoteUiViewModel (Android: KmpNoteViewModel)]
+  VM[NoteUiViewModel (shared via Koin)]
   UC[NoteUseCases]
   REP[NoteRepository]
   subgraph Local[Local Persistence]

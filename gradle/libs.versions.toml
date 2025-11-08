@@ -3,7 +3,7 @@ core = "2.2.0"
 core-ktx = "1.17.0"
 coroutines = "1.10.2"
 gradle-plugin = "8.9.1"
-hilt = "2.57.2"
+koin = "4.0.0"
 junit = "4.13.2"
 kotlin = "2.2.21"
 lifecycle = "2.9.4"
@@ -36,8 +36,9 @@ security-crypto = "1.1.0-alpha06"
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "core" }
 
-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
-hilt-android-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
+koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
+koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = "koin" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 kotlin-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
@@ -97,7 +98,6 @@ android-library = { id = "com.android.library", version.ref = "gradle-plugin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-mpp" }
