@@ -5,7 +5,6 @@ import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.NoteAttachment
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
-import com.edufelip.shared.domain.model.ensureContent
 import com.edufelip.shared.domain.repository.NoteRepository
 import com.edufelip.shared.domain.validation.NoteActionResult
 import com.edufelip.shared.domain.validation.NoteValidationRules
@@ -46,7 +45,7 @@ class InsertNote(
     ): NoteActionResult {
         val errors = validateNoteInput(title, description, rules)
         if (errors.isNotEmpty()) return NoteActionResult.Invalid(errors)
-        val finalContent = ensureContent(description, spans, attachments, content)
+        val finalContent = if (content.blocks.isEmpty()) NoteContent() else content
         repository.insert(title, description, folderId, spans, attachments, finalContent)
         return NoteActionResult.Success
     }
@@ -68,7 +67,7 @@ class UpdateNote(
     ): NoteActionResult {
         val errors = validateNoteInput(title, description, rules)
         if (errors.isNotEmpty()) return NoteActionResult.Invalid(errors)
-        val finalContent = ensureContent(description, spans, attachments, content)
+        val finalContent = if (content.blocks.isEmpty()) NoteContent() else content
         repository.update(id, title, description, deleted, folderId, spans, attachments, finalContent)
         return NoteActionResult.Success
     }

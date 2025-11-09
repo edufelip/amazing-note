@@ -19,7 +19,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,38 +48,11 @@ import com.edufelip.shared.ui.features.auth.components.LoginHeader
 import com.edufelip.shared.ui.features.auth.components.LoginIllustration
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.vm.AuthMessage
 import com.edufelip.shared.ui.vm.AuthUiState
-import com.edufelip.shared.ui.vm.AuthViewModel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun LoginScreen(
-    auth: AuthViewModel,
-    onBack: () -> Unit,
-    googleSignInLauncher: GoogleSignInLauncher? = null,
-    onOpenSignUp: () -> Unit,
-    onLoginSuccess: () -> Unit = onBack,
-    showLocalSuccessSnackbar: Boolean = true,
-) {
-    val uiState by auth.uiState.collectAsState()
-    LoginScreen(
-        state = uiState,
-        onBack = onBack,
-        googleSignInLauncher = googleSignInLauncher,
-        onOpenSignUp = onOpenSignUp,
-        onLoginSuccess = onLoginSuccess,
-        showLocalSuccessSnackbar = showLocalSuccessSnackbar,
-        onLogin = { email, password -> auth.loginWithEmail(email, password) },
-        onGoogleSignIn = { token -> auth.signInWithGoogleToken(token) },
-        onSendPasswordReset = { email -> auth.sendPasswordReset(email) },
-        onClearError = { auth.clearError() },
-        onClearMessage = { auth.clearMessage() },
-        onSetError = { auth.setError(it) },
-    )
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -124,17 +96,18 @@ fun LoginScreen(
 
     LaunchedEffect(message) {
         when (message) {
-            "RESET_EMAIL_SENT" -> {
+            AuthMessage.ResetEmailSent -> {
                 forgotPasswordDialogVisible = false
-                // still show positive snackbar
                 snackbarHostState.showSnackbar(resetEmailSentText)
                 onClearMessage()
             }
 
-            "SIGN_UP_SUCCESS" -> if (showLocalSuccessSnackbar) {
+            AuthMessage.SignUpSuccess -> if (showLocalSuccessSnackbar) {
                 snackbarHostState.showSnackbar(signUpSuccessText)
                 onClearMessage()
             }
+
+            null -> Unit
         }
     }
 

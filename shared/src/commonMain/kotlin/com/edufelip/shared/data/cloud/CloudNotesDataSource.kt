@@ -2,12 +2,11 @@ package com.edufelip.shared.data.cloud
 
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.attachmentsFromJson
-import com.edufelip.shared.domain.model.ensureContent
 import com.edufelip.shared.domain.model.noteContentFromJson
-import com.edufelip.shared.domain.model.noteContentFromLegacyBlocksJson
 import com.edufelip.shared.domain.model.spansFromJson
 import com.edufelip.shared.domain.model.toJson
-import com.edufelip.shared.domain.model.withLegacyFieldsFromContent
+import com.edufelip.shared.domain.model.toSummary
+import com.edufelip.shared.domain.model.withFallbacks
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.DocumentSnapshot
@@ -87,24 +86,27 @@ private fun notesCollection(uid: String) = Firebase.firestore
     .document(uid)
     .collection("notes")
 
-private fun Note.toFirestoreData(useServerUpdatedAt: Boolean): Map<String, Any?> = buildMap {
-    put("id", id)
-    put("title", title)
-    put("description", description)
-    put("descriptionSpans", descriptionSpans.toJson())
-    put("attachments", attachments.toJson())
-    put("contentJson", content.toJson())
-    put("blocks", "[]")
-    put("deleted", deleted)
-    put("folderId", folderId)
-    put(
-        "createdAt",
-        if (createdAt == 0L) FieldValue.serverTimestamp else createdAt,
-    )
-    put(
-        "updatedAt",
-        if (useServerUpdatedAt) FieldValue.serverTimestamp else updatedAt,
-    )
+private fun Note.toFirestoreData(useServerUpdatedAt: Boolean): Map<String, Any?> {
+    val summary = content.toSummary().withFallbacks(description, descriptionSpans, attachments)
+    return buildMap {
+        put("id", id)
+        put("title", title)
+        put("description", summary.description)
+        put("descriptionSpans", summary.spans.toJson())
+        put("attachments", summary.attachments.toJson())
+        put("contentJson", content.toJson())
+        put("blocks", "[]")
+        put("deleted", deleted)
+        put("folderId", folderId)
+        put(
+            "createdAt",
+            if (createdAt == 0L) FieldValue.serverTimestamp else createdAt,
+        )
+        put(
+            "updatedAt",
+            if (useServerUpdatedAt) FieldValue.serverTimestamp else updatedAt,
+        )
+    }
 }
 
 private fun DocumentSnapshot.toNoteOrNull(): Note? {
@@ -117,22 +119,21 @@ private fun Map<String, Any?>.toNote(docId: String): Note? {
     val description = this["description"] as? String ?: ""
     val spans = spansFromJson(this["descriptionSpans"] as? String)
     val attachments = attachmentsFromJson(this["attachments"] as? String)
-    val parsedContent = noteContentFromJson(this["contentJson"] as? String ?: this["content_json"] as? String)
-    val legacyContent = if (parsedContent.blocks.isNotEmpty()) parsedContent else noteContentFromLegacyBlocksJson(this["blocks"] as? String)
-    val ensuredContent = ensureContent(description, spans, attachments, legacyContent)
+    val content = noteContentFromJson(this["contentJson"] as? String ?: this["content_json"] as? String)
+    val summary = content.toSummary().withFallbacks(description, spans, attachments)
     val note = Note(
         id = (this["id"] as? Number)?.toInt() ?: docId.toIntOrNull() ?: -1,
         title = rawTitle,
-        description = description,
-        descriptionSpans = spans,
-        attachments = attachments,
-        content = ensuredContent,
+        description = summary.description,
+        descriptionSpans = summary.spans,
+        attachments = summary.attachments,
+        content = content,
         deleted = (this["deleted"] as? Boolean) ?: false,
         createdAt = this["createdAt"].toMillis() ?: 0L,
         updatedAt = this["updatedAt"].toMillis() ?: 0L,
         folderId = (this["folderId"] as? Number)?.toLong(),
     )
-    return note.ensureContent().withLegacyFieldsFromContent()
+    return note
 }
 
 private fun Any?.toMillis(): Long? = when (this) {

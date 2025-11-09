@@ -15,14 +15,24 @@ fun LoginRoute(
     googleSignInLauncher: GoogleSignInLauncher?,
     onNavigate: (AppRoutes) -> Unit,
     onBack: () -> Unit,
+    showLocalSuccessSnackbar: Boolean = true,
 ) {
+    val auth = state.authViewModel
+    val uiState by auth.uiState.collectAsState()
+
     LoginScreen(
-        auth = state.authViewModel,
+        state = uiState,
         onBack = onBack,
         googleSignInLauncher = googleSignInLauncher,
         onOpenSignUp = { onNavigate(AppRoutes.SignUp) },
         onLoginSuccess = { state.popToRoot() },
-        showLocalSuccessSnackbar = true,
+        showLocalSuccessSnackbar = showLocalSuccessSnackbar,
+        onLogin = { email, password -> auth.loginWithEmail(email, password) },
+        onGoogleSignIn = { token -> auth.signInWithGoogleToken(token) },
+        onSendPasswordReset = { email -> auth.sendPasswordReset(email) },
+        onClearError = { auth.clearError() },
+        onClearMessage = { auth.clearMessage() },
+        onSetError = { auth.setError(it) },
     )
 }
 

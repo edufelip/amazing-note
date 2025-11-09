@@ -180,4 +180,12 @@
     <string name="restore">Restore</string>
     <string name="dialog_ok">OK</string>
     <string name="dialog_cancel">Cancel</string>
+    <!-- Design System Preview -->
+    <string name="design_typography_title">Typography</string>
+    <string name="design_display_title">Display / Title</string>
+    <string name="design_display_description">Body copy illustrates the base text style used throughout the app.</string>
+    <string name="design_swatches">Swatches</string>
+    <string name="design_swatch_accent">Accent</string>
+    <string name="design_swatch_surface">Surface</string>
+    <string name="design_swatch_muted">Muted</string>
 </resources>

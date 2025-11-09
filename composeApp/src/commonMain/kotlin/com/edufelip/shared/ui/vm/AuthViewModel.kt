@@ -16,8 +16,13 @@ data class AuthUiState(
     val user: AuthUser? = null,
     val loading: Boolean = false,
     val error: String? = null,
-    val message: String? = null,
+    val message: AuthMessage? = null,
 )
+
+sealed class AuthMessage {
+    data object ResetEmailSent : AuthMessage()
+    data object SignUpSuccess : AuthMessage()
+}
 
 class AuthViewModel(
     private val useCases: AuthUseCases,
@@ -91,7 +96,7 @@ class AuthViewModel(
         scope.launch(Dispatchers.Main) {
             try {
                 useCases.signUp(email, password)
-                _uiState.update { it.copy(message = "SIGN_UP_SUCCESS") }
+                _uiState.update { it.copy(message = AuthMessage.SignUpSuccess) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message ?: "Sign up failed") }
             } finally {
@@ -107,7 +112,7 @@ class AuthViewModel(
         scope.launch(Dispatchers.Main) {
             try {
                 useCases.sendPasswordReset(email)
-                _uiState.update { it.copy(message = "RESET_EMAIL_SENT") }
+                _uiState.update { it.copy(message = AuthMessage.ResetEmailSent) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message ?: "Failed to send reset email") }
             } finally {

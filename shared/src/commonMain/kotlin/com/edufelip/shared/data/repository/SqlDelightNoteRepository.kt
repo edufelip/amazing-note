@@ -12,13 +12,11 @@ import com.edufelip.shared.domain.model.NoteAttachment
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
 import com.edufelip.shared.domain.model.attachmentsFromJson
-import com.edufelip.shared.domain.model.ensureContent
 import com.edufelip.shared.domain.model.noteContentFromJson
-import com.edufelip.shared.domain.model.noteContentFromLegacyBlocksJson
 import com.edufelip.shared.domain.model.spansFromJson
 import com.edufelip.shared.domain.model.toJson
-import com.edufelip.shared.domain.model.toLegacyContent
-import com.edufelip.shared.domain.model.withLegacyFieldsFromContent
+import com.edufelip.shared.domain.model.toSummary
+import com.edufelip.shared.domain.model.withFallbacks
 import com.edufelip.shared.domain.repository.NoteRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -42,23 +40,22 @@ class SqlDelightNoteRepository(
         val contentJson = row.content_json?.let(::decryptField)
         val spans = spansFromJson(spansJson)
         val attachments = attachmentsFromJson(attachmentsJson)
-        val parsedContent = noteContentFromJson(contentJson)
-        val legacyContent = if (parsedContent.blocks.isNotEmpty()) parsedContent else noteContentFromLegacyBlocksJson(row.blocks)
-        val ensuredContent = ensureContent(description, spans, attachments, legacyContent)
+        val content = noteContentFromJson(contentJson)
+        val summary = content.toSummary().withFallbacks(description, spans, attachments)
         return Note(
             id = row.id.toInt(),
             title = title,
-            description = description,
+            description = summary.description,
             deleted = row.deleted != 0L,
             createdAt = row.created_at,
             updatedAt = row.updated_at,
             dirty = row.local_dirty != 0L,
             localUpdatedAt = row.local_updated_at,
             folderId = row.folder_id,
-            descriptionSpans = spans,
-            attachments = attachments,
-            content = ensuredContent,
-        ).ensureContent().withLegacyFieldsFromContent()
+            descriptionSpans = summary.spans,
+            attachments = summary.attachments,
+            content = content,
+        )
     }
 
     private fun mapRowToFolder(row: com.edufelip.shared.db.Folder): Folder = Folder(
@@ -86,14 +83,16 @@ class SqlDelightNoteRepository(
         attachments: List<NoteAttachment>,
         content: NoteContent,
     ) {
-        val finalContent = ensureContent(description, spans, attachments, content)
-        val legacy = finalContent.toLegacyContent()
-        val normalizedAttachments = if (legacy.attachments.isNotEmpty()) legacy.attachments else attachments
+        val finalContent = if (content.blocks.isEmpty()) NoteContent() else content
+        val summary = finalContent.toSummary()
+        val normalizedDescription = summary.description.ifBlank { description }
+        val normalizedSpans = summary.spans.ifEmpty { spans }
+        val normalizedAttachments = if (summary.attachments.isNotEmpty()) summary.attachments else attachments
         val now = currentTimeMillis()
         queries.insertNote(
             title = encryptField(title),
-            description = encryptField(legacy.description.ifBlank { description }),
-            description_spans = encryptField(legacy.spans.ifEmpty { spans }.toJson()),
+            description = encryptField(normalizedDescription),
+            description_spans = encryptField(normalizedSpans.toJson()),
             attachments = encryptField(normalizedAttachments.toJson()),
             blocks = "[]",
             content_json = encryptField(finalContent.toJson()),
@@ -114,14 +113,16 @@ class SqlDelightNoteRepository(
         attachments: List<NoteAttachment>,
         content: NoteContent,
     ) {
-        val finalContent = ensureContent(description, spans, attachments, content)
-        val legacy = finalContent.toLegacyContent()
-        val normalizedAttachments = if (legacy.attachments.isNotEmpty()) legacy.attachments else attachments
+        val finalContent = if (content.blocks.isEmpty()) NoteContent() else content
+        val summary = finalContent.toSummary()
+        val normalizedDescription = summary.description.ifBlank { description }
+        val normalizedSpans = summary.spans.ifEmpty { spans }
+        val normalizedAttachments = if (summary.attachments.isNotEmpty()) summary.attachments else attachments
         val now = currentTimeMillis()
         queries.updateNote(
             title = encryptField(title),
-            description = encryptField(legacy.description.ifBlank { description }),
-            description_spans = encryptField(legacy.spans.ifEmpty { spans }.toJson()),
+            description = encryptField(normalizedDescription),
+            description_spans = encryptField(normalizedSpans.toJson()),
             attachments = encryptField(normalizedAttachments.toJson()),
             blocks = "[]",
             content_json = encryptField(finalContent.toJson()),

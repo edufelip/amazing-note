@@ -11,12 +11,11 @@ import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.TextBlock
 import com.edufelip.shared.domain.model.attachmentsFromJson
-import com.edufelip.shared.domain.model.ensureContent
 import com.edufelip.shared.domain.model.noteContentFromJson
-import com.edufelip.shared.domain.model.noteContentFromLegacyBlocksJson
 import com.edufelip.shared.domain.model.spansFromJson
 import com.edufelip.shared.domain.model.toJson
-import com.edufelip.shared.domain.model.withLegacyFieldsFromContent
+import com.edufelip.shared.domain.model.toSummary
+import com.edufelip.shared.domain.model.withFallbacks
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
@@ -172,54 +171,53 @@ class NotesSyncManager(
         val spans = spansFromJson(decryptField(row.description_spans))
         val attachments = attachmentsFromJson(decryptField(row.attachments))
         val contentJson = row.content_json?.let(::decryptField)
-        val parsedContent = noteContentFromJson(contentJson)
-        val legacyContent = if (parsedContent.blocks.isNotEmpty()) parsedContent else noteContentFromLegacyBlocksJson(row.blocks)
-        val ensuredContent = ensureContent(description, spans, attachments, legacyContent)
+        val content = noteContentFromJson(contentJson)
+        val summary = content.toSummary().withFallbacks(description, spans, attachments)
         return Note(
             id = row.id.toInt(),
             title = title,
-            description = description,
+            description = summary.description,
             deleted = row.deleted != 0L,
             createdAt = row.created_at,
             updatedAt = row.updated_at,
             dirty = row.local_dirty != 0L,
             localUpdatedAt = row.local_updated_at,
             folderId = row.folder_id,
-            descriptionSpans = spans,
-            attachments = attachments,
-            content = ensuredContent,
-        ).ensureContent().withLegacyFieldsFromContent()
+            descriptionSpans = summary.spans,
+            attachments = summary.attachments,
+            content = content,
+        )
     }
 
-    private fun insertLocal(n: Note) {
-        val normalized = n.ensureContent().withLegacyFieldsFromContent()
+    private fun insertLocal(note: Note) {
+        val summary = note.content.toSummary().withFallbacks(note.description, note.descriptionSpans, note.attachments)
         db.noteQueries.insertWithId(
-            id = normalized.id.toLong(),
-            title = encryptField(normalized.title),
-            description = encryptField(normalized.description),
-            description_spans = encryptField(normalized.descriptionSpans.toJson()),
-            attachments = encryptField(normalized.attachments.toJson()),
+            id = note.id.toLong(),
+            title = encryptField(note.title),
+            description = encryptField(summary.description),
+            description_spans = encryptField(summary.spans.toJson()),
+            attachments = encryptField(summary.attachments.toJson()),
             blocks = "[]",
-            content_json = encryptField(normalized.content.toJson()),
-            deleted = if (normalized.deleted) 1 else 0,
-            created_at = normalized.createdAt,
-            updated_at = normalized.updatedAt,
-            folder_id = normalized.folderId,
+            content_json = encryptField(note.content.toJson()),
+            deleted = if (note.deleted) 1 else 0,
+            created_at = note.createdAt,
+            updated_at = note.updatedAt,
+            folder_id = note.folderId,
         )
     }
 
     private fun updateLocalFromRemote(id: Int, note: Note) {
-        val normalized = note.ensureContent().withLegacyFieldsFromContent()
+        val summary = note.content.toSummary().withFallbacks(note.description, note.descriptionSpans, note.attachments)
         db.noteQueries.updateFromRemote(
-            title = encryptField(normalized.title),
-            description = encryptField(normalized.description),
-            description_spans = encryptField(normalized.descriptionSpans.toJson()),
-            attachments = encryptField(normalized.attachments.toJson()),
+            title = encryptField(note.title),
+            description = encryptField(summary.description),
+            description_spans = encryptField(summary.spans.toJson()),
+            attachments = encryptField(summary.attachments.toJson()),
             blocks = "[]",
-            content_json = encryptField(normalized.content.toJson()),
-            deleted = if (normalized.deleted) 1 else 0,
-            updated_at = normalized.updatedAt,
-            folder_id = normalized.folderId,
+            content_json = encryptField(note.content.toJson()),
+            deleted = if (note.deleted) 1 else 0,
+            updated_at = note.updatedAt,
+            folder_id = note.folderId,
             id = id.toLong(),
         )
     }

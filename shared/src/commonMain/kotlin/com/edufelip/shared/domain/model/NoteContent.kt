@@ -10,7 +10,32 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.jvm.JvmName
 
+private val noteContentJson = Json {
+    ignoreUnknownKeys = true
+    classDiscriminator = "type"
+    encodeDefaults = false
+    explicitNulls = false
+}
+
 private val jsonFormatter = Json { ignoreUnknownKeys = true }
+
+@Serializable
+data class NoteContent(
+    val blocks: List<NoteBlock> = emptyList(),
+) {
+    companion object
+}
+
+fun NoteContent.Companion.empty(): NoteContent = NoteContent()
+
+fun NoteContent.toJson(): String = noteContentJson.encodeToString(NoteContent.serializer(), this)
+
+fun noteContentFromJson(raw: String?): NoteContent = raw
+    ?.takeIf { it.isNotBlank() }
+    ?.let { json ->
+        runCatching { noteContentJson.decodeFromString(NoteContent.serializer(), json) }.getOrNull()
+    }
+    ?: NoteContent()
 
 @Serializable
 data class NoteAttachment(

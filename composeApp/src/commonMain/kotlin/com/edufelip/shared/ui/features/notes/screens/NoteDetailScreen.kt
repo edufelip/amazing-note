@@ -19,9 +19,7 @@ import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.NoteContent
-import com.edufelip.shared.domain.model.ensureContent
-import com.edufelip.shared.domain.model.noteContentFromLegacy
-import com.edufelip.shared.domain.model.withLegacyFieldsFromContent
+import com.edufelip.shared.domain.model.withSummaryFromContent
 import com.edufelip.shared.domain.validation.NoteActionResult
 import com.edufelip.shared.domain.validation.NoteValidationError
 import com.edufelip.shared.domain.validation.NoteValidationError.DescriptionTooLong
@@ -69,15 +67,11 @@ fun NoteDetailScreen(
     isUserAuthenticated: Boolean,
 ) {
     val noteKey = editing?.id ?: "new"
-    val normalizedNote = remember(noteKey) { editing?.ensureContent()?.withLegacyFieldsFromContent() }
+    val normalizedNote = remember(noteKey) { editing?.withSummaryFromContent() }
     val initialTitle = normalizedNote?.title ?: editing?.title.orEmpty()
     val initialFolder = normalizedNote?.folderId ?: initialFolderId
     val initialContent = remember(noteKey) {
-        normalizedNote?.content ?: noteContentFromLegacy(
-            description = editing?.description.orEmpty(),
-            spans = editing?.descriptionSpans ?: emptyList(),
-            attachments = editing?.attachments ?: emptyList(),
-        )
+        normalizedNote?.content ?: NoteContent()
     }
 
     var titleState by remember(noteKey) {

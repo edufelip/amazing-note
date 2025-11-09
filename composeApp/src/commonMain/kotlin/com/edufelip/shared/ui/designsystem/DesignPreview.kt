@@ -11,9 +11,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.edufelip.shared.resources.Res
+import com.edufelip.shared.resources.design_display_description
+import com.edufelip.shared.resources.design_display_title
+import com.edufelip.shared.resources.design_swatch_accent
+import com.edufelip.shared.resources.design_swatch_muted
+import com.edufelip.shared.resources.design_swatch_surface
+import com.edufelip.shared.resources.design_swatches
+import com.edufelip.shared.resources.design_typography_title
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.theme.AmazingNoteTheme
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Preview(name = "Design Tokens")
@@ -30,7 +39,7 @@ private fun DesignTokensPreview() {
                 verticalArrangement = Arrangement.spacedBy(tokens.spacing.lg),
             ) {
                 Text(
-                    text = "Typography",
+                    text = stringResource(Res.string.design_typography_title),
                     style = LocalDesignTypography.current.headlineMedium,
                     color = tokens.colors.onSurface,
                 )
@@ -38,18 +47,18 @@ private fun DesignTokensPreview() {
                     verticalArrangement = Arrangement.spacedBy(tokens.spacing.sm),
                 ) {
                     Text(
-                        text = "Display / Title",
+                        text = stringResource(Res.string.design_display_title),
                         style = LocalDesignTypography.current.displayLarge,
                         color = tokens.colors.onSurface,
                     )
                     Text(
-                        text = "Body copy illustrates the base text style used throughout the app.",
+                        text = stringResource(Res.string.design_display_description),
                         style = LocalDesignTypography.current.bodyLarge,
                         color = tokens.colors.muted,
                     )
                 }
                 Text(
-                    text = "Swatches",
+                    text = stringResource(Res.string.design_swatches),
                     style = LocalDesignTypography.current.headlineMedium,
                     color = tokens.colors.onSurface,
                 )
@@ -58,9 +67,21 @@ private fun DesignTokensPreview() {
                     horizontalArrangement = Arrangement.spacedBy(tokens.spacing.md),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    ColorSwatch("Accent", tokens.colors.accent, tokens)
-                    ColorSwatch("Surface", tokens.colors.surface, tokens)
-                    ColorSwatch("Muted", tokens.colors.muted, tokens)
+                    ColorSwatch(
+                        label = stringResource(Res.string.design_swatch_accent),
+                        color = tokens.colors.accent,
+                        tokens = tokens,
+                    )
+                    ColorSwatch(
+                        label = stringResource(Res.string.design_swatch_surface),
+                        color = tokens.colors.surface,
+                        tokens = tokens,
+                    )
+                    ColorSwatch(
+                        label = stringResource(Res.string.design_swatch_muted),
+                        color = tokens.colors.muted,
+                        tokens = tokens,
+                    )
                 }
             }
         }

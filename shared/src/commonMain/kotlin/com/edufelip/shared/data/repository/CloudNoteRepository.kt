@@ -10,8 +10,7 @@ import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.NoteAttachment
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
-import com.edufelip.shared.domain.model.ensureContent
-import com.edufelip.shared.domain.model.toLegacyContent
+import com.edufelip.shared.domain.model.toSummary
 import com.edufelip.shared.domain.repository.NoteRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -50,20 +49,22 @@ class CloudNoteRepository(
     ) {
         val uid = currentUser.uid.first() ?: return
         val now = nowEpochMs()
-        val finalContent = ensureContent(description, spans, attachments, content)
-        val legacy = finalContent.toLegacyContent()
-        val normalizedAttachments = if (legacy.attachments.isNotEmpty()) legacy.attachments else attachments
+        val finalContent = if (content.blocks.isEmpty()) NoteContent() else content
+        val summary = finalContent.toSummary()
+        val normalizedDescription = summary.description.ifBlank { description }
+        val normalizedSpans = summary.spans.ifEmpty { spans }
+        val normalizedAttachments = if (summary.attachments.isNotEmpty()) summary.attachments else attachments
         val note = Note(
             id = now.hashCode(),
             title = title,
-            description = legacy.description.ifBlank { description },
+            description = normalizedDescription,
             deleted = false,
             createdAt = now,
             updatedAt = now,
             dirty = false,
             localUpdatedAt = now,
             folderId = folderId,
-            descriptionSpans = legacy.spans.ifEmpty { spans },
+            descriptionSpans = normalizedSpans,
             attachments = normalizedAttachments,
             content = finalContent,
         )
@@ -82,20 +83,22 @@ class CloudNoteRepository(
     ) {
         val uid = currentUser.uid.first() ?: return
         val now = nowEpochMs()
-        val finalContent = ensureContent(description, spans, attachments, content)
-        val legacy = finalContent.toLegacyContent()
-        val normalizedAttachments = if (legacy.attachments.isNotEmpty()) legacy.attachments else attachments
+        val finalContent = if (content.blocks.isEmpty()) NoteContent() else content
+        val summary = finalContent.toSummary()
+        val normalizedDescription = summary.description.ifBlank { description }
+        val normalizedSpans = summary.spans.ifEmpty { spans }
+        val normalizedAttachments = if (summary.attachments.isNotEmpty()) summary.attachments else attachments
         val note = Note(
             id = id,
             title = title,
-            description = legacy.description.ifBlank { description },
+            description = normalizedDescription,
             deleted = deleted,
             createdAt = now,
             updatedAt = now,
             dirty = true,
             localUpdatedAt = now,
             folderId = folderId,
-            descriptionSpans = legacy.spans.ifEmpty { spans },
+            descriptionSpans = normalizedSpans,
             attachments = normalizedAttachments,
             content = finalContent,
         )

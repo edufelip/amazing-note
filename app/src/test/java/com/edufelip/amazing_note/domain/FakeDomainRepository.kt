@@ -5,7 +5,6 @@ import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.NoteAttachment
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
-import com.edufelip.shared.domain.model.ensureContent
 import com.edufelip.shared.domain.repository.NoteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +36,7 @@ class FakeDomainRepository : NoteRepository {
     ) {
         val nextId = (notes.maxOfOrNull { it.id } ?: 0) + 1
         val now = System.currentTimeMillis()
-        val finalContent = ensureContent(description, spans, attachments, content)
+        val finalContent = if (content.blocks.isEmpty()) NoteContent() else content
         notes += Note(
             nextId,
             title,
@@ -65,7 +64,7 @@ class FakeDomainRepository : NoteRepository {
     ) {
         val idx = notes.indexOfFirst { it.id == id }.takeIf { it >= 0 } ?: return
         val now = System.currentTimeMillis()
-        val finalContent = ensureContent(description, spans, attachments, content)
+        val finalContent = if (content.blocks.isEmpty()) NoteContent() else content
         notes[idx] = notes[idx].copy(
             title = title,
             description = description,

@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.edufelip.shared.data.sync.NotesSyncManager
-import com.edufelip.shared.domain.model.toLegacyContent
+import com.edufelip.shared.domain.model.toSummary
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.unassigned_notes
 import com.edufelip.shared.ui.attachments.AttachmentPicker
@@ -173,13 +173,13 @@ fun NoteDetailRoute(
         onBack = onBack,
         isUserAuthenticated = isUserAuthenticated,
         saveAndValidate = { noteId, title, content, folderId ->
-            val legacy = content.toLegacyContent()
+            val summary = content.toSummary()
             val result = if (noteId == null) {
                 viewModel.insert(
                     title = title,
-                    description = legacy.description,
-                    spans = legacy.spans,
-                    attachments = legacy.attachments,
+                    description = summary.description,
+                    spans = summary.spans,
+                    attachments = summary.attachments,
                     folderId = folderId,
                     content = content,
                 )
@@ -187,10 +187,10 @@ fun NoteDetailRoute(
                 viewModel.update(
                     id = noteId,
                     title = title,
-                    description = legacy.description,
+                    description = summary.description,
                     deleted = false,
-                    spans = legacy.spans,
-                    attachments = legacy.attachments,
+                    spans = summary.spans,
+                    attachments = summary.attachments,
                     folderId = folderId,
                     content = content,
                 )

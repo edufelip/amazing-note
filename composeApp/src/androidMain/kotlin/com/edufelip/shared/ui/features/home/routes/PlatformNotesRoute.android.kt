@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import com.edufelip.shared.data.sync.NotesSyncManager
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
-import com.edufelip.shared.domain.model.toLegacyContent
+import com.edufelip.shared.domain.model.toSummary
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.select_a_note_to_start
 import com.edufelip.shared.ui.attachments.AttachmentPicker
@@ -171,13 +171,13 @@ private fun NotesDetailPane(
         onBack = onClose,
         isUserAuthenticated = isUserAuthenticated,
         saveAndValidate = { id, title, content, folderId ->
-            val legacy = content.toLegacyContent()
+            val summary = content.toSummary()
             val result = if (id == null) {
                 viewModel.insert(
                     title = title,
-                    description = legacy.description,
-                    spans = legacy.spans,
-                    attachments = legacy.attachments,
+                    description = summary.description,
+                    spans = summary.spans,
+                    attachments = summary.attachments,
                     folderId = folderId,
                     content = content,
                 )
@@ -185,10 +185,10 @@ private fun NotesDetailPane(
                 viewModel.update(
                     id = id,
                     title = title,
-                    description = legacy.description,
+                    description = summary.description,
                     deleted = false,
-                    spans = legacy.spans,
-                    attachments = legacy.attachments,
+                    spans = summary.spans,
+                    attachments = summary.attachments,
                     folderId = folderId,
                     content = content,
                 )

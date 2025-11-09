@@ -156,4 +156,13 @@
     <string name="yes">Sí</string>
     <string name="no">No</string>
     <string name="signing_out">Cerrando sesión</string>
+
+    <!-- Vista previa del sistema de diseño -->
+    <string name="design_typography_title">Tipografía</string>
+    <string name="design_display_title">Encabezado / Título</string>
+    <string name="design_display_description">El cuerpo de texto ilustra el estilo base usado en toda la app.</string>
+    <string name="design_swatches">Muestras</string>
+    <string name="design_swatch_accent">Acento</string>
+    <string name="design_swatch_surface">Superficie</string>
+    <string name="design_swatch_muted">Atenuado</string>
 </resources>

@@ -165,4 +165,13 @@
     <string name="restore">Restaurar</string>
     <string name="dialog_ok">OK</string>
     <string name="dialog_cancel">Cancelar</string>
+
+    <!-- Prévia do sistema de design -->
+    <string name="design_typography_title">Tipografia</string>
+    <string name="design_display_title">Destaque / Título</string>
+    <string name="design_display_description">O corpo do texto ilustra o estilo base usado em todo o app.</string>
+    <string name="design_swatches">Paleta</string>
+    <string name="design_swatch_accent">Acento</string>
+    <string name="design_swatch_surface">Superfície</string>
+    <string name="design_swatch_muted">Suave</string>
 </resources>
