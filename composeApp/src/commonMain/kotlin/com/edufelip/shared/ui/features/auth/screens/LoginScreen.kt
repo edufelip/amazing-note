@@ -96,10 +96,11 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    val loading by auth.loading.collectAsState()
-    val error by auth.error.collectAsState()
-    val user by auth.user.collectAsState()
-    val message by auth.message.collectAsState()
+    val uiState by auth.uiState.collectAsState()
+    val loading = uiState.loading
+    val error = uiState.error
+    val user = uiState.user
+    val message = uiState.message
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()

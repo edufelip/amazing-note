@@ -9,59 +9,59 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+data class AuthUiState(
+    val user: AuthUser? = null,
+    val loading: Boolean = false,
+    val error: String? = null,
+    val message: String? = null,
+)
 
 class AuthViewModel(
     private val useCases: AuthUseCases,
     private val scope: CoroutineScope,
 ) {
-    private val _user = MutableStateFlow<AuthUser?>(null)
-    val user: StateFlow<AuthUser?> = _user.asStateFlow()
-
-    private val _loading = MutableStateFlow(false)
-    val loading: StateFlow<Boolean> = _loading.asStateFlow()
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
-
-    private val _message = MutableStateFlow<String?>(null)
-    val message: StateFlow<String?> = _message.asStateFlow()
+    private val _uiState = MutableStateFlow(AuthUiState())
+    val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     init {
         useCases.observeCurrentUser()
-            .onEach { _user.value = it }
+            .onEach { authUser ->
+                _uiState.update { it.copy(user = authUser) }
+            }
             .launchIn(scope)
     }
 
     fun clearError() {
-        _error.value = null
+        _uiState.update { it.copy(error = null) }
     }
     fun clearMessage() {
-        _message.value = null
+        _uiState.update { it.copy(message = null) }
     }
 
     fun setError(message: String) {
-        _error.value = message
+        _uiState.update { it.copy(error = message) }
     }
 
     fun loginWithEmail(email: String, password: String) {
-        if (_loading.value) return
-        _loading.value = true
-        _error.value = null
-        _message.value = null
+        val current = _uiState.value
+        if (current.loading) return
+        _uiState.value = current.copy(loading = true, error = null, message = null)
         scope.launch(Dispatchers.Main) {
             try {
                 useCases.login(email, password)
             } catch (e: Exception) {
-                _error.value = e.message ?: "Login failed"
+                _uiState.update { it.copy(error = e.message ?: "Login failed") }
             } finally {
-                _loading.value = false
+                _uiState.update { it.copy(loading = false) }
             }
         }
     }
 
     fun logout() {
-        if (_loading.value) return
+        if (_uiState.value.loading) return
         scope.launch(Dispatchers.Main) {
             try {
                 useCases.logout()
@@ -70,51 +70,48 @@ class AuthViewModel(
     }
 
     fun signInWithGoogleToken(idToken: String) {
-        if (_loading.value) return
-        _loading.value = true
-        _error.value = null
-        _message.value = null
+        val current = _uiState.value
+        if (current.loading) return
+        _uiState.value = current.copy(loading = true, error = null, message = null)
         scope.launch(Dispatchers.Main) {
             try {
                 useCases.signInWithGoogle(idToken)
             } catch (e: Exception) {
-                _error.value = e.message ?: "Google sign-in failed"
+                _uiState.update { it.copy(error = e.message ?: "Google sign-in failed") }
             } finally {
-                _loading.value = false
+                _uiState.update { it.copy(loading = false) }
             }
         }
     }
 
     fun signUp(email: String, password: String) {
-        if (_loading.value) return
-        _loading.value = true
-        _error.value = null
-        _message.value = null
+        val current = _uiState.value
+        if (current.loading) return
+        _uiState.value = current.copy(loading = true, error = null, message = null)
         scope.launch(Dispatchers.Main) {
             try {
                 useCases.signUp(email, password)
-                _message.value = "SIGN_UP_SUCCESS"
+                _uiState.update { it.copy(message = "SIGN_UP_SUCCESS") }
             } catch (e: Exception) {
-                _error.value = e.message ?: "Sign up failed"
+                _uiState.update { it.copy(error = e.message ?: "Sign up failed") }
             } finally {
-                _loading.value = false
+                _uiState.update { it.copy(loading = false) }
             }
         }
     }
 
     fun sendPasswordReset(email: String) {
-        if (_loading.value) return
-        _loading.value = true
-        _error.value = null
-        _message.value = null
+        val current = _uiState.value
+        if (current.loading) return
+        _uiState.value = current.copy(loading = true, error = null, message = null)
         scope.launch(Dispatchers.Main) {
             try {
                 useCases.sendPasswordReset(email)
-                _message.value = "RESET_EMAIL_SENT"
+                _uiState.update { it.copy(message = "RESET_EMAIL_SENT") }
             } catch (e: Exception) {
-                _error.value = e.message ?: "Failed to send reset email"
+                _uiState.update { it.copy(error = e.message ?: "Failed to send reset email") }
             } finally {
-                _loading.value = false
+                _uiState.update { it.copy(loading = false) }
             }
         }
     }

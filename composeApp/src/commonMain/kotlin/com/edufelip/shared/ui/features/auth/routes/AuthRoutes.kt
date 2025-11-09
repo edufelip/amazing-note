@@ -31,7 +31,7 @@ fun SignUpRoute(
     state: AmazingNoteAppState,
     onBack: () -> Unit,
 ) {
-    val loading by state.authViewModel.loading.collectAsState()
+    val uiState by state.authViewModel.uiState.collectAsState()
 
     SignUpScreen(
         onBack = onBack,
@@ -39,6 +39,6 @@ fun SignUpRoute(
             state.authViewModel.signUp(email, password)
             state.popToRoot()
         },
-        loading = loading,
+        loading = uiState.loading,
     )
 }
