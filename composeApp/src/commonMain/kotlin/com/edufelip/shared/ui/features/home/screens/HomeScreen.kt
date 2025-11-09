@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -62,7 +61,6 @@ fun HomeScreen(
     }
 
     val query = remember { mutableStateOf("") }
-    val snackBarHostState = remember { SnackbarHostState() }
 
     val filteredNotes =
         if (query.value.isBlank()) {
@@ -95,7 +93,6 @@ fun HomeScreen(
                 searchQuery = query.value,
                 onSearchQueryChange = { query.value = it },
                 onDelete = onDelete,
-                snackBarHostState = snackBarHostState,
                 showTopAppBar = false,
                 hasAnyNotes = hasNotes,
                 headerContent = null,

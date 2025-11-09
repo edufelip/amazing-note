@@ -13,8 +13,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -40,6 +38,8 @@ import com.edufelip.shared.resources.login_headline
 import com.edufelip.shared.resources.login_subheadline
 import com.edufelip.shared.resources.reset_email_sent
 import com.edufelip.shared.resources.sign_up_success
+import com.edufelip.shared.ui.effects.toast.rememberToastController
+import com.edufelip.shared.ui.effects.toast.show
 import com.edufelip.shared.ui.features.auth.components.ForgotPasswordDialog
 import com.edufelip.shared.ui.features.auth.components.GoogleButton
 import com.edufelip.shared.ui.features.auth.components.LoginCredentialsSection
@@ -62,7 +62,7 @@ fun LoginScreen(
     googleSignInLauncher: GoogleSignInLauncher? = null,
     onOpenSignUp: () -> Unit,
     onLoginSuccess: () -> Unit,
-    showLocalSuccessSnackbar: Boolean,
+    showLocalSuccessToast: Boolean,
     onLogin: (String, String) -> Unit,
     onGoogleSignIn: (String) -> Unit,
     onSendPasswordReset: (String) -> Unit,
@@ -78,7 +78,7 @@ fun LoginScreen(
     val user = state.user
     val message = state.message
     val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val toastController = rememberToastController()
     val scrollState = rememberScrollState()
     var forgotPasswordDialogVisible by rememberSaveable { mutableStateOf(false) }
     var resetEmail by rememberSaveable { mutableStateOf("") }
@@ -98,12 +98,12 @@ fun LoginScreen(
         when (message) {
             AuthMessage.ResetEmailSent -> {
                 forgotPasswordDialogVisible = false
-                snackbarHostState.showSnackbar(resetEmailSentText)
+                toastController.show(resetEmailSentText)
                 onClearMessage()
             }
 
-            AuthMessage.SignUpSuccess -> if (showLocalSuccessSnackbar) {
-                snackbarHostState.showSnackbar(signUpSuccessText)
+            AuthMessage.SignUpSuccess -> if (showLocalSuccessToast) {
+                toastController.show(signUpSuccessText)
                 onClearMessage()
             }
 
@@ -120,7 +120,6 @@ fun LoginScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         Column(
             modifier = Modifier
@@ -186,10 +185,10 @@ fun LoginScreen(
                             }
                             !result.errorMessage.isNullOrBlank() -> {
                                 onSetError(result.errorMessage)
-                                snackbarHostState.showSnackbar(result.errorMessage)
+                                toastController.show(result.errorMessage)
                                 loginRequested = false
                             }
-                            else -> snackbarHostState.showSnackbar(googleCanceledText)
+                            else -> toastController.show(googleCanceledText)
                         }
                     }
                 },
@@ -240,7 +239,7 @@ private fun LoginScreenPreview() {
             googleSignInLauncher = null,
             onOpenSignUp = {},
             onLoginSuccess = {},
-            showLocalSuccessSnackbar = true,
+            showLocalSuccessToast = true,
             onLogin = { _, _ -> },
             onGoogleSignIn = {},
             onSendPasswordReset = {},

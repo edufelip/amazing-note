@@ -25,8 +25,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -78,7 +76,6 @@ fun ListScreen(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     onDelete: (Note) -> Unit,
-    snackBarHostState: SnackbarHostState? = null,
     title: String? = null,
     showTopAppBar: Boolean = true,
     hasAnyNotes: Boolean = true,
@@ -101,9 +98,6 @@ fun ListScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(scaffoldContainerColor),
-            snackbarHost = {
-                if (snackBarHostState != null) SnackbarHost(snackBarHostState)
-            },
             containerColor = Color.Transparent,
             contentWindowInsets = chrome.contentWindowInsets,
             topBar = if (showTopAppBar) {

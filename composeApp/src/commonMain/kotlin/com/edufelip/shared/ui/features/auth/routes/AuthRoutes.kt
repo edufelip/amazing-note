@@ -15,7 +15,7 @@ fun LoginRoute(
     googleSignInLauncher: GoogleSignInLauncher?,
     onNavigate: (AppRoutes) -> Unit,
     onBack: () -> Unit,
-    showLocalSuccessSnackbar: Boolean = true,
+    showLocalSuccessToast: Boolean = true,
 ) {
     val auth = state.authViewModel
     val uiState by auth.uiState.collectAsState()
@@ -26,7 +26,7 @@ fun LoginRoute(
         googleSignInLauncher = googleSignInLauncher,
         onOpenSignUp = { onNavigate(AppRoutes.SignUp) },
         onLoginSuccess = { state.popToRoot() },
-        showLocalSuccessSnackbar = showLocalSuccessSnackbar,
+        showLocalSuccessToast = showLocalSuccessToast,
         onLogin = { email, password -> auth.loginWithEmail(email, password) },
         onGoogleSignIn = { token -> auth.signInWithGoogleToken(token) },
         onSendPasswordReset = { email -> auth.sendPasswordReset(email) },
