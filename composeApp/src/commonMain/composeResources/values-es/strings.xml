@@ -22,6 +22,7 @@
     <string name="sign_up_success">Cuenta creada con éxito</string>
     <string name="sign_out_success">Sesión cerrada</string>
     <string name="login_success">Sesión iniciada</string>
+    <string name="login_error_invalid_credentials">Verifica si el correo y la contraseña son correctos.</string>
     <string name="google_sign_in_canceled">Inicio de sesión con Google cancelado</string>
     <string name="logout_canceled">Cierre de sesión cancelado</string>
     <string name="welcome_user">Bienvenido, %1$s</string>

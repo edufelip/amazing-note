@@ -14,7 +14,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -36,6 +35,7 @@ import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.continue_with_google
 import com.edufelip.shared.resources.forgot_password
 import com.edufelip.shared.resources.google_sign_in_canceled
+import com.edufelip.shared.resources.login_error_invalid_credentials
 import com.edufelip.shared.resources.login_headline
 import com.edufelip.shared.resources.login_subheadline
 import com.edufelip.shared.resources.reset_email_sent
@@ -104,7 +104,6 @@ fun LoginScreen(
     val error = state.error
     val user = state.user
     val message = state.message
-    val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     var forgotPasswordDialogVisible by rememberSaveable { mutableStateOf(false) }
@@ -125,6 +124,7 @@ fun LoginScreen(
         when (message) {
             "RESET_EMAIL_SENT" -> {
                 forgotPasswordDialogVisible = false
+                // still show positive snackbar
                 snackbarHostState.showSnackbar(resetEmailSentText)
                 onClearMessage()
             }
@@ -137,9 +137,7 @@ fun LoginScreen(
     }
 
     LaunchedEffect(error) {
-        val currentError = error
-        if (currentError != null) {
-            snackbarHostState.showSnackbar(currentError)
+        if (error != null) {
             onClearError()
             loginRequested = false
         }
@@ -194,6 +192,8 @@ fun LoginScreen(
                     loginRequested = true
                     onLogin(email.trim(), password)
                 },
+                showError = error != null,
+                errorMessage = stringResource(Res.string.login_error_invalid_credentials),
             )
             Spacer(modifier = Modifier.height(20.dp))
             val googleCanceledText = stringResource(Res.string.google_sign_in_canceled)

@@ -143,6 +143,7 @@
     <string name="search_no_results">No folders found</string>
     <string name="login_headline">Welcome Back!</string>
     <string name="login_subheadline">Sign in to continue managing your notes.</string>
+    <string name="login_error_invalid_credentials">Verify if email and password are correct.</string>
     <string name="login_dont_have_account">Don&apos;t have an account?</string>
     <string name="login_signup_cta">Sign up</string>
     <string name="login_help">Need help</string>

@@ -44,6 +44,8 @@ internal fun LoginCredentialsSection(
     onTogglePasswordVisibility: () -> Unit,
     loading: Boolean,
     onSubmit: () -> Unit,
+    showError: Boolean,
+    errorMessage: String,
     modifier: Modifier = Modifier,
 ) {
     OutlinedTextField(
@@ -52,6 +54,16 @@ internal fun LoginCredentialsSection(
         modifier = modifier.fillMaxWidth(),
         label = { Text(stringResource(Res.string.email)) },
         singleLine = true,
+        isError = showError,
+        supportingText = {
+            if (showError) {
+                Text(
+                    text = errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        },
     )
     Spacer(modifier = Modifier.height(12.dp))
     OutlinedTextField(
@@ -109,6 +121,8 @@ private fun LoginCredentialsSectionPreview() {
             onTogglePasswordVisibility = { visible = !visible },
             loading = false,
             onSubmit = {},
+            showError = true,
+            errorMessage = "Verify if email and password are correct",
         )
     }
 }
