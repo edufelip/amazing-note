@@ -48,7 +48,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.edufelip.shared.data.auth.AuthUser
 import com.edufelip.shared.data.auth.GoogleSignInLauncher
+import com.edufelip.shared.domain.repository.AuthRepository
+import com.edufelip.shared.domain.usecase.buildAuthUseCases
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_back
 import com.edufelip.shared.resources.cd_hide_password
@@ -69,9 +72,16 @@ import com.edufelip.shared.resources.sign_up_success
 import com.edufelip.shared.ui.features.auth.components.ForgotPasswordDialog
 import com.edufelip.shared.ui.features.auth.components.GoogleButton
 import com.edufelip.shared.ui.features.auth.components.LoginIllustration
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.vm.AuthViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -297,6 +307,56 @@ fun LoginScreen(
                 },
             )
         }
+    }
+}
+
+@Composable
+@Preview
+@DevicePreviews
+private fun LoginScreenPreview() {
+    DevicePreviewContainer {
+        val previewViewModel = rememberPreviewAuthViewModel()
+        LoginScreen(
+            auth = previewViewModel,
+            onBack = {},
+            onOpenSignUp = {},
+            googleSignInLauncher = null,
+        )
+    }
+}
+
+@Composable
+private fun rememberPreviewAuthViewModel(): AuthViewModel {
+    val scope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Unconfined) }
+    return remember {
+        AuthViewModel(
+            useCases = buildAuthUseCases(PreviewAuthRepository()),
+            scope = scope,
+        )
+    }
+}
+
+private class PreviewAuthRepository : AuthRepository {
+    private val userState = MutableStateFlow<AuthUser?>(null)
+
+    override val currentUser = userState
+
+    override suspend fun signInWithEmailPassword(email: String, password: String) {
+        userState.value = AuthUser(uid = "preview", displayName = "Compose Preview", email = email, photoUrl = null)
+    }
+
+    override suspend fun signUpWithEmailPassword(email: String, password: String) {
+        userState.value = AuthUser(uid = "signup", displayName = "New Preview", email = email, photoUrl = null)
+    }
+
+    override suspend fun sendPasswordResetEmail(email: String) { /* no-op */ }
+
+    override suspend fun signInWithGoogle(idToken: String) {
+        userState.value = AuthUser(uid = "google", displayName = "Google Preview", email = "preview@example.com", photoUrl = null)
+    }
+
+    override suspend fun signOut() {
+        userState.value = null
     }
 }
 
