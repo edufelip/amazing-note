@@ -92,7 +92,7 @@ fun TrashScreen(
                             Text(text = stringResource(Res.string.trash_empty_action))
                         }
                     }
-                }
+                },
             )
         },
     ) { padding ->
@@ -104,7 +104,7 @@ fun TrashScreen(
         ) {
             TrashTimeline(
                 notes = notes,
-                onRestore = onRestore
+                onRestore = onRestore,
             )
         }
     }

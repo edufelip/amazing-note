@@ -77,7 +77,7 @@ fun TimelineTrashItem(
             Column(
                 modifier = Modifier
                     .padding(horizontal = tokens.spacing.md)
-                    .padding(top = tokens.spacing.md)
+                    .padding(top = tokens.spacing.md),
             ) {
                 Column(
                     modifier = Modifier

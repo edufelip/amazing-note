@@ -164,7 +164,7 @@ private fun HeaderRow() {
             text = stringResource(Res.string.empty_trash_description),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f, fill = false)
+            modifier = Modifier.weight(1f, fill = false),
         )
     }
 }

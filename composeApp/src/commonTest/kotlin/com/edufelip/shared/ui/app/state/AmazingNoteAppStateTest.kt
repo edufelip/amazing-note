@@ -12,6 +12,7 @@ import com.edufelip.shared.db.NoteDatabase
 import com.edufelip.shared.domain.repository.AuthRepository
 import com.edufelip.shared.domain.usecase.buildAuthUseCases
 import com.edufelip.shared.ui.app.core.AmazingNoteAppEnvironment
+import com.edufelip.shared.ui.components.organisms.notes.FolderLayout
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.settings.AppPreferences
 import com.edufelip.shared.ui.settings.InMemorySettings
@@ -22,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -135,6 +137,7 @@ class AmazingNoteAppStateTest {
 
     private class TestAppPreferences(private val settings: Settings) : AppPreferences {
         private val state = MutableStateFlow(settings.getBool(KEY, true))
+        private val layoutState = MutableStateFlow(FolderLayout.Grid)
 
         override fun isDarkTheme(): Boolean = state.value
 
@@ -150,6 +153,14 @@ class AmazingNoteAppStateTest {
         override fun isDateModeUpdated(): Boolean = true
 
         override fun setDateModeUpdated(updated: Boolean) {}
+
+        override fun folderLayout(): FolderLayout = layoutState.value
+
+        override fun setFolderLayout(layout: FolderLayout) {
+            layoutState.value = layout
+        }
+
+        override val folderLayoutFlow: StateFlow<FolderLayout> = layoutState
 
         companion object {
             private const val KEY = "dark_theme"

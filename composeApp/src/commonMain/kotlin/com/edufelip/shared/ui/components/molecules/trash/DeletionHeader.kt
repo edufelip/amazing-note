@@ -19,7 +19,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun DeletionHeader(label: String, modifier: Modifier = Modifier) {
     val tokens = designTokens()
-    Column (
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(start = tokens.spacing.xl, top = tokens.spacing.xxl),
@@ -36,7 +36,7 @@ fun DeletionHeader(label: String, modifier: Modifier = Modifier) {
         )
         HorizontalDivider(
             modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surfaceVariant
+            color = MaterialTheme.colorScheme.surfaceVariant,
         )
     }
 }

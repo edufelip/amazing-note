@@ -12,6 +12,7 @@ import com.edufelip.shared.ui.features.notes.screens.FolderDetailScreen
 import com.edufelip.shared.ui.features.notes.screens.FoldersScreen
 import com.edufelip.shared.ui.features.notes.screens.NoteDetailScreen
 import com.edufelip.shared.ui.nav.AppRoutes
+import com.edufelip.shared.ui.settings.LocalAppPreferences
 import com.edufelip.shared.ui.vm.AuthViewModel
 import com.edufelip.shared.ui.vm.NoteUiViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -30,12 +31,16 @@ fun FoldersRoute(
 ) {
     val folders by viewModel.folders.collectAsState(initial = emptyList())
     val notes by viewModel.notes.collectAsState(initial = emptyList())
+    val appPreferences = LocalAppPreferences.current
+    val layoutMode by appPreferences.folderLayoutFlow.collectAsState(initial = appPreferences.folderLayout())
 
     FoldersScreen(
         folders = folders,
         notes = notes,
         isDarkTheme = isDarkTheme,
         auth = authViewModel,
+        layoutMode = layoutMode,
+        onLayoutChange = { appPreferences.setFolderLayout(it) },
         onOpenFolder = { folder ->
             onNavigate(AppRoutes.FolderDetail(folder.id))
         },

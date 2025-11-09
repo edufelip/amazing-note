@@ -39,9 +39,9 @@ fun PrivacyScreen(
             Surface(tonalElevation = 2.dp, shadowElevation = 1.dp) {
                 TopAppBar(
                     title = {
-                        Text (
+                        Text(
                             text = stringResource(Res.string.privacy_policy),
-                            style = MaterialTheme.typography.titleSmall
+                            style = MaterialTheme.typography.titleSmall,
                         )
                     },
                     navigationIcon = {
@@ -77,6 +77,6 @@ fun PrivacyScreen(
 @Composable
 private fun PrivacyPolicyPreview() {
     PrivacyScreen(
-        onBack = {}
+        onBack = {},
     )
 }

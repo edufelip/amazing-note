@@ -83,6 +83,8 @@ fun FoldersScreen(
     notes: List<Note>,
     isDarkTheme: Boolean,
     auth: AuthViewModel? = null,
+    layoutMode: FolderLayout,
+    onLayoutChange: (FolderLayout) -> Unit,
     onOpenFolder: (Folder) -> Unit,
     onCreateFolder: (String) -> Unit,
     onRenameFolder: (Folder, String) -> Unit,
@@ -94,15 +96,6 @@ fun FoldersScreen(
     val hasFolders = folders.isNotEmpty()
 
     var searchQuery by rememberSaveable { mutableStateOf("") }
-    var layoutOrdinal by rememberSaveable { mutableStateOf(FolderLayout.Grid.ordinal) }
-    val layoutMode = remember(layoutOrdinal) {
-        FolderLayout.entries[
-            layoutOrdinal.coerceIn(
-                0,
-                FolderLayout.entries.size - 1,
-            ),
-        ]
-    }
 
     val filteredFolders = remember(folders, searchQuery) {
         if (searchQuery.isBlank()) {
@@ -196,10 +189,11 @@ fun FoldersScreen(
                         onQueryChange = { value -> searchQuery = value },
                         layoutMode = layoutMode,
                         onToggleLayout = {
-                            layoutOrdinal = when (layoutMode) {
-                                FolderLayout.Grid -> FolderLayout.List.ordinal
-                                FolderLayout.List -> FolderLayout.Grid.ordinal
+                            val next = when (layoutMode) {
+                                FolderLayout.Grid -> FolderLayout.List
+                                FolderLayout.List -> FolderLayout.Grid
                             }
+                            onLayoutChange(next)
                         },
                     )
                     Spacer(modifier = Modifier.height(tokens.spacing.sm))
@@ -360,7 +354,7 @@ private fun EmptyFoldersState(
             modifier
                 .padding(horizontal = tokens.spacing.xl)
                 .applyNavigationBarsPadding()
-                .padding(bottom =  AppChromeDefaults.bottomBarHeight)
+                .padding(bottom = AppChromeDefaults.bottomBarHeight)
         },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -480,6 +474,8 @@ internal fun FoldersScreenPreview(
             folders = state.folders,
             notes = state.notes,
             isDarkTheme = state.isDarkTheme,
+            layoutMode = FolderLayout.Grid,
+            onLayoutChange = {},
             onOpenFolder = {},
             onCreateFolder = {},
             onRenameFolder = { _, _ -> },

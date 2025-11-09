@@ -62,7 +62,7 @@ fun NotesEmptyState(
                 .fillMaxSize()
                 .applyNavigationBarsPadding()
                 .padding(horizontal = tokens.spacing.xl)
-                .padding(bottom =  AppChromeDefaults.bottomBarHeight)
+                .padding(bottom = AppChromeDefaults.bottomBarHeight)
         },
         contentAlignment = Alignment.Center,
     ) {

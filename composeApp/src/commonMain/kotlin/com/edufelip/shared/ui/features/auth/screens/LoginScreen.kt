@@ -1,9 +1,6 @@
 package com.edufelip.shared.ui.features.auth.screens
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,22 +9,17 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -50,9 +42,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -68,7 +57,6 @@ import com.edufelip.shared.resources.continue_with_google
 import com.edufelip.shared.resources.email
 import com.edufelip.shared.resources.forgot_password
 import com.edufelip.shared.resources.google_sign_in_canceled
-import com.edufelip.shared.resources.ic_google
 import com.edufelip.shared.resources.login
 import com.edufelip.shared.resources.login_dont_have_account
 import com.edufelip.shared.resources.login_headline
@@ -78,9 +66,11 @@ import com.edufelip.shared.resources.login_title
 import com.edufelip.shared.resources.password
 import com.edufelip.shared.resources.reset_email_sent
 import com.edufelip.shared.resources.sign_up_success
+import com.edufelip.shared.ui.features.auth.components.ForgotPasswordDialog
+import com.edufelip.shared.ui.features.auth.components.GoogleButton
+import com.edufelip.shared.ui.features.auth.components.LoginIllustration
 import com.edufelip.shared.ui.vm.AuthViewModel
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -300,10 +290,9 @@ fun LoginScreen(
                 onEmailChange = { resetEmail = it },
                 onDismiss = { forgotPasswordDialogVisible = false },
                 onSubmit = {
-                    val trimmed = resetEmail.trim()
-                    resetEmail = trimmed
-                    if (trimmed.isNotEmpty()) {
-                        auth.sendPasswordReset(trimmed)
+                    resetEmail = resetEmail.trim()
+                    if (resetEmail.isNotEmpty()) {
+                        auth.sendPasswordReset(resetEmail)
                     }
                 },
             )
@@ -331,141 +320,5 @@ private fun LoginHeader(onBack: () -> Unit) {
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.width(48.dp))
-    }
-}
-
-@Composable
-private fun LoginIllustration(modifier: Modifier = Modifier) {
-    val primary = MaterialTheme.colorScheme.primary
-    val tertiary = MaterialTheme.colorScheme.tertiary
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(28.dp))
-            .background(primary.copy(alpha = 0.12f)),
-    ) {
-        Box(
-            modifier = Modifier
-                .size(120.dp)
-                .offset(x = (-36).dp, y = 64.dp)
-                .background(primary.copy(alpha = 0.35f), CircleShape),
-        )
-        Box(
-            modifier = Modifier
-                .size(88.dp)
-                .offset(x = 90.dp, y = (-24).dp)
-                .background(tertiary.copy(alpha = 0.25f), RoundedCornerShape(20.dp)),
-        )
-        Box(
-            modifier = Modifier
-                .size(52.dp)
-                .offset(x = 180.dp, y = 48.dp)
-                .background(primary.copy(alpha = 0.3f), CircleShape),
-        )
-        Icon(
-            imageVector = Icons.Outlined.DarkMode,
-            contentDescription = null,
-            tint = primary,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .size(56.dp)
-                .rotate(45f),
-        )
-    }
-}
-
-@Composable
-private fun ForgotPasswordDialog(
-    email: String,
-    onEmailChange: (String) -> Unit,
-    onDismiss: () -> Unit,
-    onSubmit: () -> Unit,
-    loading: Boolean,
-) {
-    AlertDialog(
-        onDismissRequest = { if (!loading) onDismiss() },
-        title = { Text(text = stringResource(Res.string.forgot_password)) },
-        text = {
-            Column {
-                Text(
-                    text = "Enter your email to receive a reset link.",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = onEmailChange,
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(Res.string.email)) },
-                    singleLine = true,
-                    enabled = !loading,
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = onSubmit,
-                enabled = !loading && email.isNotBlank(),
-            ) {
-                if (loading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        strokeWidth = 2.dp,
-                    )
-                } else {
-                    Text(text = "Send reset email")
-                }
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-                enabled = !loading,
-            ) {
-                Text(text = "Cancel")
-            }
-        },
-    )
-}
-
-@Composable
-private fun GoogleButton(
-    text: String,
-    enabled: Boolean,
-    onClick: () -> Unit,
-) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(54.dp),
-        shape = RoundedCornerShape(999.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.White,
-            contentColor = Color(0xFF3C4043),
-            disabledContainerColor = Color.White.copy(alpha = 0.6f),
-            disabledContentColor = Color(0xFF3C4043).copy(alpha = 0.6f),
-        ),
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        enabled = enabled,
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFDADCE0)),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            Image(
-                painter = painterResource(Res.drawable.ic_google),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(24.dp)
-                    .padding(end = 12.dp),
-            )
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium),
-                color = Color(0xFF3C4043),
-            )
-        }
     }
 }
