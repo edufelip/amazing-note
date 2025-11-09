@@ -3,16 +3,21 @@
 package com.edufelip.shared.ui.features.trash.screens
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -23,7 +28,10 @@ import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_back
 import com.edufelip.shared.resources.trash
 import com.edufelip.shared.resources.trash_count
+import com.edufelip.shared.resources.trash_empty_action
+import com.edufelip.shared.ui.app.chrome.AppChromeDefaults
 import com.edufelip.shared.ui.components.organisms.trash.TrashTimeline
+import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
@@ -40,6 +48,7 @@ fun TrashScreen(
     onEmptyTrash: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    val tokens = designTokens()
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -52,7 +61,7 @@ fun TrashScreen(
                     }
                     Text(
                         text = titleText,
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleSmall,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -70,18 +79,32 @@ fun TrashScreen(
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
+                actions = {
+                    if (!notes.isEmpty()) {
+                        TextButton(
+                            onClick = {
+                                onEmptyTrash()
+                            },
+                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                        ) {
+                            Icon(imageVector = Icons.Filled.DeleteForever, contentDescription = null)
+                            Spacer(modifier = Modifier.width(tokens.spacing.sm))
+                            Text(text = stringResource(Res.string.trash_empty_action))
+                        }
+                    }
+                }
             )
         },
     ) { padding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
+                .padding(padding)
+                .padding(bottom = AppChromeDefaults.bottomBarHeight),
         ) {
             TrashTimeline(
                 notes = notes,
-                onRestore = onRestore,
-                onEmptyTrash = onEmptyTrash,
+                onRestore = onRestore
             )
         }
     }

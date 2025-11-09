@@ -309,16 +309,16 @@ fun SettingsScreen(
                     modifier = Modifier.height(tokens.spacing.xxl + tokens.spacing.xl),
                 )
             }
-            if (chrome.useCupertinoLook) {
-                item {
-                    Spacer(
-                        modifier = with(chrome) {
-                            Modifier
-                                .fillMaxWidth()
-                                .applyNavigationBarsPadding()
-                        },
-                    )
-                }
+
+            item {
+                Spacer(
+                    modifier = with(chrome) {
+                        Modifier
+                            .fillMaxWidth()
+                            .applyNavigationBarsPadding()
+                            .padding(bottom = chrome.bottomBarHeight)
+                    },
+                )
             }
         }
     }

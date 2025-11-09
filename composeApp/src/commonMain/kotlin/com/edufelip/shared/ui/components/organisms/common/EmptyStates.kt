@@ -31,18 +31,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.times
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
 import com.edufelip.shared.resources.empty_notes_hint
 import com.edufelip.shared.resources.empty_notes_title
 import com.edufelip.shared.resources.notes_empty_action
 import com.edufelip.shared.resources.notes_empty_unlock_label
+import com.edufelip.shared.ui.app.chrome.AppChromeDefaults
 import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun NotesEmptyState(
@@ -59,8 +60,9 @@ fun NotesEmptyState(
         modifier = with(chrome) {
             modifier
                 .fillMaxSize()
-                .padding(horizontal = tokens.spacing.xl)
                 .applyNavigationBarsPadding()
+                .padding(horizontal = tokens.spacing.xl)
+                .padding(bottom =  AppChromeDefaults.bottomBarHeight)
         },
         contentAlignment = Alignment.Center,
     ) {
@@ -164,6 +166,7 @@ fun NotesEmptyState(
     }
 }
 
+@Preview
 @DevicePreviews
 @Composable
 private fun NotesEmptyStatePreview() {

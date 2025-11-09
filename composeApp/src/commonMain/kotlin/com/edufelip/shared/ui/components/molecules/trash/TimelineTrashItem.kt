@@ -35,6 +35,7 @@ import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun TimelineTrashItem(
@@ -73,7 +74,11 @@ fun TimelineTrashItem(
                 color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
             ),
         ) {
-            Column(modifier = Modifier.padding(tokens.spacing.xl)) {
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = tokens.spacing.md)
+                    .padding(top = tokens.spacing.md)
+            ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -116,7 +121,6 @@ fun TimelineTrashItem(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(tokens.spacing.md))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
@@ -130,6 +134,7 @@ fun TimelineTrashItem(
     }
 }
 
+@Preview
 @DevicePreviews
 @Composable
 private fun TimelineTrashItemPreview() {

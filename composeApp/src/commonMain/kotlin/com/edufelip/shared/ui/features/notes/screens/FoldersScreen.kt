@@ -46,7 +46,6 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.times
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
@@ -60,6 +59,7 @@ import com.edufelip.shared.resources.rename_folder
 import com.edufelip.shared.resources.search_no_results
 import com.edufelip.shared.resources.search_reset
 import com.edufelip.shared.ui.app.chrome.AmazingTopBar
+import com.edufelip.shared.ui.app.chrome.AppChromeDefaults
 import com.edufelip.shared.ui.components.organisms.notes.FolderLayout
 import com.edufelip.shared.ui.components.organisms.notes.FoldersGrid
 import com.edufelip.shared.ui.components.organisms.notes.FoldersHeader
@@ -360,6 +360,7 @@ private fun EmptyFoldersState(
             modifier
                 .padding(horizontal = tokens.spacing.xl)
                 .applyNavigationBarsPadding()
+                .padding(bottom =  AppChromeDefaults.bottomBarHeight)
         },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,

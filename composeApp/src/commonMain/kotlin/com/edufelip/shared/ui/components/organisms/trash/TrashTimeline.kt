@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -22,7 +21,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,7 +36,6 @@ import com.edufelip.shared.resources.empty_trash_description
 import com.edufelip.shared.resources.trash_deleted_days_ago
 import com.edufelip.shared.resources.trash_deleted_today
 import com.edufelip.shared.resources.trash_deleted_yesterday
-import com.edufelip.shared.resources.trash_empty_action
 import com.edufelip.shared.resources.trash_recover_selected
 import com.edufelip.shared.ui.components.molecules.trash.DeletionHeader
 import com.edufelip.shared.ui.components.molecules.trash.TimelineTrashItem
@@ -47,6 +44,7 @@ import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 private const val DAY_IN_MILLIS = 24L * 60 * 60 * 1000
 
@@ -54,7 +52,6 @@ private const val DAY_IN_MILLIS = 24L * 60 * 60 * 1000
 fun TrashTimeline(
     notes: List<Note>,
     onRestore: (Note) -> Unit,
-    onEmptyTrash: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val chrome = platformChromeStrategy()
@@ -93,7 +90,7 @@ fun TrashTimeline(
                 vertical = tokens.spacing.lg,
             ),
         ) {
-            item { HeaderRow(onEmptyTrash, onClearSelection = { selectedIds = emptySet() }) }
+            item { HeaderRow() }
 
             grouped.keys.sorted().forEach { diffDays ->
                 val bucketNotes = grouped[diffDays].orEmpty()
@@ -157,30 +154,18 @@ fun TrashTimeline(
 }
 
 @Composable
-private fun HeaderRow(onEmptyTrash: () -> Unit, onClearSelection: () -> Unit) {
-    val tokens = designTokens()
+private fun HeaderRow() {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = stringResource(Res.string.empty_trash_description),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f, fill = false),
+            modifier = Modifier.weight(1f, fill = false)
         )
-        TextButton(
-            onClick = {
-                onClearSelection()
-                onEmptyTrash()
-            },
-            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-        ) {
-            Icon(imageVector = Icons.Filled.DeleteForever, contentDescription = null)
-            Spacer(modifier = Modifier.width(tokens.spacing.sm))
-            Text(text = stringResource(Res.string.trash_empty_action))
-        }
     }
 }
 
@@ -194,6 +179,7 @@ private fun deletionHeaderLabel(diffDays: Int): String = when (diffDays) {
     else -> stringResource(Res.string.trash_deleted_days_ago, diffDays)
 }
 
+@Preview
 @DevicePreviews
 @Composable
 private fun TrashTimelinePreview() {
@@ -208,6 +194,6 @@ private fun TrashTimelinePreview() {
         )
     }
     DevicePreviewContainer {
-        TrashTimeline(notes = notes, onRestore = {}, onEmptyTrash = {})
+        TrashTimeline(notes = notes, onRestore = {})
     }
 }
