@@ -48,10 +48,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.edufelip.shared.data.auth.AuthUser
 import com.edufelip.shared.data.auth.GoogleSignInLauncher
-import com.edufelip.shared.domain.repository.AuthRepository
-import com.edufelip.shared.domain.usecase.buildAuthUseCases
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_back
 import com.edufelip.shared.resources.cd_hide_password
@@ -74,11 +71,8 @@ import com.edufelip.shared.ui.features.auth.components.GoogleButton
 import com.edufelip.shared.ui.features.auth.components.LoginIllustration
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.vm.AuthUiState
 import com.edufelip.shared.ui.vm.AuthViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -93,14 +87,46 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit = onBack,
     showLocalSuccessSnackbar: Boolean = true,
 ) {
+    val uiState by auth.uiState.collectAsState()
+    LoginScreen(
+        state = uiState,
+        onBack = onBack,
+        googleSignInLauncher = googleSignInLauncher,
+        onOpenSignUp = onOpenSignUp,
+        onLoginSuccess = onLoginSuccess,
+        showLocalSuccessSnackbar = showLocalSuccessSnackbar,
+        onLogin = { email, password -> auth.loginWithEmail(email, password) },
+        onGoogleSignIn = { token -> auth.signInWithGoogleToken(token) },
+        onSendPasswordReset = { email -> auth.sendPasswordReset(email) },
+        onClearError = { auth.clearError() },
+        onClearMessage = { auth.clearMessage() },
+        onSetError = { auth.setError(it) },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LoginScreen(
+    state: AuthUiState,
+    onBack: () -> Unit,
+    googleSignInLauncher: GoogleSignInLauncher? = null,
+    onOpenSignUp: () -> Unit,
+    onLoginSuccess: () -> Unit,
+    showLocalSuccessSnackbar: Boolean,
+    onLogin: (String, String) -> Unit,
+    onGoogleSignIn: (String) -> Unit,
+    onSendPasswordReset: (String) -> Unit,
+    onClearError: () -> Unit,
+    onClearMessage: () -> Unit,
+    onSetError: (String) -> Unit,
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    val uiState by auth.uiState.collectAsState()
-    val loading = uiState.loading
-    val error = uiState.error
-    val user = uiState.user
-    val message = uiState.message
+    val loading = state.loading
+    val error = state.error
+    val user = state.user
+    val message = state.message
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
@@ -123,12 +149,12 @@ fun LoginScreen(
             "RESET_EMAIL_SENT" -> {
                 forgotPasswordDialogVisible = false
                 snackbarHostState.showSnackbar(resetEmailSentText)
-                auth.clearMessage()
+                onClearMessage()
             }
 
             "SIGN_UP_SUCCESS" -> if (showLocalSuccessSnackbar) {
                 snackbarHostState.showSnackbar(signUpSuccessText)
-                auth.clearMessage()
+                onClearMessage()
             }
         }
     }
@@ -137,7 +163,7 @@ fun LoginScreen(
         val currentError = error
         if (currentError != null) {
             snackbarHostState.showSnackbar(currentError)
-            auth.clearError()
+            onClearError()
             loginRequested = false
         }
     }
@@ -215,7 +241,7 @@ fun LoginScreen(
             Button(
                 onClick = {
                     loginRequested = true
-                    auth.loginWithEmail(email.trim(), password)
+                    onLogin(email.trim(), password)
                 },
                 enabled = email.isNotBlank() && password.isNotBlank() && !loading,
                 modifier = Modifier
@@ -245,10 +271,10 @@ fun LoginScreen(
                         when {
                             !result.idToken.isNullOrBlank() -> {
                                 loginRequested = true
-                                auth.signInWithGoogleToken(result.idToken)
+                                onGoogleSignIn(result.idToken)
                             }
                             !result.errorMessage.isNullOrBlank() -> {
-                                auth.setError(result.errorMessage)
+                                onSetError(result.errorMessage)
                                 snackbarHostState.showSnackbar(result.errorMessage)
                                 loginRequested = false
                             }
@@ -303,7 +329,7 @@ fun LoginScreen(
                 onSubmit = {
                     resetEmail = resetEmail.trim()
                     if (resetEmail.isNotEmpty()) {
-                        auth.sendPasswordReset(resetEmail)
+                        onSendPasswordReset(resetEmail)
                     }
                 },
             )
@@ -316,48 +342,20 @@ fun LoginScreen(
 @DevicePreviews
 private fun LoginScreenPreview() {
     DevicePreviewContainer {
-        val previewViewModel = rememberPreviewAuthViewModel()
         LoginScreen(
-            auth = previewViewModel,
+            state = AuthUiState(),
             onBack = {},
-            onOpenSignUp = {},
             googleSignInLauncher = null,
+            onOpenSignUp = {},
+            onLoginSuccess = {},
+            showLocalSuccessSnackbar = true,
+            onLogin = { _, _ -> },
+            onGoogleSignIn = {},
+            onSendPasswordReset = {},
+            onClearError = {},
+            onClearMessage = {},
+            onSetError = {},
         )
-    }
-}
-
-@Composable
-private fun rememberPreviewAuthViewModel(): AuthViewModel {
-    val scope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Unconfined) }
-    return remember {
-        AuthViewModel(
-            useCases = buildAuthUseCases(PreviewAuthRepository()),
-            scope = scope,
-        )
-    }
-}
-
-private class PreviewAuthRepository : AuthRepository {
-    private val userState = MutableStateFlow<AuthUser?>(null)
-
-    override val currentUser = userState
-
-    override suspend fun signInWithEmailPassword(email: String, password: String) {
-        userState.value = AuthUser(uid = "preview", displayName = "Compose Preview", email = email, photoUrl = null)
-    }
-
-    override suspend fun signUpWithEmailPassword(email: String, password: String) {
-        userState.value = AuthUser(uid = "signup", displayName = "New Preview", email = email, photoUrl = null)
-    }
-
-    override suspend fun sendPasswordResetEmail(email: String) { /* no-op */ }
-
-    override suspend fun signInWithGoogle(idToken: String) {
-        userState.value = AuthUser(uid = "google", displayName = "Google Preview", email = "preview@example.com", photoUrl = null)
-    }
-
-    override suspend fun signOut() {
-        userState.value = null
     }
 }
 
