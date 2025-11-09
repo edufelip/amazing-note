@@ -1,31 +1,17 @@
 package com.edufelip.shared.ui.features.auth.screens
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -42,32 +28,23 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.data.auth.GoogleSignInLauncher
 import com.edufelip.shared.resources.Res
-import com.edufelip.shared.resources.cd_back
-import com.edufelip.shared.resources.cd_hide_password
-import com.edufelip.shared.resources.cd_show_password
 import com.edufelip.shared.resources.continue_with_google
-import com.edufelip.shared.resources.email
 import com.edufelip.shared.resources.forgot_password
 import com.edufelip.shared.resources.google_sign_in_canceled
-import com.edufelip.shared.resources.login
-import com.edufelip.shared.resources.login_dont_have_account
 import com.edufelip.shared.resources.login_headline
-import com.edufelip.shared.resources.login_signup_cta
 import com.edufelip.shared.resources.login_subheadline
-import com.edufelip.shared.resources.login_title
-import com.edufelip.shared.resources.password
 import com.edufelip.shared.resources.reset_email_sent
 import com.edufelip.shared.resources.sign_up_success
 import com.edufelip.shared.ui.features.auth.components.ForgotPasswordDialog
 import com.edufelip.shared.ui.features.auth.components.GoogleButton
+import com.edufelip.shared.ui.features.auth.components.LoginCredentialsSection
+import com.edufelip.shared.ui.features.auth.components.LoginFooter
+import com.edufelip.shared.ui.features.auth.components.LoginHeader
 import com.edufelip.shared.ui.features.auth.components.LoginIllustration
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
@@ -205,60 +182,19 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.height(28.dp))
 
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(Res.string.email)) },
-                singleLine = true,
-                shape = RoundedCornerShape(18.dp),
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(Res.string.password)) },
-                singleLine = true,
-                shape = RoundedCornerShape(18.dp),
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    val icon: ImageVector
-                    val description: String
-                    if (passwordVisible) {
-                        icon = Icons.Outlined.VisibilityOff
-                        description = stringResource(Res.string.cd_hide_password)
-                    } else {
-                        icon = Icons.Outlined.Visibility
-                        description = stringResource(Res.string.cd_show_password)
-                    }
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = icon, contentDescription = description)
-                    }
-                },
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-            Button(
-                onClick = {
+            LoginCredentialsSection(
+                email = email,
+                onEmailChange = { email = it },
+                password = password,
+                onPasswordChange = { password = it },
+                passwordVisible = passwordVisible,
+                onTogglePasswordVisibility = { passwordVisible = !passwordVisible },
+                loading = loading,
+                onSubmit = {
                     loginRequested = true
                     onLogin(email.trim(), password)
                 },
-                enabled = email.isNotBlank() && password.isNotBlank() && !loading,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(999.dp),
-            ) {
-                if (loading) {
-                    CircularProgressIndicator(
-                        strokeWidth = 2.dp,
-                        modifier = Modifier.size(20.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                    )
-                } else {
-                    Text(text = stringResource(Res.string.login))
-                }
-            }
+            )
             Spacer(modifier = Modifier.height(20.dp))
             val googleCanceledText = stringResource(Res.string.google_sign_in_canceled)
             GoogleButton(
@@ -298,26 +234,7 @@ fun LoginScreen(
                 )
             }
             Spacer(modifier = Modifier.height(32.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(Res.string.login_dont_have_account),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                TextButton(
-                    onClick = onOpenSignUp,
-                    contentPadding = PaddingValues(horizontal = 8.dp),
-                ) {
-                    Text(
-                        text = stringResource(Res.string.login_signup_cta),
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                    )
-                }
-            }
+            LoginFooter(onOpenSignUp = onOpenSignUp)
         }
 
         if (forgotPasswordDialogVisible) {
@@ -356,28 +273,5 @@ private fun LoginScreenPreview() {
             onClearMessage = {},
             onSetError = {},
         )
-    }
-}
-
-@Composable
-private fun LoginHeader(onBack: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        IconButton(onClick = onBack) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(Res.string.cd_back),
-                tint = MaterialTheme.colorScheme.onSurface,
-            )
-        }
-        Text(
-            text = stringResource(Res.string.login_title),
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            textAlign = TextAlign.Center,
-        )
-        Spacer(modifier = Modifier.width(48.dp))
     }
 }
