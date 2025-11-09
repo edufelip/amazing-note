@@ -71,6 +71,7 @@ import com.edufelip.shared.resources.personalize_subtitle
 import com.edufelip.shared.resources.personalize_title
 import com.edufelip.shared.resources.privacy_policy
 import com.edufelip.shared.resources.settings_header
+import com.edufelip.shared.resources.settings_review_reminder_title
 import com.edufelip.shared.resources.theme_option
 import com.edufelip.shared.resources.theme_subtitle
 import com.edufelip.shared.resources.trash
@@ -178,7 +179,7 @@ fun SettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(tokens.spacing.md),
                     ) {
                         Text(
-                            text = "Review reminder date",
+                            text = stringResource(Res.string.settings_review_reminder_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = tokens.colors.onSurface,

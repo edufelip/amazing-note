@@ -15,8 +15,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.resources.Res
+import com.edufelip.shared.resources.dialog_cancel
 import com.edufelip.shared.resources.email
 import com.edufelip.shared.resources.forgot_password
+import com.edufelip.shared.resources.forgot_password_description
+import com.edufelip.shared.resources.forgot_password_send_email
 import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -35,7 +38,7 @@ fun ForgotPasswordDialog(
         text = {
             Column {
                 Text(
-                    text = "Enter your email to receive a reset link.",
+                    text = stringResource(Res.string.forgot_password_description),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -60,7 +63,7 @@ fun ForgotPasswordDialog(
                         strokeWidth = 2.dp,
                     )
                 } else {
-                    Text(text = "Send reset email")
+                    Text(text = stringResource(Res.string.forgot_password_send_email))
                 }
             }
         },
@@ -69,7 +72,7 @@ fun ForgotPasswordDialog(
                 onClick = onDismiss,
                 enabled = !loading,
             ) {
-                Text(text = "Cancel")
+                Text(text = stringResource(Res.string.dialog_cancel))
             }
         },
     )

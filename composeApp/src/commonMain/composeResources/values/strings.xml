@@ -15,6 +15,8 @@
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="forgot_password">Forgot Password?</string>
+    <string name="forgot_password_description">Enter your email to receive a reset link.</string>
+    <string name="forgot_password_send_email">Send reset email</string>
     <string name="sign_up">Sign Up</string>
     <string name="reset_email_sent">Password reset email sent</string>
     <string name="sign_up_success">Account created successfully</string>
@@ -161,6 +163,7 @@
 
     <!-- Settings -->
     <string name="settings_header">Settings</string>
+    <string name="settings_review_reminder_title">Review reminder date</string>
     <string name="personalize_title">Personalize your notes</string>
     <string name="personalize_subtitle">Make the app yours by tweaking the look and feel.</string>
     <string name="welcome_message">Sign in to sync across devices.</string>
