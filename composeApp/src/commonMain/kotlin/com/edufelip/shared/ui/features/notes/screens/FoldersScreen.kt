@@ -132,14 +132,14 @@ fun FoldersScreen(
         tokens.colors.accent.copy(alpha = 0.85f),
     )
 
-    val currentUser = auth?.user?.collectAsState()?.value
+    val currentUserState = auth?.uiState?.collectAsState()?.value
 
     val isEmpty = folders.isEmpty()
     val chrome = platformChromeStrategy()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        topBar = { AmazingTopBar(user = currentUser) },
+        topBar = { AmazingTopBar(user = currentUserState?.user) },
         containerColor = tokens.colors.canvas,
         contentWindowInsets = chrome.contentWindowInsets,
         floatingActionButton = {

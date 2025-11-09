@@ -43,8 +43,8 @@ fun HomeScreen(
     onAdd: () -> Unit,
     onDelete: (Note) -> Unit,
 ) {
-    val currentUser = auth?.user?.collectAsState()?.value
-    val currentUid = currentUser?.uid
+    val currentUserState = auth?.uiState?.collectAsState()?.value
+    val currentUid = currentUserState?.user?.uid
     val syncManager = LocalNotesSyncManager.current
     var syncing by remember(currentUid, syncManager) { mutableStateOf(currentUid != null) }
 
@@ -79,7 +79,7 @@ fun HomeScreen(
     val tokens = designTokens()
 
     Scaffold(
-        topBar = { AmazingTopBar(user = currentUser) },
+        topBar = { AmazingTopBar(user = currentUserState?.user) },
         containerColor = Color.Transparent,
         contentWindowInsets = chrome.contentWindowInsets,
     ) { padding ->

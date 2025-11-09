@@ -106,7 +106,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
 ) {
     val chrome = platformChromeStrategy()
-    val userState = auth?.user?.collectAsState()?.value
+    val userState = auth?.uiState?.collectAsState()?.value?.user
     val tokens = designTokens()
     val itemsSpacing = tokens.spacing.lg
     val settingsStore = LocalSettings.current
