@@ -64,7 +64,8 @@ fun AmazingNoteApp(
         noteDatabase = noteDatabase,
     )
     val environment = state.environment
-    val user by state.authViewModel.user.collectAsState()
+    val authUiState by state.authViewModel.uiState.collectAsState()
+    val user = authUiState.user
     val darkTheme by state.darkThemeFlow.collectAsState(initial = state.darkTheme)
 
     CompositionLocalProvider(
