@@ -52,6 +52,7 @@ import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.util.platform.Haptics
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
+import com.edufelip.shared.ui.util.security.sanitizeUserDisplay
 import com.slapps.cupertino.CupertinoTopAppBarDefaults
 import com.slapps.cupertino.adaptive.AdaptiveNavigationBar
 import com.slapps.cupertino.adaptive.AdaptiveNavigationBarItem
@@ -67,9 +68,11 @@ object AppChromeDefaults {
 @OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 fun AmazingTopBar(user: AuthUser?) {
-    val name = user?.displayName?.takeIf { it.isNotBlank() }
-        ?: user?.email?.takeIf { it.isNotBlank() }
-        ?: stringResource(Res.string.guest)
+    val name = sanitizeUserDisplay(
+        user?.displayName?.takeIf { it.isNotBlank() }
+            ?: user?.email?.takeIf { it.isNotBlank() }
+            ?: stringResource(Res.string.guest),
+    )
     val chrome = platformChromeStrategy()
     val tokens = designTokens()
 

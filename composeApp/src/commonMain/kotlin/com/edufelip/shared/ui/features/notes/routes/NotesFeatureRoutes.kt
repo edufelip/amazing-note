@@ -5,6 +5,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.edufelip.shared.data.sync.NotesSyncManager
 import com.edufelip.shared.domain.model.toSummary
+import com.edufelip.shared.domain.validation.NoteValidationRules
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.unassigned_notes
 import com.edufelip.shared.ui.attachments.AttachmentPicker
@@ -13,6 +14,10 @@ import com.edufelip.shared.ui.features.notes.screens.FoldersScreen
 import com.edufelip.shared.ui.features.notes.screens.NoteDetailScreen
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.settings.LocalAppPreferences
+import com.edufelip.shared.ui.util.security.SecurityLogger
+import com.edufelip.shared.ui.util.security.sanitizeInlineInput
+import com.edufelip.shared.ui.util.security.sanitizeMultilineInput
+import com.edufelip.shared.ui.util.security.sanitizeNoteContent
 import com.edufelip.shared.ui.vm.AuthViewModel
 import com.edufelip.shared.ui.vm.NoteUiViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -46,9 +51,12 @@ fun FoldersRoute(
         },
         onCreateFolder = { name ->
             coroutineScope.launch {
-                val trimmed = name.trim()
-                if (trimmed.isNotEmpty()) {
-                    viewModel.createFolder(trimmed)
+                val sanitized = sanitizeInlineInput(name, maxLength = 50)
+                if (sanitized.modified) {
+                    SecurityLogger.logSanitized(flow = "folders", field = "create", rawSample = name)
+                }
+                if (sanitized.value.isNotEmpty()) {
+                    viewModel.createFolder(sanitized.value)
                     if (isUserAuthenticated) {
                         syncManager.syncLocalToRemoteOnly()
                     }
@@ -57,9 +65,12 @@ fun FoldersRoute(
         },
         onRenameFolder = { folder, newName ->
             coroutineScope.launch {
-                val trimmed = newName.trim()
-                if (trimmed.isNotEmpty() && trimmed != folder.name) {
-                    viewModel.renameFolder(folder.id, trimmed)
+                val sanitized = sanitizeInlineInput(newName, maxLength = 50)
+                if (sanitized.modified) {
+                    SecurityLogger.logSanitized(flow = "folders", field = "rename", rawSample = newName)
+                }
+                if (sanitized.value.isNotEmpty() && sanitized.value != folder.name) {
+                    viewModel.renameFolder(folder.id, sanitized.value)
                     if (isUserAuthenticated) {
                         syncManager.syncLocalToRemoteOnly()
                     }
@@ -125,9 +136,15 @@ fun FolderDetailRoute(
         onRenameFolder = folderId?.let { id ->
             { newName ->
                 coroutineScope.launch {
-                    viewModel.renameFolder(id, newName)
-                    if (isUserAuthenticated) {
-                        syncManager.syncLocalToRemoteOnly()
+                    val sanitized = sanitizeInlineInput(newName, maxLength = 50)
+                    if (sanitized.modified) {
+                        SecurityLogger.logSanitized(flow = "folders_detail", field = "rename", rawSample = newName)
+                    }
+                    if (sanitized.value.isNotEmpty()) {
+                        viewModel.renameFolder(id, sanitized.value)
+                        if (isUserAuthenticated) {
+                            syncManager.syncLocalToRemoteOnly()
+                        }
                     }
                 }
             }
@@ -159,6 +176,8 @@ fun NoteDetailRoute(
     val notes by viewModel.notes.collectAsState(initial = emptyList())
     val trash by viewModel.trash.collectAsState(initial = emptyList())
     val folders by viewModel.folders.collectAsState(initial = emptyList())
+    val securityLogger = SecurityLogger
+    val noteValidationRules = NoteValidationRules()
 
     val editing = route.id?.let { id ->
         notes.firstOrNull { it.id == id } ?: trash.firstOrNull { it.id == id }
@@ -173,26 +192,42 @@ fun NoteDetailRoute(
         onBack = onBack,
         isUserAuthenticated = isUserAuthenticated,
         saveAndValidate = { noteId, title, content, folderId ->
-            val summary = content.toSummary()
+            val sanitizedTitle = sanitizeInlineInput(title, maxLength = noteValidationRules.maxTitleLength)
+            if (sanitizedTitle.modified) {
+                securityLogger.logSanitized(flow = "note", field = "title", rawSample = title)
+            }
+            val sanitizedContentResult = sanitizeNoteContent(content)
+            val sanitizedContent = sanitizedContentResult.value
+            val contentSummary = sanitizedContent.toSummary()
+            if (sanitizedContentResult.modified) {
+                securityLogger.logSanitized(flow = "note", field = "content", rawSample = contentSummary.description)
+            }
+            val sanitizedDescription = sanitizeMultilineInput(
+                contentSummary.description,
+                maxLength = noteValidationRules.maxDescriptionLength,
+            )
+            if (sanitizedDescription.modified) {
+                securityLogger.logSanitized(flow = "note", field = "description", rawSample = contentSummary.description)
+            }
             val result = if (noteId == null) {
                 viewModel.insert(
-                    title = title,
-                    description = summary.description,
-                    spans = summary.spans,
-                    attachments = summary.attachments,
+                    title = sanitizedTitle.value,
+                    description = sanitizedDescription.value,
+                    spans = contentSummary.spans,
+                    attachments = contentSummary.attachments,
                     folderId = folderId,
-                    content = content,
+                    content = sanitizedContent,
                 )
             } else {
                 viewModel.update(
                     id = noteId,
-                    title = title,
-                    description = summary.description,
+                    title = sanitizedTitle.value,
+                    description = sanitizedDescription.value,
                     deleted = false,
-                    spans = summary.spans,
-                    attachments = summary.attachments,
+                    spans = contentSummary.spans,
+                    attachments = contentSummary.attachments,
                     folderId = folderId,
-                    content = content,
+                    content = sanitizedContent,
                 )
             }
             if (isUserAuthenticated) {

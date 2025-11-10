@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -51,19 +52,32 @@ internal fun LoginCredentialsSection(
     onSubmit: () -> Unit,
     showError: Boolean,
     errorMessage: String,
+    emailErrorMessage: String? = null,
+    passwordErrorMessage: String? = null,
+    isSubmitEnabled: Boolean = true,
+    onEmailFocusChanged: (Boolean) -> Unit = {},
+    onPasswordFocusChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val tokens = designTokens()
     OutlinedTextField(
         value = email,
         onValueChange = onEmailChange,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .onFocusChanged { onEmailFocusChanged(it.isFocused) },
         label = { Text(stringResource(Res.string.email)) },
         singleLine = true,
-        isError = showError,
+        isError = emailErrorMessage != null || showError,
         supportingText = {
-            if (showError) {
-                Text(
+            when {
+                emailErrorMessage != null -> Text(
+                    text = emailErrorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+
+                showError -> Text(
                     text = errorMessage,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
@@ -74,7 +88,9 @@ internal fun LoginCredentialsSection(
     OutlinedTextField(
         value = password,
         onValueChange = onPasswordChange,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .onFocusChanged { onPasswordFocusChanged(it.isFocused) },
         label = { Text(stringResource(Res.string.password)) },
         singleLine = true,
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -88,11 +104,21 @@ internal fun LoginCredentialsSection(
                 Icon(imageVector = icon, contentDescription = description)
             }
         },
+        isError = passwordErrorMessage != null,
+        supportingText = {
+            passwordErrorMessage?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        },
     )
     Spacer(modifier = Modifier.height(tokens.spacing.xl))
     Button(
         onClick = onSubmit,
-        enabled = email.isNotBlank() && password.isNotBlank() && !loading,
+        enabled = isSubmitEnabled,
         modifier = Modifier
             .fillMaxWidth()
             .height(tokens.spacing.xxl + tokens.spacing.xl),
@@ -137,6 +163,9 @@ private fun LoginCredentialsSectionPreview() {
                 onSubmit = {},
                 showError = true,
                 errorMessage = errorText,
+                emailErrorMessage = errorText,
+                passwordErrorMessage = errorText,
+                isSubmitEnabled = true,
             )
         }
     }

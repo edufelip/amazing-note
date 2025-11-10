@@ -31,7 +31,7 @@ import com.edufelip.shared.ui.features.settings.routes.PrivacyRoute
 import com.edufelip.shared.ui.features.settings.routes.SettingsRoute
 import com.edufelip.shared.ui.features.trash.routes.TrashRoute
 import com.edufelip.shared.ui.nav.AppRoutes
-import com.edufelip.shared.ui.util.platform.isApplePlatform
+import com.edufelip.shared.ui.util.platform.platformBehavior
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.vm.NoteUiViewModel
 
@@ -50,6 +50,7 @@ fun AmazingNoteNavHost(
     val environment = state.environment
     val layoutDirection = LocalLayoutDirection.current
     val chrome = platformChromeStrategy()
+    val platformBehavior = platformBehavior()
 
     val contentModifier = with(chrome) {
         Modifier
@@ -143,7 +144,7 @@ fun AmazingNoteNavHost(
 
     val targetScene = NavScene(state.currentRoute, themeKey)
 
-    if (isApplePlatform()) {
+    if (!platformBehavior.supportsContentTransitions) {
         Box(modifier = contentModifier.then(modifier)) {
             SceneContent(targetScene)
         }

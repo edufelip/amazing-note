@@ -85,6 +85,7 @@ import com.edufelip.shared.ui.settings.LocalSettings
 import com.edufelip.shared.ui.util.platform.Haptics
 import com.edufelip.shared.ui.util.platform.currentEpochMillis
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
+import com.edufelip.shared.ui.util.security.sanitizeUserDisplay
 import com.edufelip.shared.ui.vm.AuthViewModel
 import com.slapps.cupertino.CupertinoButtonDefaults
 import com.slapps.cupertino.adaptive.AdaptiveButton
@@ -229,7 +230,7 @@ fun SettingsScreen(
                             }
                             Column(modifier = Modifier.padding(start = tokens.spacing.md)) {
                                 Text(
-                                    text = userState.displayName ?: userState.email ?: "",
+                                    text = sanitizeUserDisplay(userState.displayName ?: userState.email ?: ""),
                                     fontWeight = FontWeight.SemiBold,
                                 )
                                 Text(

@@ -27,6 +27,10 @@
     <string name="logout_canceled">Cierre de sesión cancelado</string>
     <string name="welcome_user">Bienvenido, %1$s</string>
     <string name="guest">Invitado</string>
+    <string name="email_required">El correo electrónico es obligatorio.</string>
+    <string name="email_invalid_format">Ingresa un correo electrónico válido.</string>
+    <string name="password_required">La contraseña es obligatoria.</string>
+    <string name="login_rate_limit">Demasiados intentos. Inténtalo de nuevo en %1$d segundos.</string>
 
     <!-- Notas - Lista y Filtros -->
     <string name="order_by">Ordenar por</string>

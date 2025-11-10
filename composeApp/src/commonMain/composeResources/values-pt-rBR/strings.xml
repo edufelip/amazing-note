@@ -27,6 +27,10 @@
     <string name="logout_canceled">Saída cancelada</string>
     <string name="welcome_user">Bem-vindo, %1$s</string>
     <string name="guest">Convidado</string>
+    <string name="email_required">E-mail é obrigatório.</string>
+    <string name="email_invalid_format">Informe um e-mail válido.</string>
+    <string name="password_required">Senha é obrigatória.</string>
+    <string name="login_rate_limit">Muitas tentativas. Tente novamente em %1$d segundos.</string>
 
     <!-- Autenticação - Tela de cadastro -->
     <string name="sign_up_title">Crie sua conta</string>

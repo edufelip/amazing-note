@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -60,7 +62,10 @@ import com.edufelip.shared.resources.cd_show_password
 import com.edufelip.shared.resources.confirm_password
 import com.edufelip.shared.resources.contact_us
 import com.edufelip.shared.resources.email
+import com.edufelip.shared.resources.email_invalid_format
+import com.edufelip.shared.resources.email_required
 import com.edufelip.shared.resources.password
+import com.edufelip.shared.resources.password_required
 import com.edufelip.shared.resources.password_requirements
 import com.edufelip.shared.resources.passwords_do_not_match
 import com.edufelip.shared.resources.sign_up_need_help
@@ -71,7 +76,13 @@ import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.util.openMailUri
+import com.edufelip.shared.ui.util.security.SecurityLogger
 import com.edufelip.shared.ui.util.supportMailToUri
+import com.edufelip.shared.ui.util.validation.EmailValidationError
+import com.edufelip.shared.ui.util.validation.PasswordValidationError
+import com.edufelip.shared.ui.util.validation.validateEmail
+import com.edufelip.shared.ui.util.validation.validatePassword
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
@@ -89,14 +100,114 @@ fun SignUpScreen(
     var confirm by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(false) }
     var showConfirm by remember { mutableStateOf(false) }
+    var emailHasFocus by remember { mutableStateOf(false) }
+    var passwordHasFocus by remember { mutableStateOf(false) }
+    var confirmHasFocus by remember { mutableStateOf(false) }
+    var emailTouched by remember { mutableStateOf(false) }
+    var passwordTouched by remember { mutableStateOf(false) }
+    var confirmTouched by remember { mutableStateOf(false) }
+    var emailImmediateValidation by remember { mutableStateOf(false) }
+    var passwordImmediateValidation by remember { mutableStateOf(false) }
+    var emailValidation by remember { mutableStateOf(validateEmail(email)) }
+    var passwordValidation by remember { mutableStateOf(validatePassword(password)) }
+    val sanitizedConfirm = confirm.trim()
+    val passwordsMatch = sanitizedConfirm.isNotEmpty() &&
+        passwordValidation.isValid &&
+        passwordValidation.sanitized == sanitizedConfirm
+    val showConfirmError = confirmTouched &&
+        !confirmHasFocus &&
+        sanitizedConfirm.isNotEmpty() &&
+        passwordValidation.isValid &&
+        !passwordsMatch
 
-    val passwordValid = isPasswordValid(password)
-    val passwordsMatch = password.isNotEmpty() && password == confirm
+    LaunchedEffect(email, emailHasFocus, emailImmediateValidation) {
+        if (!emailHasFocus || emailImmediateValidation) {
+            emailValidation = validateEmail(email)
+            if (emailImmediateValidation) emailImmediateValidation = false
+        } else {
+            val snapshot = email
+            delay(300)
+            if (snapshot == email && emailHasFocus) {
+                emailValidation = validateEmail(snapshot)
+            }
+        }
+    }
+    LaunchedEffect(password, passwordHasFocus, passwordImmediateValidation) {
+        if (!passwordHasFocus || passwordImmediateValidation) {
+            passwordValidation = validatePassword(password)
+            if (passwordImmediateValidation) passwordImmediateValidation = false
+        } else {
+            val snapshot = password
+            delay(300)
+            if (snapshot == password && passwordHasFocus) {
+                passwordValidation = validatePassword(snapshot)
+            }
+        }
+    }
 
     val scrollState = rememberScrollState()
     val tokens = designTokens()
     val uriHandler = LocalUriHandler.current
     val supportMailTo = remember { supportMailToUri() }
+
+    val emailErrorText = when (emailValidation.error) {
+        EmailValidationError.REQUIRED -> stringResource(Res.string.email_required)
+        EmailValidationError.INVALID_FORMAT -> stringResource(Res.string.email_invalid_format)
+        null -> null
+    }
+    val passwordErrorText = when (passwordValidation.error) {
+        PasswordValidationError.REQUIRED -> stringResource(Res.string.password_required)
+        PasswordValidationError.TOO_SHORT,
+        PasswordValidationError.MISSING_UPPER,
+        PasswordValidationError.MISSING_LOWER,
+        PasswordValidationError.MISSING_DIGIT,
+        PasswordValidationError.MISSING_SYMBOL,
+        -> stringResource(Res.string.password_requirements)
+        null -> null
+    }
+    val showEmailError = emailTouched && !emailHasFocus && emailValidation.error != null
+    val showPasswordError = passwordTouched && !passwordHasFocus && passwordErrorText != null
+    val canSubmit = emailValidation.isValid && passwordValidation.isValid && passwordsMatch && !loading
+    val securityLogger = SecurityLogger
+
+    val submitSignUp: () -> Unit = {
+        emailTouched = true
+        passwordTouched = true
+        confirmTouched = true
+        emailImmediateValidation = true
+        passwordImmediateValidation = true
+        val latestEmailValidation = validateEmail(email)
+        val latestPasswordValidation = validatePassword(password)
+        val confirmValue = confirm.trim()
+        val confirmMatches = confirmValue.isNotEmpty() &&
+            latestPasswordValidation.isValid &&
+            latestPasswordValidation.sanitized == confirmValue
+        emailValidation = latestEmailValidation
+        passwordValidation = latestPasswordValidation
+        when {
+            !latestEmailValidation.isValid -> securityLogger.logValidationFailure(
+                flow = "sign_up",
+                field = "email",
+                reason = latestEmailValidation.error?.name ?: "unknown",
+                rawSample = email,
+            )
+            !latestPasswordValidation.isValid -> securityLogger.logValidationFailure(
+                flow = "sign_up",
+                field = "password",
+                reason = latestPasswordValidation.error?.name ?: "unknown",
+                rawSample = "***",
+            )
+            !confirmMatches -> securityLogger.logValidationFailure(
+                flow = "sign_up",
+                field = "confirm_password",
+                reason = "MISMATCH",
+                rawSample = confirmValue,
+            )
+        }
+        if (latestEmailValidation.isValid && latestPasswordValidation.isValid && confirmMatches && !loading) {
+            onSubmit(latestEmailValidation.sanitized, latestPasswordValidation.sanitized)
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -136,19 +247,52 @@ fun SignUpScreen(
 
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = {
+                    email = it
+                    if (!emailTouched) emailTouched = true
+                },
                 label = { Text(stringResource(Res.string.email)) },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { state ->
+                        emailHasFocus = state.isFocused
+                        if (state.isFocused) {
+                            emailTouched = true
+                        } else if (emailTouched) {
+                            emailImmediateValidation = true
+                        }
+                    },
                 shape = RoundedCornerShape(tokens.radius.lg),
+                isError = showEmailError,
+                supportingText = {
+                    if (showEmailError) {
+                        Text(
+                            text = emailErrorText.orEmpty(),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                },
             )
             Spacer(modifier = Modifier.height(tokens.spacing.lg))
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = {
+                    password = it
+                    if (!passwordTouched) passwordTouched = true
+                },
                 label = { Text(stringResource(Res.string.password)) },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { state ->
+                        passwordHasFocus = state.isFocused
+                        if (state.isFocused) {
+                            passwordTouched = true
+                        } else if (passwordTouched) {
+                            passwordImmediateValidation = true
+                        }
+                    },
                 shape = RoundedCornerShape(tokens.radius.lg),
                 visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
@@ -163,22 +307,33 @@ fun SignUpScreen(
                         )
                     }
                 },
-                isError = password.isNotEmpty() && !passwordValid,
+                isError = showPasswordError,
                 supportingText = {
-                    if (password.isNotEmpty() && !passwordValid) {
+                    if (showPasswordError) {
                         Text(
-                            text = stringResource(Res.string.password_requirements),
+                            text = passwordErrorText.orEmpty(),
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
                 },
             )
+            Spacer(modifier = Modifier.height(tokens.spacing.lg))
             OutlinedTextField(
                 value = confirm,
-                onValueChange = { confirm = it },
+                onValueChange = {
+                    confirm = it
+                    if (!confirmTouched) confirmTouched = true
+                },
                 label = { Text(stringResource(Res.string.confirm_password)) },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { state ->
+                        confirmHasFocus = state.isFocused
+                        if (state.isFocused) {
+                            confirmTouched = true
+                        }
+                    },
                 shape = RoundedCornerShape(tokens.radius.lg),
                 visualTransformation = if (showConfirm) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
@@ -193,9 +348,9 @@ fun SignUpScreen(
                         )
                     }
                 },
-                isError = confirm.isNotEmpty() && !passwordsMatch,
+                isError = showConfirmError,
                 supportingText = {
-                    if (confirm.isNotEmpty() && !passwordsMatch) {
+                    if (showConfirmError) {
                         Text(
                             text = stringResource(Res.string.passwords_do_not_match),
                             style = MaterialTheme.typography.bodySmall,
@@ -205,8 +360,8 @@ fun SignUpScreen(
             )
             Spacer(modifier = Modifier.height(tokens.spacing.xl))
             Button(
-                onClick = { onSubmit(email.trim(), password) },
-                enabled = email.isNotBlank() && passwordValid && passwordsMatch && !loading,
+                onClick = submitSignUp,
+                enabled = canSubmit,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(tokens.spacing.xxl + tokens.spacing.xl),
@@ -346,15 +501,6 @@ private fun SignUpIllustration(modifier: Modifier = Modifier) {
                 ),
         )
     }
-}
-
-private fun isPasswordValid(pw: String): Boolean {
-    if (pw.length < 8) return false
-    val hasUpper = pw.any { it.isUpperCase() }
-    val hasLower = pw.any { it.isLowerCase() }
-    val hasDigit = pw.any { it.isDigit() }
-    val hasSymbol = pw.any { !it.isLetterOrDigit() }
-    return hasUpper && hasLower && hasDigit && hasSymbol
 }
 
 private const val CONTACT_SUPPORT_TAG = "contact_support_link"
