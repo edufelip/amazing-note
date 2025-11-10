@@ -1,6 +1,7 @@
 package com.edufelip.shared.security
 
 import android.util.Base64
+import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.edufelip.shared.data.db.AndroidContextHolder
@@ -31,7 +32,7 @@ actual class SecureKeyStore actual constructor() {
             return Base64.decode(stored, Base64.NO_WRAP)
         }
         val generated = generateKey()
-        prefs.edit().putString(KEY_ALIAS, Base64.encodeToString(generated, Base64.NO_WRAP)).apply()
+        prefs.edit { putString(KEY_ALIAS, Base64.encodeToString(generated, Base64.NO_WRAP)) }
         return generated
     }
 }

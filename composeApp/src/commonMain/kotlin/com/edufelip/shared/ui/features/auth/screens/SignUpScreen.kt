@@ -3,6 +3,7 @@
 package com.edufelip.shared.ui.features.auth.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -41,7 +42,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -63,8 +67,11 @@ import com.edufelip.shared.resources.sign_up_need_help
 import com.edufelip.shared.resources.sign_up_primary_cta
 import com.edufelip.shared.resources.sign_up_subtitle
 import com.edufelip.shared.resources.sign_up_title
+import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.util.openMailUri
+import com.edufelip.shared.ui.util.supportMailToUri
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
@@ -87,6 +94,9 @@ fun SignUpScreen(
     val passwordsMatch = password.isNotEmpty() && password == confirm
 
     val scrollState = rememberScrollState()
+    val tokens = designTokens()
+    val uriHandler = LocalUriHandler.current
+    val supportMailTo = remember { supportMailToUri() }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -97,10 +107,10 @@ fun SignUpScreen(
                 .padding(padding)
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+                .padding(horizontal = tokens.spacing.xl, vertical = tokens.spacing.lg),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(tokens.spacing.xl))
             Text(
                 text = stringResource(Res.string.sign_up_title),
                 style = MaterialTheme.typography.headlineLarge,
@@ -108,7 +118,7 @@ fun SignUpScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(tokens.spacing.sm))
             Text(
                 text = stringResource(Res.string.sign_up_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
@@ -116,13 +126,13 @@ fun SignUpScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
             )
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(tokens.spacing.xxl))
             SignUpIllustration(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(192.dp),
+                    .height(tokens.spacing.xxl * 6),
             )
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(tokens.spacing.xxl))
 
             OutlinedTextField(
                 value = email,
@@ -130,16 +140,16 @@ fun SignUpScreen(
                 label = { Text(stringResource(Res.string.email)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(tokens.radius.lg),
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(tokens.spacing.lg))
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text(stringResource(Res.string.password)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(tokens.radius.lg),
                 visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     IconButton(onClick = { showPassword = !showPassword }) {
@@ -163,14 +173,13 @@ fun SignUpScreen(
                     }
                 },
             )
-            Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
                 value = confirm,
                 onValueChange = { confirm = it },
                 label = { Text(stringResource(Res.string.confirm_password)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(tokens.radius.lg),
                 visualTransformation = if (showConfirm) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     IconButton(onClick = { showConfirm = !showConfirm }) {
@@ -194,45 +203,65 @@ fun SignUpScreen(
                     }
                 },
             )
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(tokens.spacing.xl))
             Button(
                 onClick = { onSubmit(email.trim(), password) },
                 enabled = email.isNotBlank() && passwordValid && passwordsMatch && !loading,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
+                    .height(tokens.spacing.xxl + tokens.spacing.xl),
+                shape = RoundedCornerShape(tokens.radius.lg),
             ) {
                 if (loading) {
                     CircularProgressIndicator(
-                        strokeWidth = 2.dp,
-                        modifier = Modifier.size(20.dp),
+                        strokeWidth = tokens.spacing.xxs,
+                        modifier = Modifier.size(tokens.spacing.lg + tokens.spacing.xs),
                         color = MaterialTheme.colorScheme.onPrimary,
                     )
                 } else {
                     Text(text = stringResource(Res.string.sign_up_primary_cta))
                 }
             }
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(tokens.spacing.xxl))
+            val contactText = buildAnnotatedString {
+                append(stringResource(Res.string.sign_up_need_help))
+                append(" ")
+                pushStringAnnotation(tag = CONTACT_SUPPORT_TAG, annotation = supportMailTo)
+                withStyle(
+                    SpanStyle(
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold,
+                    ),
+                ) {
+                    append(stringResource(Res.string.contact_us))
+                }
+                pop()
+            }
+            var contactTextLayout by remember { mutableStateOf<TextLayoutResult?>(null) }
             Text(
-                text = buildAnnotatedString {
-                    append(stringResource(Res.string.sign_up_need_help))
-                    append(" ")
-                    withStyle(
-                        SpanStyle(
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.SemiBold,
-                        ),
-                    ) {
-                        append(stringResource(Res.string.contact_us))
-                    }
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                text = contactText,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .pointerInput(contactText) {
+                        detectTapGestures { position ->
+                            val destination = contactTextLayout
+                                ?.getOffsetForPosition(position)
+                                ?.let { offset ->
+                                    contactText
+                                        .getStringAnnotations(CONTACT_SUPPORT_TAG, offset, offset)
+                                        .firstOrNull()
+                                        ?.item
+                                } ?: return@detectTapGestures
+                            openMailUri(uriHandler, destination)
+                        }
+                    },
+                onTextLayout = { contactTextLayout = it },
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(tokens.spacing.lg))
         }
     }
 }
@@ -267,9 +296,10 @@ private fun SignUpTopBar(onBack: () -> Unit) {
 private fun SignUpIllustration(modifier: Modifier = Modifier) {
     val primary = MaterialTheme.colorScheme.primary
     val tertiary = MaterialTheme.colorScheme.tertiary
+    val tokens = designTokens()
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(tokens.spacing.xl))
             .background(primary.copy(alpha = 0.08f)),
         contentAlignment = Alignment.Center,
     ) {
@@ -283,7 +313,10 @@ private fun SignUpIllustration(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .size(96.dp)
                 .offset(x = 72.dp, y = (-32).dp)
-                .background(tertiary.copy(alpha = 0.3f), RoundedCornerShape(28.dp)),
+                .background(
+                    tertiary.copy(alpha = 0.3f),
+                    RoundedCornerShape(tokens.spacing.xxl - tokens.spacing.xs),
+                ),
         )
         Box(
             modifier = Modifier
@@ -295,7 +328,10 @@ private fun SignUpIllustration(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .size(24.dp)
                 .offset(x = 132.dp, y = (-8).dp)
-                .background(tertiary.copy(alpha = 0.35f), RoundedCornerShape(8.dp)),
+                .background(
+                    tertiary.copy(alpha = 0.35f),
+                    RoundedCornerShape(tokens.spacing.sm),
+                ),
         )
         Box(
             modifier = Modifier
@@ -320,6 +356,8 @@ private fun isPasswordValid(pw: String): Boolean {
     val hasSymbol = pw.any { !it.isLetterOrDigit() }
     return hasUpper && hasLower && hasDigit && hasSymbol
 }
+
+private const val CONTACT_SUPPORT_TAG = "contact_support_link"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(name = "Sign Up")

@@ -15,6 +15,7 @@ import com.edufelip.shared.resources.login_signup_cta
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 internal fun LoginFooter(
@@ -40,6 +41,7 @@ internal fun LoginFooter(
     }
 }
 
+@Preview
 @DevicePreviews
 @Composable
 private fun LoginFooterPreview() {

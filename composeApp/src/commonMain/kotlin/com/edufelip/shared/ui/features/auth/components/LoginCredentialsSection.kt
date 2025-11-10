@@ -89,7 +89,7 @@ internal fun LoginCredentialsSection(
             }
         },
     )
-    Spacer(modifier = Modifier.height(tokens.spacing.md))
+    Spacer(modifier = Modifier.height(tokens.spacing.xl))
     Button(
         onClick = onSubmit,
         enabled = email.isNotBlank() && password.isNotBlank() && !loading,
