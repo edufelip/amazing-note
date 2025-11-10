@@ -1,8 +1,11 @@
 package com.edufelip.shared.ui.features.auth.components
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Visibility
@@ -23,16 +26,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.dp
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_hide_password
 import com.edufelip.shared.resources.cd_show_password
 import com.edufelip.shared.resources.email
 import com.edufelip.shared.resources.login
+import com.edufelip.shared.resources.login_error_invalid_credentials
 import com.edufelip.shared.resources.password
+import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 internal fun LoginCredentialsSection(
@@ -48,6 +53,7 @@ internal fun LoginCredentialsSection(
     errorMessage: String,
     modifier: Modifier = Modifier,
 ) {
+    val tokens = designTokens()
     OutlinedTextField(
         value = email,
         onValueChange = onEmailChange,
@@ -65,7 +71,6 @@ internal fun LoginCredentialsSection(
             }
         },
     )
-    Spacer(modifier = Modifier.height(12.dp))
     OutlinedTextField(
         value = password,
         onValueChange = onPasswordChange,
@@ -84,19 +89,19 @@ internal fun LoginCredentialsSection(
             }
         },
     )
-    Spacer(modifier = Modifier.height(20.dp))
+    Spacer(modifier = Modifier.height(tokens.spacing.md))
     Button(
         onClick = onSubmit,
         enabled = email.isNotBlank() && password.isNotBlank() && !loading,
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp),
+            .height(tokens.spacing.xxl + tokens.spacing.xl),
         shape = MaterialTheme.shapes.extraLarge,
     ) {
         if (loading) {
             CircularProgressIndicator(
-                strokeWidth = 2.dp,
-                modifier = Modifier.size(20.dp),
+                strokeWidth = tokens.spacing.xxs,
+                modifier = Modifier.size(tokens.spacing.md + tokens.spacing.sm),
                 color = MaterialTheme.colorScheme.onPrimary,
             )
         } else {
@@ -105,24 +110,34 @@ internal fun LoginCredentialsSection(
     }
 }
 
+@Preview
 @DevicePreviews
 @Composable
 private fun LoginCredentialsSectionPreview() {
     DevicePreviewContainer {
+        val tokens = designTokens()
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
         var visible by remember { mutableStateOf(false) }
-        LoginCredentialsSection(
-            email = email,
-            onEmailChange = { email = it },
-            password = password,
-            onPasswordChange = { password = it },
-            passwordVisible = visible,
-            onTogglePasswordVisibility = { visible = !visible },
-            loading = false,
-            onSubmit = {},
-            showError = true,
-            errorMessage = "Verify if email and password are correct",
-        )
+        val errorText = stringResource(Res.string.login_error_invalid_credentials)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = tokens.spacing.xl),
+            verticalArrangement = Arrangement.spacedBy(tokens.spacing.md),
+        ) {
+            LoginCredentialsSection(
+                email = email,
+                onEmailChange = { email = it },
+                password = password,
+                onPasswordChange = { password = it },
+                passwordVisible = visible,
+                onTogglePasswordVisibility = { visible = !visible },
+                loading = false,
+                onSubmit = {},
+                showError = true,
+                errorMessage = errorText,
+            )
+        }
     }
 }

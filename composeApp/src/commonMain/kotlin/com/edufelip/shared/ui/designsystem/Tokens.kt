@@ -28,6 +28,7 @@ data class ColorTokens(
 )
 
 data class SpacingTokens(
+    val xxs: Dp = 2.dp,
     val xs: Dp = 4.dp,
     val sm: Dp = 8.dp,
     val md: Dp = 12.dp,

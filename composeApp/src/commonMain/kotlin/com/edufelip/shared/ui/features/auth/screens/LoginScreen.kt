@@ -27,7 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import com.edufelip.shared.data.auth.GoogleSignInLauncher
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.continue_with_google
@@ -38,6 +38,7 @@ import com.edufelip.shared.resources.login_headline
 import com.edufelip.shared.resources.login_subheadline
 import com.edufelip.shared.resources.reset_email_sent
 import com.edufelip.shared.resources.sign_up_success
+import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.effects.toast.rememberToastController
 import com.edufelip.shared.ui.effects.toast.show
 import com.edufelip.shared.ui.features.auth.components.ForgotPasswordDialog
@@ -83,6 +84,7 @@ fun LoginScreen(
     var forgotPasswordDialogVisible by rememberSaveable { mutableStateOf(false) }
     var resetEmail by rememberSaveable { mutableStateOf("") }
     var loginRequested by rememberSaveable { mutableStateOf(false) }
+    val tokens = designTokens()
 
     LaunchedEffect(user, loginRequested) {
         if (loginRequested && user != null) {
@@ -120,23 +122,23 @@ fun LoginScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        topBar = { LoginHeader(onBack = onBack) },
     ) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+                .padding(horizontal = tokens.spacing.xl, vertical = tokens.spacing.lg),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            LoginHeader(onBack = onBack)
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(tokens.spacing.lg))
             LoginIllustration(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(4f / 3f),
             )
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(tokens.spacing.xl))
             Text(
                 text = stringResource(Res.string.login_headline),
                 style = MaterialTheme.typography.headlineLarge,
@@ -144,7 +146,7 @@ fun LoginScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(tokens.spacing.sm))
             Text(
                 text = stringResource(Res.string.login_subheadline),
                 style = MaterialTheme.typography.bodyMedium,
@@ -152,7 +154,7 @@ fun LoginScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
             )
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(tokens.spacing.xl))
 
             LoginCredentialsSection(
                 email = email,
@@ -169,7 +171,7 @@ fun LoginScreen(
                 showError = error != null,
                 errorMessage = stringResource(Res.string.login_error_invalid_credentials),
             )
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(tokens.spacing.lg))
             val googleCanceledText = stringResource(Res.string.google_sign_in_canceled)
             GoogleButton(
                 text = stringResource(Res.string.continue_with_google),
@@ -193,21 +195,21 @@ fun LoginScreen(
                     }
                 },
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(tokens.spacing.lg))
             TextButton(
                 onClick = {
                     resetEmail = email.trim()
                     forgotPasswordDialogVisible = true
                 },
                 enabled = !loading,
-                contentPadding = PaddingValues(0.dp),
+                contentPadding = PaddingValues(Dp.Hairline),
             ) {
                 Text(
                     text = stringResource(Res.string.forgot_password),
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(tokens.spacing.xl))
             LoginFooter(onOpenSignUp = onOpenSignUp)
         }
 
