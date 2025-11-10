@@ -36,6 +36,11 @@
     <string name="email_required">Email is required.</string>
     <string name="email_invalid_format">Enter a valid email address.</string>
     <string name="password_required">Password is required.</string>
+    <string name="forgot_password_invalid_email">Enter a valid email to reset your password.</string>
+    <string name="forgot_password_try_again">Couldn't send reset email. Try again in a couple minutes.</string>
+    <string name="forgot_password_success_title">Check your inbox</string>
+    <string name="forgot_password_success_body">We sent reset instructions to %1$s.</string>
+    <string name="forgot_password_success_ok">OK</string>
     <string name="login_rate_limit">Too many attempts. Try again in %1$d seconds.</string>
     <string name="cd_hide_password">Hide password</string>
     <string name="cd_show_password">Show password</string>

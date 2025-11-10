@@ -30,6 +30,11 @@
     <string name="email_required">El correo electrónico es obligatorio.</string>
     <string name="email_invalid_format">Ingresa un correo electrónico válido.</string>
     <string name="password_required">La contraseña es obligatoria.</string>
+    <string name="forgot_password_invalid_email">Ingresa un correo válido para restablecer tu contraseña.</string>
+    <string name="forgot_password_try_again">No pudimos enviar el correo. Inténtalo de nuevo en unos minutos.</string>
+    <string name="forgot_password_success_title">Revisa tu bandeja</string>
+    <string name="forgot_password_success_body">Enviamos las instrucciones de restablecimiento a %1$s.</string>
+    <string name="forgot_password_success_ok">Aceptar</string>
     <string name="login_rate_limit">Demasiados intentos. Inténtalo de nuevo en %1$d segundos.</string>
 
     <!-- Notas - Lista y Filtros -->

@@ -30,6 +30,11 @@
     <string name="email_required">E-mail é obrigatório.</string>
     <string name="email_invalid_format">Informe um e-mail válido.</string>
     <string name="password_required">Senha é obrigatória.</string>
+    <string name="forgot_password_invalid_email">Informe um e-mail válido para redefinir sua senha.</string>
+    <string name="forgot_password_try_again">Não foi possível enviar o e-mail. Tente novamente em alguns minutos.</string>
+    <string name="forgot_password_success_title">Verifique sua caixa de entrada</string>
+    <string name="forgot_password_success_body">Enviamos as instruções de redefinição para %1$s.</string>
+    <string name="forgot_password_success_ok">OK</string>
     <string name="login_rate_limit">Muitas tentativas. Tente novamente em %1$d segundos.</string>
 
     <!-- Autenticação - Tela de cadastro -->

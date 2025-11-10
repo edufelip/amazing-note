@@ -20,20 +20,22 @@ import com.edufelip.shared.resources.email
 import com.edufelip.shared.resources.forgot_password
 import com.edufelip.shared.resources.forgot_password_description
 import com.edufelip.shared.resources.forgot_password_send_email
-import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.resources.forgot_password_success_body
+import com.edufelip.shared.resources.forgot_password_success_ok
+import com.edufelip.shared.resources.forgot_password_success_title
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun ForgotPasswordDialog(
     email: String,
+    errorMessage: String?,
     onEmailChange: (String) -> Unit,
     onDismiss: () -> Unit,
     onSubmit: () -> Unit,
     loading: Boolean,
 ) {
     AlertDialog(
-        onDismissRequest = { if (!loading) onDismiss() },
+        onDismissRequest = onDismiss,
         title = { Text(text = stringResource(Res.string.forgot_password)) },
         text = {
             Column {
@@ -49,6 +51,16 @@ fun ForgotPasswordDialog(
                     label = { Text(stringResource(Res.string.email)) },
                     singleLine = true,
                     enabled = !loading,
+                    isError = !errorMessage.isNullOrBlank(),
+                    supportingText = {
+                        if (!errorMessage.isNullOrBlank()) {
+                            Text(
+                                text = errorMessage,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                    },
                 )
             }
         },
@@ -70,7 +82,7 @@ fun ForgotPasswordDialog(
         dismissButton = {
             TextButton(
                 onClick = onDismiss,
-                enabled = !loading,
+                enabled = true,
             ) {
                 Text(text = stringResource(Res.string.dialog_cancel))
             }
@@ -79,14 +91,23 @@ fun ForgotPasswordDialog(
 }
 
 @Composable
-@Preview
-@DevicePreviews
-private fun ForgotPasswordDialogPreview() {
-    ForgotPasswordDialog(
-        email = "",
-        onEmailChange = {},
-        onDismiss = {},
-        onSubmit = {},
-        loading = false,
+fun ForgotPasswordSuccessDialog(
+    email: String,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = stringResource(Res.string.forgot_password_success_title)) },
+        text = {
+            Text(
+                text = stringResource(Res.string.forgot_password_success_body, email),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(Res.string.forgot_password_success_ok))
+            }
+        },
     )
 }
