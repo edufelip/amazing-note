@@ -47,6 +47,7 @@ import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -174,7 +175,6 @@ fun FolderDetailScreen(
                 onAddClick = onAddNote,
                 searchQuery = query,
                 onSearchQueryChange = { query = it },
-                onDelete = onDeleteNote,
                 showTopAppBar = false,
                 hasAnyNotes = notes.isNotEmpty(),
                 title = title,
@@ -206,6 +206,7 @@ fun FolderDetailScreen(
     }
 }
 
+@Preview
 @DevicePreviews
 @Composable
 private fun FolderDetailScreenPreview() {

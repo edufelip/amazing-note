@@ -75,7 +75,6 @@ fun ListScreen(
     onAddClick: () -> Unit,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
-    onDelete: (Note) -> Unit,
     title: String? = null,
     showTopAppBar: Boolean = true,
     hasAnyNotes: Boolean = true,
@@ -122,16 +121,16 @@ fun ListScreen(
             },
             floatingActionButton = {
                 if (hasAnyNotes) {
-                    val navAwarePadding = if (chrome.bottomBarHeight == 0.dp) {
-                        tokens.spacing.lg
-                    } else {
-                        maxOf(tokens.spacing.lg, chrome.bottomBarHeight / 2)
+                    val navigationBottom = chrome.navigationBarBottomInset()
+                    val fabBottomPadding = when {
+                        chrome.bottomBarHeight == 0.dp -> tokens.spacing.lg
+                        else -> chrome.bottomBarHeight + (navigationBottom * 2)
                     }
                     FloatingActionButton(
-                        modifier = Modifier.padding(bottom = navAwarePadding),
+                        modifier = Modifier.padding(bottom = fabBottomPadding),
                         onClick = onAddClick,
                         containerColor = tokens.colors.accent,
-                        contentColor = tokens.colors.onSurface,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
                         shape = RoundedCornerShape(tokens.radius.lg),
                     ) {
                         Icon(
@@ -145,8 +144,6 @@ fun ListScreen(
             Box(
                 modifier = Modifier.fillMaxSize(),
             ) {
-                val filtered = notes
-                // Only show empty state if user truly has no notes at all
                 if (!hasAnyNotes) {
                     if (emptyContent != null) {
                         emptyContent()
@@ -161,7 +158,7 @@ fun ListScreen(
 
                 val useUpdated = remember { mutableStateOf(appPrefs.isDateModeUpdated()) }
                 val now =
-                    filtered.maxOfOrNull { if (useUpdated.value) it.updatedAt else it.createdAt }
+                    notes.maxOfOrNull { if (useUpdated.value) it.updatedAt else it.createdAt }
                         ?: 0L
 
                 fun bucket(ts: Long): Bucket {
@@ -178,10 +175,9 @@ fun ListScreen(
                 }
 
                 val grouped: Map<Bucket, List<Note>> =
-                    filtered.groupBy { bucket(if (useUpdated.value) it.updatedAt else it.createdAt) }
-                val navAwarePadding = 0.dp
+                    notes.groupBy { bucket(if (useUpdated.value) it.updatedAt else it.createdAt) }
                 val listBottomPadding = 0.dp
-                val searchHorizontalPadding = tokens.spacing.xl - 4.dp
+                val searchHorizontalPadding = tokens.spacing.sm
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = listBottomPadding),
@@ -201,8 +197,9 @@ fun ListScreen(
                     }
                     stickyHeader {
                         Surface(
-                            tonalElevation = tokens.elevation.card,
-                            shadowElevation = tokens.elevation.card / 2f,
+                            color = MaterialTheme.colorScheme.background,
+                            tonalElevation = 0.dp,
+                            shadowElevation = 0.dp,
                         ) {
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
@@ -275,7 +272,7 @@ fun ListScreen(
                     }
 
                     // If search is active and nothing matches, show a search-specific message.
-                    if (searchQuery.isNotBlank() && filtered.isEmpty()) {
+                    if (searchQuery.isNotBlank() && notes.isEmpty()) {
                         item {
                             Column(
                                 modifier = Modifier.fillMaxWidth()
@@ -301,21 +298,19 @@ fun ListScreen(
                     val orderedGroups = groupOrder.mapNotNull { b -> grouped[b]?.let { b to it } }
                     orderedGroups.forEach { (section, itemsInGroup) ->
                         item {
-                            Surface(tonalElevation = tokens.elevation.card) {
-                                Text(
-                                    text = when (section) {
-                                        Bucket.TODAY -> stringResource(Res.string.today)
-                                        Bucket.THIS_WEEK -> stringResource(Res.string.this_week)
-                                        Bucket.THIS_MONTH -> stringResource(Res.string.this_month)
-                                        Bucket.EARLIER -> stringResource(Res.string.earlier)
-                                    },
-                                    style = MaterialTheme.typography.titleSmall,
-                                    modifier = Modifier.padding(
-                                        horizontal = tokens.spacing.lg,
-                                        vertical = tokens.spacing.sm,
-                                    ),
-                                )
-                            }
+                            Text(
+                                text = when (section) {
+                                    Bucket.TODAY -> stringResource(Res.string.today)
+                                    Bucket.THIS_WEEK -> stringResource(Res.string.this_week)
+                                    Bucket.THIS_MONTH -> stringResource(Res.string.this_month)
+                                    Bucket.EARLIER -> stringResource(Res.string.earlier)
+                                },
+                                style = MaterialTheme.typography.titleSmall,
+                                modifier = Modifier.padding(
+                                    horizontal = tokens.spacing.xl,
+                                    vertical = tokens.spacing.sm,
+                                ),
+                            )
                         }
                         items(itemsInGroup, key = { it.id }) { note ->
                             NoteRow(
@@ -355,7 +350,6 @@ internal fun ListScreenPreview(
             onAddClick = {},
             searchQuery = state.searchQuery,
             onSearchQueryChange = {},
-            onDelete = {},
             hasAnyNotes = state.hasAnyNotes,
             showTopAppBar = true,
         )

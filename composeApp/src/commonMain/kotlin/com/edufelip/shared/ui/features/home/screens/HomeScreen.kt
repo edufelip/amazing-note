@@ -92,7 +92,6 @@ fun HomeScreen(
                 onAddClick = onAdd,
                 searchQuery = query.value,
                 onSearchQueryChange = { query.value = it },
-                onDelete = onDelete,
                 showTopAppBar = false,
                 hasAnyNotes = hasNotes,
                 headerContent = null,
