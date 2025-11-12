@@ -86,11 +86,13 @@ class AuthViewModel(
     }
 
     fun logout() {
-        if (_uiState.value.loading) return
         launchInScope {
-            try {
-                useCases.logout()
-            } catch (_: Exception) {}
+            val result = runCatching { useCases.logout() }
+            if (result.isSuccess) {
+                _uiState.update { it.copy(user = null, loading = false, error = null, isUserResolved = true) }
+            } else {
+                publishError(result.exceptionOrNull()!!)
+            }
         }
     }
 

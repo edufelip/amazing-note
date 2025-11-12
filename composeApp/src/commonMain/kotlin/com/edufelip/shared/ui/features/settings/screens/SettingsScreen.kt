@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PrivacyTip
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -39,6 +40,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -65,7 +67,10 @@ import com.edufelip.shared.resources.app_version_label
 import com.edufelip.shared.resources.appearance_section
 import com.edufelip.shared.resources.login
 import com.edufelip.shared.resources.logout
+import com.edufelip.shared.resources.logout_confirm_message
+import com.edufelip.shared.resources.logout_confirm_title
 import com.edufelip.shared.resources.management_section
+import com.edufelip.shared.resources.no
 import com.edufelip.shared.resources.personalize_subtitle
 import com.edufelip.shared.resources.personalize_title
 import com.edufelip.shared.resources.privacy_policy
@@ -76,6 +81,7 @@ import com.edufelip.shared.resources.theme_subtitle
 import com.edufelip.shared.resources.trash
 import com.edufelip.shared.resources.trash_subtitle
 import com.edufelip.shared.resources.welcome_message
+import com.edufelip.shared.resources.yes
 import com.edufelip.shared.ui.app.chrome.AmazingTopBar
 import com.edufelip.shared.ui.components.organisms.settings.PersonalizeHeroIllustration
 import com.edufelip.shared.ui.designsystem.designTokens
@@ -117,6 +123,7 @@ fun SettingsScreen(
             settingsStore.getString(reviewDateKey, "").toLongOrNull() ?: currentEpochMillis(),
         )
     }
+    var logoutDialogVisible by remember { mutableStateOf(false) }
     LaunchedEffect(reviewReminder) {
         settingsStore.setString(reviewDateKey, reviewReminder.toString())
     }
@@ -245,7 +252,7 @@ fun SettingsScreen(
                         AdaptiveButton(
                             onClick = {
                                 Haptics.lightTap()
-                                onLogout()
+                                logoutDialogVisible = true
                             },
                             adaptation = {
                                 material {
@@ -323,6 +330,29 @@ fun SettingsScreen(
                 )
             }
         }
+    }
+
+    if (logoutDialogVisible) {
+        AlertDialog(
+            onDismissRequest = { logoutDialogVisible = false },
+            title = { Text(text = stringResource(Res.string.logout_confirm_title)) },
+            text = { Text(text = stringResource(Res.string.logout_confirm_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        logoutDialogVisible = false
+                        onLogout()
+                    },
+                ) {
+                    Text(text = stringResource(Res.string.yes))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { logoutDialogVisible = false }) {
+                    Text(text = stringResource(Res.string.no))
+                }
+            },
+        )
     }
 }
 
