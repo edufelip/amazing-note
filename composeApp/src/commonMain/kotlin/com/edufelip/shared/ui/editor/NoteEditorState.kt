@@ -16,6 +16,7 @@ import com.edufelip.shared.domain.model.Caret
 import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.NoteBlock
 import com.edufelip.shared.domain.model.NoteContent
+import com.edufelip.shared.domain.model.NoteTextSpan
 import com.edufelip.shared.domain.model.TextBlock
 import com.edufelip.shared.domain.model.insertImageAtCaret
 
@@ -305,6 +306,9 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         val beforeContent = content
         val beforeCaret = caret
         blockList.removeAt(index)
+        if (removed is ImageBlock) {
+            mergeTextBlocksAround(index)
+        }
         if (blockList.none { it is TextBlock }) {
             blockList.add(TextBlock(text = ""))
         }
@@ -346,6 +350,43 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         } else {
             false
         }
+    }
+
+    private fun mergeTextBlocksAround(gapIndex: Int) {
+        val beforeIndex = gapIndex - 1
+        val afterIndex = gapIndex
+        if (beforeIndex < 0) return
+        val before = blockList.getOrNull(beforeIndex) as? TextBlock ?: return
+        val after = blockList.getOrNull(afterIndex) as? TextBlock ?: return
+        val beforeLength = before.text.length
+        val mergedText = before.text + after.text
+        val mergedSpans = before.spans + after.spans.offsetBy(beforeLength)
+        val mergedBlock = before.copy(text = mergedText, spans = mergedSpans)
+        blockList[beforeIndex] = mergedBlock
+        blockList.removeAt(afterIndex)
+        textFieldValues.remove(after.id)
+        if (focusedBlockId == after.id) {
+            focusedBlockId = mergedBlock.id
+        }
+        if (pendingFocusId == after.id) {
+            pendingFocusId = mergedBlock.id
+        }
+        val caretSnapshot = caret
+        val updatedCaret = when (caretSnapshot?.blockId) {
+            after.id -> Caret(
+                mergedBlock.id,
+                beforeLength + caretSnapshot.start,
+                beforeLength + caretSnapshot.end,
+            )
+
+            else -> caretSnapshot
+        }
+        setCaretFrom(updatedCaret)
+        val selection = when {
+            updatedCaret?.blockId == mergedBlock.id -> TextRange(updatedCaret.start, updatedCaret.end)
+            else -> textFieldValues[mergedBlock.id]?.selection ?: TextRange(mergedText.length)
+        }.clampTo(mergedText.length)
+        textFieldValues[mergedBlock.id] = TextFieldValue(mergedText, selection)
     }
 
     private fun ensureCaretWithinBounds() {
@@ -557,3 +598,11 @@ private fun TextRange.clampTo(maxLength: Int): TextRange {
     val newEnd = end.coerceIn(newStart, maxLength)
     return if (newStart == start && newEnd == end) this else TextRange(newStart, newEnd)
 }
+
+private fun List<NoteTextSpan>.offsetBy(delta: Int): List<NoteTextSpan> =
+    map { span ->
+        span.copy(
+            start = span.start + delta,
+            end = span.end + delta,
+        )
+    }

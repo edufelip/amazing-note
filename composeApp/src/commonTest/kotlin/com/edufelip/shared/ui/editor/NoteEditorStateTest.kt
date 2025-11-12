@@ -92,4 +92,19 @@ class NoteEditorStateTest {
         assertEquals(trailing.id, caret.blockId)
         assertEquals(trailing.text.length, caret.start)
     }
+
+    @Test
+    fun removingImageMergesNeighboringTextBlocks() {
+        val first = TextBlock(text = "Hello ")
+        val second = TextBlock(text = "world")
+        val image = ImageBlock(uri = "file://image")
+        val state = NoteEditorState(NoteContent(listOf(first, image, second)))
+
+        val removed = state.removeBlockById(image.id)
+
+        assertTrue(removed)
+        val textBlocks = state.blockList.filterIsInstance<TextBlock>()
+        assertEquals(1, textBlocks.size)
+        assertEquals("Hello world", textBlocks.first().text)
+    }
 }
