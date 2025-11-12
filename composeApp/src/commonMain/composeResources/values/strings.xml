@@ -12,6 +12,7 @@
     <string name="google_sign_in">Sign in with Google</string>
     <string name="continue_with_google">Continue with Google</string>
     <string name="login_title">Login to your account</string>
+    <string name="name">Name</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="forgot_password">Forgot Password?</string>
@@ -26,10 +27,12 @@
     <string name="logout_canceled">Logout canceled</string>
     <string name="welcome_user">Welcome, %1$s</string>
     <string name="guest">Guest</string>
+    <string name="auth_generic_validation_error">Verify your credentials and try again.</string>
+    <string name="auth_network_error">Check your internet connection and try again.</string>
+    <string name="name_required">Name is required.</string>
 
     <!-- Authentication - Sign Up Screen -->
     <string name="sign_up_title">Create your account</string>
-    <string name="name">Name</string>
     <string name="confirm_password">Confirm password</string>
     <string name="password_requirements">Min 8 chars, upper, lower, digit, symbol</string>
     <string name="passwords_do_not_match">Passwords do not match</string>

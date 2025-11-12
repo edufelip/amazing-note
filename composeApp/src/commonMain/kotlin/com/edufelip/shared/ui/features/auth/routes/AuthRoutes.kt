@@ -45,10 +45,12 @@ fun SignUpRoute(
 
     SignUpScreen(
         onBack = onBack,
-        onSubmit = { email, password, confirm ->
-            authViewModel.signUp(email, password, confirm)
+        onSubmit = { name, email, password, confirm ->
+            authViewModel.signUp(name, email, password, confirm)
         },
         loading = uiState.loading,
-        errorMessage = uiState.error,
+        error = uiState.error,
+        events = authViewModel.events,
+        onSignUpSuccess = { state.setRoot(AppRoutes.Notes) },
     )
 }

@@ -14,6 +14,8 @@ class DefaultAuthRepository(
 
     override suspend fun signUpWithEmailPassword(email: String, password: String) = service.signUpWithEmailPassword(email, password)
 
+    override suspend fun setUserName(name: String) = service.setUserName(name)
+
     override suspend fun sendPasswordResetEmail(email: String) = service.sendPasswordResetEmail(email)
 
     override suspend fun signInWithGoogle(idToken: String) = service.signInWithGoogle(idToken)

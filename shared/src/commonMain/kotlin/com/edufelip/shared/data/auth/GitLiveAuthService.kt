@@ -23,6 +23,10 @@ class GitLiveAuthService(
         auth.createUserWithEmailAndPassword(email, password)
     }
 
+    override suspend fun setUserName(name: String) {
+        auth.currentUser?.updateProfile(name)
+    }
+
     override suspend fun sendPasswordResetEmail(email: String) {
         auth.sendPasswordResetEmail(email)
     }

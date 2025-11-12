@@ -12,6 +12,7 @@
     <string name="google_sign_in">Entrar com o Google</string>
     <string name="continue_with_google">Continuar com o Google</string>
     <string name="login_title">Entre na sua conta</string>
+    <string name="name">Nome</string>
     <string name="email">E-mail</string>
     <string name="password">Senha</string>
     <string name="forgot_password">Esqueceu a senha?</string>
@@ -27,6 +28,9 @@
     <string name="logout_canceled">Saída cancelada</string>
     <string name="welcome_user">Bem-vindo, %1$s</string>
     <string name="guest">Convidado</string>
+    <string name="auth_generic_validation_error">Verifique suas credenciais e tente novamente.</string>
+    <string name="auth_network_error">Verifique sua conexão com a internet e tente novamente.</string>
+    <string name="name_required">O nome é obrigatório.</string>
     <string name="email_required">E-mail é obrigatório.</string>
     <string name="email_invalid_format">Informe um e-mail válido.</string>
     <string name="password_required">Senha é obrigatória.</string>
@@ -39,7 +43,6 @@
 
     <!-- Autenticação - Tela de cadastro -->
     <string name="sign_up_title">Crie sua conta</string>
-    <string name="name">Nome</string>
     <string name="confirm_password">Confirmar senha</string>
     <string name="password_requirements">Mín. 8 caracteres, maiúscula, minúscula, dígito, símbolo</string>
     <string name="passwords_do_not_match">As senhas não coincidem</string>

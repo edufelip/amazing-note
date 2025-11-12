@@ -24,13 +24,19 @@ data class AuthUiState(
     val user: AuthUser? = null,
     val isUserResolved: Boolean = false,
     val loading: Boolean = false,
-    val error: String? = null,
+    val error: AuthError? = null,
 )
 
 sealed class AuthEvent {
     data object LoginSuccess : AuthEvent()
     data object SignUpSuccess : AuthEvent()
     data class PasswordResetSent(val email: String) : AuthEvent()
+}
+
+sealed interface AuthError {
+    data object GenericValidation : AuthError
+    data object Network : AuthError
+    data class Custom(val message: String) : AuthError
 }
 
 class AuthViewModel(
@@ -55,7 +61,7 @@ class AuthViewModel(
     }
 
     fun setError(message: String) {
-        _uiState.update { it.copy(error = message) }
+        _uiState.update { it.copy(error = AuthError.Custom(message)) }
     }
 
     fun loginWithEmail(email: String, password: String) {
@@ -73,7 +79,7 @@ class AuthViewModel(
             if (result.isSuccess) {
                 _events.emit(AuthEvent.LoginSuccess)
             } else {
-                publishError(result.exceptionOrNull()!!, "Login failed")
+                publishError(result.exceptionOrNull()!!)
             }
             stopLoading()
         }
@@ -97,7 +103,7 @@ class AuthViewModel(
                 reason = "EMPTY",
                 rawSample = "",
             )
-            _uiState.update { it.copy(error = "Missing Google token") }
+            _uiState.update { it.copy(error = AuthError.Custom("Missing Google token")) }
             return
         }
         setLoading()
@@ -106,13 +112,13 @@ class AuthViewModel(
             if (result.isSuccess) {
                 _events.emit(AuthEvent.LoginSuccess)
             } else {
-                publishError(result.exceptionOrNull()!!, "Google sign-in failed")
+                publishError(result.exceptionOrNull()!!)
             }
             stopLoading()
         }
     }
 
-    fun signUp(email: String, password: String, confirmPassword: String) {
+    fun signUp(name: String, email: String, password: String, confirmPassword: String) {
         if (_uiState.value.loading) return
         val validation = useCases.validateCredentials(email, password)
         if (!validation.isValid) {
@@ -130,12 +136,20 @@ class AuthViewModel(
         setLoading()
         launchInScope {
             val result = runCatching {
-                useCases.signUp(validation.email.sanitized, validation.password.sanitized)
+                useCases.signUp(name, validation.email.sanitized, validation.password.sanitized)
             }
             if (result.isSuccess) {
+                runCatching {
+                    useCases.updateUserName(name)
+                }
+                _uiState.update { current ->
+                    val updatedUser = current.user?.copy(displayName = name)
+                        ?: current.user
+                    current.copy(user = updatedUser)
+                }
                 _events.emit(AuthEvent.SignUpSuccess)
             } else {
-                publishError(result.exceptionOrNull()!!, "Sign up failed")
+                publishError(result.exceptionOrNull()!!)
             }
             stopLoading()
         }
@@ -154,7 +168,7 @@ class AuthViewModel(
             if (result.isSuccess) {
                 _events.emit(AuthEvent.PasswordResetSent(validation.sanitized))
             } else {
-                publishError(result.exceptionOrNull()!!, "Failed to send reset email")
+                publishError(result.exceptionOrNull()!!)
             }
             stopLoading()
         }
@@ -168,8 +182,9 @@ class AuthViewModel(
         _uiState.update { it.copy(loading = false) }
     }
 
-    private fun publishError(error: Throwable, fallbackMessage: String) {
-        _uiState.update { it.copy(error = error.message ?: fallbackMessage) }
+    private fun publishError(error: Throwable) {
+        val resolvedError = AuthError.GenericValidation
+        _uiState.update { it.copy(error = resolvedError) }
     }
 
     private fun handleCredentialValidationFailure(
@@ -197,7 +212,8 @@ class AuthViewModel(
                 message = passwordErrorMessage(validation.password.error)
             }
         }
-        _uiState.update { it.copy(error = message ?: GENERIC_VALIDATION_ERROR) }
+        val authError = message?.let { AuthError.Custom(it) } ?: AuthError.GenericValidation
+        _uiState.update { it.copy(error = authError) }
     }
 
     private fun handleEmailValidationFailure(
@@ -210,16 +226,18 @@ class AuthViewModel(
             reason = result.error?.name ?: "unknown",
             rawSample = result.sanitized,
         )
-        _uiState.update { it.copy(error = emailErrorMessage(result.error)) }
+        val message = emailErrorMessage(result.error)
+        val authError = message?.let { AuthError.Custom(it) } ?: AuthError.GenericValidation
+        _uiState.update { it.copy(error = authError) }
     }
 
-    private fun emailErrorMessage(error: EmailValidationError?): String = when (error) {
+    private fun emailErrorMessage(error: EmailValidationError?): String? = when (error) {
         EmailValidationError.REQUIRED -> "Email is required"
         EmailValidationError.INVALID_FORMAT -> "Enter a valid email address"
-        null -> GENERIC_VALIDATION_ERROR
+        null -> null
     }
 
-    private fun passwordErrorMessage(error: PasswordValidationError?): String = when (error) {
+    private fun passwordErrorMessage(error: PasswordValidationError?): String? = when (error) {
         PasswordValidationError.REQUIRED -> "Password is required"
         PasswordValidationError.TOO_SHORT -> "Password must be at least 8 characters"
         PasswordValidationError.MISSING_UPPER,
@@ -227,7 +245,7 @@ class AuthViewModel(
         PasswordValidationError.MISSING_DIGIT,
         PasswordValidationError.MISSING_SYMBOL,
         -> "Password must include upper, lower, digit, and symbol"
-        null -> GENERIC_VALIDATION_ERROR
+        null -> null
     }
 
     private fun handlePasswordConfirmationFailure(result: PasswordConfirmationResult) {
@@ -238,16 +256,13 @@ class AuthViewModel(
             reason = result.error?.name ?: "unknown",
             rawSample = result.sanitized,
         )
-        _uiState.update { it.copy(error = message) }
+        val authError = message?.let { AuthError.Custom(it) } ?: AuthError.GenericValidation
+        _uiState.update { it.copy(error = authError) }
     }
 
-    private fun confirmationErrorMessage(error: PasswordConfirmationError?): String = when (error) {
+    private fun confirmationErrorMessage(error: PasswordConfirmationError?): String? = when (error) {
         PasswordConfirmationError.REQUIRED -> "Confirm your password"
         PasswordConfirmationError.MISMATCH -> "Passwords must match"
-        null -> GENERIC_VALIDATION_ERROR
-    }
-
-    private companion object {
-        const val GENERIC_VALIDATION_ERROR = "Check your credentials and try again"
+        null -> null
     }
 }

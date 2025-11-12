@@ -49,7 +49,7 @@ class AuthViewModelTest {
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertEquals("Invalid credentials", state.error)
+        assertEquals(AuthError.Custom("Invalid credentials"), state.error)
         assertFalse(state.loading)
     }
 
@@ -77,7 +77,7 @@ class AuthViewModelTest {
         advanceUntilIdle()
 
         assertTrue(repository.loginRequests.isEmpty())
-        assertEquals("Email is required", viewModel.uiState.value.error)
+        assertEquals(AuthError.Custom("Email is required"), viewModel.uiState.value.error)
     }
 
     @Test
@@ -105,7 +105,7 @@ class AuthViewModelTest {
         advanceUntilIdle()
 
         assertTrue(repository.signUpRequests.isEmpty())
-        assertEquals("Passwords must match", viewModel.uiState.value.error)
+        assertEquals(AuthError.Custom("Passwords must match"), viewModel.uiState.value.error)
     }
 
     private fun TestScope.createViewModel(
@@ -148,6 +148,11 @@ private class FakeAuthRepository : AuthRepository {
             email = email,
             photoUrl = null,
         )
+    }
+
+    override suspend fun setUserName(name: String) {
+        val newUser = _currentUser.value?.copy(displayName = name)
+        _currentUser.value = newUser
     }
 
     override suspend fun signUpWithEmailPassword(email: String, password: String) {

@@ -56,10 +56,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.validation.EmailValidationError
+import com.edufelip.shared.domain.validation.NameValidationError
 import com.edufelip.shared.domain.validation.PasswordValidationError
+import com.edufelip.shared.domain.validation.validateName
 import com.edufelip.shared.domain.validation.validateEmail
 import com.edufelip.shared.domain.validation.validatePassword
 import com.edufelip.shared.resources.Res
+import com.edufelip.shared.resources.auth_generic_validation_error
+import com.edufelip.shared.resources.auth_network_error
 import com.edufelip.shared.resources.cd_back
 import com.edufelip.shared.resources.cd_hide_password
 import com.edufelip.shared.resources.cd_show_password
@@ -68,6 +72,8 @@ import com.edufelip.shared.resources.contact_us
 import com.edufelip.shared.resources.email
 import com.edufelip.shared.resources.email_invalid_format
 import com.edufelip.shared.resources.email_required
+import com.edufelip.shared.resources.name
+import com.edufelip.shared.resources.name_required
 import com.edufelip.shared.resources.password
 import com.edufelip.shared.resources.password_required
 import com.edufelip.shared.resources.password_requirements
@@ -81,7 +87,12 @@ import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.util.openMailUri
 import com.edufelip.shared.ui.util.supportMailToUri
+import com.edufelip.shared.ui.vm.AuthError
+import com.edufelip.shared.ui.vm.AuthEvent
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
@@ -91,23 +102,30 @@ import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 @Composable
 fun SignUpScreen(
     onBack: () -> Unit,
-    onSubmit: (email: String, password: String, confirm: String) -> Unit,
+    onSubmit: (name: String, email: String, password: String, confirm: String) -> Unit,
     loading: Boolean = false,
-    errorMessage: String? = null,
+    error: AuthError? = null,
+    events: SharedFlow<AuthEvent>,
+    onSignUpSuccess: () -> Unit,
 ) {
+    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirm by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(false) }
     var showConfirm by remember { mutableStateOf(false) }
+    var nameHasFocus by remember { mutableStateOf(false) }
     var emailHasFocus by remember { mutableStateOf(false) }
     var passwordHasFocus by remember { mutableStateOf(false) }
     var confirmHasFocus by remember { mutableStateOf(false) }
+    var nameTouched by remember { mutableStateOf(false) }
     var emailTouched by remember { mutableStateOf(false) }
     var passwordTouched by remember { mutableStateOf(false) }
     var confirmTouched by remember { mutableStateOf(false) }
+    var nameImmediateValidation by remember { mutableStateOf(false) }
     var emailImmediateValidation by remember { mutableStateOf(false) }
     var passwordImmediateValidation by remember { mutableStateOf(false) }
+    var nameValidation by remember { mutableStateOf(validateName(name)) }
     var emailValidation by remember { mutableStateOf(validateEmail(email)) }
     var passwordValidation by remember { mutableStateOf(validatePassword(password)) }
     val sanitizedConfirm = confirm.trim()
@@ -119,6 +137,27 @@ fun SignUpScreen(
         sanitizedConfirm.isNotEmpty() &&
         passwordValidation.isValid &&
         !passwordsMatch
+
+    LaunchedEffect(events) {
+        events.collectLatest { event ->
+            if (event is AuthEvent.SignUpSuccess) {
+                onSignUpSuccess()
+            }
+        }
+    }
+
+    LaunchedEffect(name, nameHasFocus, nameImmediateValidation) {
+        if (!nameHasFocus || nameImmediateValidation) {
+            nameValidation = validateName(name)
+            if (nameImmediateValidation) nameImmediateValidation = false
+        } else {
+            val snapshot = name
+            delay(300)
+            if (snapshot == name && nameHasFocus) {
+                nameValidation = validateName(snapshot)
+            }
+        }
+    }
 
     LaunchedEffect(email, emailHasFocus, emailImmediateValidation) {
         if (!emailHasFocus || emailImmediateValidation) {
@@ -150,6 +189,10 @@ fun SignUpScreen(
     val uriHandler = LocalUriHandler.current
     val supportMailTo = remember { supportMailToUri() }
 
+    val nameErrorText = when (nameValidation.error) {
+        NameValidationError.REQUIRED -> stringResource(Res.string.name_required)
+        null -> null
+    }
     val emailErrorText = when (emailValidation.error) {
         EmailValidationError.REQUIRED -> stringResource(Res.string.email_required)
         EmailValidationError.INVALID_FORMAT -> stringResource(Res.string.email_invalid_format)
@@ -165,16 +208,27 @@ fun SignUpScreen(
         -> stringResource(Res.string.password_requirements)
         null -> null
     }
+    val showNameError = nameTouched && !nameHasFocus && nameValidation.error != null
     val showEmailError = emailTouched && !emailHasFocus && emailValidation.error != null
     val showPasswordError = passwordTouched && !passwordHasFocus && passwordErrorText != null
     val canSubmit = emailValidation.isValid && passwordValidation.isValid && confirm.isNotBlank() && !loading
 
+    val errorMessage = when (error) {
+        AuthError.GenericValidation -> stringResource(Res.string.auth_generic_validation_error)
+        AuthError.Network -> stringResource(Res.string.auth_network_error)
+        is AuthError.Custom -> error.message
+        null -> null
+    }
+
     val submitSignUp: () -> Unit = {
+        nameTouched = true
         emailTouched = true
         passwordTouched = true
         confirmTouched = true
+        nameImmediateValidation = true
         emailImmediateValidation = true
         passwordImmediateValidation = true
+        val latestNameValidation = validateName(name)
         val latestEmailValidation = validateEmail(email)
         val latestPasswordValidation = validatePassword(password)
         val confirmValue = confirm.trim()
@@ -183,8 +237,13 @@ fun SignUpScreen(
             latestPasswordValidation.sanitized == confirmValue
         emailValidation = latestEmailValidation
         passwordValidation = latestPasswordValidation
-        if (latestEmailValidation.isValid && latestPasswordValidation.isValid && !loading) {
-            onSubmit(latestEmailValidation.sanitized, latestPasswordValidation.sanitized, confirmValue)
+        if (confirmMatches && latestNameValidation.isValid && latestEmailValidation.isValid && latestPasswordValidation.isValid && !loading) {
+            onSubmit(
+                latestNameValidation.sanitized,
+                latestEmailValidation.sanitized,
+                latestPasswordValidation.sanitized,
+                confirmValue,
+            )
         }
     }
 
@@ -225,6 +284,35 @@ fun SignUpScreen(
             Spacer(modifier = Modifier.height(tokens.spacing.xxl))
 
             OutlinedTextField(
+                value = name,
+                onValueChange = {
+                    name = it
+                    if (!nameTouched) nameTouched = true
+                },
+                label = { Text(stringResource(Res.string.name)) },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { state ->
+                        nameHasFocus = state.isFocused
+                        if (state.isFocused) {
+                            nameTouched = true
+                        } else if (nameTouched) {
+                            nameImmediateValidation = true
+                        }
+                    },
+                shape = RoundedCornerShape(tokens.radius.lg),
+                isError = showNameError,
+                supportingText = {
+                    if (showNameError) {
+                        Text(
+                            text = nameErrorText.orEmpty(),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                },
+            )
+            OutlinedTextField(
                 value = email,
                 onValueChange = {
                     email = it
@@ -253,7 +341,6 @@ fun SignUpScreen(
                     }
                 },
             )
-            Spacer(modifier = Modifier.height(tokens.spacing.sm))
             OutlinedTextField(
                 value = password,
                 onValueChange = {
@@ -296,7 +383,6 @@ fun SignUpScreen(
                     }
                 },
             )
-            Spacer(modifier = Modifier.height(tokens.spacing.sm))
             OutlinedTextField(
                 value = confirm,
                 onValueChange = {
@@ -508,9 +594,11 @@ internal fun SignUpScreenPreview(
     ) {
         SignUpScreen(
             onBack = {},
-            onSubmit = { _, _, _ -> },
+            onSubmit = { _, _, _, _ -> },
             loading = state.loading,
-            errorMessage = state.errorMessage,
+            error = state.error,
+            events = MutableSharedFlow(),
+            onSignUpSuccess = {},
         )
     }
 }
@@ -519,7 +607,7 @@ internal data class SignUpPreviewState(
     val loading: Boolean,
     val isDarkTheme: Boolean = false,
     val localized: Boolean = false,
-    val errorMessage: String? = null,
+    val error: AuthError? = null,
 )
 
 internal object SignUpPreviewSamples {
@@ -532,8 +620,12 @@ internal object SignUpPreviewSamples {
         loading = false,
         localized = true,
     )
+    val withError = SignUpPreviewState(
+        loading = false,
+        error = AuthError.GenericValidation,
+    )
 
-    val states: List<SignUpPreviewState> = listOf(idle, loading, localized)
+    val states: List<SignUpPreviewState> = listOf(idle, loading, localized, withError)
 }
 
 internal expect class SignUpScreenPreviewProvider() : PreviewParameterProvider<SignUpPreviewState> {

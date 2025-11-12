@@ -12,6 +12,7 @@
     <string name="google_sign_in">Iniciar con Google</string>
     <string name="continue_with_google">Continuar con Google</string>
     <string name="login_title">Inicia sesión en tu cuenta</string>
+    <string name="name">Nombre</string>
     <string name="email">Correo electrónico</string>
     <string name="password">Contraseña</string>
     <string name="forgot_password">¿Olvidaste tu contraseña?</string>
@@ -27,6 +28,9 @@
     <string name="logout_canceled">Cierre de sesión cancelado</string>
     <string name="welcome_user">Bienvenido, %1$s</string>
     <string name="guest">Invitado</string>
+    <string name="auth_generic_validation_error">Verifica tus credenciales e inténtalo de nuevo.</string>
+    <string name="auth_network_error">Revisa tu conexión a internet e inténtalo nuevamente.</string>
+    <string name="name_required">El nombre es obligatorio.</string>
     <string name="email_required">El correo electrónico es obligatorio.</string>
     <string name="email_invalid_format">Ingresa un correo electrónico válido.</string>
     <string name="password_required">La contraseña es obligatoria.</string>

@@ -2,6 +2,17 @@ package com.edufelip.shared.domain.validation
 
 private val EMAIL_REGEX = "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$".toRegex(RegexOption.IGNORE_CASE)
 
+data class NameValidationResult(
+    val sanitized: String,
+    val error: NameValidationError?
+) {
+    val isValid: Boolean get() = error == null
+}
+
+enum class NameValidationError {
+    REQUIRED
+}
+
 data class EmailValidationResult(
     val sanitized: String,
     val error: EmailValidationError?,
@@ -47,6 +58,14 @@ data class PasswordConfirmationResult(
 enum class PasswordConfirmationError {
     REQUIRED,
     MISMATCH,
+}
+
+fun validateName(input: String): NameValidationResult {
+    val sanitized = input.trim()
+    if (sanitized.isEmpty()) {
+        return NameValidationResult(sanitized = sanitized, error = NameValidationError.REQUIRED)
+    }
+    return NameValidationResult(sanitized = sanitized.lowercase(), error = null)
 }
 
 fun validateEmail(input: String): EmailValidationResult {

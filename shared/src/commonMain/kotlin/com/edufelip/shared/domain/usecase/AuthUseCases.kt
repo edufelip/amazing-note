@@ -43,7 +43,7 @@ class Login(private val repository: AuthRepository) {
 }
 
 class SignUp(private val repository: AuthRepository) {
-    suspend operator fun invoke(email: String, password: String) = repository.signUpWithEmailPassword(email, password)
+    suspend operator fun invoke(name: String, email: String, password: String) = repository.signUpWithEmailPassword(email, password)
 }
 
 class SendPasswordReset(private val repository: AuthRepository) {
@@ -58,6 +58,10 @@ class SignInWithGoogle(private val repository: AuthRepository) {
     suspend operator fun invoke(token: String) = repository.signInWithGoogle(token)
 }
 
+class UpdateUserName(private val repository: AuthRepository) {
+    suspend operator fun invoke(name: String) = repository.setUserName(name)
+}
+
 data class AuthUseCases(
     val observeCurrentUser: ObserveCurrentUser,
     val login: Login,
@@ -69,6 +73,7 @@ data class AuthUseCases(
     val validatePassword: ValidatePassword,
     val validateCredentials: ValidateCredentials,
     val validatePasswordConfirmation: ValidatePasswordConfirmation,
+    val updateUserName: UpdateUserName
 )
 
 fun buildAuthUseCases(
@@ -87,5 +92,6 @@ fun buildAuthUseCases(
         validatePassword = validatePassword,
         validateCredentials = ValidateCredentials(validateEmail, validatePassword),
         validatePasswordConfirmation = ValidatePasswordConfirmation(),
+        updateUserName = UpdateUserName(repository)
     )
 }

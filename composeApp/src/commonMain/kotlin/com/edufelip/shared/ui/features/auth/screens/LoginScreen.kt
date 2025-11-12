@@ -35,6 +35,8 @@ import com.edufelip.shared.domain.validation.PasswordValidationError
 import com.edufelip.shared.domain.validation.validateEmail
 import com.edufelip.shared.domain.validation.validatePassword
 import com.edufelip.shared.resources.Res
+import com.edufelip.shared.resources.auth_generic_validation_error
+import com.edufelip.shared.resources.auth_network_error
 import com.edufelip.shared.resources.continue_with_google
 import com.edufelip.shared.resources.email_invalid_format
 import com.edufelip.shared.resources.email_required
@@ -66,6 +68,7 @@ import com.edufelip.shared.ui.util.OnSystemBack
 import com.edufelip.shared.ui.util.platform.currentEpochMillis
 import com.edufelip.shared.ui.util.security.AuthRateLimiter
 import com.edufelip.shared.ui.util.security.SecurityLogger
+import com.edufelip.shared.ui.vm.AuthError
 import com.edufelip.shared.ui.vm.AuthEvent
 import com.edufelip.shared.ui.vm.AuthUiState
 import kotlinx.coroutines.delay
@@ -95,6 +98,12 @@ fun LoginScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     val loading = state.loading
     val error = state.error
+    val errorText = when (error) {
+        AuthError.GenericValidation -> stringResource(Res.string.auth_generic_validation_error)
+        AuthError.Network -> stringResource(Res.string.auth_network_error)
+        is AuthError.Custom -> error.message
+        null -> null
+    }
     val scope = rememberCoroutineScope()
     val toastController = rememberToastController()
     val scrollState = rememberScrollState()
@@ -319,8 +328,8 @@ fun LoginScreen(
                 onTogglePasswordVisibility = { passwordVisible = !passwordVisible },
                 loading = loading,
                 onSubmit = attemptLogin,
-                showError = error != null && !isLockedOut,
-                errorMessage = error ?: stringResource(Res.string.login_error_invalid_credentials),
+                showError = errorText != null && !isLockedOut,
+                errorMessage = errorText ?: stringResource(Res.string.login_error_invalid_credentials),
                 emailErrorMessage = emailErrorText,
                 passwordErrorMessage = passwordErrorText,
                 isSubmitEnabled = isSubmitEnabled,

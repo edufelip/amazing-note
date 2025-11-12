@@ -124,6 +124,8 @@ class AmazingNoteAppStateTest {
 
         override suspend fun signInWithEmailPassword(email: String, password: String) {}
 
+        override suspend fun setUserName(name: String) {}
+
         override suspend fun signUpWithEmailPassword(email: String, password: String) {}
 
         override suspend fun sendPasswordResetEmail(email: String) {}
