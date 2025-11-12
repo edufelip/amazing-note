@@ -7,10 +7,9 @@ import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.ui.attachments.AttachmentPicker
 import com.edufelip.shared.ui.features.home.screens.HomeScreen
 import com.edufelip.shared.ui.nav.AppRoutes
+import com.edufelip.shared.ui.util.notes.CollectNoteSyncEvents
 import com.edufelip.shared.ui.vm.AuthViewModel
 import com.edufelip.shared.ui.vm.NoteUiViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 @Composable
 actual fun PlatformNotesRoute(
@@ -21,10 +20,14 @@ actual fun PlatformNotesRoute(
     _attachmentPicker: AttachmentPicker?,
     viewModel: NoteUiViewModel,
     syncManager: NotesSyncManager,
-    coroutineScope: CoroutineScope,
     onNavigate: (AppRoutes) -> Unit,
     isUserAuthenticated: Boolean,
 ) {
+    CollectNoteSyncEvents(
+        viewModel = viewModel,
+        syncManager = syncManager,
+        isUserAuthenticated = isUserAuthenticated,
+    )
     HomeScreen(
         notes = notes,
         auth = authViewModel,
@@ -33,12 +36,11 @@ actual fun PlatformNotesRoute(
         },
         onAdd = { onNavigate(AppRoutes.NoteDetail(null, null)) },
         onDelete = { note ->
-            coroutineScope.launch {
-                viewModel.setDeleted(note.id, true)
-                if (isUserAuthenticated) {
-                    syncManager.syncLocalToRemoteOnly()
-                }
-            }
+            viewModel.setDeleted(
+                id = note.id,
+                deleted = true,
+                syncAfter = isUserAuthenticated,
+            )
         },
     )
 }

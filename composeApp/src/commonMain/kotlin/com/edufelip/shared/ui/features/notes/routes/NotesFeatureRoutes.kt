@@ -1,10 +1,8 @@
 package com.edufelip.shared.ui.features.notes.routes
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.edufelip.shared.data.sync.NotesSyncManager
-import com.edufelip.shared.domain.model.toSummary
 import com.edufelip.shared.domain.validation.NoteValidationRules
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.unassigned_notes
@@ -14,30 +12,33 @@ import com.edufelip.shared.ui.features.notes.screens.FoldersScreen
 import com.edufelip.shared.ui.features.notes.screens.NoteDetailScreen
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.settings.LocalAppPreferences
+import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
+import com.edufelip.shared.ui.util.notes.CollectNoteSyncEvents
 import com.edufelip.shared.ui.util.security.SecurityLogger
 import com.edufelip.shared.ui.util.security.sanitizeInlineInput
-import com.edufelip.shared.ui.util.security.sanitizeMultilineInput
-import com.edufelip.shared.ui.util.security.sanitizeNoteContent
 import com.edufelip.shared.ui.vm.AuthViewModel
 import com.edufelip.shared.ui.vm.NoteUiViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun FoldersRoute(
     viewModel: NoteUiViewModel,
     syncManager: NotesSyncManager,
-    coroutineScope: CoroutineScope,
     onNavigate: (AppRoutes) -> Unit,
     isDarkTheme: Boolean,
     authViewModel: AuthViewModel,
     isUserAuthenticated: Boolean,
 ) {
-    val folders by viewModel.folders.collectAsState(initial = emptyList())
-    val notes by viewModel.notes.collectAsState(initial = emptyList())
+    CollectNoteSyncEvents(
+        viewModel = viewModel,
+        syncManager = syncManager,
+        isUserAuthenticated = isUserAuthenticated,
+    )
+    val notesState by viewModel.state.collectWithLifecycle()
+    val folders = notesState.folders
+    val notes = notesState.notes
     val appPreferences = LocalAppPreferences.current
-    val layoutMode by appPreferences.folderLayoutFlow.collectAsState(initial = appPreferences.folderLayout())
+    val layoutMode by appPreferences.folderLayoutFlow.collectWithLifecycle(initial = appPreferences.folderLayout())
 
     FoldersScreen(
         folders = folders,
@@ -50,40 +51,32 @@ fun FoldersRoute(
             onNavigate(AppRoutes.FolderDetail(folder.id))
         },
         onCreateFolder = { name ->
-            coroutineScope.launch {
-                val sanitized = sanitizeInlineInput(name, maxLength = 50)
-                if (sanitized.modified) {
-                    SecurityLogger.logSanitized(flow = "folders", field = "create", rawSample = name)
-                }
-                if (sanitized.value.isNotEmpty()) {
-                    viewModel.createFolder(sanitized.value)
-                    if (isUserAuthenticated) {
-                        syncManager.syncLocalToRemoteOnly()
-                    }
-                }
+            val sanitized = sanitizeInlineInput(name, maxLength = 50)
+            if (sanitized.modified) {
+                SecurityLogger.logSanitized(flow = "folders", field = "create", rawSample = name)
+            }
+            if (sanitized.value.isNotEmpty()) {
+                viewModel.createFolder(
+                    name = sanitized.value,
+                    syncAfter = isUserAuthenticated,
+                )
             }
         },
         onRenameFolder = { folder, newName ->
-            coroutineScope.launch {
-                val sanitized = sanitizeInlineInput(newName, maxLength = 50)
-                if (sanitized.modified) {
-                    SecurityLogger.logSanitized(flow = "folders", field = "rename", rawSample = newName)
-                }
-                if (sanitized.value.isNotEmpty() && sanitized.value != folder.name) {
-                    viewModel.renameFolder(folder.id, sanitized.value)
-                    if (isUserAuthenticated) {
-                        syncManager.syncLocalToRemoteOnly()
-                    }
-                }
+            val sanitized = sanitizeInlineInput(newName, maxLength = 50)
+            if (sanitized.modified) {
+                SecurityLogger.logSanitized(flow = "folders", field = "rename", rawSample = newName)
+            }
+            if (sanitized.value.isNotEmpty() && sanitized.value != folder.name) {
+                viewModel.renameFolder(
+                    id = folder.id,
+                    name = sanitized.value,
+                    syncAfter = isUserAuthenticated,
+                )
             }
         },
         onDeleteFolder = { folder ->
-            coroutineScope.launch {
-                viewModel.deleteFolder(folder.id)
-                if (isUserAuthenticated) {
-                    syncManager.syncLocalToRemoteOnly()
-                }
-            }
+            viewModel.deleteFolder(folder.id, syncAfter = isUserAuthenticated)
         },
     )
 }
@@ -93,27 +86,28 @@ fun FolderDetailRoute(
     route: AppRoutes.FolderDetail,
     viewModel: NoteUiViewModel,
     syncManager: NotesSyncManager,
-    coroutineScope: CoroutineScope,
     onNavigate: (AppRoutes) -> Unit,
     onBack: () -> Unit,
     isUserAuthenticated: Boolean,
 ) {
-    val folders by viewModel.folders.collectAsState(initial = emptyList())
-    val unassignedNotes by viewModel.notesWithoutFolder.collectAsState(initial = emptyList())
+    CollectNoteSyncEvents(
+        viewModel = viewModel,
+        syncManager = syncManager,
+        isUserAuthenticated = isUserAuthenticated,
+    )
+    val notesState by viewModel.state.collectWithLifecycle()
+    val folders = notesState.folders
+    val unassignedNotes = notesState.notesWithoutFolder
     val folderId = route.id
     val folderTitle = folderId?.let { id ->
         folders.firstOrNull { it.id == id }?.name
     } ?: stringResource(Res.string.unassigned_notes)
 
-    val notesFlow = if (folderId == null) {
-        viewModel.notesWithoutFolder
+    val folderNotes = if (folderId == null) {
+        unassignedNotes
     } else {
-        viewModel.notesByFolder(folderId)
+        notesState.notes.filter { it.folderId == folderId }
     }
-
-    val folderNotes by notesFlow.collectAsState(
-        initial = if (folderId == null) unassignedNotes else emptyList(),
-    )
 
     FolderDetailScreen(
         title = folderTitle,
@@ -126,38 +120,31 @@ fun FolderDetailRoute(
             onNavigate(AppRoutes.NoteDetail(null, folderId))
         },
         onDeleteNote = { note ->
-            coroutineScope.launch {
-                viewModel.setDeleted(note.id, true)
-                if (isUserAuthenticated) {
-                    syncManager.syncLocalToRemoteOnly()
-                }
-            }
+            viewModel.setDeleted(
+                id = note.id,
+                deleted = true,
+                syncAfter = isUserAuthenticated,
+            )
         },
         onRenameFolder = folderId?.let { id ->
             { newName ->
-                coroutineScope.launch {
-                    val sanitized = sanitizeInlineInput(newName, maxLength = 50)
-                    if (sanitized.modified) {
-                        SecurityLogger.logSanitized(flow = "folders_detail", field = "rename", rawSample = newName)
-                    }
-                    if (sanitized.value.isNotEmpty()) {
-                        viewModel.renameFolder(id, sanitized.value)
-                        if (isUserAuthenticated) {
-                            syncManager.syncLocalToRemoteOnly()
-                        }
-                    }
+                val sanitized = sanitizeInlineInput(newName, maxLength = 50)
+                if (sanitized.modified) {
+                    SecurityLogger.logSanitized(flow = "folders_detail", field = "rename", rawSample = newName)
+                }
+                if (sanitized.value.isNotEmpty()) {
+                    viewModel.renameFolder(
+                        id = id,
+                        name = sanitized.value,
+                        syncAfter = isUserAuthenticated,
+                    )
                 }
             }
         },
         onDeleteFolder = folderId?.let { id ->
             {
-                coroutineScope.launch {
-                    viewModel.deleteFolder(id)
-                    if (isUserAuthenticated) {
-                        syncManager.syncLocalToRemoteOnly()
-                    }
-                    onBack()
-                }
+                viewModel.deleteFolder(id, syncAfter = isUserAuthenticated)
+                onBack()
             }
         },
     )
@@ -168,15 +155,19 @@ fun NoteDetailRoute(
     route: AppRoutes.NoteDetail,
     viewModel: NoteUiViewModel,
     syncManager: NotesSyncManager,
-    coroutineScope: CoroutineScope,
     attachmentPicker: AttachmentPicker?,
     onBack: () -> Unit,
     isUserAuthenticated: Boolean,
 ) {
-    val notes by viewModel.notes.collectAsState(initial = emptyList())
-    val trash by viewModel.trash.collectAsState(initial = emptyList())
-    val folders by viewModel.folders.collectAsState(initial = emptyList())
-    val securityLogger = SecurityLogger
+    CollectNoteSyncEvents(
+        viewModel = viewModel,
+        syncManager = syncManager,
+        isUserAuthenticated = isUserAuthenticated,
+    )
+    val notesState by viewModel.state.collectWithLifecycle()
+    val notes = notesState.notes
+    val trash = notesState.trash
+    val folders = notesState.folders
     val noteValidationRules = NoteValidationRules()
 
     val editing = route.id?.let { id ->
@@ -189,59 +180,43 @@ fun NoteDetailRoute(
         editing = editing,
         folders = folders,
         initialFolderId = initialFolderId,
+        noteValidationRules = noteValidationRules,
         onBack = onBack,
         isUserAuthenticated = isUserAuthenticated,
-        saveAndValidate = { noteId, title, content, folderId ->
-            val sanitizedTitle = sanitizeInlineInput(title, maxLength = noteValidationRules.maxTitleLength)
-            if (sanitizedTitle.modified) {
-                securityLogger.logSanitized(flow = "note", field = "title", rawSample = title)
-            }
-            val sanitizedContentResult = sanitizeNoteContent(content)
-            val sanitizedContent = sanitizedContentResult.value
-            val contentSummary = sanitizedContent.toSummary()
-            if (sanitizedContentResult.modified) {
-                securityLogger.logSanitized(flow = "note", field = "content", rawSample = contentSummary.description)
-            }
-            val sanitizedDescription = sanitizeMultilineInput(
-                contentSummary.description,
-                maxLength = noteValidationRules.maxDescriptionLength,
-            )
-            if (sanitizedDescription.modified) {
-                securityLogger.logSanitized(flow = "note", field = "description", rawSample = contentSummary.description)
-            }
-            val result = if (noteId == null) {
+        onSaveNote = { noteId, title, description, spans, attachments, folderId, content, navigateBack ->
+            if (noteId == null) {
                 viewModel.insert(
-                    title = sanitizedTitle.value,
-                    description = sanitizedDescription.value,
-                    spans = contentSummary.spans,
-                    attachments = contentSummary.attachments,
+                    title = title,
+                    description = description,
+                    spans = spans,
+                    attachments = attachments,
                     folderId = folderId,
-                    content = sanitizedContent,
+                    content = content,
+                    navigateBack = navigateBack,
+                    cleanupAttachments = isUserAuthenticated,
                 )
             } else {
                 viewModel.update(
                     id = noteId,
-                    title = sanitizedTitle.value,
-                    description = sanitizedDescription.value,
+                    title = title,
+                    description = description,
                     deleted = false,
-                    spans = contentSummary.spans,
-                    attachments = contentSummary.attachments,
+                    spans = spans,
+                    attachments = attachments,
                     folderId = folderId,
-                    content = sanitizedContent,
+                    content = content,
+                    navigateBack = navigateBack,
+                    cleanupAttachments = isUserAuthenticated,
                 )
             }
-            if (isUserAuthenticated) {
-                syncManager.syncLocalToRemoteOnly()
-            }
-            result
         },
+        events = viewModel.events,
         onDelete = { noteId ->
-            coroutineScope.launch {
-                viewModel.setDeleted(noteId, true)
-                if (isUserAuthenticated) {
-                    syncManager.syncLocalToRemoteOnly()
-                }
-            }
+            viewModel.setDeleted(
+                id = noteId,
+                deleted = true,
+                syncAfter = isUserAuthenticated,
+            )
         },
         attachmentPicker = attachmentPicker,
     )

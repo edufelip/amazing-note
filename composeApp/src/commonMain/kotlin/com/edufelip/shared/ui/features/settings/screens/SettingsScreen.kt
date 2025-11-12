@@ -41,7 +41,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -82,6 +81,7 @@ import com.edufelip.shared.ui.components.organisms.settings.PersonalizeHeroIllus
 import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.ios.IosDatePicker
 import com.edufelip.shared.ui.settings.LocalSettings
+import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.util.platform.Haptics
 import com.edufelip.shared.ui.util.platform.currentEpochMillis
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
@@ -107,7 +107,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
 ) {
     val chrome = platformChromeStrategy()
-    val userState = auth?.uiState?.collectAsState()?.value?.user
+    val userState = auth?.uiState?.collectWithLifecycle()?.value?.user
     val tokens = designTokens()
     val itemsSpacing = tokens.spacing.lg
     val settingsStore = LocalSettings.current

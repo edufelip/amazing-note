@@ -110,7 +110,7 @@ class AmazingNoteAppStateTest {
             googleSignInLauncher = null,
         )
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
-        val authViewModel = AuthViewModel(authUseCases, scope)
+        val authViewModel = AuthViewModel(authUseCases, dispatcher = Dispatchers.Unconfined)
         return AmazingNoteAppState(
             environment = environment,
             initialRoute = initialRoute,

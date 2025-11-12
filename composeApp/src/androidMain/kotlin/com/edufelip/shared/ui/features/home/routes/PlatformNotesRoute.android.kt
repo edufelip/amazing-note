@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import com.edufelip.shared.data.sync.NotesSyncManager
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
-import com.edufelip.shared.domain.model.toSummary
+import com.edufelip.shared.domain.validation.NoteValidationRules
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.select_a_note_to_start
 import com.edufelip.shared.ui.attachments.AttachmentPicker
@@ -28,10 +28,9 @@ import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.features.home.screens.HomeScreen
 import com.edufelip.shared.ui.features.notes.screens.NoteDetailScreen
 import com.edufelip.shared.ui.nav.AppRoutes
+import com.edufelip.shared.ui.util.notes.CollectNoteSyncEvents
 import com.edufelip.shared.ui.vm.AuthViewModel
 import com.edufelip.shared.ui.vm.NoteUiViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import org.jetbrains.compose.resources.stringResource
 
@@ -48,22 +47,25 @@ actual fun PlatformNotesRoute(
     attachmentPicker: AttachmentPicker?,
     viewModel: NoteUiViewModel,
     syncManager: NotesSyncManager,
-    coroutineScope: CoroutineScope,
     onNavigate: (AppRoutes) -> Unit,
     isUserAuthenticated: Boolean,
 ) {
+    CollectNoteSyncEvents(
+        viewModel = viewModel,
+        syncManager = syncManager,
+        isUserAuthenticated = isUserAuthenticated,
+    )
     val configuration = LocalConfiguration.current
     val isCompactWidth = remember(configuration) {
         configuration.screenWidthDp < 600
     }
 
     val onDelete: (Note) -> Unit = { note ->
-        coroutineScope.launch {
-            viewModel.setDeleted(note.id, true)
-            if (isUserAuthenticated) {
-                syncManager.syncLocalToRemoteOnly()
-            }
-        }
+        viewModel.setDeleted(
+            id = note.id,
+            deleted = true,
+            syncAfter = isUserAuthenticated,
+        )
     }
 
     if (isCompactWidth) {
@@ -105,8 +107,6 @@ actual fun PlatformNotesRoute(
                 trash = trash,
                 folders = folders,
                 viewModel = viewModel,
-                syncManager = syncManager,
-                coroutineScope = coroutineScope,
                 attachmentPicker = attachmentPicker,
                 onClose = { navigator.navigateBack() },
                 isUserAuthenticated = isUserAuthenticated,
@@ -146,8 +146,6 @@ private fun NotesDetailPane(
     trash: List<Note>,
     folders: List<Folder>,
     viewModel: NoteUiViewModel,
-    syncManager: NotesSyncManager,
-    coroutineScope: CoroutineScope,
     attachmentPicker: AttachmentPicker?,
     onClose: () -> Unit,
     isUserAuthenticated: Boolean,
@@ -163,49 +161,51 @@ private fun NotesDetailPane(
 
     val initialFolderId = editing?.folderId ?: destination.presetFolderId
 
+    val noteValidationRules = NoteValidationRules()
+
     NoteDetailScreen(
         id = destination.noteId,
         editing = editing,
         folders = folders,
         initialFolderId = initialFolderId,
+        noteValidationRules = noteValidationRules,
         onBack = onClose,
         isUserAuthenticated = isUserAuthenticated,
-        saveAndValidate = { id, title, content, folderId ->
-            val summary = content.toSummary()
-            val result = if (id == null) {
+        events = viewModel.events,
+        onSaveNote = { noteId, title, description, spans, attachments, folderId, content, navigateBack ->
+            if (noteId == null) {
                 viewModel.insert(
                     title = title,
-                    description = summary.description,
-                    spans = summary.spans,
-                    attachments = summary.attachments,
+                    description = description,
+                    spans = spans,
+                    attachments = attachments,
                     folderId = folderId,
                     content = content,
+                    navigateBack = navigateBack,
+                    cleanupAttachments = isUserAuthenticated,
                 )
             } else {
                 viewModel.update(
-                    id = id,
+                    id = noteId,
                     title = title,
-                    description = summary.description,
+                    description = description,
                     deleted = false,
-                    spans = summary.spans,
-                    attachments = summary.attachments,
+                    spans = spans,
+                    attachments = attachments,
                     folderId = folderId,
                     content = content,
+                    navigateBack = navigateBack,
+                    cleanupAttachments = isUserAuthenticated,
                 )
             }
-            if (isUserAuthenticated) {
-                syncManager.syncLocalToRemoteOnly()
-            }
-            result
         },
         onDelete = { noteId ->
-            coroutineScope.launch {
-                viewModel.setDeleted(noteId, true)
-                if (isUserAuthenticated) {
-                    syncManager.syncLocalToRemoteOnly()
-                }
-                onClose()
-            }
+            viewModel.setDeleted(
+                id = noteId,
+                deleted = true,
+                syncAfter = isUserAuthenticated,
+            )
+            onClose()
         },
         attachmentPicker = attachmentPicker,
     )

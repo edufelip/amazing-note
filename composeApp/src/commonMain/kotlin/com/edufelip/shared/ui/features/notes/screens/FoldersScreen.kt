@@ -31,7 +31,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -69,6 +68,7 @@ import com.edufelip.shared.ui.features.notes.dialogs.DeleteFolderDialog
 import com.edufelip.shared.ui.features.notes.dialogs.FolderNameDialog
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.vm.AuthViewModel
 import org.jetbrains.compose.resources.stringResource
@@ -132,7 +132,7 @@ fun FoldersScreen(
         tokens.colors.accent.copy(alpha = 0.85f),
     )
 
-    val currentUserState = auth?.uiState?.collectAsState()?.value
+    val currentUserState = auth?.uiState?.collectWithLifecycle()?.value
 
     val isEmpty = folders.isEmpty()
     val chrome = platformChromeStrategy()

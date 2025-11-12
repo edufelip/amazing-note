@@ -38,6 +38,7 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.bundles.preview)
             implementation(libs.activity.compose)
+            implementation(libs.lifecycle.runtime.compose)
             implementation(libs.credentials.core)
             implementation(libs.credentials.play.services)
             implementation(libs.googleid)

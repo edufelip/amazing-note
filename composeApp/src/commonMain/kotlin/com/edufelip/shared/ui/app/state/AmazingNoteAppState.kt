@@ -1,6 +1,7 @@
 package com.edufelip.shared.ui.app.state
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -35,13 +36,14 @@ class AmazingNoteAppState internal constructor(
     private val tabRoutes = listOf(AppRoutes.Notes, AppRoutes.Folders, AppRoutes.Settings)
 
     val backStack: SnapshotStateList<AppRoutes> = mutableStateListOf(initialRoute)
+    private val currentRouteState = mutableStateOf(initialRoute)
 
     init {
-        reportRoute(currentRoute)
+        reportRoute(currentRouteState.value)
     }
 
     val currentRoute: AppRoutes
-        get() = backStack.last()
+        get() = currentRouteState.value
 
     val darkThemeFlow = environment.appPreferences.darkThemeFlow
 
@@ -62,27 +64,31 @@ class AmazingNoteAppState internal constructor(
 
     fun navigate(route: AppRoutes, singleTop: Boolean = true) {
         backStack.navigate(route, singleTop)
-        reportRoute(currentRoute)
+        currentRouteState.value = backStack.last()
+        reportRoute(currentRouteState.value)
     }
 
     fun popBack(): Boolean {
         val popped = backStack.goBack()
         if (popped) {
-            reportRoute(currentRoute)
+            currentRouteState.value = backStack.last()
+            reportRoute(currentRouteState.value)
         }
         return popped
     }
 
     fun popToRoot() {
         backStack.popToRoot()
-        reportRoute(currentRoute)
+        currentRouteState.value = backStack.last()
+        reportRoute(currentRouteState.value)
     }
 
     fun setRoot(destination: AppRoutes) {
         if (backStack.size == 1 && backStack.last() == destination) return
         backStack.clear()
         backStack.add(destination)
-        reportRoute(currentRoute)
+        currentRouteState.value = destination
+        reportRoute(destination)
     }
 
     fun toggleTheme(enabled: Boolean? = null) {
@@ -111,8 +117,8 @@ fun rememberAmazingNoteAppState(
     showBottomBar: Boolean,
     noteDatabase: NoteDatabase? = null,
     existingSyncManager: NotesSyncManager? = null,
-    authViewModelFactory: (environment: AmazingNoteAppEnvironment, CoroutineScope) -> AuthViewModel = { env, scope ->
-        AuthViewModel(env.authUseCases, scope)
+    authViewModelFactory: (environment: AmazingNoteAppEnvironment) -> AuthViewModel = { env ->
+        AuthViewModel(env.authUseCases)
     },
 ): AmazingNoteAppState {
     val coroutineScope = rememberCoroutineScope()
@@ -126,8 +132,12 @@ fun rememberAmazingNoteAppState(
         notesSyncManager = existingSyncManager,
     )
 
-    val authViewModel = remember(environment, coroutineScope, authViewModelFactory) {
-        authViewModelFactory(environment, coroutineScope)
+    val authViewModel = remember(environment, authViewModelFactory) {
+        authViewModelFactory(environment)
+    }
+
+    DisposableEffect(authViewModel) {
+        onDispose { authViewModel.clear() }
     }
 
     return remember(environment, initialRoute, showBottomBar, authViewModel) {

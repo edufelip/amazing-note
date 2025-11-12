@@ -11,7 +11,6 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +26,7 @@ import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.features.notes.components.ListScreen
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.vm.AuthViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -42,7 +42,7 @@ fun HomeScreen(
     onAdd: () -> Unit,
     onDelete: (Note) -> Unit,
 ) {
-    val currentUserState = auth?.uiState?.collectAsState()?.value
+    val currentUserState = auth?.uiState?.collectWithLifecycle()?.value
     val currentUid = currentUserState?.user?.uid
     val syncManager = LocalNotesSyncManager.current
     var syncing by remember(currentUid, syncManager) { mutableStateOf(currentUid != null) }

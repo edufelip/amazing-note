@@ -72,7 +72,6 @@ fun AmazingNoteNavHost(
                     viewModel = viewModel,
                     authViewModel = state.authViewModel,
                     syncManager = environment.notesSyncManager,
-                    coroutineScope = state.coroutineScope,
                     onNavigate = state::navigate,
                     attachmentPicker = environment.attachmentPicker,
                     isUserAuthenticated = isUserAuthenticated,
@@ -81,7 +80,6 @@ fun AmazingNoteNavHost(
                 AppRoutes.Folders -> FoldersRoute(
                     viewModel = viewModel,
                     syncManager = environment.notesSyncManager,
-                    coroutineScope = state.coroutineScope,
                     onNavigate = state::navigate,
                     isDarkTheme = darkTheme,
                     authViewModel = state.authViewModel,
@@ -99,7 +97,6 @@ fun AmazingNoteNavHost(
                     route = route,
                     viewModel = viewModel,
                     syncManager = environment.notesSyncManager,
-                    coroutineScope = state.coroutineScope,
                     onNavigate = state::navigate,
                     onBack = { state.popBack() },
                     isUserAuthenticated = isUserAuthenticated,
@@ -109,7 +106,6 @@ fun AmazingNoteNavHost(
                     route = route,
                     viewModel = viewModel,
                     syncManager = environment.notesSyncManager,
-                    coroutineScope = state.coroutineScope,
                     attachmentPicker = environment.attachmentPicker,
                     onBack = { state.popBack() },
                     isUserAuthenticated = isUserAuthenticated,
@@ -118,7 +114,6 @@ fun AmazingNoteNavHost(
                 AppRoutes.Trash -> TrashRoute(
                     viewModel = viewModel,
                     syncManager = environment.notesSyncManager,
-                    coroutineScope = state.coroutineScope,
                     onBack = { state.popBack() },
                     isUserAuthenticated = isUserAuthenticated,
                 )

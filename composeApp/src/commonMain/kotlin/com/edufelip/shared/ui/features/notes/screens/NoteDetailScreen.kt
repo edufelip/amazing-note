@@ -18,14 +18,17 @@ import androidx.compose.ui.text.input.TextFieldValue
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.Note
+import com.edufelip.shared.domain.model.NoteAttachment
 import com.edufelip.shared.domain.model.NoteContent
+import com.edufelip.shared.domain.model.NoteTextSpan
+import com.edufelip.shared.domain.model.toSummary
 import com.edufelip.shared.domain.model.withSummaryFromContent
-import com.edufelip.shared.domain.validation.NoteActionResult
 import com.edufelip.shared.domain.validation.NoteValidationError
 import com.edufelip.shared.domain.validation.NoteValidationError.DescriptionTooLong
 import com.edufelip.shared.domain.validation.NoteValidationError.EmptyDescription
 import com.edufelip.shared.domain.validation.NoteValidationError.EmptyTitle
 import com.edufelip.shared.domain.validation.NoteValidationError.TitleTooLong
+import com.edufelip.shared.domain.validation.NoteValidationRules
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.error_description_required
 import com.edufelip.shared.resources.error_description_too_long
@@ -45,7 +48,16 @@ import com.edufelip.shared.ui.attachments.storageFileForLocalUri
 import com.edufelip.shared.ui.attachments.uploadAttachmentWithGitLive
 import com.edufelip.shared.ui.editor.rememberNoteEditorState
 import com.edufelip.shared.ui.features.notes.dialogs.DiscardNoteDialog
+import com.edufelip.shared.ui.effects.toast.rememberToastController
+import com.edufelip.shared.ui.effects.toast.show
 import com.edufelip.shared.ui.util.OnSystemBack
+import com.edufelip.shared.ui.util.security.SecurityLogger
+import com.edufelip.shared.ui.util.security.sanitizeInlineInput
+import com.edufelip.shared.ui.util.security.sanitizeMultilineInput
+import com.edufelip.shared.ui.util.security.sanitizeNoteContent
+import com.edufelip.shared.ui.vm.NotesEvent
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
@@ -56,12 +68,18 @@ fun NoteDetailScreen(
     onBack: () -> Unit,
     folders: List<Folder>,
     initialFolderId: Long?,
-    saveAndValidate: suspend (
+    noteValidationRules: NoteValidationRules,
+    onSaveNote: (
         id: Int?,
         title: String,
-        content: NoteContent,
+        description: String,
+        spans: List<NoteTextSpan>,
+        attachments: List<NoteAttachment>,
         folderId: Long?,
-    ) -> NoteActionResult,
+        content: NoteContent,
+        navigateBack: Boolean,
+    ) -> Unit,
+    events: SharedFlow<NotesEvent>,
     onDelete: (Int) -> Unit,
     attachmentPicker: AttachmentPicker? = null,
     isUserAuthenticated: Boolean,
@@ -73,6 +91,9 @@ fun NoteDetailScreen(
     val initialContent = remember(noteKey) {
         normalizedNote?.content ?: NoteContent()
     }
+
+    var baselineTitle by remember(noteKey) { mutableStateOf(initialTitle) }
+    var baselineFolderId by remember(noteKey) { mutableStateOf(initialFolder) }
 
     var titleState by remember(noteKey) {
         mutableStateOf(TextFieldValue(initialTitle, TextRange(initialTitle.length)))
@@ -93,10 +114,17 @@ fun NoteDetailScreen(
     val pendingRenditions = remember(noteKey) { mutableStateMapOf<String, AttachmentProcessingResult>() }
     val uploadCoordinator = remember { AttachmentUploadCoordinator() }
 
-    val hasUnsavedChanges by remember(titleState.text, selectedFolderId, currentContent) {
+    val hasUnsavedChanges by remember(
+        titleState.text,
+        selectedFolderId,
+        currentContent,
+        baselineTitle,
+        baselineFolderId,
+        baselineContent,
+    ) {
         derivedStateOf {
-            titleState.text != initialTitle ||
-                selectedFolderId != initialFolder ||
+            titleState.text != baselineTitle ||
+                selectedFolderId != baselineFolderId ||
                 currentContent != baselineContent
         }
     }
@@ -111,7 +139,9 @@ fun NoteDetailScreen(
     val errorDescriptionTooLongTpl = stringResource(Res.string.error_description_too_long)
 
     val scope = rememberCoroutineScope()
+    val toastController = rememberToastController()
     val latestOnBack by rememberUpdatedState(onBack)
+    val securityLogger = SecurityLogger
 
     fun applyValidationErrors(errors: List<NoteValidationError>) {
         titleError = errors.firstOrNull { it is EmptyTitle || it is TitleTooLong }?.let { error ->
@@ -202,20 +232,40 @@ fun NoteDetailScreen(
                 } else {
                     currentContent
                 }
-                val result = saveAndValidate(id, trimmedTitle, syncedContent, selectedFolderId)
-                currentContent = syncedContent
-                when (result) {
-                    is NoteActionResult.Success -> {
-                        if (shouldUploadAttachments) {
-                            cleanupPendingLocalAttachments()
-                        }
-                        if (navigateBack) latestOnBack()
-                    }
-                    is NoteActionResult.Invalid -> applyValidationErrors(result.errors)
+                val sanitizedTitle = sanitizeInlineInput(trimmedTitle, maxLength = noteValidationRules.maxTitleLength)
+                if (sanitizedTitle.modified) {
+                    securityLogger.logSanitized(flow = "note", field = "title", rawSample = trimmedTitle)
                 }
+                val sanitizedContentResult = sanitizeNoteContent(syncedContent)
+                val sanitizedContent = sanitizedContentResult.value
+                val summary = sanitizedContent.toSummary()
+                if (sanitizedContentResult.modified) {
+                    securityLogger.logSanitized(flow = "note", field = "content", rawSample = summary.description)
+                }
+                val sanitizedDescription = sanitizeMultilineInput(
+                    summary.description,
+                    maxLength = noteValidationRules.maxDescriptionLength,
+                )
+                if (sanitizedDescription.modified) {
+                    securityLogger.logSanitized(flow = "note", field = "description", rawSample = summary.description)
+                }
+                val sanitizedTitleValue = sanitizedTitle.value
+                if (sanitizedTitleValue != titleState.text) {
+                    titleState = TextFieldValue(sanitizedTitleValue, TextRange(sanitizedTitleValue.length))
+                }
+                currentContent = sanitizedContent
+                onSaveNote(
+                    id,
+                    sanitizedTitle.value,
+                    sanitizedDescription.value,
+                    summary.spans,
+                    summary.attachments,
+                    selectedFolderId,
+                    sanitizedContent,
+                    navigateBack,
+                )
             } catch (t: Throwable) {
                 contentError = t.message ?: "Failed to save note"
-            } finally {
                 isSaving = false
             }
         }
@@ -330,6 +380,40 @@ fun NoteDetailScreen(
                 latestOnBack()
             },
         )
+    }
+
+    LaunchedEffect(events, noteKey) {
+        events.collect { event ->
+            when (event) {
+                is NotesEvent.NoteSaved -> {
+                    isSaving = false
+                    titleError = null
+                    contentError = null
+                    discardDialogVisible = false
+                    baselineTitle = titleState.text
+                    baselineFolderId = selectedFolderId
+                    baselineContent = currentContent
+                    if (event.cleanupAttachments) {
+                        cleanupPendingLocalAttachments()
+                    }
+                    if (event.navigateBack) {
+                        latestOnBack()
+                    }
+                }
+
+                is NotesEvent.ValidationFailed -> {
+                    isSaving = false
+                    applyValidationErrors(event.errors)
+                }
+
+                is NotesEvent.ShowMessage -> {
+                    isSaving = false
+                    toastController.show(event.text)
+                }
+
+                NotesEvent.SyncRequested -> Unit
+            }
+        }
     }
 }
 

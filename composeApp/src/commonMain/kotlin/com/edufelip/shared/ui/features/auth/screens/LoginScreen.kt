@@ -29,16 +29,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import com.edufelip.shared.data.auth.GoogleSignInLauncher
+import com.edufelip.shared.domain.validation.EmailValidationError
+import com.edufelip.shared.domain.validation.PasswordValidationError
+import com.edufelip.shared.domain.validation.validateEmail
+import com.edufelip.shared.domain.validation.validatePassword
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.continue_with_google
 import com.edufelip.shared.resources.email_invalid_format
 import com.edufelip.shared.resources.email_required
 import com.edufelip.shared.resources.forgot_password
 import com.edufelip.shared.resources.forgot_password_invalid_email
+import com.edufelip.shared.resources.forgot_password_try_again
 import com.edufelip.shared.resources.google_sign_in_canceled
 import com.edufelip.shared.resources.login_error_invalid_credentials
 import com.edufelip.shared.resources.login_headline
-import com.edufelip.shared.resources.forgot_password_try_again
 import com.edufelip.shared.resources.login_rate_limit
 import com.edufelip.shared.resources.login_subheadline
 import com.edufelip.shared.resources.password_required
@@ -49,7 +53,6 @@ import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.effects.toast.rememberToastController
 import com.edufelip.shared.ui.effects.toast.show
 import com.edufelip.shared.ui.features.auth.components.ForgotPasswordDialog
-import com.edufelip.shared.ui.features.auth.components.ForgotPasswordSuccessDialog
 import com.edufelip.shared.ui.features.auth.components.GoogleButton
 import com.edufelip.shared.ui.features.auth.components.LoginCredentialsSection
 import com.edufelip.shared.ui.features.auth.components.LoginFooter
@@ -60,13 +63,11 @@ import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.util.platform.currentEpochMillis
 import com.edufelip.shared.ui.util.security.AuthRateLimiter
 import com.edufelip.shared.ui.util.security.SecurityLogger
-import com.edufelip.shared.ui.util.validation.EmailValidationError
-import com.edufelip.shared.ui.util.validation.PasswordValidationError
-import com.edufelip.shared.ui.util.validation.validateEmail
-import com.edufelip.shared.ui.util.validation.validatePassword
-import com.edufelip.shared.ui.vm.AuthMessage
+import com.edufelip.shared.ui.vm.AuthEvent
 import com.edufelip.shared.ui.vm.AuthUiState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -78,22 +79,19 @@ fun LoginScreen(
     onBack: () -> Unit,
     googleSignInLauncher: GoogleSignInLauncher? = null,
     onOpenSignUp: () -> Unit,
-    onLoginSuccess: () -> Unit,
     showLocalSuccessToast: Boolean,
     onLogin: (String, String) -> Unit,
     onGoogleSignIn: (String) -> Unit,
     onSendPasswordReset: (String) -> Unit,
     onClearError: () -> Unit,
-    onClearMessage: () -> Unit,
     onSetError: (String) -> Unit,
+    events: SharedFlow<AuthEvent>,
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     val loading = state.loading
     val error = state.error
-    val user = state.user
-    val message = state.message
     val scope = rememberCoroutineScope()
     val toastController = rememberToastController()
     val scrollState = rememberScrollState()
@@ -102,9 +100,6 @@ fun LoginScreen(
     var forgotPasswordEmailError by rememberSaveable { mutableStateOf<String?>(null) }
     var forgotPasswordSubmitting by rememberSaveable { mutableStateOf(false) }
     var forgotPasswordPending by rememberSaveable { mutableStateOf(false) }
-    var passwordResetSuccessVisible by rememberSaveable { mutableStateOf(false) }
-    var lastResetEmail by rememberSaveable { mutableStateOf("") }
-    var loginRequested by rememberSaveable { mutableStateOf(false) }
     val tokens = designTokens()
     var emailHasFocus by remember { mutableStateOf(false) }
     var passwordHasFocus by remember { mutableStateOf(false) }
@@ -167,7 +162,6 @@ fun LoginScreen(
     } else {
         null
     }
-    val securityLogger = SecurityLogger
     LaunchedEffect(lockoutUntil) {
         if (lockoutUntil <= 0L) {
             lockoutTicker = 0L
@@ -190,7 +184,7 @@ fun LoginScreen(
             val remaining = rateLimiter.lockoutRemaining(now)
             lockoutTicker = remaining
             if (remaining > 0) {
-                securityLogger.logRateLimit("login", remaining)
+                SecurityLogger.logRateLimit("login", remaining)
             }
             return@l
         }
@@ -204,35 +198,8 @@ fun LoginScreen(
         passwordValidation = latestPasswordValidation
         val ready = latestEmailValidation.isValid && latestPasswordValidation.isValid && !loading
         if (ready) {
-            loginRequested = true
             onLogin(latestEmailValidation.sanitized, latestPasswordValidation.sanitized)
             return@l
-        }
-        if (!latestEmailValidation.isValid) {
-            securityLogger.logValidationFailure(
-                flow = "login",
-                field = "email",
-                reason = latestEmailValidation.error?.name ?: "unknown",
-                rawSample = email,
-            )
-        }
-        if (!latestPasswordValidation.isValid) {
-            securityLogger.logValidationFailure(
-                flow = "login",
-                field = "password",
-                reason = latestPasswordValidation.error?.name ?: "unknown",
-                rawSample = "***",
-            )
-        }
-    }
-
-    LaunchedEffect(user, loginRequested) {
-        if (loginRequested && user != null) {
-            onLoginSuccess()
-            loginRequested = false
-            rateLimiter.reset()
-            lockoutUntil = 0L
-            lockoutTicker = 0L
         }
     }
 
@@ -241,46 +208,41 @@ fun LoginScreen(
     val forgotPasswordInvalidEmailText = stringResource(Res.string.forgot_password_invalid_email)
     val forgotPasswordTryAgainText = stringResource(Res.string.forgot_password_try_again)
 
+    LaunchedEffect(events, showLocalSuccessToast) {
+        events.collect { event ->
+            when (event) {
+                AuthEvent.LoginSuccess -> {
+                    rateLimiter.reset()
+                    lockoutUntil = 0L
+                    lockoutTicker = 0L
+                }
+
+                is AuthEvent.PasswordResetSent -> {
+                    if (forgotPasswordPending) {
+                        forgotPasswordPending = false
+                        forgotPasswordSubmitting = false
+                        forgotPasswordEmailError = null
+                    } else {
+                        toastController.show(resetEmailSentText)
+                    }
+                }
+
+                AuthEvent.SignUpSuccess -> if (showLocalSuccessToast) {
+                    toastController.show(signUpSuccessText)
+                }
+            }
+        }
+    }
+
     val submitPasswordReset: () -> Unit = {
         val validation = validateEmail(forgotPasswordEmail.trim())
         if (!validation.isValid) {
             forgotPasswordEmailError = forgotPasswordInvalidEmailText
-            securityLogger.logValidationFailure(
-                flow = "forgot_password",
-                field = "email",
-                reason = validation.error?.name ?: "unknown",
-                rawSample = forgotPasswordEmail,
-            )
         } else {
             forgotPasswordEmailError = null
             forgotPasswordSubmitting = true
             forgotPasswordPending = true
-            lastResetEmail = validation.sanitized
             onSendPasswordReset(validation.sanitized)
-        }
-    }
-
-    LaunchedEffect(message) {
-        when (message) {
-            AuthMessage.ResetEmailSent -> {
-                if (forgotPasswordPending) {
-                    forgotPasswordPending = false
-                    forgotPasswordSubmitting = false
-                    forgotPasswordDialogVisible = false
-                    forgotPasswordEmailError = null
-                    passwordResetSuccessVisible = true
-                } else {
-                    toastController.show(resetEmailSentText)
-                }
-                onClearMessage()
-            }
-
-            AuthMessage.SignUpSuccess -> if (showLocalSuccessToast) {
-                toastController.show(signUpSuccessText)
-                onClearMessage()
-            }
-
-            null -> Unit
         }
     }
 
@@ -292,12 +254,11 @@ fun LoginScreen(
             forgotPasswordSubmitting = false
             forgotPasswordEmailError = forgotPasswordTryAgainText
         } else {
-            loginRequested = false
             val now = currentEpochMillis()
             lockoutUntil = rateLimiter.registerFailure(now)
             lockoutTicker = rateLimiter.lockoutRemaining(now)
             if (lockoutTicker > 0L) {
-                securityLogger.logRateLimit("login", lockoutTicker)
+                SecurityLogger.logRateLimit("login", lockoutTicker)
             }
         }
     }
@@ -354,7 +315,7 @@ fun LoginScreen(
                 loading = loading,
                 onSubmit = attemptLogin,
                 showError = error != null && !isLockedOut,
-                errorMessage = stringResource(Res.string.login_error_invalid_credentials),
+                errorMessage = error ?: stringResource(Res.string.login_error_invalid_credentials),
                 emailErrorMessage = emailErrorText,
                 passwordErrorMessage = passwordErrorText,
                 isSubmitEnabled = isSubmitEnabled,
@@ -396,13 +357,11 @@ fun LoginScreen(
                         val result = launcher.signIn()
                         when {
                             !result.idToken.isNullOrBlank() -> {
-                                loginRequested = true
                                 onGoogleSignIn(result.idToken)
                             }
                             !result.errorMessage.isNullOrBlank() -> {
                                 onSetError(result.errorMessage)
                                 toastController.show(result.errorMessage)
-                                loginRequested = false
                             }
                             else -> toastController.show(googleCanceledText)
                         }
@@ -448,12 +407,6 @@ fun LoginScreen(
                 onSubmit = submitPasswordReset,
             )
         }
-        if (passwordResetSuccessVisible) {
-            ForgotPasswordSuccessDialog(
-                email = lastResetEmail,
-                onDismiss = { passwordResetSuccessVisible = false },
-            )
-        }
     }
 }
 
@@ -467,14 +420,13 @@ private fun LoginScreenPreview() {
             onBack = {},
             googleSignInLauncher = null,
             onOpenSignUp = {},
-            onLoginSuccess = {},
             showLocalSuccessToast = true,
             onLogin = { _, _ -> },
             onGoogleSignIn = {},
             onSendPasswordReset = {},
             onClearError = {},
-            onClearMessage = {},
             onSetError = {},
+            events = MutableSharedFlow(),
         )
     }
 }

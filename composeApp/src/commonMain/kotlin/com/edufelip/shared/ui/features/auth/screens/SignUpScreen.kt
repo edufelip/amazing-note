@@ -55,6 +55,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import com.edufelip.shared.domain.validation.EmailValidationError
+import com.edufelip.shared.domain.validation.PasswordValidationError
+import com.edufelip.shared.domain.validation.validateEmail
+import com.edufelip.shared.domain.validation.validatePassword
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_back
 import com.edufelip.shared.resources.cd_hide_password
@@ -76,12 +80,7 @@ import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.util.openMailUri
-import com.edufelip.shared.ui.util.security.SecurityLogger
 import com.edufelip.shared.ui.util.supportMailToUri
-import com.edufelip.shared.ui.util.validation.EmailValidationError
-import com.edufelip.shared.ui.util.validation.PasswordValidationError
-import com.edufelip.shared.ui.util.validation.validateEmail
-import com.edufelip.shared.ui.util.validation.validatePassword
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -92,8 +91,9 @@ import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 @Composable
 fun SignUpScreen(
     onBack: () -> Unit,
-    onSubmit: (email: String, password: String) -> Unit,
+    onSubmit: (email: String, password: String, confirm: String) -> Unit,
     loading: Boolean = false,
+    errorMessage: String? = null,
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -167,8 +167,7 @@ fun SignUpScreen(
     }
     val showEmailError = emailTouched && !emailHasFocus && emailValidation.error != null
     val showPasswordError = passwordTouched && !passwordHasFocus && passwordErrorText != null
-    val canSubmit = emailValidation.isValid && passwordValidation.isValid && passwordsMatch && !loading
-    val securityLogger = SecurityLogger
+    val canSubmit = emailValidation.isValid && passwordValidation.isValid && confirm.isNotBlank() && !loading
 
     val submitSignUp: () -> Unit = {
         emailTouched = true
@@ -184,28 +183,8 @@ fun SignUpScreen(
             latestPasswordValidation.sanitized == confirmValue
         emailValidation = latestEmailValidation
         passwordValidation = latestPasswordValidation
-        when {
-            !latestEmailValidation.isValid -> securityLogger.logValidationFailure(
-                flow = "sign_up",
-                field = "email",
-                reason = latestEmailValidation.error?.name ?: "unknown",
-                rawSample = email,
-            )
-            !latestPasswordValidation.isValid -> securityLogger.logValidationFailure(
-                flow = "sign_up",
-                field = "password",
-                reason = latestPasswordValidation.error?.name ?: "unknown",
-                rawSample = "***",
-            )
-            !confirmMatches -> securityLogger.logValidationFailure(
-                flow = "sign_up",
-                field = "confirm_password",
-                reason = "MISMATCH",
-                rawSample = confirmValue,
-            )
-        }
-        if (latestEmailValidation.isValid && latestPasswordValidation.isValid && confirmMatches && !loading) {
-            onSubmit(latestEmailValidation.sanitized, latestPasswordValidation.sanitized)
+        if (latestEmailValidation.isValid && latestPasswordValidation.isValid && !loading) {
+            onSubmit(latestEmailValidation.sanitized, latestPasswordValidation.sanitized, confirmValue)
         }
     }
 
@@ -359,6 +338,17 @@ fun SignUpScreen(
                 },
             )
             Spacer(modifier = Modifier.height(tokens.spacing.xl))
+            if (!errorMessage.isNullOrBlank()) {
+                Text(
+                    text = errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = tokens.spacing.md),
+                )
+            }
             Button(
                 onClick = submitSignUp,
                 enabled = canSubmit,
@@ -518,8 +508,9 @@ internal fun SignUpScreenPreview(
     ) {
         SignUpScreen(
             onBack = {},
-            onSubmit = { _, _ -> },
+            onSubmit = { _, _, _ -> },
             loading = state.loading,
+            errorMessage = state.errorMessage,
         )
     }
 }
@@ -528,6 +519,7 @@ internal data class SignUpPreviewState(
     val loading: Boolean,
     val isDarkTheme: Boolean = false,
     val localized: Boolean = false,
+    val errorMessage: String? = null,
 )
 
 internal object SignUpPreviewSamples {

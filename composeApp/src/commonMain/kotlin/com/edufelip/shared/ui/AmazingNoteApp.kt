@@ -3,7 +3,6 @@ package com.edufelip.shared.ui
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
@@ -32,6 +31,7 @@ import com.edufelip.shared.ui.settings.LocalSettings
 import com.edufelip.shared.ui.settings.Settings
 import com.edufelip.shared.ui.theme.AmazingNoteTheme
 import com.edufelip.shared.ui.util.OnSystemBack
+import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.vm.NoteUiViewModel
 
@@ -64,9 +64,9 @@ fun AmazingNoteApp(
         noteDatabase = noteDatabase,
     )
     val environment = state.environment
-    val authUiState by state.authViewModel.uiState.collectAsState()
+    val authUiState by state.authViewModel.uiState.collectWithLifecycle()
     val user = authUiState.user
-    val darkTheme by state.darkThemeFlow.collectAsState(initial = state.darkTheme)
+    val darkTheme by state.darkThemeFlow.collectWithLifecycle(initial = state.darkTheme)
 
     CompositionLocalProvider(
         LocalSettings provides environment.settings,
