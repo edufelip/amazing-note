@@ -6,7 +6,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.window.ComposeUIViewController
-import com.edufelip.shared.data.auth.GitLiveAuthService
 import com.edufelip.shared.db.NoteDatabase
 import com.edufelip.shared.di.getSharedKoin
 import com.edufelip.shared.di.initKoin
@@ -16,6 +15,7 @@ import com.edufelip.shared.ui.indication.NoFeedbackIndication
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.settings.AppPreferences
 import com.edufelip.shared.ui.settings.Settings
+import com.edufelip.shared.ui.vm.AuthViewModel
 import com.edufelip.shared.ui.vm.NoteUiViewModel
 import platform.UIKit.UIColor
 import platform.UIKit.UIViewController
@@ -71,7 +71,7 @@ fun createAmazingNoteViewController(
     val controller = ComposeUIViewController {
         val koin = remember { getSharedKoin() }
         val vm = remember { koin.get<NoteUiViewModel>() }
-        val authService = remember { GitLiveAuthService() }
+        val authViewModel = remember { koin.get<AuthViewModel>() }
         val settings = remember { koin.get<Settings>() }
         val appPreferences = remember { koin.get<AppPreferences>() }
         val db = remember { koin.get<NoteDatabase>() }
@@ -82,7 +82,7 @@ fun createAmazingNoteViewController(
             }
             AmazingNoteApp(
                 viewModel = vm,
-                authService = authService,
+                authViewModel = authViewModel,
                 settings = settings,
                 appPreferences = appPreferences,
                 noteDatabase = db,

@@ -1,5 +1,7 @@
 package com.edufelip.shared.di
 
+import com.edufelip.shared.data.auth.AuthService
+import com.edufelip.shared.data.auth.GitLiveAuthService
 import com.edufelip.shared.data.db.DatabaseDriverFactory
 import com.edufelip.shared.data.db.createDatabase
 import com.edufelip.shared.data.repository.SqlDelightNoteRepository
@@ -13,6 +15,7 @@ import org.koin.dsl.module
 
 actual fun platformModule(): Module = module {
     single { createDatabase(DatabaseDriverFactory()) }
+    single<AuthService> { GitLiveAuthService() }
     single<NoteRepository> { SqlDelightNoteRepository(get()) }
     single<Settings> { IosSettings }
     single<AppPreferences> { DefaultAppPreferences(get()) }

@@ -102,8 +102,6 @@ class AmazingNoteAppStateTest {
         val environment = AmazingNoteAppEnvironment(
             settings = settings,
             appPreferences = appPreferences,
-            authRepository = authRepository,
-            authUseCases = authUseCases,
             noteDatabase = noteDatabase,
             notesSyncManager = syncManager,
             attachmentPicker = null,

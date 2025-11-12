@@ -1,8 +1,14 @@
 package com.edufelip.shared.di
 
+import com.edufelip.shared.data.auth.AuthService
+import com.edufelip.shared.data.repository.DefaultAuthRepository
+import com.edufelip.shared.domain.repository.AuthRepository
+import com.edufelip.shared.domain.usecase.AuthUseCases
 import com.edufelip.shared.domain.usecase.NoteUseCases
+import com.edufelip.shared.domain.usecase.buildAuthUseCases
 import com.edufelip.shared.domain.usecase.buildNoteUseCases
 import com.edufelip.shared.domain.validation.NoteValidationRules
+import com.edufelip.shared.ui.vm.AuthViewModel
 import com.edufelip.shared.ui.vm.DefaultNoteUiViewModel
 import com.edufelip.shared.ui.vm.NoteUiViewModel
 import org.koin.core.Koin
@@ -14,7 +20,10 @@ import org.koin.dsl.module
 import kotlin.native.concurrent.ThreadLocal
 
 private val coreModule = module {
+    single<AuthRepository> { DefaultAuthRepository(get<AuthService>()) }
+    single<AuthUseCases> { buildAuthUseCases(get()) }
     single<NoteUseCases> { buildNoteUseCases(get(), NoteValidationRules()) }
+    single { AuthViewModel(get()) }
     single<NoteUiViewModel> { DefaultNoteUiViewModel(get()) }
 }
 

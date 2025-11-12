@@ -253,7 +253,7 @@ fun SignUpScreen(
                     }
                 },
             )
-            Spacer(modifier = Modifier.height(tokens.spacing.lg))
+            Spacer(modifier = Modifier.height(tokens.spacing.sm))
             OutlinedTextField(
                 value = password,
                 onValueChange = {
@@ -290,13 +290,13 @@ fun SignUpScreen(
                 supportingText = {
                     if (showPasswordError) {
                         Text(
-                            text = passwordErrorText.orEmpty(),
+                            text = passwordErrorText,
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
                 },
             )
-            Spacer(modifier = Modifier.height(tokens.spacing.lg))
+            Spacer(modifier = Modifier.height(tokens.spacing.sm))
             OutlinedTextField(
                 value = confirm,
                 onValueChange = {
@@ -337,7 +337,7 @@ fun SignUpScreen(
                     }
                 },
             )
-            Spacer(modifier = Modifier.height(tokens.spacing.xl))
+            Spacer(modifier = Modifier.height(tokens.spacing.sm))
             if (!errorMessage.isNullOrBlank()) {
                 Text(
                     text = errorMessage,

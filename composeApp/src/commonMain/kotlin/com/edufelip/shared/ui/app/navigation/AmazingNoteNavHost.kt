@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -31,6 +32,7 @@ import com.edufelip.shared.ui.features.settings.routes.PrivacyRoute
 import com.edufelip.shared.ui.features.settings.routes.SettingsRoute
 import com.edufelip.shared.ui.features.trash.routes.TrashRoute
 import com.edufelip.shared.ui.nav.AppRoutes
+import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.util.platform.platformBehavior
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.vm.NoteUiViewModel
@@ -44,13 +46,14 @@ fun AmazingNoteNavHost(
     viewModel: NoteUiViewModel,
     appVersion: String,
     darkTheme: Boolean,
-    themeKey: Boolean,
-    isUserAuthenticated: Boolean,
+    themeKey: Boolean
 ) {
     val environment = state.environment
     val layoutDirection = LocalLayoutDirection.current
     val chrome = platformChromeStrategy()
     val platformBehavior = platformBehavior()
+    val authUiState by state.authViewModel.uiState.collectWithLifecycle()
+    val isUserAuthenticated = authUiState.user != null
 
     val contentModifier = with(chrome) {
         Modifier

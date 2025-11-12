@@ -1,5 +1,7 @@
 package com.edufelip.shared.di
 
+import com.edufelip.shared.data.auth.AuthService
+import com.edufelip.shared.data.auth.GitLiveAuthService
 import com.edufelip.shared.data.db.AndroidContextHolder
 import com.edufelip.shared.data.db.DatabaseDriverFactory
 import com.edufelip.shared.data.db.createDatabase
@@ -18,6 +20,7 @@ actual fun platformModule(): Module = module {
         AndroidContextHolder.appContext = androidContext().applicationContext
         createDatabase(DatabaseDriverFactory())
     }
+    single<AuthService> { GitLiveAuthService() }
     single<NoteRepository> { SqlDelightNoteRepository(get()) }
     single<Settings> { AndroidSettings(androidContext()) }
     single<AppPreferences> { DefaultAppPreferences(get()) }

@@ -5,15 +5,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.request.crossfade
-import com.edufelip.shared.data.auth.AuthService
 import com.edufelip.shared.data.auth.GoogleSignInConfig
-import com.edufelip.shared.data.auth.NoAuthService
 import com.edufelip.shared.data.sync.LocalNotesSyncManager
 import com.edufelip.shared.db.NoteDatabase
+import com.edufelip.shared.di.getSharedKoin
 import com.edufelip.shared.ui.app.chrome.AmazingNoteScaffold
 import com.edufelip.shared.ui.app.effects.BottomBarVisibilityEffect
 import com.edufelip.shared.ui.app.effects.PlatformTabBarVisibilityEffect
@@ -33,12 +33,13 @@ import com.edufelip.shared.ui.theme.AmazingNoteTheme
 import com.edufelip.shared.ui.util.OnSystemBack
 import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
+import com.edufelip.shared.ui.vm.AuthViewModel
 import com.edufelip.shared.ui.vm.NoteUiViewModel
 
 @Composable
 fun AmazingNoteApp(
     viewModel: NoteUiViewModel,
-    authService: AuthService = NoAuthService,
+    authViewModel: AuthViewModel? = null,
     googleSignInConfig: GoogleSignInConfig = GoogleSignInConfig(),
     settings: Settings = InMemorySettings(),
     appPreferences: AppPreferences = DefaultAppPreferences(settings),
@@ -49,23 +50,25 @@ fun AmazingNoteApp(
     onTabBarVisibilityChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    val resolvedAuthViewModel = authViewModel ?: run {
+        val koin = getSharedKoin()
+        remember(koin) { koin.get<AuthViewModel>() }
+    }
     setSingletonImageLoaderFactory { context ->
         val base = ImageLoader.Builder(context).crossfade(true)
         platformConfigImageLoader(base, context).build()
     }
 
     val state = rememberAmazingNoteAppState(
-        authService = authService,
         googleSignInConfig = googleSignInConfig,
         settings = settings,
         appPreferences = appPreferences,
         initialRoute = initialRoute,
         showBottomBar = showBottomBar,
         noteDatabase = noteDatabase,
+        authViewModel = resolvedAuthViewModel,
     )
     val environment = state.environment
-    val authUiState by state.authViewModel.uiState.collectWithLifecycle()
-    val user = authUiState.user
     val darkTheme by state.darkThemeFlow.collectWithLifecycle(initial = state.darkTheme)
 
     CompositionLocalProvider(
@@ -74,7 +77,7 @@ fun AmazingNoteApp(
         LocalNotesSyncManager provides environment.notesSyncManager,
     ) {
         ScheduleInitialSync(environment.notesSyncManager)
-        SyncOnUserChange(user, environment.notesSyncManager)
+        SyncOnUserChange(state, environment.notesSyncManager)
         BottomBarVisibilityEffect(state)
         PlatformTabBarVisibilityEffect(state, onTabBarVisibilityChanged)
 
@@ -98,8 +101,7 @@ fun AmazingNoteApp(
                         viewModel = viewModel,
                         appVersion = appVersion,
                         darkTheme = darkTheme,
-                        themeKey = darkTheme,
-                        isUserAuthenticated = user != null,
+                        themeKey = darkTheme
                     )
                 }
             }

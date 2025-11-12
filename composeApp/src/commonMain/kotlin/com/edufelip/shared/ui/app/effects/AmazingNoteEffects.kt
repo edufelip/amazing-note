@@ -2,9 +2,10 @@ package com.edufelip.shared.ui.app.effects
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import com.edufelip.shared.data.auth.AuthUser
+import androidx.compose.runtime.getValue
 import com.edufelip.shared.data.sync.NotesSyncManager
 import com.edufelip.shared.ui.app.state.AmazingNoteAppState
+import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import kotlinx.coroutines.delay
 
 @Composable
@@ -15,7 +16,9 @@ fun ScheduleInitialSync(syncManager: NotesSyncManager) {
 }
 
 @Composable
-fun SyncOnUserChange(user: AuthUser?, syncManager: NotesSyncManager) {
+fun SyncOnUserChange(state: AmazingNoteAppState, syncManager: NotesSyncManager) {
+    val authUiState by state.authViewModel.uiState.collectWithLifecycle()
+    val user = authUiState.user
     LaunchedEffect(syncManager, user?.uid) {
         val uid = user?.uid ?: return@LaunchedEffect
         syncManager.syncNow()

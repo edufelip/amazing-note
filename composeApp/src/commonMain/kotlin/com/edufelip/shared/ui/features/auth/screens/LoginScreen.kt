@@ -24,6 +24,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -53,6 +54,7 @@ import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.effects.toast.rememberToastController
 import com.edufelip.shared.ui.effects.toast.show
 import com.edufelip.shared.ui.features.auth.components.ForgotPasswordDialog
+import com.edufelip.shared.ui.features.auth.components.ForgotPasswordSuccessDialog
 import com.edufelip.shared.ui.features.auth.components.GoogleButton
 import com.edufelip.shared.ui.features.auth.components.LoginCredentialsSection
 import com.edufelip.shared.ui.features.auth.components.LoginFooter
@@ -60,6 +62,7 @@ import com.edufelip.shared.ui.features.auth.components.LoginHeader
 import com.edufelip.shared.ui.features.auth.components.LoginIllustration
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.util.OnSystemBack
 import com.edufelip.shared.ui.util.platform.currentEpochMillis
 import com.edufelip.shared.ui.util.security.AuthRateLimiter
 import com.edufelip.shared.ui.util.security.SecurityLogger
@@ -72,7 +75,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun LoginScreen(
     state: AuthUiState,
@@ -100,6 +103,7 @@ fun LoginScreen(
     var forgotPasswordEmailError by rememberSaveable { mutableStateOf<String?>(null) }
     var forgotPasswordSubmitting by rememberSaveable { mutableStateOf(false) }
     var forgotPasswordPending by rememberSaveable { mutableStateOf(false) }
+    var forgotPasswordSuccessVisible by rememberSaveable { mutableStateOf(false) }
     val tokens = designTokens()
     var emailHasFocus by remember { mutableStateOf(false) }
     var passwordHasFocus by remember { mutableStateOf(false) }
@@ -222,6 +226,8 @@ fun LoginScreen(
                         forgotPasswordPending = false
                         forgotPasswordSubmitting = false
                         forgotPasswordEmailError = null
+                        forgotPasswordDialogVisible = false
+                        forgotPasswordSuccessVisible = true
                     } else {
                         toastController.show(resetEmailSentText)
                     }
@@ -239,7 +245,6 @@ fun LoginScreen(
         if (!validation.isValid) {
             forgotPasswordEmailError = forgotPasswordInvalidEmailText
         } else {
-            forgotPasswordEmailError = null
             forgotPasswordSubmitting = true
             forgotPasswordPending = true
             onSendPasswordReset(validation.sanitized)
@@ -390,6 +395,12 @@ fun LoginScreen(
         }
 
         if (forgotPasswordDialogVisible) {
+            OnSystemBack {
+                forgotPasswordDialogVisible = false
+                forgotPasswordSubmitting = false
+                forgotPasswordPending = false
+                forgotPasswordEmailError = null
+            }
             ForgotPasswordDialog(
                 email = forgotPasswordEmail,
                 errorMessage = forgotPasswordEmailError,
@@ -405,6 +416,18 @@ fun LoginScreen(
                     forgotPasswordEmailError = null
                 },
                 onSubmit = submitPasswordReset,
+            )
+        }
+
+        if (forgotPasswordSuccessVisible) {
+            OnSystemBack {
+                forgotPasswordSuccessVisible = false
+            }
+            ForgotPasswordSuccessDialog(
+                email = forgotPasswordEmail,
+                onDismiss = {
+                    forgotPasswordSuccessVisible = false
+                }
             )
         }
     }

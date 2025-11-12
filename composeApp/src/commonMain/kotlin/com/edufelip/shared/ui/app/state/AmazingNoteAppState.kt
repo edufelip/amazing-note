@@ -9,7 +9,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import com.edufelip.shared.data.auth.AuthService
 import com.edufelip.shared.data.auth.GoogleSignInConfig
 import com.edufelip.shared.data.sync.NotesSyncManager
 import com.edufelip.shared.db.NoteDatabase
@@ -109,7 +108,6 @@ class AmazingNoteAppState internal constructor(
 
 @Composable
 fun rememberAmazingNoteAppState(
-    authService: AuthService,
     googleSignInConfig: GoogleSignInConfig,
     settings: Settings,
     appPreferences: AppPreferences = DefaultAppPreferences(settings),
@@ -117,13 +115,10 @@ fun rememberAmazingNoteAppState(
     showBottomBar: Boolean,
     noteDatabase: NoteDatabase? = null,
     existingSyncManager: NotesSyncManager? = null,
-    authViewModelFactory: (environment: AmazingNoteAppEnvironment) -> AuthViewModel = { env ->
-        AuthViewModel(env.authUseCases)
-    },
+    authViewModel: AuthViewModel,
 ): AmazingNoteAppState {
     val coroutineScope = rememberCoroutineScope()
     val environment = rememberAmazingNoteAppEnvironment(
-        authService = authService,
         googleSignInConfig = googleSignInConfig,
         settings = settings,
         appPreferences = appPreferences,
@@ -132,15 +127,11 @@ fun rememberAmazingNoteAppState(
         notesSyncManager = existingSyncManager,
     )
 
-    val authViewModel = remember(environment, authViewModelFactory) {
-        authViewModelFactory(environment)
-    }
-
     DisposableEffect(authViewModel) {
         onDispose { authViewModel.clear() }
     }
 
-    return remember(environment, initialRoute, showBottomBar, authViewModel) {
+    return remember(environment, initialRoute, showBottomBar) {
         AmazingNoteAppState(
             environment = environment,
             initialRoute = initialRoute,
