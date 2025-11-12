@@ -92,6 +92,7 @@ fun LoginScreen(
     onClearError: () -> Unit,
     onSetError: (String) -> Unit,
     events: SharedFlow<AuthEvent>,
+    onLoginSuccess: () -> Unit,
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -228,6 +229,7 @@ fun LoginScreen(
                     rateLimiter.reset()
                     lockoutUntil = 0L
                     lockoutTicker = 0L
+                    onLoginSuccess()
                 }
 
                 is AuthEvent.PasswordResetSent -> {
@@ -459,6 +461,7 @@ private fun LoginScreenPreview() {
             onClearError = {},
             onSetError = {},
             events = MutableSharedFlow(),
+            onLoginSuccess = {},
         )
     }
 }

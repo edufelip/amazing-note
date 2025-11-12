@@ -32,6 +32,7 @@ fun LoginRoute(
         onClearError = { auth.clearError() },
         onSetError = { auth.setError(it) },
         events = auth.events,
+        onLoginSuccess = { state.setRoot(AppRoutes.Notes) },
     )
 }
 
