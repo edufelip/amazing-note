@@ -1,5 +1,6 @@
 package com.edufelip.shared.data.cloud
 
+import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.attachmentsFromJson
 import com.edufelip.shared.domain.model.noteContentFromJson
@@ -17,17 +18,25 @@ import dev.gitlive.firebase.firestore.firestoreSettings
 import dev.gitlive.firebase.firestore.memoryCacheSettings
 import dev.gitlive.firebase.firestore.memoryEagerGcSettings
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
 interface CloudNotesDataSource {
-    fun observe(uid: String): Flow<List<Note>>
-    suspend fun getAll(uid: String): List<Note>
+    fun observe(uid: String): Flow<RemoteSyncPayload>
+    suspend fun getAll(uid: String): RemoteSyncPayload
     suspend fun upsert(uid: String, note: Note)
     suspend fun delete(uid: String, id: Int)
 
     // Upsert that preserves provided updatedAt (no server timestamp). Useful for push-only sync to avoid reordering.
     suspend fun upsertPreserveUpdatedAt(uid: String, note: Note)
+    suspend fun upsertFolder(uid: String, folder: Folder)
+    suspend fun deleteFolder(uid: String, id: Long)
 }
+
+data class RemoteSyncPayload(
+    val notes: List<Note>,
+    val folders: List<Folder>,
+)
 
 fun provideCloudNotesDataSource(): CloudNotesDataSource = GitLiveCloudNotesDataSource
 
@@ -46,19 +55,39 @@ private object GitLiveCloudNotesDataSource : CloudNotesDataSource {
         }
     }
 
-    override fun observe(uid: String): Flow<List<Note>> = notesCollection(uid)
-        .snapshots
-        .map { snapshot ->
-            snapshot.documents
-                .mapNotNull { document -> document.toNoteOrNull() }
-                .sortedBy { it.updatedAt }
+    override fun observe(uid: String): Flow<RemoteSyncPayload> {
+        val notesFlow = notesCollection(uid)
+            .snapshots
+            .map { snapshot ->
+                snapshot.documents
+                    .mapNotNull { document -> document.toNoteOrNull() }
+                    .sortedBy { it.updatedAt }
+            }
+        val foldersFlow = foldersCollection(uid)
+            .snapshots
+            .map { snapshot ->
+                snapshot.documents
+                    .mapNotNull { it.toFolderOrNull() }
+                    .sortedBy { it.updatedAt }
+            }
+        return combine(notesFlow, foldersFlow) { notes, folders ->
+            RemoteSyncPayload(notes, folders)
         }
+    }
 
-    override suspend fun getAll(uid: String): List<Note> = notesCollection(uid)
-        .get()
-        .documents
-        .mapNotNull { it.toNoteOrNull() }
-        .sortedBy { it.updatedAt }
+    override suspend fun getAll(uid: String): RemoteSyncPayload {
+        val notes = notesCollection(uid)
+            .get()
+            .documents
+            .mapNotNull { it.toNoteOrNull() }
+            .sortedBy { it.updatedAt }
+        val folders = foldersCollection(uid)
+            .get()
+            .documents
+            .mapNotNull { it.toFolderOrNull() }
+            .sortedBy { it.updatedAt }
+        return RemoteSyncPayload(notes, folders)
+    }
 
     override suspend fun upsert(uid: String, note: Note) {
         val data = note.toFirestoreData(useServerUpdatedAt = true)
@@ -79,12 +108,30 @@ private object GitLiveCloudNotesDataSource : CloudNotesDataSource {
             .document(note.id.toString())
             .set(data, merge = true)
     }
+
+    override suspend fun upsertFolder(uid: String, folder: Folder) {
+        val data = folder.toFirestoreData()
+        foldersCollection(uid)
+            .document(folder.id.toString())
+            .set(data, merge = true)
+    }
+
+    override suspend fun deleteFolder(uid: String, id: Long) {
+        foldersCollection(uid)
+            .document(id.toString())
+            .delete()
+    }
 }
 
 private fun notesCollection(uid: String) = Firebase.firestore
     .collection("users")
     .document(uid)
     .collection("notes")
+
+private fun foldersCollection(uid: String) = Firebase.firestore
+    .collection("users")
+    .document(uid)
+    .collection("folders")
 
 private fun Note.toFirestoreData(useServerUpdatedAt: Boolean): Map<String, Any?> {
     val summary = content.toSummary().withFallbacks(description, descriptionSpans, attachments)
@@ -135,6 +182,27 @@ private fun Map<String, Any?>.toNote(docId: String): Note? {
     )
     return note
 }
+
+private fun DocumentSnapshot.toFolderOrNull(): Folder? {
+    val data = runCatching { data<Map<String, Any?>>() }.getOrNull() ?: return null
+    val name = data["name"] as? String ?: return null
+    val createdAt = data["createdAt"].toMillis() ?: 0L
+    val updatedAt = data["updatedAt"].toMillis() ?: 0L
+    val idValue = (data["id"] as? Number)?.toLong() ?: id.toLongOrNull() ?: return null
+    return Folder(
+        id = idValue,
+        name = name,
+        createdAt = createdAt,
+        updatedAt = updatedAt,
+    )
+}
+
+private fun Folder.toFirestoreData(): Map<String, Any?> = mapOf(
+    "id" to id,
+    "name" to name,
+    "createdAt" to if (createdAt == 0L) FieldValue.serverTimestamp else createdAt,
+    "updatedAt" to FieldValue.serverTimestamp,
+)
 
 private fun Any?.toMillis(): Long? = when (this) {
     is Number -> toLong()

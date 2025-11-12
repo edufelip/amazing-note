@@ -63,6 +63,9 @@ class SqlDelightNoteRepository(
         name = row.name,
         createdAt = row.created_at,
         updatedAt = row.updated_at,
+        deleted = row.deleted != 0L,
+        dirty = row.local_dirty != 0L,
+        localUpdatedAt = row.local_updated_at,
     )
 
     override fun notes(): Flow<List<Note>> = queries.selectAll().asFlow().mapToList(dispatcher).map { rows -> rows.map(::mapRowToNote) }
@@ -164,6 +167,7 @@ class SqlDelightNoteRepository(
             name = name,
             created_at = now,
             updated_at = now,
+            local_updated_at = now,
         )
         return queries.lastInsertedFolderId().executeAsOne()
     }
@@ -173,6 +177,7 @@ class SqlDelightNoteRepository(
         queries.updateFolder(
             name = name,
             updated_at = now,
+            local_updated_at = now,
             id = id,
         )
     }
@@ -184,6 +189,10 @@ class SqlDelightNoteRepository(
             local_updated_at = now,
             folder_id = id,
         )
-        queries.deleteFolder(id)
+        queries.markFolderDeleted(
+            updated_at = now,
+            local_updated_at = now,
+            id = id,
+        )
     }
 }

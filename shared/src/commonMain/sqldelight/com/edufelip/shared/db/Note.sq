@@ -18,7 +18,10 @@ CREATE TABLE folder(
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL
+  updated_at INTEGER NOT NULL,
+  deleted INTEGER NOT NULL DEFAULT 0,
+  local_dirty INTEGER NOT NULL DEFAULT 0,
+  local_updated_at INTEGER NOT NULL DEFAULT 0
 );
 
 selectAll:
@@ -92,18 +95,51 @@ UPDATE note SET folder_id = NULL, updated_at = ?, local_dirty = 1, local_updated
 selectFolders:
 SELECT *
 FROM folder
+WHERE deleted = 0
 ORDER BY updated_at DESC, id DESC;
 
+selectAllFolders:
+SELECT *
+FROM folder
+ORDER BY updated_at DESC, id DESC;
+
+selectDirtyFolders:
+SELECT *
+FROM folder
+WHERE local_dirty = 1
+ORDER BY updated_at DESC, id DESC;
+
+selectFolderById:
+SELECT *
+FROM folder
+WHERE id = ?;
+
 insertFolder:
-INSERT INTO folder(name, created_at, updated_at)
-VALUES (?, ?, ?);
+INSERT INTO folder(name, created_at, updated_at, deleted, local_dirty, local_updated_at)
+VALUES (?, ?, ?, 0, 1, ?);
+
+insertFolderWithId:
+INSERT INTO folder(id, name, created_at, updated_at, deleted, local_dirty, local_updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 updateFolder:
-UPDATE folder SET name = ?, updated_at = ?
+UPDATE folder SET name = ?, updated_at = ?, local_dirty = 1, local_updated_at = ?
+WHERE id = ?;
+
+updateFolderFromRemote:
+UPDATE folder SET name = ?, updated_at = ?, deleted = ?, local_dirty = 0
 WHERE id = ?;
 
 deleteFolder:
 DELETE FROM folder WHERE id = ?;
+
+markFolderDeleted:
+UPDATE folder SET deleted = 1, updated_at = ?, local_dirty = 1, local_updated_at = ?
+WHERE id = ?;
+
+clearFolderDirtyById:
+UPDATE folder SET local_dirty = 0 WHERE id = ?;
+
 
 deleteAllFolders:
 DELETE FROM folder;

@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 
 class CloudNoteRepository(
     private val cloud: CloudNotesDataSource = provideCloudNotesDataSource(),
@@ -25,7 +26,7 @@ class CloudNoteRepository(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun notes(): Flow<List<Note>> = currentUser.uid.flatMapLatest { uid ->
-        if (uid == null) flowOf(emptyList()) else cloud.observe(uid)
+        if (uid == null) flowOf(emptyList()) else cloud.observe(uid).map { it.notes }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -37,7 +38,10 @@ class CloudNoteRepository(
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun notesWithoutFolder(): Flow<List<Note>> = notes().flatMapLatest { list -> flowOf(list.filter { it.folderId == null }) }
 
-    override fun folders(): Flow<List<Folder>> = flowOf(emptyList())
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun folders(): Flow<List<Folder>> = currentUser.uid.flatMapLatest { uid ->
+        if (uid == null) flowOf(emptyList()) else cloud.observe(uid).map { payload -> payload.folders.filter { !it.deleted } }
+    }
 
     override suspend fun insert(
         title: String,
@@ -133,12 +137,37 @@ class CloudNoteRepository(
     }
 
     override suspend fun assignToFolder(id: Int, folderId: Long?) {
-        // Folders are a local-only concept for now on cloud repository.
+        // Cloud-only repository is primarily used in previews; caller should invoke update()
+        // with the full note contents instead of relying on this no-op.
     }
 
-    override suspend fun insertFolder(name: String): Long = 0L
+    override suspend fun insertFolder(name: String): Long {
+        val uid = currentUser.uid.first() ?: return 0L
+        val now = nowEpochMs()
+        val folder = Folder(
+            id = now,
+            name = name,
+            createdAt = now,
+            updatedAt = now,
+        )
+        cloud.upsertFolder(uid, folder)
+        return folder.id
+    }
 
-    override suspend fun renameFolder(id: Long, name: String) {}
+    override suspend fun renameFolder(id: Long, name: String) {
+        val uid = currentUser.uid.first() ?: return
+        val now = nowEpochMs()
+        val folder = Folder(
+            id = id,
+            name = name,
+            createdAt = now,
+            updatedAt = now,
+        )
+        cloud.upsertFolder(uid, folder)
+    }
 
-    override suspend fun deleteFolder(id: Long) {}
+    override suspend fun deleteFolder(id: Long) {
+        val uid = currentUser.uid.first() ?: return
+        cloud.deleteFolder(uid, id)
+    }
 }

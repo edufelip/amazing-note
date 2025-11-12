@@ -1,12 +1,15 @@
 package com.edufelip.shared.data.sync
 
+import com.edufelip.shared.core.time.nowEpochMs
 import com.edufelip.shared.data.cloud.CloudNotesDataSource
 import com.edufelip.shared.data.cloud.CurrentUserProvider
+import com.edufelip.shared.data.cloud.RemoteSyncPayload
 import com.edufelip.shared.data.cloud.provideCloudNotesDataSource
 import com.edufelip.shared.data.cloud.provideCurrentUserProvider
 import com.edufelip.shared.data.db.decryptField
 import com.edufelip.shared.data.db.encryptField
 import com.edufelip.shared.db.NoteDatabase
+import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.TextBlock
@@ -63,8 +66,8 @@ class NotesSyncManager(
                     resetMergeThrottle()
                 }
                 if (uid != null) {
-                    cloudJob = cloud.observe(uid).onEach { remote ->
-                        mergeRemoteIntoLocalAndPushLocalNewer(uid, remote)
+                    cloudJob = cloud.observe(uid).onEach { payload ->
+                        mergeRemoteIntoLocalAndPushLocalNewer(uid, payload)
                     }.launchIn(scope)
                 }
             }
@@ -74,15 +77,16 @@ class NotesSyncManager(
     suspend fun syncNow() {
         val uid = currentUser.uid.first() ?: return
         resetMergeThrottle()
-        val remote = cloud.getAll(uid)
-        mergeRemoteIntoLocalAndPushLocalNewer(uid, remote)
+        val payload = cloud.getAll(uid)
+        mergeRemoteIntoLocalAndPushLocalNewer(uid, payload)
     }
 
     suspend fun syncLocalToRemoteOnly() {
         val uid = currentUser.uid.first() ?: return
+        var pushedSomething = pushDirtyFoldersNow(uid)
         // Push only dirty rows to avoid unnecessary writes and reordering
         val dirtyRows = db.noteQueries.selectDirty().executeAsList()
-        if (dirtyRows.isEmpty()) {
+        if (dirtyRows.isEmpty() && !pushedSomething) {
             _events.tryEmit(SyncEvent.SyncCompleted)
             return
         }
@@ -91,18 +95,38 @@ class NotesSyncManager(
             cloud.upsertPreserveUpdatedAt(uid, note)
             db.noteQueries.clearDirtyById(row.id)
         }
+        pushedSomething = pushedSomething || dirtyRows.isNotEmpty()
         _events.tryEmit(SyncEvent.SyncCompleted)
     }
 
-    private suspend fun mergeRemoteIntoLocalAndPushLocalNewer(uid: String, remote: List<Note>) {
-        val currentRemoteHash = listHash(remote)
+    private suspend fun pushDirtyFoldersNow(uid: String): Boolean {
+        val dirtyFolders = db.noteQueries.selectDirtyFolders().executeAsList()
+        if (dirtyFolders.isEmpty()) return false
+        for (row in dirtyFolders) {
+            val folder = rowToFolder(row)
+            if (folder.deleted) {
+                cloud.deleteFolder(uid, folder.id)
+                db.noteQueries.deleteFolder(folder.id)
+            } else {
+                cloud.upsertFolder(uid, folder)
+                db.noteQueries.clearFolderDirtyById(folder.id)
+            }
+        }
+        return true
+    }
+
+    private suspend fun mergeRemoteIntoLocalAndPushLocalNewer(uid: String, payload: RemoteSyncPayload) {
+        val remoteNotes = payload.notes
+        val remoteFolders = payload.folders
+        val currentRemoteHash = combinedHash(remoteNotes, remoteFolders)
         if (mergingDisabled) {
             if (storedRemoteHash != null && currentRemoteHash == storedRemoteHash) return
             resetMergeThrottle()
         }
 
-        val localAll = getAllLocal()
-        val localHash = listHash(localAll)
+        val localNotes = getAllLocalNotes()
+        val localFolders = getAllLocalFolders()
+        val localHash = combinedHash(localNotes, localFolders)
         if (currentRemoteHash == localHash) {
             resetMergeThrottle()
             _events.tryEmit(SyncEvent.SyncCompleted)
@@ -111,39 +135,13 @@ class NotesSyncManager(
 
         mergeCallCount += 1
         val disableAfterThisCall = mergeCallCount >= 3
-        val remoteById = remote.associateBy { it.id }
-        val localById = localAll.associateBy { it.id }
-        var overwrites = 0
-        val toPushDistinct = LinkedHashMap<Int, Note>()
+        val foldersToPush = mergeRemoteFolders(remoteFolders, localFolders)
+        val (notesToPush, overwrites) = mergeRemoteNotes(remoteNotes, localNotes)
 
-        for ((id, r) in remoteById) {
-            val l = localById[id]
-            if (l == null) {
-                insertLocal(r)
-            } else {
-                when {
-                    r.updatedAt > l.updatedAt -> {
-                        updateLocalFromRemote(l.id, r)
-                        overwrites++
-                    }
-
-                    l.updatedAt > r.updatedAt -> toPushDistinct[id] = l
-                }
-            }
+        pushFolders(uid, foldersToPush.values)
+        for (note in notesToPush.values) {
+            cloud.upsert(uid, note)
         }
-
-        val remoteIds = remoteById.keys
-        for ((id, l) in localById) {
-            if (id !in remoteIds) {
-                if (l.dirty) {
-                    toPushDistinct[id] = l
-                } else {
-                    deleteLocal(id)
-                }
-            }
-        }
-
-        for ((_, note) in toPushDistinct) cloud.upsert(uid, note)
 
         if (overwrites > 0) _events.tryEmit(SyncEvent.OverwritesApplied(overwrites))
         _events.tryEmit(SyncEvent.SyncCompleted)
@@ -153,10 +151,111 @@ class NotesSyncManager(
         }
     }
 
-    private fun getAllLocal(): List<Note> {
+    private fun getAllLocalNotes(): List<Note> {
         val rowsActive = db.noteQueries.selectAll().executeAsList()
         val rowsDeleted = db.noteQueries.selectDeleted().executeAsList()
         return rowsActive.map(::rowToNote) + rowsDeleted.map(::rowToNote)
+    }
+
+    private fun getAllLocalFolders(): List<Folder> {
+        val rows = db.noteQueries.selectAllFolders().executeAsList()
+        return rows.map(::rowToFolder)
+    }
+
+    private fun mergeRemoteFolders(
+        remote: List<Folder>,
+        localAll: List<Folder>,
+    ): LinkedHashMap<Long, Folder> {
+        val remoteById = remote.associateBy { it.id }
+        val localById = localAll.associateBy { it.id }
+        val toPushDistinct = LinkedHashMap<Long, Folder>()
+        for ((id, remoteFolder) in remoteById) {
+            val local = localById[id]
+            if (local == null) {
+                insertLocalFolder(remoteFolder)
+                continue
+            }
+            if (local.deleted) {
+                toPushDistinct[id] = local
+                continue
+            }
+            when {
+                remoteFolder.updatedAt > local.updatedAt -> updateLocalFolderFromRemote(remoteFolder)
+                local.updatedAt > remoteFolder.updatedAt && local.dirty -> toPushDistinct[id] = local
+            }
+        }
+
+        val remoteIds = remoteById.keys
+        for ((id, local) in localById) {
+            if (id !in remoteIds) {
+                if (local.dirty || local.deleted) {
+                    toPushDistinct[id] = local
+                } else {
+                    deleteLocalFolder(id)
+                }
+            }
+        }
+        return toPushDistinct
+    }
+
+    private fun mergeRemoteNotes(
+        remote: List<Note>,
+        localAll: List<Note>,
+    ): Pair<LinkedHashMap<Int, Note>, Int> {
+        val remoteById = remote.associateBy { it.id }
+        val localById = localAll.associateBy { it.id }
+        val toPushDistinct = LinkedHashMap<Int, Note>()
+        var overwrites = 0
+
+        for ((id, remoteNote) in remoteById) {
+            ensureFolderIfReferenced(remoteNote)
+            val local = localById[id]
+            if (local == null) {
+                insertLocalNote(remoteNote)
+            } else {
+                when {
+                    remoteNote.updatedAt > local.updatedAt -> {
+                        updateLocalNoteFromRemote(local.id, remoteNote)
+                        overwrites += 1
+                    }
+
+                    local.updatedAt > remoteNote.updatedAt -> toPushDistinct[id] = local
+                }
+            }
+        }
+
+        val remoteIds = remoteById.keys
+        for ((id, local) in localById) {
+            if (id !in remoteIds) {
+                if (local.dirty) {
+                    toPushDistinct[id] = local
+                } else {
+                    deleteLocalNote(id)
+                }
+            }
+        }
+
+        return toPushDistinct to overwrites
+    }
+
+    private fun ensureFolderIfReferenced(note: Note) {
+        val folderId = note.folderId ?: return
+        ensureFolderExists(folderId, note.updatedAt)
+    }
+
+    private fun ensureFolderExists(folderId: Long, fallbackTimestamp: Long) {
+        val existing = db.noteQueries.selectFolderById(folderId).executeAsOneOrNull()
+        if (existing != null) return
+        val timestamp = if (fallbackTimestamp > 0) fallbackTimestamp else nowEpochMs()
+        db.noteQueries.insertFolderWithId(
+            id = folderId,
+            name = PLACEHOLDER_FOLDER_NAME,
+            created_at = timestamp,
+            updated_at = timestamp,
+            deleted = 0,
+            local_dirty = 1,
+            local_updated_at = timestamp,
+        )
     }
 
     private fun clearLocal() {
@@ -189,7 +288,17 @@ class NotesSyncManager(
         )
     }
 
-    private fun insertLocal(note: Note) {
+    private fun rowToFolder(row: com.edufelip.shared.db.Folder): Folder = Folder(
+        id = row.id,
+        name = row.name,
+        createdAt = row.created_at,
+        updatedAt = row.updated_at,
+        deleted = row.deleted != 0L,
+        dirty = row.local_dirty != 0L,
+        localUpdatedAt = row.local_updated_at,
+    )
+
+    private fun insertLocalNote(note: Note) {
         val summary = note.content.toSummary().withFallbacks(note.description, note.descriptionSpans, note.attachments)
         db.noteQueries.insertWithId(
             id = note.id.toLong(),
@@ -206,7 +315,19 @@ class NotesSyncManager(
         )
     }
 
-    private fun updateLocalFromRemote(id: Int, note: Note) {
+    private fun insertLocalFolder(folder: Folder, markDirtyOverride: Boolean = false) {
+        db.noteQueries.insertFolderWithId(
+            id = folder.id,
+            name = folder.name,
+            created_at = folder.createdAt,
+            updated_at = folder.updatedAt,
+            deleted = if (folder.deleted) 1 else 0,
+            local_dirty = if (markDirtyOverride || folder.dirty) 1 else 0,
+            local_updated_at = (folder.localUpdatedAt.takeIf { it != 0L } ?: folder.updatedAt),
+        )
+    }
+
+    private fun updateLocalNoteFromRemote(id: Int, note: Note) {
         val summary = note.content.toSummary().withFallbacks(note.description, note.descriptionSpans, note.attachments)
         db.noteQueries.updateFromRemote(
             title = encryptField(note.title),
@@ -222,17 +343,80 @@ class NotesSyncManager(
         )
     }
 
+    private fun updateLocalFolderFromRemote(folder: Folder) {
+        db.noteQueries.updateFolderFromRemote(
+            name = folder.name,
+            updated_at = folder.updatedAt,
+            deleted = if (folder.deleted) 1 else 0,
+            id = folder.id,
+        )
+    }
+
     private fun resetMergeThrottle() {
         mergeCallCount = 0
         mergingDisabled = false
         storedRemoteHash = null
     }
 
-    private fun deleteLocal(id: Int) {
+    private fun deleteLocalNote(id: Int) {
         db.noteQueries.deleteById(id.toLong())
     }
 
-    private fun listHash(list: List<Note>): Long {
+    private fun deleteLocalFolder(id: Long) {
+        db.noteQueries.deleteFolder(id)
+    }
+
+    private suspend fun pushFolders(uid: String, folders: Collection<Folder>) {
+        if (folders.isEmpty()) return
+        for (folder in folders) {
+            if (folder.deleted) {
+                cloud.deleteFolder(uid, folder.id)
+                deleteLocalFolder(folder.id)
+            } else {
+                cloud.upsertFolder(uid, folder)
+            }
+        }
+    }
+
+    private fun combinedHash(notes: List<Note>, folders: List<Folder>): Long {
+        val notesHash = noteListHash(notes)
+        val foldersHash = folderListHash(folders)
+        return notesHash xor foldersHash
+    }
+
+    private fun folderListHash(list: List<Folder>): Long {
+        var hash = -0x340d631b7bdddcdbL
+        fun mix(v: Long) {
+            var x = v
+            repeat(8) {
+                val b = (x and 0xFF).toInt()
+                hash = hash xor b.toLong()
+                hash *= 0x100000001b3L
+                x = x ushr 8
+            }
+        }
+
+        fun mixString(s: String) {
+            for (ch in s) {
+                hash = hash xor ch.code.toLong()
+                hash *= 0x100000001b3L
+            }
+            hash = hash xor 0xFF
+            hash *= 0x100000001b3L
+        }
+
+        val sorted = list.sortedBy { it.id }
+        for (folder in sorted) {
+            mix(folder.id)
+            mixString(folder.name)
+            mix(folder.createdAt)
+            mix(folder.updatedAt)
+            mix(if (folder.deleted) 1 else 0)
+        }
+        return hash
+    }
+
+    private fun noteListHash(list: List<Note>): Long {
         // Stable FNV-1a 64-bit over sorted content
         var hash = -0x340d631b7bdddcdbL // FNV offset basis for 64-bit
         fun mix(v: Long) {
@@ -303,6 +487,8 @@ class NotesSyncManager(
         return hash
     }
 }
+
+private const val PLACEHOLDER_FOLDER_NAME = "Untitled Folder"
 
 sealed class SyncEvent {
     data class OverwritesApplied(val count: Int) : SyncEvent()

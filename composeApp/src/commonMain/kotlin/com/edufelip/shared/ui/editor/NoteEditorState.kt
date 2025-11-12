@@ -291,14 +291,6 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         return caret
     }
 
-    fun moveCaretToEnd() {
-        val lastText = blockList.lastOrNull { it is TextBlock } as? TextBlock ?: return
-        val end = lastText.text.length
-        setCaretFrom(Caret(lastText.id, end))
-        focusedBlockId = lastText.id
-        requestFocus(lastText.id)
-    }
-
     fun removeBlockById(blockId: String): Boolean {
         val index = blockList.indexOfFirst { it.id == blockId }
         if (index < 0) return false
@@ -354,16 +346,15 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
 
     private fun mergeTextBlocksAround(gapIndex: Int) {
         val beforeIndex = gapIndex - 1
-        val afterIndex = gapIndex
         if (beforeIndex < 0) return
         val before = blockList.getOrNull(beforeIndex) as? TextBlock ?: return
-        val after = blockList.getOrNull(afterIndex) as? TextBlock ?: return
+        val after = blockList.getOrNull(gapIndex) as? TextBlock ?: return
         val beforeLength = before.text.length
         val mergedText = before.text + after.text
         val mergedSpans = before.spans + after.spans.offsetBy(beforeLength)
         val mergedBlock = before.copy(text = mergedText, spans = mergedSpans)
         blockList[beforeIndex] = mergedBlock
-        blockList.removeAt(afterIndex)
+        blockList.removeAt(gapIndex)
         textFieldValues.remove(after.id)
         if (focusedBlockId == after.id) {
             focusedBlockId = mergedBlock.id
