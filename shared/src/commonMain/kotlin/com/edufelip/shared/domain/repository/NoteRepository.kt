@@ -20,6 +20,7 @@ interface NoteRepository {
         spans: List<NoteTextSpan> = emptyList(),
         attachments: List<NoteAttachment> = emptyList(),
         content: NoteContent = NoteContent(),
+        stableId: String? = null,
     )
     suspend fun update(
         id: Int,

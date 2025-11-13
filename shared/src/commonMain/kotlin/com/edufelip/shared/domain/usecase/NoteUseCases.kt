@@ -42,11 +42,12 @@ class InsertNote(
         spans: List<NoteTextSpan>,
         attachments: List<NoteAttachment>,
         content: NoteContent = NoteContent(),
+        stableId: String? = null,
     ): NoteActionResult {
         val errors = validateNoteInput(title, description, rules)
         if (errors.isNotEmpty()) return NoteActionResult.Invalid(errors)
         val finalContent = if (content.blocks.isEmpty()) NoteContent() else content
-        repository.insert(title, description, folderId, spans, attachments, finalContent)
+        repository.insert(title, description, folderId, spans, attachments, finalContent, stableId)
         return NoteActionResult.Success
     }
 }

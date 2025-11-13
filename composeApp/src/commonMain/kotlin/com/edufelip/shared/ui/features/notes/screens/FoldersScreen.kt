@@ -184,7 +184,10 @@ fun FoldersScreen(
                     FoldersHeader(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = tokens.spacing.xl),
+                            .padding(
+                                vertical = tokens.spacing.sm,
+                                horizontal = tokens.spacing.xl
+                            ),
                         query = searchQuery,
                         onQueryChange = { value -> searchQuery = value },
                         layoutMode = layoutMode,
@@ -196,7 +199,6 @@ fun FoldersScreen(
                             onLayoutChange(next)
                         },
                     )
-                    Spacer(modifier = Modifier.height(tokens.spacing.sm))
                 }
 
                 if (hasFilteredContent) {

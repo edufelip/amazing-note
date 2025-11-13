@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -36,6 +37,7 @@ import com.edufelip.shared.resources.empty_trash_description
 import com.edufelip.shared.resources.trash_deleted_days_ago
 import com.edufelip.shared.resources.trash_deleted_today
 import com.edufelip.shared.resources.trash_deleted_yesterday
+import com.edufelip.shared.resources.trash_empty_action
 import com.edufelip.shared.resources.trash_recover_selected
 import com.edufelip.shared.ui.components.molecules.trash.DeletionHeader
 import com.edufelip.shared.ui.components.molecules.trash.TimelineTrashItem
@@ -52,6 +54,7 @@ private const val DAY_IN_MILLIS = 24L * 60 * 60 * 1000
 fun TrashTimeline(
     notes: List<Note>,
     onRestore: (Note) -> Unit,
+    onDelete: (List<Note>) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val chrome = platformChromeStrategy()
@@ -133,20 +136,43 @@ fun TrashTimeline(
                 tonalElevation = tokens.elevation.sheet,
                 shadowElevation = tokens.elevation.sheet,
             ) {
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        selectedNotes.forEach(onRestore)
-                        selectedIds = emptySet()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = tokens.colors.accent,
-                        contentColor = tokens.colors.onSurface,
-                    ),
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(tokens.spacing.md),
+                    horizontalArrangement = Arrangement.spacedBy(tokens.spacing.md),
                 ) {
-                    Icon(imageVector = Icons.Filled.Restore, contentDescription = null)
-                    Spacer(modifier = Modifier.width(tokens.spacing.sm))
-                    Text(text = stringResource(Res.string.trash_recover_selected, selectedNotes.size))
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            selectedNotes.forEach(onRestore)
+                            selectedIds = emptySet()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = tokens.colors.accent,
+                            contentColor = tokens.colors.onSurface,
+                        ),
+                    ) {
+                        Icon(imageVector = Icons.Filled.Restore, contentDescription = null)
+                        Spacer(modifier = Modifier.width(tokens.spacing.sm))
+                        Text(text = stringResource(Res.string.trash_recover_selected, selectedNotes.size))
+                    }
+
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            onDelete(selectedNotes)
+                            selectedIds = emptySet()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError,
+                        ),
+                    ) {
+                        Icon(imageVector = Icons.Filled.DeleteForever, contentDescription = null)
+                        Spacer(modifier = Modifier.width(tokens.spacing.sm))
+                        Text(text = stringResource(Res.string.trash_empty_action))
+                    }
                 }
             }
         }
@@ -194,6 +220,6 @@ private fun TrashTimelinePreview() {
         )
     }
     DevicePreviewContainer {
-        TrashTimeline(notes = notes, onRestore = {})
+        TrashTimeline(notes = notes, onRestore = {}, onDelete = {})
     }
 }

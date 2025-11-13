@@ -153,6 +153,7 @@ private fun Note.toFirestoreData(useServerUpdatedAt: Boolean): Map<String, Any?>
             "updatedAt",
             if (useServerUpdatedAt) FieldValue.serverTimestamp else updatedAt,
         )
+        put("stableId", stableId)
     }
 }
 
@@ -170,6 +171,7 @@ private fun Map<String, Any?>.toNote(docId: String): Note? {
     val summary = content.toSummary().withFallbacks(description, spans, attachments)
     val note = Note(
         id = (this["id"] as? Number)?.toInt() ?: docId.toIntOrNull() ?: -1,
+        stableId = (this["stableId"] as? String)?.takeIf { it.isNotBlank() } ?: docId,
         title = rawTitle,
         description = summary.description,
         descriptionSpans = summary.spans,

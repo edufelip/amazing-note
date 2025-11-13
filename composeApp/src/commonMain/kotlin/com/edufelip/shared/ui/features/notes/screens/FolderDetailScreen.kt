@@ -178,6 +178,7 @@ fun FolderDetailScreen(
                 showTopAppBar = false,
                 hasAnyNotes = notes.isNotEmpty(),
                 title = title,
+                showFab = false,
             )
         }
     }

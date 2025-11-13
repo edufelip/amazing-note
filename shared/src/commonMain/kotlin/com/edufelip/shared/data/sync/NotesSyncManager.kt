@@ -8,6 +8,8 @@ import com.edufelip.shared.data.cloud.provideCloudNotesDataSource
 import com.edufelip.shared.data.cloud.provideCurrentUserProvider
 import com.edufelip.shared.data.db.decryptField
 import com.edufelip.shared.data.db.encryptField
+import com.edufelip.shared.data.storage.RemoteAttachmentStorage
+import com.edufelip.shared.data.storage.provideRemoteAttachmentStorage
 import com.edufelip.shared.db.NoteDatabase
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.ImageBlock
@@ -28,6 +30,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import kotlin.collections.iterator
 import kotlin.text.iterator
 
@@ -36,6 +40,7 @@ class NotesSyncManager(
     private val scope: CoroutineScope,
     private val cloud: CloudNotesDataSource = provideCloudNotesDataSource(),
     private val currentUser: CurrentUserProvider = provideCurrentUserProvider(),
+    private val attachmentStorage: RemoteAttachmentStorage = provideRemoteAttachmentStorage(),
 ) {
     private var cloudJob: Job? = null
     private var lastUid: String? = null
@@ -83,7 +88,9 @@ class NotesSyncManager(
 
     suspend fun syncLocalToRemoteOnly() {
         val uid = currentUser.uid.first() ?: return
-        var pushedSomething = pushDirtyFoldersNow(uid)
+        var pushedSomething = pushPendingFolderDeletions(uid)
+        pushedSomething = pushPendingNoteDeletions(uid) || pushedSomething
+        pushedSomething = pushDirtyFoldersNow(uid) || pushedSomething
         // Push only dirty rows to avoid unnecessary writes and reordering
         val dirtyRows = db.noteQueries.selectDirty().executeAsList()
         if (dirtyRows.isEmpty() && !pushedSomething) {
@@ -105,17 +112,72 @@ class NotesSyncManager(
         for (row in dirtyFolders) {
             val folder = rowToFolder(row)
             if (folder.deleted) {
-                cloud.deleteFolder(uid, folder.id)
-                db.noteQueries.deleteFolder(folder.id)
+                runCatching {
+                    cloud.deleteFolder(uid, folder.id)
+                    db.noteQueries.deleteFolder(folder.id)
+                }.onFailure {
+                    logSyncError("Failed to delete folder ${folder.id}", it)
+                }
             } else {
-                cloud.upsertFolder(uid, folder)
-                db.noteQueries.clearFolderDirtyById(folder.id)
+                runCatching {
+                    cloud.upsertFolder(uid, folder)
+                    db.noteQueries.clearFolderDirtyById(folder.id)
+                }.onFailure {
+                    logSyncError("Failed to upsert folder ${folder.id}", it)
+                }
             }
         }
         return true
     }
 
+    private suspend fun pushPendingNoteDeletions(uid: String): Boolean {
+        val pending = db.noteQueries.selectPendingNoteDeletions().executeAsList()
+        if (pending.isEmpty()) return false
+        var pushed = false
+        for (entry in pending) {
+            val noteId = entry.id.toInt()
+            val firestoreResult = runCatching { cloud.delete(uid, noteId) }
+            if (firestoreResult.isFailure) {
+                logSyncError("Failed to delete remote note $noteId", firestoreResult.exceptionOrNull())
+                continue
+            }
+            val storagePaths = decodeStoragePaths(entry.storage_paths)
+            val storageResult = runCatching {
+                if (storagePaths.isNotEmpty()) {
+                    attachmentStorage.deleteNoteAttachments(storagePaths)
+                }
+            }
+            if (storageResult.isFailure) {
+                logSyncError("Failed to delete storage for note $noteId", storageResult.exceptionOrNull())
+                continue
+            }
+            db.noteQueries.deletePendingNoteDeletionById(entry.id)
+            pushed = true
+        }
+        return pushed
+    }
+
+    private suspend fun pushPendingFolderDeletions(uid: String): Boolean {
+        val pending = db.noteQueries.selectPendingFolderDeletions().executeAsList()
+        if (pending.isEmpty()) return false
+        var pushed = false
+        for (entry in pending) {
+            val folderId = entry.id
+            val result = runCatching { cloud.deleteFolder(uid, folderId) }
+            if (result.isSuccess) {
+                db.noteQueries.deletePendingFolderDeletionById(folderId)
+                db.noteQueries.deleteFolder(folderId)
+                pushed = true
+            } else {
+                logSyncError("Failed to delete remote folder $folderId", result.exceptionOrNull())
+            }
+        }
+        return pushed
+    }
+
     private suspend fun mergeRemoteIntoLocalAndPushLocalNewer(uid: String, payload: RemoteSyncPayload) {
+        pushPendingFolderDeletions(uid)
+        pushPendingNoteDeletions(uid)
         val remoteNotes = payload.notes
         val remoteFolders = payload.folders
         val currentRemoteHash = combinedHash(remoteNotes, remoteFolders)
@@ -261,6 +323,8 @@ class NotesSyncManager(
     private fun clearLocal() {
         db.noteQueries.deleteAll()
         db.noteQueries.deleteAllFolders()
+        db.noteQueries.deleteAllPendingNoteDeletions()
+        db.noteQueries.deleteAllPendingFolderDeletions()
         _events.tryEmit(SyncEvent.SyncCompleted)
     }
 
@@ -272,8 +336,10 @@ class NotesSyncManager(
         val contentJson = row.content_json?.let(::decryptField)
         val content = noteContentFromJson(contentJson)
         val summary = content.toSummary().withFallbacks(description, spans, attachments)
+        val stableId = row.stable_id.takeIf { it.isNotBlank() } ?: row.id.toString()
         return Note(
             id = row.id.toInt(),
+            stableId = stableId,
             title = title,
             description = summary.description,
             deleted = row.deleted != 0L,
@@ -312,6 +378,7 @@ class NotesSyncManager(
             created_at = note.createdAt,
             updated_at = note.updatedAt,
             folder_id = note.folderId,
+            stable_id = note.stableId,
         )
     }
 
@@ -339,6 +406,7 @@ class NotesSyncManager(
             deleted = if (note.deleted) 1 else 0,
             updated_at = note.updatedAt,
             folder_id = note.folderId,
+            stable_id = note.stableId,
             id = id.toLong(),
         )
     }
@@ -375,6 +443,14 @@ class NotesSyncManager(
             } else {
                 cloud.upsertFolder(uid, folder)
             }
+        }
+    }
+
+    private fun logSyncError(message: String, throwable: Throwable?) {
+        if (throwable != null) {
+            println("NotesSyncManager: $message -> ${throwable.message}")
+        } else {
+            println("NotesSyncManager: $message")
         }
     }
 
@@ -441,6 +517,7 @@ class NotesSyncManager(
         val sorted = list.sortedBy { it.id }
         for (n in sorted) {
             mix(n.id.toLong())
+            mixString(n.stableId)
             mixString(n.title)
             mixString(n.description)
             n.descriptionSpans.forEach { span ->
@@ -487,6 +564,13 @@ class NotesSyncManager(
         return hash
     }
 }
+
+private fun decodeStoragePaths(raw: String?): List<String> = raw
+    ?.takeIf { it.isNotBlank() }
+    ?.let { runCatching { storagePathsJson.decodeFromString<List<String>>(it) }.getOrDefault(emptyList()) }
+    ?: emptyList()
+
+private val storagePathsJson = Json { ignoreUnknownKeys = true }
 
 private const val PLACEHOLDER_FOLDER_NAME = "Untitled Folder"
 

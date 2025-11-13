@@ -45,6 +45,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.edufelip.shared.domain.model.ImageBlock
+import com.edufelip.shared.domain.model.ImageSyncState
 import com.edufelip.shared.domain.model.TextBlock
 import com.edufelip.shared.ui.designsystem.designTokens
 
@@ -57,7 +58,12 @@ fun NoteEditor(
 ) {
     val contentAwareModifier = modifier
         .noteEditorReceiveContent { uri ->
-            state.insertImageAtCaret(uri = uri)
+            val localUri = uri.takeUnless { isRemoteUri(it) }
+            state.insertImageAtCaret(
+                uri = uri,
+                localUri = localUri,
+                syncState = ImageSyncState.PendingUpload,
+            )
         }
         .pointerInput(state) {
             awaitEachGesture {
@@ -267,7 +273,7 @@ private fun ImageBlockView(
         },
     ) {
         AsyncImage(
-            model = block.remoteUri ?: block.uri,
+            model = block.localUri ?: block.uri,
             contentDescription = block.alt,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxWidth(),
@@ -286,3 +292,5 @@ private fun KeyEvent.isUndoShortcut(): Boolean = isShortcut(Key.Z) && !isShiftPr
 private fun KeyEvent.isRedoShortcut(): Boolean = (isShortcut(Key.Z) && isShiftPressed) || isShortcut(Key.Y)
 
 private fun KeyEvent.isShortcut(targetKey: Key): Boolean = type == KeyEventType.KeyDown && (isCtrlPressed || isMetaPressed) && key == targetKey
+
+private fun isRemoteUri(uri: String): Boolean = uri.startsWith("http", ignoreCase = true)

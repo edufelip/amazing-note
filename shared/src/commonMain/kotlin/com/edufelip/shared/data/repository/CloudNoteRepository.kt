@@ -10,6 +10,7 @@ import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.NoteAttachment
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
+import com.edufelip.shared.domain.model.generateStableNoteId
 import com.edufelip.shared.domain.model.toSummary
 import com.edufelip.shared.domain.repository.NoteRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -50,6 +51,7 @@ class CloudNoteRepository(
         spans: List<NoteTextSpan>,
         attachments: List<NoteAttachment>,
         content: NoteContent,
+        stableId: String?,
     ) {
         val uid = currentUser.uid.first() ?: return
         val now = nowEpochMs()
@@ -58,8 +60,10 @@ class CloudNoteRepository(
         val normalizedDescription = summary.description.ifBlank { description }
         val normalizedSpans = summary.spans.ifEmpty { spans }
         val normalizedAttachments = if (summary.attachments.isNotEmpty()) summary.attachments else attachments
+        val resolvedStableId = stableId ?: generateStableNoteId()
         val note = Note(
             id = now.hashCode(),
+            stableId = resolvedStableId,
             title = title,
             description = normalizedDescription,
             deleted = false,
@@ -94,6 +98,7 @@ class CloudNoteRepository(
         val normalizedAttachments = if (summary.attachments.isNotEmpty()) summary.attachments else attachments
         val note = Note(
             id = id,
+            stableId = id.toString(),
             title = title,
             description = normalizedDescription,
             deleted = deleted,
@@ -116,6 +121,7 @@ class CloudNoteRepository(
             uid,
             Note(
                 id = id,
+                stableId = id.toString(),
                 title = "",
                 description = "",
                 deleted = deleted,

@@ -44,6 +44,7 @@ import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 fun TrashScreen(
     notes: List<Note>,
     onRestore: (Note) -> Unit,
+    onDeleteNotes: (List<Note>) -> Unit,
     onBack: () -> Unit,
     onEmptyTrash: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -80,7 +81,7 @@ fun TrashScreen(
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
                 actions = {
-                    if (!notes.isEmpty()) {
+                    if (notes.isNotEmpty()) {
                         TextButton(
                             onClick = {
                                 onEmptyTrash()
@@ -105,6 +106,7 @@ fun TrashScreen(
             TrashTimeline(
                 notes = notes,
                 onRestore = onRestore,
+                onDelete = onDeleteNotes,
             )
         }
     }
@@ -124,6 +126,7 @@ internal fun TrashScreenPreview(
         TrashScreen(
             notes = state.notes,
             onRestore = {},
+            onDeleteNotes = {},
             onBack = {},
             onEmptyTrash = {},
         )

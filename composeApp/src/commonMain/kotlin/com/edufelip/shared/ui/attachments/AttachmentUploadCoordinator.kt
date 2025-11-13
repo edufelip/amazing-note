@@ -1,50 +1,96 @@
 package com.edufelip.shared.ui.attachments
 
 import com.edufelip.shared.domain.model.ImageBlock
+import com.edufelip.shared.domain.model.NoteAttachment
+import com.edufelip.shared.platform.storageFileForLocalUri
+
+data class UploadContext(
+    val userId: String,
+    val noteStableId: String,
+)
+
 class AttachmentUploadCoordinator(
-    private val uploader: suspend (AttachmentUploadPayload) -> com.edufelip.shared.domain.model.NoteAttachment = { payload ->
+    private val uploader: suspend (AttachmentUploadPayload) -> NoteAttachment = { payload ->
         uploadAttachmentWithGitLive(payload) { _, _ -> }
     },
 ) {
-    suspend fun upload(block: ImageBlock, result: AttachmentProcessingResult): UploadedImage {
-        // tiny for instant previews, ignore remote URL
-        result.tiny?.let { uploadRendition(block, it) }
-
-        val displayCandidate = result.display ?: result.original
-        val displayUpload = displayCandidate?.let { uploadRendition(block, it) }
-            ?: uploadFallback(block)
-
-        if (result.original != null && result.original != displayCandidate) {
-            uploadRendition(block, result.original)
+    suspend fun upload(
+        context: UploadContext,
+        block: ImageBlock,
+        renditions: AttachmentProcessingResult?,
+    ): UploadedImage {
+        val displayRendition = renditions?.display ?: renditions?.original
+        val target = displayRendition ?: renditionFromBlock(block)
+        val displayUpload = uploadRendition(
+            context = context,
+            blockId = block.id,
+            rendition = target,
+            suffix = null,
+        )
+        val thumbUpload = renditions?.tiny?.let { tiny ->
+            uploadRendition(
+                context = context,
+                blockId = block.id,
+                rendition = tiny,
+                suffix = "thumb",
+            )
         }
-
         return UploadedImage(
-            remoteUrl = displayUpload.downloadUrl,
-            thumbnailUrl = displayUpload.thumbnailUrl,
+            remoteUrl = displayUpload.attachment.downloadUrl,
+            thumbnailUrl = thumbUpload?.attachment?.downloadUrl,
+            storagePath = displayUpload.storagePath,
+            thumbnailStoragePath = thumbUpload?.storagePath,
         )
     }
 
-    private suspend fun uploadRendition(block: ImageBlock, rendition: AttachmentRendition): com.edufelip.shared.domain.model.NoteAttachment {
+    private data class StoredUpload(
+        val attachment: NoteAttachment,
+        val storagePath: String,
+    )
+
+    private suspend fun uploadRendition(
+        context: UploadContext,
+        blockId: String,
+        rendition: AttachmentRendition,
+        suffix: String?,
+    ): StoredUpload {
+        val fileName = buildFileName(blockId, suffix, rendition.mimeType)
+        val storagePath = buildStoragePath(context, fileName)
         val payload = AttachmentUploadPayload(
             file = storageFileForLocalUri(rendition.localUri),
             mimeType = rendition.mimeType,
-            fileName = block.fileName ?: block.alt ?: "image_${block.id}",
+            fileName = fileName,
             width = rendition.width,
             height = rendition.height,
+            storagePath = storagePath,
             cleanUp = null,
         )
-        return uploader(payload)
+        val uploaded = uploader(payload)
+        return StoredUpload(uploaded, storagePath)
     }
 
-    private suspend fun uploadFallback(block: ImageBlock): com.edufelip.shared.domain.model.NoteAttachment {
-        val payload = AttachmentUploadPayload(
-            file = storageFileForLocalUri(block.uri),
+    private fun buildFileName(blockId: String, suffix: String?, mimeType: String): String {
+        val ext = inferFileExtension(mimeType)
+        return if (suffix.isNullOrBlank()) {
+            "$blockId.$ext"
+        } else {
+            "${blockId}_$suffix.$ext"
+        }
+    }
+
+    private fun buildStoragePath(context: UploadContext, fileName: String): String =
+        "images/${context.userId}/${context.noteStableId}/$fileName"
+
+    private fun renditionFromBlock(block: ImageBlock): AttachmentRendition {
+        val sourceUri = block.localUri ?: block.uri
+        return AttachmentRendition(
+            type = RenditionType.Display,
+            localUri = sourceUri,
             mimeType = block.mimeType ?: "image/*",
-            fileName = block.fileName ?: block.alt ?: "image_${block.id}",
             width = block.width,
             height = block.height,
-            cleanUp = null,
+            sizeBytes = 0,
+            sha256 = null,
         )
-        return uploader(payload)
     }
 }

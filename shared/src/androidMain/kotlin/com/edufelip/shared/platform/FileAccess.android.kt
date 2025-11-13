@@ -1,4 +1,4 @@
-package com.edufelip.shared.ui.attachments
+package com.edufelip.shared.platform
 
 import android.net.Uri
 import androidx.core.net.toFile

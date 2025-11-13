@@ -1,6 +1,7 @@
 package com.edufelip.shared.ui.attachments
 
 import com.edufelip.shared.domain.model.NoteAttachment
+import com.edufelip.shared.platform.storageFileForLocalUri
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.storage.storage
 import kotlin.random.Random
@@ -12,10 +13,9 @@ data class AttachmentUploadPayload(
     val fileName: String?,
     val width: Int?,
     val height: Int?,
+    val storagePath: String,
     val cleanUp: (() -> Unit)? = null,
 )
-
-private const val ATTACHMENTS_FOLDER = "attachments"
 
 suspend fun uploadAttachmentWithGitLive(
     payload: AttachmentUploadPayload,
@@ -23,8 +23,7 @@ suspend fun uploadAttachmentWithGitLive(
 ): NoteAttachment {
     val storage = Firebase.storage
     val id = generateAttachmentId()
-    val path = "$ATTACHMENTS_FOLDER/$id"
-    val reference = storage.reference.child(path)
+    val reference = storage.reference.child(payload.storagePath)
 
     try {
         onProgress(0f, payload.fileName)
@@ -57,13 +56,9 @@ private fun generateAttachmentId(): String {
     }
 }
 
-private fun inferFileExtension(mimeType: String): String = when {
+internal fun inferFileExtension(mimeType: String): String = when {
     mimeType.contains("png", ignoreCase = true) -> "png"
     mimeType.contains("jpeg", ignoreCase = true) || mimeType.contains("jpg", ignoreCase = true) -> "jpg"
     mimeType.contains("heic", ignoreCase = true) -> "heic"
     else -> "img"
 }
-
-expect fun storageFileForLocalUri(localUri: String): StorageFile
-
-expect fun deleteLocalAttachment(localUri: String)

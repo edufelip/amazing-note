@@ -8,6 +8,13 @@ private const val BLOCK_ID_LENGTH = 12
 private val BLOCK_ID_ALPHABET = ('a'..'z') + ('0'..'9')
 
 @Serializable
+enum class ImageSyncState {
+    PendingUpload,
+    Synced,
+    Error,
+}
+
+@Serializable
 sealed interface NoteBlock {
     val id: String
 }
@@ -32,6 +39,9 @@ data class ImageBlock(
     val mimeType: String? = null,
     val fileName: String? = null,
     val remoteUri: String? = null,
+    val localUri: String? = null,
+    val storagePath: String? = null,
+    val syncState: ImageSyncState = ImageSyncState.Synced,
 ) : NoteBlock
 
 fun generateBlockId(): String = buildString(capacity = BLOCK_ID_LENGTH) {

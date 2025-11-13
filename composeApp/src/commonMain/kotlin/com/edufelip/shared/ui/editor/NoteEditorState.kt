@@ -14,6 +14,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.edufelip.shared.domain.model.Caret
 import com.edufelip.shared.domain.model.ImageBlock
+import com.edufelip.shared.domain.model.ImageSyncState
 import com.edufelip.shared.domain.model.NoteBlock
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
@@ -212,6 +213,9 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
                 mimeType = block.mimeType,
                 fileName = block.fileName,
                 thumbnailUri = block.thumbnailUri,
+                localUri = block.localUri,
+                storagePath = block.storagePath,
+                syncState = block.syncState,
             )
             updated = true
         }
@@ -253,6 +257,9 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         mimeType: String? = null,
         fileName: String? = null,
         thumbnailUri: String? = null,
+        localUri: String? = null,
+        storagePath: String? = null,
+        syncState: ImageSyncState = ImageSyncState.Synced,
     ): Caret? {
         val beforeContent = content
         val beforeCaret = caret
@@ -268,6 +275,9 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
                 mimeType = mimeType,
                 fileName = fileName,
                 thumbnailUri = thumbnailUri,
+                localUri = localUri,
+                storagePath = storagePath,
+                syncState = syncState,
             ),
         )
         blockList.clear()

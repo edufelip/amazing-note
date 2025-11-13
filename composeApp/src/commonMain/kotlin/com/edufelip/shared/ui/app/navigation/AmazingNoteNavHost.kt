@@ -112,6 +112,7 @@ fun AmazingNoteNavHost(
                     attachmentPicker = environment.attachmentPicker,
                     onBack = { state.popBack() },
                     isUserAuthenticated = isUserAuthenticated,
+                    currentUserId = authUiState.user?.uid,
                 )
 
                 AppRoutes.Trash -> TrashRoute(

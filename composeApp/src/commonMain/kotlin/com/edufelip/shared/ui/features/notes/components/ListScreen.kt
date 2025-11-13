@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -80,6 +82,7 @@ fun ListScreen(
     hasAnyNotes: Boolean = true,
     headerContent: (@Composable () -> Unit)? = null,
     emptyContent: (@Composable () -> Unit)? = null,
+    showFab: Boolean = true,
 ) {
     val appPrefs = LocalAppPreferences.current
     var showFilters by rememberSaveable { mutableStateOf(false) }
@@ -94,33 +97,28 @@ fun ListScreen(
             tokens.colors.canvas
         }
         Scaffold(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(scaffoldContainerColor),
+            modifier = Modifier.fillMaxSize().background(scaffoldContainerColor),
             containerColor = Color.Transparent,
             contentWindowInsets = chrome.contentWindowInsets,
             topBar = if (showTopAppBar) {
-                (
-                    {
-                        LargeTopAppBar(
-                            title = {
-                                val resolvedTitle =
-                                    title ?: stringResource(Res.string.your_notes)
-                                Text(text = resolvedTitle)
-                            },
-                            colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                                titleContentColor = MaterialTheme.colorScheme.onSurface,
-                            ),
-                        )
-                    }
+                ({
+                    LargeTopAppBar(
+                        title = {
+                            val resolvedTitle = title ?: stringResource(Res.string.your_notes)
+                            Text(text = resolvedTitle)
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                            titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        ),
                     )
+                })
             } else {
                 ({})
             },
             floatingActionButton = {
-                if (hasAnyNotes) {
+                if (showFab && hasAnyNotes) {
                     val navigationBottom = chrome.navigationBarBottomInset()
                     val fabBottomPadding = when {
                         chrome.bottomBarHeight == 0.dp -> tokens.spacing.lg
@@ -158,8 +156,7 @@ fun ListScreen(
 
                 val useUpdated = remember { mutableStateOf(appPrefs.isDateModeUpdated()) }
                 val now =
-                    notes.maxOfOrNull { if (useUpdated.value) it.updatedAt else it.createdAt }
-                        ?: 0L
+                    notes.maxOfOrNull { if (useUpdated.value) it.updatedAt else it.createdAt } ?: 0L
 
                 fun bucket(ts: Long): Bucket {
                     val oneDay = 24L * 60 * 60 * 1000
@@ -177,7 +174,7 @@ fun ListScreen(
                 val grouped: Map<Bucket, List<Note>> =
                     notes.groupBy { bucket(if (useUpdated.value) it.updatedAt else it.createdAt) }
                 val listBottomPadding = 0.dp
-                val searchHorizontalPadding = tokens.spacing.sm
+                val searchHorizontalPadding = tokens.spacing.md
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = listBottomPadding),
@@ -185,8 +182,7 @@ fun ListScreen(
                     headerContent?.let { content ->
                         item(key = "list_header") {
                             Column(
-                                modifier = Modifier.fillMaxWidth()
-                                    .padding(
+                                modifier = Modifier.fillMaxWidth().padding(
                                         horizontal = searchHorizontalPadding,
                                         vertical = tokens.spacing.lg,
                                     ),
@@ -197,16 +193,13 @@ fun ListScreen(
                     }
                     stickyHeader {
                         Surface(
-                            color = MaterialTheme.colorScheme.background,
-                            tonalElevation = 0.dp,
-                            shadowElevation = 0.dp,
+                            shadowElevation = tokens.elevation.card / 2f
                         ) {
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
                                 Box(
-                                    modifier = Modifier.fillMaxWidth()
-                                        .padding(
+                                    modifier = Modifier.fillMaxWidth().padding(
                                             horizontal = searchHorizontalPadding,
                                             vertical = tokens.spacing.sm,
                                         ),
@@ -236,8 +229,10 @@ fun ListScreen(
                                             ),
                                         )
                                         Row(
-                                            modifier = Modifier.fillMaxWidth()
-                                                .padding(horizontal = tokens.spacing.lg, vertical = tokens.spacing.xs),
+                                            modifier = Modifier.fillMaxWidth().padding(
+                                                    horizontal = tokens.spacing.lg,
+                                                    vertical = tokens.spacing.xs
+                                                ),
                                         ) {
                                             FilterChip(
                                                 selected = useUpdated.value,
@@ -271,12 +266,17 @@ fun ListScreen(
                         }
                     }
 
+                    item(key = "list_header_spacing") {
+                        Spacer(modifier = Modifier.height(tokens.spacing.md))
+                    }
+
                     // If search is active and nothing matches, show a search-specific message.
                     if (searchQuery.isNotBlank() && notes.isEmpty()) {
                         item {
                             Column(
-                                modifier = Modifier.fillMaxWidth()
-                                    .padding(horizontal = tokens.spacing.xl, vertical = tokens.spacing.lg),
+                                modifier = Modifier.fillMaxWidth().padding(
+                                        horizontal = tokens.spacing.xl, vertical = tokens.spacing.lg
+                                    ),
                                 verticalArrangement = Center,
                                 horizontalAlignment = CenterHorizontally,
                             ) {
@@ -320,8 +320,7 @@ fun ListScreen(
                                 modifier = Modifier.padding(
                                     horizontal = tokens.spacing.lg,
                                     vertical = tokens.spacing.sm,
-                                )
-                                    .animateItem(),
+                                ).animateItem(),
                             )
                         }
                     }

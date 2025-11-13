@@ -64,6 +64,7 @@ class DefaultNoteUiViewModel(
         attachments: List<NoteAttachment>,
         folderId: Long?,
         content: NoteContent,
+        stableId: String?,
         navigateBack: Boolean,
         cleanupAttachments: Boolean,
     ) = launchValidatedAction(
@@ -77,6 +78,7 @@ class DefaultNoteUiViewModel(
                 spans = spans,
                 attachments = attachments,
                 content = content,
+                stableId = stableId,
             )
         },
     )

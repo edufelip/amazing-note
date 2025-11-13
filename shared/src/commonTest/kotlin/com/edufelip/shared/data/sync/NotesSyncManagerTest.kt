@@ -10,6 +10,7 @@ import com.edufelip.shared.data.cloud.CloudNotesDataSource
 import com.edufelip.shared.data.cloud.CurrentUserProvider
 import com.edufelip.shared.data.db.decryptField
 import com.edufelip.shared.data.db.encryptField
+import com.edufelip.shared.data.storage.RemoteAttachmentStorage
 import com.edufelip.shared.db.NoteDatabase
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
@@ -26,6 +27,8 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -50,11 +53,12 @@ class NotesSyncManagerTest {
         db: NoteDatabase,
         cloud: CloudNotesDataSource,
         users: FakeCurrentUserProvider,
+        storage: RemoteAttachmentStorage = FakeRemoteAttachmentStorage(),
     ): NotesSyncManager {
         val dispatcher = StandardTestDispatcher(testScheduler)
         val scope = CoroutineScope(SupervisorJob() + dispatcher)
         activeScopes += scope
-        return NotesSyncManager(db, scope, cloud, users)
+        return NotesSyncManager(db, scope, cloud, users, storage)
     }
 
     @Test
@@ -64,7 +68,8 @@ class NotesSyncManagerTest {
         val db = NoteDatabase(driver)
         val cloud = FakeCloudNotesDataSource()
         val users = FakeCurrentUserProvider()
-        val syncManager = createSyncManager(db, cloud, users)
+        val storage = FakeRemoteAttachmentStorage()
+        val syncManager = createSyncManager(db, cloud, users, storage)
         driver.seed(
             dbNote(
                 id = 1,
@@ -207,6 +212,115 @@ class NotesSyncManagerTest {
     }
 
     @Test
+    fun pendingNoteDeletionsArePushedToRemote() = runTest {
+        NoteCipher.overrideKeyForTests(TEST_KEY)
+        val driver = TestNoteDriver()
+        val db = NoteDatabase(driver)
+        val cloud = FakeCloudNotesDataSource()
+        val users = FakeCurrentUserProvider()
+        val syncManager = createSyncManager(db, cloud, users)
+        val noteId = 42
+        cloud.seedRemote(
+            uid = "user-1",
+            notes = listOf(
+                Note(
+                    id = noteId,
+                    title = "Remote note",
+                    description = "",
+                    deleted = false,
+                    createdAt = 1,
+                    updatedAt = 2,
+                ),
+            ),
+        )
+
+        syncManager.start()
+        users.setCurrentUser("user-1")
+        advanceUntilIdle()
+
+        val stableId = "stable-$noteId"
+        val paths = listOf("images/user-1/$stableId/file.jpg")
+        db.noteQueries.insertPendingNoteDeletion(
+            id = noteId.toLong(),
+            deleted_at = 10,
+            stable_id = stableId,
+            storage_paths = encodePaths(paths),
+        )
+
+        syncManager.syncLocalToRemoteOnly()
+        advanceUntilIdle()
+
+        assertFalse(cloud.hasRemoteNote("user-1", noteId))
+        assertTrue(db.noteQueries.selectPendingNoteDeletions().executeAsList().isEmpty())
+        assertEquals(listOf(paths), storage.deletions)
+    }
+
+    @Test
+    fun storageFailuresKeepPendingDeletionForRetry() = runTest {
+        NoteCipher.overrideKeyForTests(TEST_KEY)
+        val driver = TestNoteDriver()
+        val db = NoteDatabase(driver)
+        val cloud = FakeCloudNotesDataSource()
+        val users = FakeCurrentUserProvider()
+        val storage = FakeRemoteAttachmentStorage().apply { shouldFail = true }
+        val syncManager = createSyncManager(db, cloud, users, storage)
+        val noteId = 7
+
+        syncManager.start()
+        users.setCurrentUser("user-1")
+        advanceUntilIdle()
+
+        db.noteQueries.insertPendingNoteDeletion(
+            id = noteId.toLong(),
+            deleted_at = 20,
+            stable_id = "stable-$noteId",
+            storage_paths = encodePaths(listOf("images/user-1/stable-$noteId/file.jpg")),
+        )
+
+        syncManager.syncLocalToRemoteOnly()
+        advanceUntilIdle()
+
+        val pending = db.noteQueries.selectPendingNoteDeletions().executeAsList()
+        assertEquals(1, pending.size)
+        assertTrue(storage.deletions.isEmpty())
+    }
+
+    @Test
+    fun pendingFolderDeletionsArePushedToRemote() = runTest {
+        NoteCipher.overrideKeyForTests(TEST_KEY)
+        val driver = TestNoteDriver()
+        val db = NoteDatabase(driver)
+        val cloud = FakeCloudNotesDataSource()
+        val users = FakeCurrentUserProvider()
+        val syncManager = createSyncManager(db, cloud, users)
+        val folderId = 7L
+        cloud.seedRemote(
+            uid = "user-1",
+            notes = emptyList(),
+            folders = listOf(
+                Folder(
+                    id = folderId,
+                    name = "Work",
+                    createdAt = 1,
+                    updatedAt = 2,
+                ),
+            ),
+        )
+
+        syncManager.start()
+        users.setCurrentUser("user-1")
+        advanceUntilIdle()
+
+        db.noteQueries.insertPendingFolderDeletion(folderId, deleted_at = 5)
+
+        syncManager.syncLocalToRemoteOnly()
+        advanceUntilIdle()
+
+        assertFalse(cloud.hasRemoteFolder("user-1", folderId))
+        assertTrue(db.noteQueries.selectPendingFolderDeletions().executeAsList().isEmpty())
+    }
+
+    @Test
     fun logoutClearsLocalDatabaseAndFolders() = runTest {
         NoteCipher.overrideKeyForTests(TEST_KEY)
         val driver = TestNoteDriver()
@@ -274,6 +388,7 @@ private fun dbNote(
     createdAt: Long,
     dirty: Boolean,
     deleted: Boolean = false,
+    stableId: String = "note-$id",
 ): com.edufelip.shared.db.Note {
     val encryptedTitle = encryptField(title)
     val encryptedDescription = encryptField(description)
@@ -293,6 +408,7 @@ private fun dbNote(
         local_dirty = if (dirty) 1 else 0,
         local_updated_at = if (dirty) updatedAt else 0,
         folder_id = null,
+        stable_id = stableId,
     )
 }
 
@@ -302,6 +418,8 @@ private class FakeCloudNotesDataSource : CloudNotesDataSource {
     private val flows = mutableMapOf<String, MutableStateFlow<RemoteSyncPayload>>()
 
     val upsertCalls = mutableListOf<Pair<String, Note>>()
+    val deleteNoteCalls = mutableListOf<Pair<String, Int>>()
+    val deleteFolderCalls = mutableListOf<Pair<String, Long>>()
 
     override fun observe(uid: String): Flow<RemoteSyncPayload> = flows.getOrPut(uid) {
         MutableStateFlow(snapshot(uid))
@@ -319,6 +437,7 @@ private class FakeCloudNotesDataSource : CloudNotesDataSource {
 
     override suspend fun delete(uid: String, id: Int) {
         remoteNotesByUser[uid]?.remove(id)
+        deleteNoteCalls += uid to id
         pushRemote(uid)
     }
 
@@ -336,6 +455,7 @@ private class FakeCloudNotesDataSource : CloudNotesDataSource {
 
     override suspend fun deleteFolder(uid: String, id: Long) {
         remoteFoldersByUser[uid]?.remove(id)
+        deleteFolderCalls += uid to id
         pushRemote(uid)
     }
 
@@ -355,6 +475,10 @@ private class FakeCloudNotesDataSource : CloudNotesDataSource {
         val folders = remoteFoldersByUser[uid]?.values?.sortedBy { it.updatedAt } ?: emptyList()
         return RemoteSyncPayload(notes, folders)
     }
+
+    fun hasRemoteNote(uid: String, id: Int): Boolean = remoteNotesByUser[uid]?.containsKey(id) == true
+
+    fun hasRemoteFolder(uid: String, id: Long): Boolean = remoteFoldersByUser[uid]?.containsKey(id) == true
 }
 
 private class FakeCurrentUserProvider(
@@ -368,9 +492,22 @@ private class FakeCurrentUserProvider(
     }
 }
 
+private class FakeRemoteAttachmentStorage : RemoteAttachmentStorage {
+    val deletions = mutableListOf<List<String>>()
+    var shouldFail: Boolean = false
+
+    override suspend fun deleteNoteAttachments(paths: List<String>) {
+        if (shouldFail) throw IllegalStateException("storage failure")
+        deletions += paths
+    }
+}
+
 private class TestNoteDriver : SqlDriver {
+    private data class PendingNoteDeletion(val deletedAt: Long, val stableId: String, val storagePaths: String)
     private val notes = linkedMapOf<Long, com.edufelip.shared.db.Note>()
-    private val folders = linkedMapOf<Long, com.edufelip.shared.db.Folder>()
+    private val folders = linkedHashMapOf<Long, com.edufelip.shared.db.Folder>()
+    private val pendingNoteDeletions = linkedMapOf<Long, PendingNoteDeletion>()
+    private val pendingFolderDeletions = linkedMapOf<Long, Long>()
     private var lastInsertedFolderId: Long = 0L
     var folderClears: Int = 0
 
@@ -407,6 +544,16 @@ private class TestNoteDriver : SqlDriver {
                 mapper(FolderCursor(listOfNotNull(folders[id])))
             }
             SELECT_LAST_INSERT_ID -> mapper(ScalarCursor(lastInsertedFolderId))
+            SELECT_PENDING_NOTE_DELETIONS -> mapper(
+                PendingDeletionCursor(
+                    pendingNoteDeletions.map { (id, data) -> PendingDeletionRow(id, data.deletedAt, data.stableId, data.storagePaths) },
+                ),
+            )
+            SELECT_PENDING_FOLDER_DELETIONS -> mapper(
+                PendingDeletionCursor(
+                    pendingFolderDeletions.map { (id, deletedAt) -> PendingDeletionRow(id, deletedAt, null, "[]") },
+                ),
+            )
             else -> error("Unhandled query: $sql")
         }
     }
@@ -436,11 +583,12 @@ private class TestNoteDriver : SqlDriver {
                     local_dirty = 0,
                     local_updated_at = 0,
                     folder_id = statement.long(10),
+                    stable_id = statement.string(11).orEmpty(),
                 )
             }
 
             UPDATE_NOTE_FROM_REMOTE -> {
-                val id = statement.long(9) ?: error("id required")
+                val id = statement.long(10) ?: error("id required")
                 val existing = notes[id] ?: return QueryResult.Value(0)
                 notes[id] = existing.copy(
                     title = statement.string(0).orEmpty(),
@@ -453,6 +601,7 @@ private class TestNoteDriver : SqlDriver {
                     updated_at = statement.long(7) ?: existing.updated_at,
                     local_dirty = 0,
                     folder_id = statement.long(8),
+                    stable_id = statement.string(9) ?: existing.stable_id,
                 )
             }
 
@@ -521,6 +670,34 @@ private class TestNoteDriver : SqlDriver {
                 }
             }
 
+            INSERT_PENDING_NOTE_DELETION -> {
+                val id = statement.long(0) ?: error("note id required")
+                val deletedAt = statement.long(1) ?: 0L
+                val stableId = statement.string(2) ?: id.toString()
+                val storagePaths = statement.string(3) ?: "[]"
+                pendingNoteDeletions[id] = PendingNoteDeletion(deletedAt, stableId, storagePaths)
+            }
+
+            DELETE_PENDING_NOTE_DELETION -> {
+                val id = statement.long(0) ?: return QueryResult.Value(0)
+                pendingNoteDeletions.remove(id)
+            }
+
+            INSERT_PENDING_FOLDER_DELETION -> {
+                val id = statement.long(0) ?: error("folder id required")
+                val deletedAt = statement.long(1) ?: 0L
+                pendingFolderDeletions[id] = deletedAt
+            }
+
+            DELETE_PENDING_FOLDER_DELETION -> {
+                val id = statement.long(0) ?: return QueryResult.Value(0)
+                pendingFolderDeletions.remove(id)
+            }
+
+            DELETE_ALL_PENDING_NOTE_DELETIONS -> pendingNoteDeletions.clear()
+
+            DELETE_ALL_PENDING_FOLDER_DELETIONS -> pendingFolderDeletions.clear()
+
             else -> error("Unhandled statement: $sql")
         }
         return QueryResult.Value(0)
@@ -550,8 +727,8 @@ private class TestNoteDriver : SqlDriver {
         private const val SELECT_FOLDERS_DIRTY = "select * from folder where local_dirty = 1 order by updated_at desc, id desc"
         private const val SELECT_FOLDER_BY_ID = "select * from folder where id = ?"
         private const val SELECT_LAST_INSERT_ID = "select last_insert_rowid()"
-        private const val INSERT_NOTE_WITH_ID = "insert into note(id, title, description, description_spans, attachments, blocks, content_json, deleted, created_at, updated_at, folder_id) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        private const val UPDATE_NOTE_FROM_REMOTE = "update note set title = ?, description = ?, description_spans = ?, attachments = ?, blocks = ?, content_json = ?, deleted = ?, updated_at = ?, local_dirty = 0, folder_id = ? where id = ?"
+        private const val INSERT_NOTE_WITH_ID = "insert into note(id, title, description, description_spans, attachments, blocks, content_json, deleted, created_at, updated_at, folder_id, stable_id) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        private const val UPDATE_NOTE_FROM_REMOTE = "update note set title = ?, description = ?, description_spans = ?, attachments = ?, blocks = ?, content_json = ?, deleted = ?, updated_at = ?, local_dirty = 0, folder_id = ?, stable_id = ? where id = ?"
         private const val DELETE_NOTE_BY_ID = "delete from note where id = ?"
         private const val DELETE_ALL_NOTES = "delete from note"
         private const val CLEAR_NOTE_DIRTY = "update note set local_dirty = 0 where id = ?"
@@ -561,6 +738,14 @@ private class TestNoteDriver : SqlDriver {
         private const val DELETE_FOLDER_BY_ID = "delete from folder where id = ?"
         private const val CLEAR_FOLDER_DIRTY = "update folder set local_dirty = 0 where id = ?"
         private const val MARK_FOLDER_DELETED = "update folder set deleted = 1, updated_at = ?, local_dirty = 1, local_updated_at = ? where id = ?"
+        private const val SELECT_PENDING_NOTE_DELETIONS = "select * from note_pending_deletion order by deleted_at asc"
+        private const val SELECT_PENDING_FOLDER_DELETIONS = "select * from folder_pending_deletion order by deleted_at asc"
+        private const val INSERT_PENDING_NOTE_DELETION = "insert or replace into note_pending_deletion(id, deleted_at, stable_id, storage_paths) values (?, ?, ?, ?)"
+        private const val DELETE_PENDING_NOTE_DELETION = "delete from note_pending_deletion where id = ?"
+        private const val INSERT_PENDING_FOLDER_DELETION = "insert or replace into folder_pending_deletion(id, deleted_at) values (?, ?)"
+        private const val DELETE_PENDING_FOLDER_DELETION = "delete from folder_pending_deletion where id = ?"
+        private const val DELETE_ALL_PENDING_NOTE_DELETIONS = "delete from note_pending_deletion"
+        private const val DELETE_ALL_PENDING_FOLDER_DELETIONS = "delete from folder_pending_deletion"
 
         private val DESCENDING_NOTES = compareByDescending<com.edufelip.shared.db.Note> { it.updated_at }
             .thenByDescending { it.id }
@@ -683,6 +868,43 @@ private class ScalarCursor(private val value: Long) : SqlCursor {
     override fun getDouble(index: Int): Double? = null
     override fun getBoolean(index: Int): Boolean? = null
 }
+
+private data class PendingDeletionRow(val id: Long, val deletedAt: Long, val stableId: String?, val storagePaths: String)
+
+private class PendingDeletionCursor(
+    private val rows: List<PendingDeletionRow>,
+) : SqlCursor {
+    private var index = -1
+
+    override fun next(): QueryResult<Boolean> {
+        index += 1
+        return QueryResult.Value(index < rows.size)
+    }
+
+    override fun getLong(index: Int): Long? = when (index) {
+        0 -> current().id
+        1 -> current().deletedAt
+        else -> null
+    }
+
+    override fun getString(index: Int): String? = when (index) {
+        2 -> current().stableId
+        3 -> current().storagePaths
+        else -> null
+    }
+    override fun getBytes(index: Int): ByteArray? = null
+    override fun getDouble(index: Int): Double? = null
+    override fun getBoolean(index: Int): Boolean? = null
+
+    private fun current(): PendingDeletionRow {
+        require(index in rows.indices) { "Cursor index out of bounds $index" }
+        return rows[index]
+    }
+}
+
+private fun encodePaths(paths: List<String>): String = storagePathsJson.encodeToString(paths)
+
+private val storagePathsJson = Json { ignoreUnknownKeys = true }
 
 private fun String.normalizeSql(): String = trim()
     .lowercase()

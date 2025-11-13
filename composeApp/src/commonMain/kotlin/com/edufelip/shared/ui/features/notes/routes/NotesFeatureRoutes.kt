@@ -158,6 +158,7 @@ fun NoteDetailRoute(
     attachmentPicker: AttachmentPicker?,
     onBack: () -> Unit,
     isUserAuthenticated: Boolean,
+    currentUserId: String? = null,
 ) {
     CollectNoteSyncEvents(
         viewModel = viewModel,
@@ -183,7 +184,8 @@ fun NoteDetailRoute(
         noteValidationRules = noteValidationRules,
         onBack = onBack,
         isUserAuthenticated = isUserAuthenticated,
-        onSaveNote = { noteId, title, description, spans, attachments, folderId, content, navigateBack ->
+        currentUserId = currentUserId,
+        onSaveNote = { noteId, title, description, spans, attachments, folderId, content, stableId, navigateBack ->
             if (noteId == null) {
                 viewModel.insert(
                     title = title,
@@ -192,6 +194,7 @@ fun NoteDetailRoute(
                     attachments = attachments,
                     folderId = folderId,
                     content = content,
+                    stableId = stableId,
                     navigateBack = navigateBack,
                     cleanupAttachments = isUserAuthenticated,
                 )

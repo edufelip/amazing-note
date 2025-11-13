@@ -1,5 +1,6 @@
 package com.edufelip.shared.data.repository
 
+import app.cash.sqldelight.Query
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.edufelip.shared.core.time.nowEpochMs
@@ -7,10 +8,12 @@ import com.edufelip.shared.data.db.decryptField
 import com.edufelip.shared.data.db.encryptField
 import com.edufelip.shared.db.NoteDatabase
 import com.edufelip.shared.domain.model.Folder
+import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.NoteAttachment
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
+import com.edufelip.shared.domain.model.generateStableNoteId
 import com.edufelip.shared.domain.model.attachmentsFromJson
 import com.edufelip.shared.domain.model.noteContentFromJson
 import com.edufelip.shared.domain.model.spansFromJson
@@ -22,6 +25,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class SqlDelightNoteRepository(
     private val database: NoteDatabase,
@@ -42,8 +47,10 @@ class SqlDelightNoteRepository(
         val attachments = attachmentsFromJson(attachmentsJson)
         val content = noteContentFromJson(contentJson)
         val summary = content.toSummary().withFallbacks(description, spans, attachments)
+        val stableId = row.stable_id.takeIf { it.isNotBlank() } ?: row.id.toString()
         return Note(
             id = row.id.toInt(),
+            stableId = stableId,
             title = title,
             description = summary.description,
             deleted = row.deleted != 0L,
@@ -85,6 +92,7 @@ class SqlDelightNoteRepository(
         spans: List<NoteTextSpan>,
         attachments: List<NoteAttachment>,
         content: NoteContent,
+        stableId: String?,
     ) {
         val finalContent = if (content.blocks.isEmpty()) NoteContent() else content
         val summary = finalContent.toSummary()
@@ -92,6 +100,7 @@ class SqlDelightNoteRepository(
         val normalizedSpans = summary.spans.ifEmpty { spans }
         val normalizedAttachments = if (summary.attachments.isNotEmpty()) summary.attachments else attachments
         val now = currentTimeMillis()
+        val resolvedStableId = stableId?.takeIf { it.isNotBlank() } ?: generateStableNoteId()
         queries.insertNote(
             title = encryptField(title),
             description = encryptField(normalizedDescription),
@@ -103,6 +112,7 @@ class SqlDelightNoteRepository(
             updated_at = now,
             local_updated_at = now,
             folder_id = folderId,
+            stable_id = resolvedStableId,
         )
     }
 
@@ -148,7 +158,21 @@ class SqlDelightNoteRepository(
     }
 
     override suspend fun delete(id: Int) {
-        queries.deleteById(id.toLong())
+        val now = currentTimeMillis()
+        val row = queries.selectById(id.toLong()).executeAsOneOrNullCompat() ?: return
+        val stableId = row.stable_id.takeIf { it.isNotBlank() } ?: row.id.toString()
+        val contentJson = row.content_json?.let(::decryptField)
+        val content = noteContentFromJson(contentJson)
+        val storagePaths = content.blocks
+            .filterIsInstance<ImageBlock>()
+            .mapNotNull { it.storagePath?.takeIf { path -> path.isNotBlank() } }
+        queries.insertPendingNoteDeletion(
+            id = row.id,
+            deleted_at = now,
+            stable_id = stableId,
+            storage_paths = encodeStoragePaths(storagePaths),
+        )
+        queries.deleteById(row.id)
     }
 
     override suspend fun assignToFolder(id: Int, folderId: Long?) {
@@ -189,10 +213,20 @@ class SqlDelightNoteRepository(
             local_updated_at = now,
             folder_id = id,
         )
-        queries.markFolderDeleted(
-            updated_at = now,
-            local_updated_at = now,
+        queries.insertPendingFolderDeletion(
             id = id,
+            deleted_at = now,
         )
+        queries.deleteFolder(id)
     }
 }
+
+private fun <T : Any> Query<T>.executeAsOneOrNullCompat(): T? = try {
+    executeAsOne()
+} catch (_: IllegalStateException) {
+    null
+}
+
+private fun encodeStoragePaths(paths: List<String>): String = storagePathsJson.encodeToString(paths)
+
+private val storagePathsJson = Json { ignoreUnknownKeys = true }

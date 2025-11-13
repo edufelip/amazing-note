@@ -37,6 +37,7 @@ interface NoteUiViewModel {
         attachments: List<NoteAttachment>,
         folderId: Long?,
         content: NoteContent = NoteContent(),
+        stableId: String? = null,
         navigateBack: Boolean = false,
         cleanupAttachments: Boolean = false,
     )

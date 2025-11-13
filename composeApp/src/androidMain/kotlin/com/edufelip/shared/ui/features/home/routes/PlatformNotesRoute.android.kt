@@ -12,6 +12,7 @@ import androidx.compose.material3.adaptive.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +29,7 @@ import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.features.home.screens.HomeScreen
 import com.edufelip.shared.ui.features.notes.screens.NoteDetailScreen
 import com.edufelip.shared.ui.nav.AppRoutes
+import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.util.notes.CollectNoteSyncEvents
 import com.edufelip.shared.ui.vm.AuthViewModel
 import com.edufelip.shared.ui.vm.NoteUiViewModel
@@ -55,6 +57,8 @@ actual fun PlatformNotesRoute(
         syncManager = syncManager,
         isUserAuthenticated = isUserAuthenticated,
     )
+    val authState by authViewModel.uiState.collectWithLifecycle()
+    val currentUserId = authState.user?.uid
     val configuration = LocalConfiguration.current
     val isCompactWidth = remember(configuration) {
         configuration.screenWidthDp < 600
@@ -110,6 +114,7 @@ actual fun PlatformNotesRoute(
                 attachmentPicker = attachmentPicker,
                 onClose = { navigator.navigateBack() },
                 isUserAuthenticated = isUserAuthenticated,
+                currentUserId = currentUserId,
             )
         },
     )
@@ -149,6 +154,7 @@ private fun NotesDetailPane(
     attachmentPicker: AttachmentPicker?,
     onClose: () -> Unit,
     isUserAuthenticated: Boolean,
+    currentUserId: String?,
 ) {
     if (destination == null) {
         NotesDetailPlaceholder()
@@ -171,8 +177,9 @@ private fun NotesDetailPane(
         noteValidationRules = noteValidationRules,
         onBack = onClose,
         isUserAuthenticated = isUserAuthenticated,
+        currentUserId = currentUserId,
         events = viewModel.events,
-        onSaveNote = { noteId, title, description, spans, attachments, folderId, content, navigateBack ->
+        onSaveNote = { noteId, title, description, spans, attachments, folderId, content, stableId, navigateBack ->
             if (noteId == null) {
                 viewModel.insert(
                     title = title,
@@ -181,6 +188,7 @@ private fun NotesDetailPane(
                     attachments = attachments,
                     folderId = folderId,
                     content = content,
+                    stableId = stableId,
                     navigateBack = navigateBack,
                     cleanupAttachments = isUserAuthenticated,
                 )
