@@ -600,10 +600,9 @@ private fun TextRange.clampTo(maxLength: Int): TextRange {
     return if (newStart == start && newEnd == end) this else TextRange(newStart, newEnd)
 }
 
-private fun List<NoteTextSpan>.offsetBy(delta: Int): List<NoteTextSpan> =
-    map { span ->
-        span.copy(
-            start = span.start + delta,
-            end = span.end + delta,
-        )
-    }
+private fun List<NoteTextSpan>.offsetBy(delta: Int): List<NoteTextSpan> = map { span ->
+    span.copy(
+        start = span.start + delta,
+        end = span.end + delta,
+    )
+}

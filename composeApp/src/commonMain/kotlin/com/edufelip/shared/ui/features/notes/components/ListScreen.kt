@@ -101,19 +101,21 @@ fun ListScreen(
             containerColor = Color.Transparent,
             contentWindowInsets = chrome.contentWindowInsets,
             topBar = if (showTopAppBar) {
-                ({
-                    LargeTopAppBar(
-                        title = {
-                            val resolvedTitle = title ?: stringResource(Res.string.your_notes)
-                            Text(text = resolvedTitle)
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                            titleContentColor = MaterialTheme.colorScheme.onSurface,
-                        ),
+                (
+                    {
+                        LargeTopAppBar(
+                            title = {
+                                val resolvedTitle = title ?: stringResource(Res.string.your_notes)
+                                Text(text = resolvedTitle)
+                            },
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                            ),
+                        )
+                    }
                     )
-                })
             } else {
                 ({})
             },
@@ -183,9 +185,9 @@ fun ListScreen(
                         item(key = "list_header") {
                             Column(
                                 modifier = Modifier.fillMaxWidth().padding(
-                                        horizontal = searchHorizontalPadding,
-                                        vertical = tokens.spacing.lg,
-                                    ),
+                                    horizontal = searchHorizontalPadding,
+                                    vertical = tokens.spacing.lg,
+                                ),
                             ) {
                                 content()
                             }
@@ -193,16 +195,16 @@ fun ListScreen(
                     }
                     stickyHeader {
                         Surface(
-                            shadowElevation = tokens.elevation.card / 2f
+                            shadowElevation = tokens.elevation.card / 2f,
                         ) {
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
                                 Box(
                                     modifier = Modifier.fillMaxWidth().padding(
-                                            horizontal = searchHorizontalPadding,
-                                            vertical = tokens.spacing.sm,
-                                        ),
+                                        horizontal = searchHorizontalPadding,
+                                        vertical = tokens.spacing.sm,
+                                    ),
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     MaterialSearchBar(
@@ -230,9 +232,9 @@ fun ListScreen(
                                         )
                                         Row(
                                             modifier = Modifier.fillMaxWidth().padding(
-                                                    horizontal = tokens.spacing.lg,
-                                                    vertical = tokens.spacing.xs
-                                                ),
+                                                horizontal = tokens.spacing.lg,
+                                                vertical = tokens.spacing.xs,
+                                            ),
                                         ) {
                                             FilterChip(
                                                 selected = useUpdated.value,
@@ -275,8 +277,9 @@ fun ListScreen(
                         item {
                             Column(
                                 modifier = Modifier.fillMaxWidth().padding(
-                                        horizontal = tokens.spacing.xl, vertical = tokens.spacing.lg
-                                    ),
+                                    horizontal = tokens.spacing.xl,
+                                    vertical = tokens.spacing.lg,
+                                ),
                                 verticalArrangement = Center,
                                 horizontalAlignment = CenterHorizontally,
                             ) {
@@ -306,6 +309,7 @@ fun ListScreen(
                                     Bucket.EARLIER -> stringResource(Res.string.earlier)
                                 },
                                 style = MaterialTheme.typography.titleSmall,
+                                color = tokens.colors.onSurface,
                                 modifier = Modifier.padding(
                                     horizontal = tokens.spacing.xl,
                                     vertical = tokens.spacing.sm,

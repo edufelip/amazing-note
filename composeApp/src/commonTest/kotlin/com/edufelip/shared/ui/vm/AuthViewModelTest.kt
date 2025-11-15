@@ -39,9 +39,9 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun loginWithEmailPropagatesErrorMessage() = runAuthTest { dispatcher ->
+    fun loginWithEmailInvalidCredentialsShowsSpecificError() = runAuthTest { dispatcher ->
         val repository = FakeAuthRepository().apply {
-            loginError = IllegalStateException("Invalid credentials")
+            loginError = IllegalStateException("The supplied auth credential is incorrect")
         }
         val viewModel = createViewModel(repository, dispatcher)
 
@@ -49,7 +49,37 @@ class AuthViewModelTest {
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertEquals(AuthError.Custom("Invalid credentials"), state.error)
+        assertEquals(AuthError.InvalidCredentials, state.error)
+        assertFalse(state.loading)
+    }
+
+    @Test
+    fun loginWithEmailNetworkFailureEmitsNetworkError() = runAuthTest { dispatcher ->
+        val repository = FakeAuthRepository().apply {
+            loginError = IllegalStateException("Network request failed")
+        }
+        val viewModel = createViewModel(repository, dispatcher)
+
+        viewModel.loginWithEmail("user@test.com", "secret")
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(AuthError.Network, state.error)
+        assertFalse(state.loading)
+    }
+
+    @Test
+    fun loginWithEmailUnknownErrorPropagatesMessage() = runAuthTest { dispatcher ->
+        val repository = FakeAuthRepository().apply {
+            loginError = IllegalStateException("Service unavailable")
+        }
+        val viewModel = createViewModel(repository, dispatcher)
+
+        viewModel.loginWithEmail("user@test.com", "secret")
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(AuthError.Custom("Service unavailable"), state.error)
         assertFalse(state.loading)
     }
 

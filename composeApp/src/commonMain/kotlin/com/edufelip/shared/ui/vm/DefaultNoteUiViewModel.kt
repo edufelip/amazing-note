@@ -1,13 +1,14 @@
 package com.edufelip.shared.ui.vm
 
+import com.edufelip.shared.data.sync.NotesSyncManager
 import com.edufelip.shared.domain.model.NoteAttachment
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
 import com.edufelip.shared.domain.usecase.NoteUseCases
 import com.edufelip.shared.domain.validation.NoteActionResult
 import com.edufelip.shared.domain.validation.NoteValidationError
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -111,53 +112,53 @@ class DefaultNoteUiViewModel(
         },
     )
 
-    override fun setDeleted(id: Int, deleted: Boolean, syncAfter: Boolean) =
-        launchAction(
-            errorMessage = "Failed to update note",
-            syncAfter = syncAfter,
-        ) {
-            useCases.setDeleted(id, deleted)
-        }
+    override fun setDeleted(id: Int, deleted: Boolean, syncAfter: Boolean) = launchAction(
+        errorMessage = "Failed to update note",
+        syncAfter = syncAfter,
+    ) {
+        useCases.setDeleted(id, deleted)
+    }
 
-    override fun delete(id: Int, syncAfter: Boolean) =
-        launchAction(
-            errorMessage = "Failed to delete note",
-            syncAfter = syncAfter,
-        ) {
-            useCases.deleteNote(id)
-        }
+    override fun delete(id: Int, syncAfter: Boolean) = launchAction(
+        errorMessage = "Failed to delete note",
+        syncAfter = syncAfter,
+    ) {
+        useCases.deleteNote(id)
+    }
 
-    override fun assignToFolder(id: Int, folderId: Long?, syncAfter: Boolean) =
-        launchAction(
-            errorMessage = "Failed to move note",
-            syncAfter = syncAfter,
-        ) {
-            useCases.assignNoteToFolder(id, folderId)
-        }
+    override fun assignToFolder(id: Int, folderId: Long?, syncAfter: Boolean) = launchAction(
+        errorMessage = "Failed to move note",
+        syncAfter = syncAfter,
+    ) {
+        useCases.assignNoteToFolder(id, folderId)
+    }
 
-    override fun createFolder(name: String, syncAfter: Boolean) =
-        launchAction(
-            errorMessage = "Failed to create folder",
-            syncAfter = syncAfter,
-        ) {
-            useCases.createFolder(name)
-        }
+    override fun createFolder(name: String, syncAfter: Boolean) = launchAction(
+        errorMessage = "Failed to create folder",
+        syncAfter = syncAfter,
+    ) {
+        useCases.createFolder(name)
+    }
 
-    override fun renameFolder(id: Long, name: String, syncAfter: Boolean) =
-        launchAction(
-            errorMessage = "Failed to rename folder",
-            syncAfter = syncAfter,
-        ) {
-            useCases.renameFolder(id, name)
-        }
+    override fun renameFolder(id: Long, name: String, syncAfter: Boolean) = launchAction(
+        errorMessage = "Failed to rename folder",
+        syncAfter = syncAfter,
+    ) {
+        useCases.renameFolder(id, name)
+    }
 
-    override fun deleteFolder(id: Long, syncAfter: Boolean) =
-        launchAction(
-            errorMessage = "Failed to delete folder",
-            syncAfter = syncAfter,
-        ) {
-            useCases.removeFolder(id)
+    override fun deleteFolder(id: Long, syncAfter: Boolean) = launchAction(
+        errorMessage = "Failed to delete folder",
+        syncAfter = syncAfter,
+    ) {
+        useCases.removeFolder(id)
+    }
+
+    override fun syncFromRemote(syncManager: NotesSyncManager) {
+        launchInScope {
+            runCatching { syncManager.syncNow() }
         }
+    }
 
     private fun launchValidatedAction(
         navigateBack: Boolean,

@@ -1,5 +1,6 @@
 package com.edufelip.shared.ui.vm
 
+import com.edufelip.shared.data.sync.NotesSyncManager
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.NoteAttachment
@@ -59,4 +60,5 @@ interface NoteUiViewModel {
     fun createFolder(name: String, syncAfter: Boolean = false)
     fun renameFolder(id: Long, name: String, syncAfter: Boolean = false)
     fun deleteFolder(id: Long, syncAfter: Boolean = false)
+    fun syncFromRemote(syncManager: NotesSyncManager)
 }

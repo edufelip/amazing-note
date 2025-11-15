@@ -102,6 +102,7 @@ fun LoginScreen(
     val errorText = when (error) {
         AuthError.GenericValidation -> stringResource(Res.string.auth_generic_validation_error)
         AuthError.Network -> stringResource(Res.string.auth_network_error)
+        AuthError.InvalidCredentials -> stringResource(Res.string.login_error_invalid_credentials)
         is AuthError.Custom -> error.message
         null -> null
     }
@@ -438,7 +439,7 @@ fun LoginScreen(
                 email = forgotPasswordEmail,
                 onDismiss = {
                     forgotPasswordSuccessVisible = false
-                }
+                },
             )
         }
     }

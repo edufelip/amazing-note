@@ -18,6 +18,7 @@ fun SettingsRoute(
 ) {
     val authViewModel = state.authViewModel
     val scope = state.coroutineScope
+    val syncManager = state.environment.notesSyncManager
 
     SettingsScreen(
         darkTheme = darkTheme,
@@ -26,6 +27,9 @@ fun SettingsRoute(
         onLogin = { onNavigate(AppRoutes.Login) },
         onLogout = {
             scope.launch {
+                if (authViewModel.uiState.value.user != null) {
+                    runCatching { syncManager.syncLocalToRemoteOnly() }
+                }
                 authViewModel.logout()
             }
         },

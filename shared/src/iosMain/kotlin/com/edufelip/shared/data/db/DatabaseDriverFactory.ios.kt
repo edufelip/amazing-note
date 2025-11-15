@@ -11,25 +11,22 @@ import platform.Foundation.NSHomeDirectory
 import platform.Foundation.NSSearchPathForDirectoriesInDomains
 import platform.Foundation.NSUserDomainMask
 
-private val DATABASE_NAME = "notes.v${NoteDatabase.Companion.Schema.version}.db"
+private val DATABASE_NAME = "notes.v${NoteDatabase.Schema.version}.db"
 
 private val LEGACY_DATABASE_FILES = listOf(
     "notes.db",
-    "notes.v0.db",
-    "notes.v1.db",
     DATABASE_NAME,
 )
 
 actual class DatabaseDriverFactory actual constructor() {
-    @OptIn(ExperimentalForeignApi::class)
-    actual fun createDriver(): SqlDriver = runCatching { NativeSqliteDriver(NoteDatabase.Companion.Schema, DATABASE_NAME) }
+    actual fun createDriver(): SqlDriver = runCatching { NativeSqliteDriver(NoteDatabase.Schema, DATABASE_NAME) }
         .getOrElse { error ->
             if (!error.message.orEmpty().contains("Database version", ignoreCase = true)) {
                 throw error
             }
             println("notes.db schema mismatch detected; clearing local cache and recreating database.")
             resetDatabase()
-            NativeSqliteDriver(NoteDatabase.Companion.Schema, DATABASE_NAME)
+            NativeSqliteDriver(NoteDatabase.Schema, DATABASE_NAME)
         }
 }
 

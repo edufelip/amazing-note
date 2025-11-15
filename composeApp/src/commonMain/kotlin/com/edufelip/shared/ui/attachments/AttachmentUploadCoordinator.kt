@@ -78,8 +78,7 @@ class AttachmentUploadCoordinator(
         }
     }
 
-    private fun buildStoragePath(context: UploadContext, fileName: String): String =
-        "images/${context.userId}/${context.noteStableId}/$fileName"
+    private fun buildStoragePath(context: UploadContext, fileName: String): String = "images/${context.userId}/${context.noteStableId}/$fileName"
 
     private fun renditionFromBlock(block: ImageBlock): AttachmentRendition {
         val sourceUri = block.localUri ?: block.uri

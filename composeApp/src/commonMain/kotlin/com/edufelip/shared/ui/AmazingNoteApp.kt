@@ -18,6 +18,7 @@ import com.edufelip.shared.ui.app.chrome.AmazingNoteScaffold
 import com.edufelip.shared.ui.app.effects.BottomBarVisibilityEffect
 import com.edufelip.shared.ui.app.effects.PlatformTabBarVisibilityEffect
 import com.edufelip.shared.ui.app.effects.ScheduleInitialSync
+import com.edufelip.shared.ui.app.effects.SyncEventNotifications
 import com.edufelip.shared.ui.app.effects.SyncOnUserChange
 import com.edufelip.shared.ui.app.navigation.AmazingNoteNavHost
 import com.edufelip.shared.ui.app.state.rememberAmazingNoteAppState
@@ -71,13 +72,20 @@ fun AmazingNoteApp(
     val environment = state.environment
     val darkTheme by state.darkThemeFlow.collectWithLifecycle(initial = state.darkTheme)
 
+    val authState by resolvedAuthViewModel.uiState.collectWithLifecycle()
+    val isUserResolved = authState.isUserResolved
+    val isUserAuthenticated = authState.user != null
+
     CompositionLocalProvider(
         LocalSettings provides environment.settings,
         LocalAppPreferences provides environment.appPreferences,
         LocalNotesSyncManager provides environment.notesSyncManager,
     ) {
         ScheduleInitialSync(environment.notesSyncManager)
-        SyncOnUserChange(state, environment.notesSyncManager)
+        if (isUserResolved && isUserAuthenticated) {
+            SyncOnUserChange(state, environment.notesSyncManager)
+        }
+        SyncEventNotifications(environment.notesSyncManager)
         BottomBarVisibilityEffect(state)
         PlatformTabBarVisibilityEffect(state, onTabBarVisibilityChanged)
 
@@ -101,7 +109,7 @@ fun AmazingNoteApp(
                         viewModel = viewModel,
                         appVersion = appVersion,
                         darkTheme = darkTheme,
-                        themeKey = darkTheme
+                        themeKey = darkTheme,
                     )
                 }
             }

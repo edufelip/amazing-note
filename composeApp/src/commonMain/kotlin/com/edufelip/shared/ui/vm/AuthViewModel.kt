@@ -9,6 +9,7 @@ import com.edufelip.shared.domain.validation.PasswordConfirmationError
 import com.edufelip.shared.domain.validation.PasswordConfirmationResult
 import com.edufelip.shared.domain.validation.PasswordValidationError
 import com.edufelip.shared.ui.util.security.SecurityLogger
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -19,7 +20,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-
 data class AuthUiState(
     val user: AuthUser? = null,
     val isUserResolved: Boolean = false,
@@ -36,6 +36,7 @@ sealed class AuthEvent {
 sealed interface AuthError {
     data object GenericValidation : AuthError
     data object Network : AuthError
+    data object InvalidCredentials : AuthError
     data class Custom(val message: String) : AuthError
 }
 
@@ -185,7 +186,12 @@ class AuthViewModel(
     }
 
     private fun publishError(error: Throwable) {
-        val resolvedError = AuthError.GenericValidation
+        if (error is CancellationException) throw error
+        val resolvedError = when {
+            error.isInvalidCredentialError() -> AuthError.InvalidCredentials
+            error.isNetworkError() -> AuthError.Network
+            else -> error.firstNonBlankMessage()?.let { AuthError.Custom(it) } ?: AuthError.GenericValidation
+        }
         _uiState.update { it.copy(error = resolvedError) }
     }
 
@@ -268,3 +274,64 @@ class AuthViewModel(
         null -> null
     }
 }
+
+private fun Throwable.firstNonBlankMessage(): String? {
+    var current: Throwable? = this
+    while (current != null) {
+        val message = current.message
+        if (!message.isNullOrBlank()) return message
+        current = current.cause
+    }
+    return null
+}
+
+private fun Throwable.isInvalidCredentialError(): Boolean = messageMatches(invalidCredentialHints)
+
+private fun Throwable.isNetworkError(): Boolean {
+    if (messageMatches(networkErrorHints)) return true
+    var current: Throwable? = this
+    while (current != null) {
+        val name = current::class.simpleName?.lowercase()
+        if (name != null && (
+                "network" in name ||
+                    "timeout" in name ||
+                    "ioexception" in name
+                )
+        ) {
+            return true
+        }
+        current = current.cause
+    }
+    return false
+}
+
+private fun Throwable.messageMatches(hints: List<String>): Boolean {
+    var current: Throwable? = this
+    while (current != null) {
+        val message = current.message?.lowercase()
+        if (message != null && hints.any { it in message }) {
+            return true
+        }
+        current = current.cause
+    }
+    return false
+}
+
+private val invalidCredentialHints = listOf(
+    "password is invalid",
+    "invalid password",
+    "invalid credential",
+    "credential is incorrect",
+    "no user record",
+    "user not found",
+)
+
+private val networkErrorHints = listOf(
+    "network error",
+    "network request failed",
+    "network unreachable",
+    "unable to resolve host",
+    "connection reset",
+    "timed out",
+    "timeout",
+)

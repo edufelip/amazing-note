@@ -58,8 +58,8 @@ import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.validation.EmailValidationError
 import com.edufelip.shared.domain.validation.NameValidationError
 import com.edufelip.shared.domain.validation.PasswordValidationError
-import com.edufelip.shared.domain.validation.validateName
 import com.edufelip.shared.domain.validation.validateEmail
+import com.edufelip.shared.domain.validation.validateName
 import com.edufelip.shared.domain.validation.validatePassword
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.auth_generic_validation_error
@@ -72,6 +72,7 @@ import com.edufelip.shared.resources.contact_us
 import com.edufelip.shared.resources.email
 import com.edufelip.shared.resources.email_invalid_format
 import com.edufelip.shared.resources.email_required
+import com.edufelip.shared.resources.login_error_invalid_credentials
 import com.edufelip.shared.resources.name
 import com.edufelip.shared.resources.name_required
 import com.edufelip.shared.resources.password
@@ -216,6 +217,7 @@ fun SignUpScreen(
     val errorMessage = when (error) {
         AuthError.GenericValidation -> stringResource(Res.string.auth_generic_validation_error)
         AuthError.Network -> stringResource(Res.string.auth_network_error)
+        AuthError.InvalidCredentials -> stringResource(Res.string.login_error_invalid_credentials)
         is AuthError.Custom -> error.message
         null -> null
     }

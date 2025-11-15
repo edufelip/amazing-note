@@ -22,18 +22,16 @@ import com.edufelip.shared.domain.model.toJson
 import com.edufelip.shared.domain.model.toSummary
 import com.edufelip.shared.domain.model.withFallbacks
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import kotlin.collections.iterator
-import kotlin.text.iterator
 
 class NotesSyncManager(
     private val db: NoteDatabase,
@@ -42,11 +40,9 @@ class NotesSyncManager(
     private val currentUser: CurrentUserProvider = provideCurrentUserProvider(),
     private val attachmentStorage: RemoteAttachmentStorage = provideRemoteAttachmentStorage(),
 ) {
-    private var cloudJob: Job? = null
     private var lastUid: String? = null
+    private var lastRemoteHash: Long? = null
 
-    // Throttle: after 3 consecutive merges, pause further merges until next explicit sync
-    private var mergeCallCount: Int = 0
     private var mergingDisabled: Boolean = false
     private var storedRemoteHash: Long? = null
     private val _events = MutableSharedFlow<SyncEvent>(
@@ -55,46 +51,45 @@ class NotesSyncManager(
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
     val events: SharedFlow<SyncEvent> = _events
-
-    init {
-        _events.tryEmit(SyncEvent.SyncCompleted)
-    }
+    private val _syncing = MutableStateFlow(false)
+    val syncing: StateFlow<Boolean> = _syncing.asStateFlow()
 
     fun start() {
-        cloudJob?.cancel()
         scope.launch {
             currentUser.uid.collect { uid ->
-                cloudJob?.cancel()
                 if (uid != lastUid) {
                     if (lastUid != null) clearLocal()
                     lastUid = uid
                     resetMergeThrottle()
+                    lastRemoteHash = null
                 }
                 if (uid != null) {
-                    cloudJob = cloud.observe(uid).onEach { payload ->
-                        mergeRemoteIntoLocalAndPushLocalNewer(uid, payload)
-                    }.launchIn(scope)
+                    mergeRemoteIntoLocalAndPushLocalNewer(uid, cloud.getAll(uid))
                 }
             }
         }
     }
 
-    suspend fun syncNow() {
-        val uid = currentUser.uid.first() ?: return
+    suspend fun syncNow(uid: String? = null) {
+        val uid = uid ?: awaitCurrentUid() ?: return
+        emitSyncStarted()
         resetMergeThrottle()
-        val payload = cloud.getAll(uid)
+        val payload = runCatching { cloud.getAll(uid) }
+            .onFailure { throwable ->
+                handleSyncError("manual sync", throwable)
+            }
+            .getOrNull() ?: return
         mergeRemoteIntoLocalAndPushLocalNewer(uid, payload)
     }
 
     suspend fun syncLocalToRemoteOnly() {
-        val uid = currentUser.uid.first() ?: return
-        var pushedSomething = pushPendingFolderDeletions(uid)
-        pushedSomething = pushPendingNoteDeletions(uid) || pushedSomething
-        pushedSomething = pushDirtyFoldersNow(uid) || pushedSomething
+        val uid = awaitCurrentUid() ?: return
+        emitSyncStarted()
+        val pushedSomething = pushPendingFolderDeletions(uid) || pushPendingNoteDeletions(uid) || pushDirtyFoldersNow(uid)
         // Push only dirty rows to avoid unnecessary writes and reordering
         val dirtyRows = db.noteQueries.selectDirty().executeAsList()
         if (dirtyRows.isEmpty() && !pushedSomething) {
-            _events.tryEmit(SyncEvent.SyncCompleted)
+            emitSyncCompleted()
             return
         }
         for (row in dirtyRows) {
@@ -102,8 +97,7 @@ class NotesSyncManager(
             cloud.upsertPreserveUpdatedAt(uid, note)
             db.noteQueries.clearDirtyById(row.id)
         }
-        pushedSomething = pushedSomething || dirtyRows.isNotEmpty()
-        _events.tryEmit(SyncEvent.SyncCompleted)
+        emitSyncCompleted()
     }
 
     private suspend fun pushDirtyFoldersNow(uid: String): Boolean {
@@ -129,6 +123,8 @@ class NotesSyncManager(
         }
         return true
     }
+
+    private suspend fun awaitCurrentUid(): String? = currentUser.uid.filterNotNull().firstOrNull()
 
     private suspend fun pushPendingNoteDeletions(uid: String): Boolean {
         val pending = db.noteQueries.selectPendingNoteDeletions().executeAsList()
@@ -176,11 +172,21 @@ class NotesSyncManager(
     }
 
     private suspend fun mergeRemoteIntoLocalAndPushLocalNewer(uid: String, payload: RemoteSyncPayload) {
-        pushPendingFolderDeletions(uid)
-        pushPendingNoteDeletions(uid)
+        var syncStarted = false
+        fun ensureSyncStarted() {
+            if (!syncStarted) {
+                emitSyncStarted()
+                syncStarted = true
+            }
+        }
+        val pushedFolders = pushPendingFolderDeletions(uid)
+        val pushedNotes = pushPendingNoteDeletions(uid)
+        val pushedPending = pushedFolders || pushedNotes
+        if (pushedPending) ensureSyncStarted()
         val remoteNotes = payload.notes
         val remoteFolders = payload.folders
         val currentRemoteHash = combinedHash(remoteNotes, remoteFolders)
+        if (!pushedPending && lastRemoteHash != null && currentRemoteHash == lastRemoteHash) return
         if (mergingDisabled) {
             if (storedRemoteHash != null && currentRemoteHash == storedRemoteHash) return
             resetMergeThrottle()
@@ -189,28 +195,26 @@ class NotesSyncManager(
         val localNotes = getAllLocalNotes()
         val localFolders = getAllLocalFolders()
         val localHash = combinedHash(localNotes, localFolders)
-        if (currentRemoteHash == localHash) {
-            resetMergeThrottle()
-            _events.tryEmit(SyncEvent.SyncCompleted)
+        if (!pushedPending && currentRemoteHash == localHash) {
+            lastRemoteHash = currentRemoteHash
             return
         }
 
-        mergeCallCount += 1
-        val disableAfterThisCall = mergeCallCount >= 3
+        ensureSyncStarted()
         val foldersToPush = mergeRemoteFolders(remoteFolders, localFolders)
         val (notesToPush, overwrites) = mergeRemoteNotes(remoteNotes, localNotes)
 
         pushFolders(uid, foldersToPush.values)
         for (note in notesToPush.values) {
             cloud.upsert(uid, note)
+            db.noteQueries.clearDirtyById(note.id.toLong())
         }
 
         if (overwrites > 0) _events.tryEmit(SyncEvent.OverwritesApplied(overwrites))
-        _events.tryEmit(SyncEvent.SyncCompleted)
-        if (disableAfterThisCall) {
-            mergingDisabled = true
-            storedRemoteHash = currentRemoteHash
-        }
+        lastRemoteHash = currentRemoteHash
+        if (syncStarted) emitSyncCompleted()
+        mergingDisabled = true
+        storedRemoteHash = currentRemoteHash
     }
 
     private fun getAllLocalNotes(): List<Note> {
@@ -325,7 +329,7 @@ class NotesSyncManager(
         db.noteQueries.deleteAllFolders()
         db.noteQueries.deleteAllPendingNoteDeletions()
         db.noteQueries.deleteAllPendingFolderDeletions()
-        _events.tryEmit(SyncEvent.SyncCompleted)
+        emitSyncCompleted()
     }
 
     private fun rowToNote(row: com.edufelip.shared.db.Note): Note {
@@ -421,7 +425,6 @@ class NotesSyncManager(
     }
 
     private fun resetMergeThrottle() {
-        mergeCallCount = 0
         mergingDisabled = false
         storedRemoteHash = null
     }
@@ -442,6 +445,7 @@ class NotesSyncManager(
                 deleteLocalFolder(folder.id)
             } else {
                 cloud.upsertFolder(uid, folder)
+                db.noteQueries.clearFolderDirtyById(folder.id)
             }
         }
     }
@@ -453,6 +457,32 @@ class NotesSyncManager(
             println("NotesSyncManager: $message")
         }
     }
+
+    private fun emitSyncStarted() {
+        _syncing.value = true
+        _events.tryEmit(SyncEvent.SyncStarted)
+    }
+
+    private fun emitSyncCompleted() {
+        _syncing.value = false
+        _events.tryEmit(SyncEvent.SyncCompleted)
+    }
+
+    private fun emitSyncFailed(message: String) {
+        _syncing.value = false
+        _events.tryEmit(SyncEvent.SyncFailed(message))
+    }
+
+    private fun handleSyncError(context: String, throwable: Throwable) {
+        logSyncError("Sync failure during $context", throwable)
+        val message = when {
+            throwable.isPermissionDenied() -> "Sync failed: missing Firestore permissions for this account."
+            else -> throwable.message ?: "Sync failed due to an unexpected error."
+        }
+        emitSyncFailed(message)
+    }
+
+    private fun Throwable.isPermissionDenied(): Boolean = message?.contains("PERMISSION_DENIED", ignoreCase = true) == true
 
     private fun combinedHash(notes: List<Note>, folders: List<Folder>): Long {
         val notesHash = noteListHash(notes)
@@ -575,6 +605,8 @@ private val storagePathsJson = Json { ignoreUnknownKeys = true }
 private const val PLACEHOLDER_FOLDER_NAME = "Untitled Folder"
 
 sealed class SyncEvent {
+    data object SyncStarted : SyncEvent()
     data class OverwritesApplied(val count: Int) : SyncEvent()
     data object SyncCompleted : SyncEvent()
+    data class SyncFailed(val message: String) : SyncEvent()
 }

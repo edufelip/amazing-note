@@ -27,7 +27,6 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.test.AfterTest
 import kotlin.test.Test
@@ -127,7 +126,7 @@ class NotesSyncManagerTest {
 
         syncManager.start()
         users.setCurrentUser("user-1")
-        syncManager.syncNow()
+        syncManager.syncNow(uid)
         advanceUntilIdle()
 
         val stored = driver.requireNote(2)
@@ -169,7 +168,7 @@ class NotesSyncManagerTest {
 
         syncManager.start()
         users.setCurrentUser("user-1")
-        syncManager.syncNow()
+        syncManager.syncNow(uid)
         advanceUntilIdle()
 
         val storedFolder = driver.getFolder(42) ?: error("Folder not synced")
@@ -203,7 +202,7 @@ class NotesSyncManagerTest {
 
         syncManager.start()
         users.setCurrentUser("user-1")
-        syncManager.syncNow()
+        syncManager.syncNow(uid)
         advanceUntilIdle()
 
         val storedFolder = driver.getFolder(folderId) ?: error("Placeholder not created")
@@ -350,6 +349,60 @@ class NotesSyncManagerTest {
     }
 
     @Test
+    fun reloggingInRehydratesLocalStateFromRemote() = runTest {
+        NoteCipher.overrideKeyForTests(TEST_KEY)
+        val driver = TestNoteDriver()
+        val db = NoteDatabase(driver)
+        val cloud = FakeCloudNotesDataSource()
+        val users = FakeCurrentUserProvider()
+        val syncManager = createSyncManager(db, cloud, users)
+        val noteId = 99
+        val folderId = 123L
+        cloud.seedRemote(
+            uid = "user-1",
+            notes = listOf(
+                Note(
+                    id = noteId,
+                    title = "Remote only",
+                    description = "from cloud",
+                    deleted = false,
+                    createdAt = 5,
+                    updatedAt = 50,
+                    folderId = folderId,
+                ),
+            ),
+            folders = listOf(
+                Folder(
+                    id = folderId,
+                    name = "Shared",
+                    createdAt = 1,
+                    updatedAt = 10,
+                ),
+            ),
+        )
+
+        syncManager.start()
+        users.setCurrentUser("user-1")
+        syncManager.syncNow(uid)
+        advanceUntilIdle()
+
+        assertEquals("Remote only", decryptField(driver.requireNote(noteId.toLong()).title))
+        assertEquals("Shared", driver.getFolder(folderId)?.name)
+
+        users.setCurrentUser(null)
+        advanceUntilIdle()
+        assertNull(driver.getNote(noteId.toLong()))
+        assertNull(driver.getFolder(folderId))
+
+        users.setCurrentUser("user-1")
+        syncManager.syncNow(uid)
+        advanceUntilIdle()
+
+        assertEquals("Remote only", decryptField(driver.requireNote(noteId.toLong()).title))
+        assertEquals("Shared", driver.getFolder(folderId)?.name)
+    }
+
+    @Test
     fun remoteDeletionRemovesLocalNoteWhenNotDirty() = runTest {
         NoteCipher.overrideKeyForTests(TEST_KEY)
         val driver = TestNoteDriver()
@@ -369,7 +422,7 @@ class NotesSyncManagerTest {
 
         syncManager.start()
         users.setCurrentUser("user-1")
-        syncManager.syncNow()
+        syncManager.syncNow(uid)
         advanceUntilIdle()
 
         cloud.seedRemote("user-1", emptyList())

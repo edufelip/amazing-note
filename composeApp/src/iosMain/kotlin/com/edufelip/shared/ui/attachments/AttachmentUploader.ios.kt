@@ -1,6 +1,5 @@
 package com.edufelip.shared.ui.attachments
 
-import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSHomeDirectory
 import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL

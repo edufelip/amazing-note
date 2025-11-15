@@ -46,7 +46,7 @@ fun AmazingNoteNavHost(
     viewModel: NoteUiViewModel,
     appVersion: String,
     darkTheme: Boolean,
-    themeKey: Boolean
+    themeKey: Boolean,
 ) {
     val environment = state.environment
     val layoutDirection = LocalLayoutDirection.current
@@ -128,6 +128,7 @@ fun AmazingNoteNavHost(
 
                 AppRoutes.Login -> LoginRoute(
                     state = state,
+                    viewModel = viewModel,
                     googleSignInLauncher = environment.googleSignInLauncher,
                     onNavigate = state::navigate,
                     onBack = { state.popBack() },

@@ -10,5 +10,5 @@ object AndroidContextHolder {
 }
 
 actual class DatabaseDriverFactory actual constructor() {
-    actual fun createDriver(): SqlDriver = AndroidSqliteDriver(NoteDatabase.Companion.Schema, AndroidContextHolder.appContext, "notes.db")
+    actual fun createDriver(): SqlDriver = AndroidSqliteDriver(NoteDatabase.Schema, AndroidContextHolder.appContext, "notes.db")
 }

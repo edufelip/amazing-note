@@ -73,7 +73,7 @@ data class AuthUseCases(
     val validatePassword: ValidatePassword,
     val validateCredentials: ValidateCredentials,
     val validatePasswordConfirmation: ValidatePasswordConfirmation,
-    val updateUserName: UpdateUserName
+    val updateUserName: UpdateUserName,
 )
 
 fun buildAuthUseCases(
@@ -92,6 +92,6 @@ fun buildAuthUseCases(
         validatePassword = validatePassword,
         validateCredentials = ValidateCredentials(validateEmail, validatePassword),
         validatePasswordConfirmation = ValidatePasswordConfirmation(),
-        updateUserName = UpdateUserName(repository)
+        updateUserName = UpdateUserName(repository),
     )
 }

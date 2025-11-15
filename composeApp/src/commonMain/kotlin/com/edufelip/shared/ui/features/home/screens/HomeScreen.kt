@@ -10,7 +10,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,7 +19,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.edufelip.shared.data.sync.LocalNotesSyncManager
-import com.edufelip.shared.data.sync.SyncEvent
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.ui.app.chrome.AmazingTopBar
 import com.edufelip.shared.ui.components.organisms.common.NotesEmptyState
@@ -45,19 +45,9 @@ fun HomeScreen(
     val currentUserState = auth?.uiState?.collectWithLifecycle()?.value
     val currentUid = currentUserState?.user?.uid
     val syncManager = LocalNotesSyncManager.current
-    var syncing by remember(currentUid, syncManager) { mutableStateOf(currentUid != null) }
-
-    LaunchedEffect(currentUid, syncManager) {
-        syncing = currentUid != null
-        if (currentUid != null && syncManager != null) {
-            syncManager.events.collect { event ->
-                if (event is SyncEvent.SyncCompleted) {
-                    syncing = false
-                }
-            }
-        } else {
-            syncing = false
-        }
+    val syncingState = syncManager?.syncing?.collectAsState()
+    val syncing by remember(currentUid, syncingState?.value) {
+        derivedStateOf { currentUid != null && (syncingState?.value == true) }
     }
 
     val query = remember { mutableStateOf("") }

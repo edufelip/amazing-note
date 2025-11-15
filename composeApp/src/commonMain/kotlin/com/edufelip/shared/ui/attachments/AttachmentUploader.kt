@@ -1,7 +1,6 @@
 package com.edufelip.shared.ui.attachments
 
 import com.edufelip.shared.domain.model.NoteAttachment
-import com.edufelip.shared.platform.storageFileForLocalUri
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.storage.storage
 import kotlin.random.Random

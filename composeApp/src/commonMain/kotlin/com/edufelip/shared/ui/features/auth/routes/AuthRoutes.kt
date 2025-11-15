@@ -8,16 +8,19 @@ import com.edufelip.shared.ui.features.auth.screens.LoginScreen
 import com.edufelip.shared.ui.features.auth.screens.SignUpScreen
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
+import com.edufelip.shared.ui.vm.NoteUiViewModel
 
 @Composable
 fun LoginRoute(
     state: AmazingNoteAppState,
+    viewModel: NoteUiViewModel,
     googleSignInLauncher: GoogleSignInLauncher?,
     onNavigate: (AppRoutes) -> Unit,
     onBack: () -> Unit,
     showLocalSuccessToast: Boolean = true,
 ) {
     val auth = state.authViewModel
+    val syncManager = state.environment.notesSyncManager
     val uiState by auth.uiState.collectWithLifecycle()
 
     LoginScreen(
@@ -32,7 +35,10 @@ fun LoginRoute(
         onClearError = { auth.clearError() },
         onSetError = { auth.setError(it) },
         events = auth.events,
-        onLoginSuccess = { state.setRoot(AppRoutes.Notes) },
+        onLoginSuccess = {
+            viewModel.syncFromRemote(syncManager)
+            state.setRoot(AppRoutes.Notes)
+        },
     )
 }
 

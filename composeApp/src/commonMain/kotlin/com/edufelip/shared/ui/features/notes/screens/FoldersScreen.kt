@@ -186,7 +186,7 @@ fun FoldersScreen(
                             .fillMaxWidth()
                             .padding(
                                 vertical = tokens.spacing.sm,
-                                horizontal = tokens.spacing.xl
+                                horizontal = tokens.spacing.xl,
                             ),
                         query = searchQuery,
                         onQueryChange = { value -> searchQuery = value },

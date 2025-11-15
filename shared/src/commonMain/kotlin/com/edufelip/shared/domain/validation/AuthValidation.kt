@@ -4,13 +4,13 @@ private val EMAIL_REGEX = "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$".toRegex(Reg
 
 data class NameValidationResult(
     val sanitized: String,
-    val error: NameValidationError?
+    val error: NameValidationError?,
 ) {
     val isValid: Boolean get() = error == null
 }
 
 enum class NameValidationError {
-    REQUIRED
+    REQUIRED,
 }
 
 data class EmailValidationResult(

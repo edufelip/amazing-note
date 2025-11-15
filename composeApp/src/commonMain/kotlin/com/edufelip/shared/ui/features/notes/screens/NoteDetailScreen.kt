@@ -32,6 +32,7 @@ import com.edufelip.shared.domain.validation.NoteValidationError.EmptyDescriptio
 import com.edufelip.shared.domain.validation.NoteValidationError.EmptyTitle
 import com.edufelip.shared.domain.validation.NoteValidationError.TitleTooLong
 import com.edufelip.shared.domain.validation.NoteValidationRules
+import com.edufelip.shared.platform.deleteLocalAttachment
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.error_description_required
 import com.edufelip.shared.resources.error_description_too_long
@@ -40,7 +41,6 @@ import com.edufelip.shared.resources.error_title_too_long
 import com.edufelip.shared.ui.attachments.AttachmentPicker
 import com.edufelip.shared.ui.attachments.AttachmentProcessingRequest
 import com.edufelip.shared.ui.attachments.AttachmentProcessingResult
-import com.edufelip.shared.platform.deleteLocalAttachment
 import com.edufelip.shared.ui.attachments.AttachmentUploadCoordinator
 import com.edufelip.shared.ui.attachments.UploadContext
 import com.edufelip.shared.ui.attachments.UploadedImage
@@ -48,9 +48,9 @@ import com.edufelip.shared.ui.attachments.pickImage
 import com.edufelip.shared.ui.attachments.rememberAttachmentProcessor
 import com.edufelip.shared.ui.attachments.resolvePendingImageAttachments
 import com.edufelip.shared.ui.editor.rememberNoteEditorState
-import com.edufelip.shared.ui.features.notes.dialogs.DiscardNoteDialog
 import com.edufelip.shared.ui.effects.toast.rememberToastController
 import com.edufelip.shared.ui.effects.toast.show
+import com.edufelip.shared.ui.features.notes.dialogs.DiscardNoteDialog
 import com.edufelip.shared.ui.util.OnSystemBack
 import com.edufelip.shared.ui.util.security.SecurityLogger
 import com.edufelip.shared.ui.util.security.sanitizeInlineInput

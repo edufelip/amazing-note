@@ -13,8 +13,8 @@ import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.NoteAttachment
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
-import com.edufelip.shared.domain.model.generateStableNoteId
 import com.edufelip.shared.domain.model.attachmentsFromJson
+import com.edufelip.shared.domain.model.generateStableNoteId
 import com.edufelip.shared.domain.model.noteContentFromJson
 import com.edufelip.shared.domain.model.spansFromJson
 import com.edufelip.shared.domain.model.toJson

@@ -64,7 +64,7 @@ fun rememberAmazingNoteAppEnvironment(
         resolvedDatabase,
         resolvedSyncManager,
         resolvedAttachmentPicker,
-        resolvedGoogleSignInLauncher
+        resolvedGoogleSignInLauncher,
     ) {
         AmazingNoteAppEnvironment(
             settings = resolvedSettings,

@@ -19,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.editor_add_image
 import com.edufelip.shared.resources.editor_copy_image
