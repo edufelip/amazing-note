@@ -68,7 +68,7 @@ fun NoteRow(
             )
             if (note.description.isNotBlank()) {
                 Text(
-                    text = note.description,
+                    text = note.description.trim(),
                     style = MaterialTheme.typography.bodyMedium,
                     maxLines = 4,
                     overflow = TextOverflow.Ellipsis,
