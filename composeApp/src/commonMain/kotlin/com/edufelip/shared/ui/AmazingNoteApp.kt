@@ -24,6 +24,7 @@ import com.edufelip.shared.ui.app.navigation.AmazingNoteNavHost
 import com.edufelip.shared.ui.app.state.rememberAmazingNoteAppState
 import com.edufelip.shared.ui.images.platformConfigImageLoader
 import com.edufelip.shared.ui.nav.AppRoutes
+import com.edufelip.shared.ui.nav.NavigationController
 import com.edufelip.shared.ui.settings.AppPreferences
 import com.edufelip.shared.ui.settings.DefaultAppPreferences
 import com.edufelip.shared.ui.settings.InMemorySettings
@@ -59,6 +60,11 @@ fun AmazingNoteApp(
         val base = ImageLoader.Builder(context).crossfade(true)
         platformConfigImageLoader(base, context).build()
     }
+    val authState by resolvedAuthViewModel.uiState.collectWithLifecycle()
+    val isUserResolved = authState.isUserResolved
+    val isUserAuthenticated = authState.user != null
+    val sessionKey = authState.user?.uid ?: "guest"
+    val navigationController = remember(sessionKey) { NavigationController(initialRoute) }
 
     val state = rememberAmazingNoteAppState(
         googleSignInConfig = googleSignInConfig,
@@ -68,13 +74,10 @@ fun AmazingNoteApp(
         showBottomBar = showBottomBar,
         noteDatabase = noteDatabase,
         authViewModel = resolvedAuthViewModel,
+        navigationController = navigationController,
     )
     val environment = state.environment
     val darkTheme by state.darkThemeFlow.collectWithLifecycle(initial = state.darkTheme)
-
-    val authState by resolvedAuthViewModel.uiState.collectWithLifecycle()
-    val isUserResolved = authState.isUserResolved
-    val isUserAuthenticated = authState.user != null
 
     CompositionLocalProvider(
         LocalSettings provides environment.settings,

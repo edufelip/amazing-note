@@ -80,11 +80,11 @@ class NotesSyncManager(
                 handleSyncError("manual sync", throwable)
             }
             .getOrNull() ?: run {
-                emitSyncFailed("Sync aborted: no data returned")
+                emitSyncCompleted()
                 return
             }
         if (payload.notes.isEmpty() && payload.folders.isEmpty()) {
-            emitSyncFailed("Sync skipped: no remote data")
+            emitSyncCompleted()
             return
         }
         mergeRemoteIntoLocalAndPushLocalNewer(uid, payload)

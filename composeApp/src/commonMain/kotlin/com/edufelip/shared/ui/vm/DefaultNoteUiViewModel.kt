@@ -1,6 +1,5 @@
 package com.edufelip.shared.ui.vm
 
-import com.edufelip.shared.data.sync.NotesSyncManager
 import com.edufelip.shared.domain.model.NoteAttachment
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
@@ -152,12 +151,6 @@ class DefaultNoteUiViewModel(
         syncAfter = syncAfter,
     ) {
         useCases.removeFolder(id)
-    }
-
-    override fun syncFromRemote(syncManager: NotesSyncManager) {
-        launchInScope {
-            runCatching { syncManager.syncNow() }
-        }
     }
 
     private fun launchValidatedAction(

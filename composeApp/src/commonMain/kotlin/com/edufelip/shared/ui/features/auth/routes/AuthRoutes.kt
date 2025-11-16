@@ -36,7 +36,6 @@ fun LoginRoute(
         onSetError = { auth.setError(it) },
         events = auth.events,
         onLoginSuccess = {
-            viewModel.syncFromRemote(syncManager)
             state.setRoot(AppRoutes.Notes)
         },
     )

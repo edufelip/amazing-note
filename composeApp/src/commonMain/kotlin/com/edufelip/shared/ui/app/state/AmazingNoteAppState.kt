@@ -8,7 +8,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.edufelip.shared.data.auth.GoogleSignInConfig
 import com.edufelip.shared.data.sync.NotesSyncManager
 import com.edufelip.shared.db.NoteDatabase
@@ -16,9 +15,7 @@ import com.edufelip.shared.ui.app.core.AmazingNoteAppEnvironment
 import com.edufelip.shared.ui.app.core.rememberAmazingNoteAppEnvironment
 import com.edufelip.shared.ui.app.navigation.reportRoute
 import com.edufelip.shared.ui.nav.AppRoutes
-import com.edufelip.shared.ui.nav.goBack
-import com.edufelip.shared.ui.nav.navigate
-import com.edufelip.shared.ui.nav.popToRoot
+import com.edufelip.shared.ui.nav.NavigationController
 import com.edufelip.shared.ui.settings.AppPreferences
 import com.edufelip.shared.ui.settings.DefaultAppPreferences
 import com.edufelip.shared.ui.settings.Settings
@@ -31,18 +28,12 @@ class AmazingNoteAppState internal constructor(
     showBottomBar: Boolean,
     val coroutineScope: CoroutineScope,
     val authViewModel: AuthViewModel,
+    private val navigationController: NavigationController,
 ) {
     private val tabRoutes = listOf(AppRoutes.Notes, AppRoutes.Folders, AppRoutes.Settings)
 
-    val backStack: SnapshotStateList<AppRoutes> = mutableStateListOf(initialRoute)
-    private val currentRouteState = mutableStateOf(initialRoute)
-
-    init {
-        reportRoute(currentRouteState.value)
-    }
-
     val currentRoute: AppRoutes
-        get() = currentRouteState.value
+        get() = navigationController.currentRoute
 
     val darkThemeFlow = environment.appPreferences.darkThemeFlow
 
@@ -56,38 +47,30 @@ class AmazingNoteAppState internal constructor(
         private set
 
     val bottomBarTargetVisible: Boolean
-        get() = isBottomBarEnabled && currentRoute in tabRoutes
+        get() = isBottomBarEnabled && navigationController.currentRoute in tabRoutes
 
     val topBarVisible: Boolean
-        get() = if (isBottomBarEnabled) isBottomBarVisible else currentRoute in tabRoutes
+        get() = if (isBottomBarEnabled) isBottomBarVisible else navigationController.currentRoute in tabRoutes
 
     fun navigate(route: AppRoutes, singleTop: Boolean = true) {
-        backStack.navigate(route, singleTop)
-        currentRouteState.value = backStack.last()
-        reportRoute(currentRouteState.value)
+        navigationController.navigate(route, singleTop)
+        reportRoute(navigationController.currentRoute)
     }
 
     fun popBack(): Boolean {
-        val popped = backStack.goBack()
-        if (popped) {
-            currentRouteState.value = backStack.last()
-            reportRoute(currentRouteState.value)
-        }
+        val popped = navigationController.popBack()
+        if (popped) reportRoute(navigationController.currentRoute)
         return popped
     }
 
     fun popToRoot() {
-        backStack.popToRoot()
-        currentRouteState.value = backStack.last()
-        reportRoute(currentRouteState.value)
+        navigationController.popToRoot()
+        reportRoute(navigationController.currentRoute)
     }
 
     fun setRoot(destination: AppRoutes) {
-        if (backStack.size == 1 && backStack.last() == destination) return
-        backStack.clear()
-        backStack.add(destination)
-        currentRouteState.value = destination
-        reportRoute(destination)
+        navigationController.setRoot(destination)
+        reportRoute(navigationController.currentRoute)
     }
 
     fun toggleTheme(enabled: Boolean? = null) {
@@ -116,6 +99,7 @@ fun rememberAmazingNoteAppState(
     noteDatabase: NoteDatabase? = null,
     existingSyncManager: NotesSyncManager? = null,
     authViewModel: AuthViewModel,
+    navigationController: NavigationController,
 ): AmazingNoteAppState {
     val coroutineScope = rememberCoroutineScope()
     val environment = rememberAmazingNoteAppEnvironment(
@@ -131,13 +115,14 @@ fun rememberAmazingNoteAppState(
         onDispose { authViewModel.clear() }
     }
 
-    return remember(environment, initialRoute, showBottomBar) {
+    return remember(environment, navigationController, showBottomBar) {
         AmazingNoteAppState(
             environment = environment,
             initialRoute = initialRoute,
             showBottomBar = showBottomBar,
             coroutineScope = coroutineScope,
             authViewModel = authViewModel,
+            navigationController = navigationController,
         )
     }
 }

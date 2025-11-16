@@ -60,5 +60,4 @@ interface NoteUiViewModel {
     fun createFolder(name: String, syncAfter: Boolean = false)
     fun renameFolder(id: Long, name: String, syncAfter: Boolean = false)
     fun deleteFolder(id: Long, syncAfter: Boolean = false)
-    fun syncFromRemote(syncManager: NotesSyncManager)
 }
