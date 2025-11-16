@@ -12,20 +12,22 @@ suspend fun NoteContent.resolvePendingImageAttachments(
     var mutated = false
     val updatedBlocks = blocks.map { block ->
         if (block is ImageBlock && block.requiresUpload()) {
-            val uploadResult = runCatching { uploader(block) }
+            val uploadingBlock = block.copy(syncState = ImageSyncState.Uploading)
+            val uploadResult = runCatching { uploader(uploadingBlock) }
             mutated = true
             uploadResult.fold(
                 onSuccess = { uploaded ->
-                    block.copy(
-                        uri = uploaded.remoteUrl,
-                        remoteUri = uploaded.remoteUrl,
-                        thumbnailUri = uploaded.thumbnailUrl ?: block.thumbnailUri,
+                    uploadingBlock.localUri?.let(onCleanup)
+                    uploadingBlock.copy(
                         storagePath = uploaded.storagePath,
+                        thumbnailStoragePath = uploaded.thumbnailStoragePath ?: block.thumbnailStoragePath,
+                        legacyUri = uploaded.storagePath,
+                        thumbnailLocalUri = block.thumbnailLocalUri ?: block.thumbnailUri,
                         syncState = ImageSyncState.Synced,
                     )
                 },
                 onFailure = {
-                    block.copy(syncState = ImageSyncState.Error)
+                    uploadingBlock.copy(syncState = ImageSyncState.UploadFailed)
                 },
             )
         } else {
@@ -36,8 +38,7 @@ suspend fun NoteContent.resolvePendingImageAttachments(
 }
 
 private fun ImageBlock.requiresUpload(): Boolean {
-    val remoteMissing = remoteUri.isNullOrBlank() && (uri.isBlank() || uri.startsWith("file:"))
-    return syncState != ImageSyncState.Synced || remoteMissing || storagePath.isNullOrBlank()
+    return storagePath.isNullOrBlank() || syncState != ImageSyncState.Synced
 }
 
 data class UploadedImage(

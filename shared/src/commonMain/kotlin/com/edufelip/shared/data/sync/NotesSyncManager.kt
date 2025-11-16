@@ -72,18 +72,27 @@ class NotesSyncManager(
 
     suspend fun syncNow(uid: String? = null) {
         val uid = uid ?: awaitCurrentUid() ?: return
+        println("SYNC STARTED 1")
         emitSyncStarted()
         resetMergeThrottle()
         val payload = runCatching { cloud.getAll(uid) }
             .onFailure { throwable ->
                 handleSyncError("manual sync", throwable)
             }
-            .getOrNull() ?: return
+            .getOrNull() ?: run {
+                emitSyncFailed("Sync aborted: no data returned")
+                return
+            }
+        if (payload.notes.isEmpty() && payload.folders.isEmpty()) {
+            emitSyncFailed("Sync skipped: no remote data")
+            return
+        }
         mergeRemoteIntoLocalAndPushLocalNewer(uid, payload)
     }
 
     suspend fun syncLocalToRemoteOnly() {
         val uid = awaitCurrentUid() ?: return
+        println("SYNC STARTED 2")
         emitSyncStarted()
         val pushedSomething = pushPendingFolderDeletions(uid) || pushPendingNoteDeletions(uid) || pushDirtyFoldersNow(uid)
         // Push only dirty rows to avoid unnecessary writes and reordering
@@ -175,6 +184,7 @@ class NotesSyncManager(
         var syncStarted = false
         fun ensureSyncStarted() {
             if (!syncStarted) {
+                println("SYNC STARTED 3 ")
                 emitSyncStarted()
                 syncStarted = true
             }
@@ -464,11 +474,13 @@ class NotesSyncManager(
     }
 
     private fun emitSyncCompleted() {
+        println("SYNC COMPLETED")
         _syncing.value = false
         _events.tryEmit(SyncEvent.SyncCompleted)
     }
 
     private fun emitSyncFailed(message: String) {
+        println("SYNC FAILED")
         _syncing.value = false
         _events.tryEmit(SyncEvent.SyncFailed(message))
     }
@@ -557,8 +569,10 @@ class NotesSyncManager(
             }
             n.attachments.forEach { attachment ->
                 mixString(attachment.id)
-                mixString(attachment.downloadUrl)
-                mixString(attachment.thumbnailUrl ?: "")
+                val storagePath = attachment.storagePath ?: attachment.downloadUrl
+                val thumbPath = attachment.thumbnailStoragePath ?: attachment.thumbnailUrl ?: ""
+                mixString(storagePath)
+                mixString(thumbPath)
                 mixString(attachment.mimeType)
             }
             n.content.blocks.forEachIndexed { index, block ->
@@ -576,14 +590,15 @@ class NotesSyncManager(
 
                     is ImageBlock -> {
                         mixString("image")
-                        mixString(block.uri)
-                        mixString(block.remoteUri ?: "")
-                        mix(block.width?.toLong() ?: -1L)
-                        mix(block.height?.toLong() ?: -1L)
+                        mixString(block.storagePath ?: "")
+                        mixString(block.thumbnailStoragePath ?: "")
+                        mix(block.metadata.width?.toLong() ?: block.width?.toLong() ?: -1L)
+                        mix(block.metadata.height?.toLong() ?: block.height?.toLong() ?: -1L)
+                        mix(block.metadata.fileSizeBytes ?: -1L)
                         mixString(block.alt ?: "")
-                        mixString(block.thumbnailUri ?: "")
-                        mixString(block.mimeType ?: "")
+                        mixString(block.mimeType ?: block.metadata.mimeType ?: "")
                         mixString(block.fileName ?: "")
+                        mixString(block.syncState.name)
                     }
                 }
                 mix(index.toLong())

@@ -10,9 +10,20 @@ private val BLOCK_ID_ALPHABET = ('a'..'z') + ('0'..'9')
 @Serializable
 enum class ImageSyncState {
     PendingUpload,
+    Uploading,
     Synced,
-    Error,
+    UploadFailed,
 }
+
+@Serializable
+data class ImageMetadata(
+    val width: Int? = null,
+    val height: Int? = null,
+    val fileSizeBytes: Long? = null,
+    val mimeType: String? = null,
+    val createdAt: Long? = null,
+    val updatedAt: Long? = null,
+)
 
 @Serializable
 sealed interface NoteBlock {
@@ -31,17 +42,22 @@ data class TextBlock(
 @SerialName("image")
 data class ImageBlock(
     override val id: String = generateBlockId(),
-    val uri: String,
-    val width: Int? = null,
-    val height: Int? = null,
-    val alt: String? = null,
-    val thumbnailUri: String? = null,
-    val mimeType: String? = null,
-    val fileName: String? = null,
-    val remoteUri: String? = null,
     val localUri: String? = null,
     val storagePath: String? = null,
-    val syncState: ImageSyncState = ImageSyncState.Synced,
+    val thumbnailLocalUri: String? = null,
+    val thumbnailStoragePath: String? = null,
+    val syncState: ImageSyncState = ImageSyncState.PendingUpload,
+    val metadata: ImageMetadata = ImageMetadata(),
+    val alt: String? = null,
+    val fileName: String? = null,
+    @SerialName("uri")
+    val legacyUri: String? = null,
+    @SerialName("remoteUri")
+    val legacyRemoteUri: String? = null,
+    val mimeType: String? = null,
+    val width: Int? = null,
+    val height: Int? = null,
+    val thumbnailUri: String? = null,
 ) : NoteBlock
 
 fun generateBlockId(): String = buildString(capacity = BLOCK_ID_LENGTH) {

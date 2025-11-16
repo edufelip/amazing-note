@@ -35,6 +35,7 @@ fun noteContentFromJson(raw: String?): NoteContent = raw
     ?.let { json ->
         runCatching { noteContentJson.decodeFromString(NoteContent.serializer(), json) }.getOrNull()
     }
+    ?.normalizedForSync()
     ?: NoteContent()
 
 @Serializable
@@ -46,6 +47,13 @@ data class NoteAttachment(
     val fileName: String? = null,
     val width: Int? = null,
     val height: Int? = null,
+    val storagePath: String? = null,
+    val thumbnailStoragePath: String? = null,
+    val localUri: String? = null,
+    val syncState: ImageSyncState? = null,
+    val fileSizeBytes: Long? = null,
+    val createdAt: Long? = null,
+    val updatedAt: Long? = null,
 )
 
 @Serializable
@@ -103,3 +111,52 @@ fun spansFromJson(raw: String?): List<NoteTextSpan> = raw
         runCatching { jsonFormatter.decodeFromString<List<NoteTextSpan>>(it) }.getOrNull()
     }
     ?: emptyList()
+
+fun NoteContent.remoteSafe(): NoteContent = copy(
+    blocks = blocks.map { block ->
+        when (block) {
+            is ImageBlock -> block.remoteSafe()
+            else -> block
+        }
+    },
+)
+
+fun ImageBlock.remoteSafe(): ImageBlock = copy(
+    localUri = null,
+    thumbnailLocalUri = null,
+    legacyRemoteUri = null,
+    legacyUri = storagePath ?: legacyUri,
+    thumbnailUri = null,
+    syncState = if (storagePath != null) ImageSyncState.Synced else syncState,
+)
+
+fun List<NoteAttachment>.remoteSafe(): List<NoteAttachment> = map { attachment ->
+    val remoteUrl = attachment.storagePath ?: ""
+    attachment.copy(
+        downloadUrl = remoteUrl,
+        thumbnailUrl = attachment.thumbnailStoragePath ?: attachment.thumbnailUrl,
+        localUri = null,
+    )
+}
+
+fun NoteContent.normalizedForSync(): NoteContent = copy(
+    blocks = blocks.map { block ->
+        when (block) {
+            is ImageBlock -> block.normalizedForSync()
+            else -> block
+        }
+    },
+)
+
+private fun ImageBlock.normalizedForSync(): ImageBlock {
+    val mergedMetadata = metadata.copy(
+        width = metadata.width ?: width,
+        height = metadata.height ?: height,
+        mimeType = metadata.mimeType ?: mimeType,
+    )
+    val shouldMarkSynced = storagePath != null && syncState != ImageSyncState.Synced
+    return copy(
+        metadata = mergedMetadata,
+        syncState = if (shouldMarkSynced) ImageSyncState.Synced else syncState,
+    )
+}

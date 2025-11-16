@@ -66,6 +66,7 @@ private suspend fun persistLocally(
         fileName = fileName,
         width = width,
         height = height,
+        localUri = localUri,
     )
 }
 

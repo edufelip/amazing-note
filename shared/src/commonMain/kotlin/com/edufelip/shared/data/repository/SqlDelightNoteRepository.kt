@@ -165,7 +165,12 @@ class SqlDelightNoteRepository(
         val content = noteContentFromJson(contentJson)
         val storagePaths = content.blocks
             .filterIsInstance<ImageBlock>()
-            .mapNotNull { it.storagePath?.takeIf { path -> path.isNotBlank() } }
+            .flatMap { image ->
+                listOfNotNull(
+                    image.storagePath?.takeIf { path -> path.isNotBlank() },
+                    image.thumbnailStoragePath?.takeIf { it.isNotBlank() },
+                )
+            }
         queries.insertPendingNoteDeletion(
             id = row.id,
             deleted_at = now,

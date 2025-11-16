@@ -52,7 +52,7 @@ class NoteEditorStateTest {
     @Test
     fun removeImageBeforeTextBlockDeletesImage() {
         val text = TextBlock(text = "")
-        val image = ImageBlock(uri = "file://image")
+        val image = ImageBlock(localUri = "file://image", legacyUri = "file://image")
         val state = NoteEditorState(NoteContent(listOf(image, text)))
 
         val removed = state.removeImageBefore(text.id)
@@ -64,7 +64,7 @@ class NoteEditorStateTest {
     @Test
     fun selectedImageRemovalClearsSelection() {
         val text = TextBlock(text = "")
-        val image = ImageBlock(uri = "file://image")
+        val image = ImageBlock(localUri = "file://image", legacyUri = "file://image")
         val state = NoteEditorState(NoteContent(listOf(text, image)))
 
         state.toggleImageSelection(image.id)
@@ -97,7 +97,7 @@ class NoteEditorStateTest {
     fun removingImageMergesNeighboringTextBlocks() {
         val first = TextBlock(text = "Hello ")
         val second = TextBlock(text = "world")
-        val image = ImageBlock(uri = "file://image")
+        val image = ImageBlock(localUri = "file://image", legacyUri = "file://image")
         val state = NoteEditorState(NoteContent(listOf(first, image, second)))
 
         val removed = state.removeBlockById(image.id)

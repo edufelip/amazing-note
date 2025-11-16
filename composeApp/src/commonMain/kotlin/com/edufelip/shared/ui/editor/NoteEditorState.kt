@@ -14,6 +14,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.edufelip.shared.domain.model.Caret
 import com.edufelip.shared.domain.model.ImageBlock
+import com.edufelip.shared.domain.model.ImageMetadata
 import com.edufelip.shared.domain.model.ImageSyncState
 import com.edufelip.shared.domain.model.NoteBlock
 import com.edufelip.shared.domain.model.NoteContent
@@ -205,8 +206,10 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         val payload = EditorClipboard.spawnImages() ?: return false
         var updated = false
         payload.forEach { block ->
+            val sourceUri = block.localUri ?: block.legacyUri ?: block.storagePath ?: block.legacyRemoteUri
+            if (sourceUri.isNullOrBlank()) return@forEach
             insertImageAtCaret(
-                uri = block.uri,
+                uri = sourceUri,
                 width = block.width,
                 height = block.height,
                 alt = block.alt,
@@ -216,6 +219,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
                 localUri = block.localUri,
                 storagePath = block.storagePath,
                 syncState = block.syncState,
+                thumbnailStoragePath = block.thumbnailStoragePath,
             )
             updated = true
         }
@@ -259,7 +263,8 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         thumbnailUri: String? = null,
         localUri: String? = null,
         storagePath: String? = null,
-        syncState: ImageSyncState = ImageSyncState.Synced,
+        syncState: ImageSyncState = ImageSyncState.PendingUpload,
+        thumbnailStoragePath: String? = null,
     ): Caret? {
         val beforeContent = content
         val beforeCaret = caret
@@ -268,16 +273,23 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
             content = content,
             caret = snapshot,
             imageBlock = ImageBlock(
-                uri = uri,
+                localUri = localUri ?: uri,
+                storagePath = storagePath,
+                thumbnailLocalUri = thumbnailUri,
+                thumbnailStoragePath = thumbnailStoragePath,
+                syncState = syncState,
+                metadata = ImageMetadata(
+                    width = width,
+                    height = height,
+                    mimeType = mimeType,
+                ),
+                alt = alt,
+                fileName = fileName,
+                legacyUri = uri,
+                mimeType = mimeType,
                 width = width,
                 height = height,
-                alt = alt,
-                mimeType = mimeType,
-                fileName = fileName,
                 thumbnailUri = thumbnailUri,
-                localUri = localUri,
-                storagePath = storagePath,
-                syncState = syncState,
             ),
         )
         blockList.clear()
@@ -587,7 +599,18 @@ private fun List<NoteBlock>.sameAs(other: List<NoteBlock>): Boolean {
 
             is ImageBlock -> {
                 val otherImage = b as? ImageBlock ?: return false
-                if (a.id != otherImage.id || a.uri != otherImage.uri || a.width != otherImage.width || a.height != otherImage.height || a.alt != otherImage.alt) return false
+                if (
+                    a.id != otherImage.id ||
+                    a.localUri != otherImage.localUri ||
+                    a.storagePath != otherImage.storagePath ||
+                    a.thumbnailLocalUri != otherImage.thumbnailLocalUri ||
+                    a.thumbnailStoragePath != otherImage.thumbnailStoragePath ||
+                    a.metadata != otherImage.metadata ||
+                    a.mimeType != otherImage.mimeType ||
+                    a.alt != otherImage.alt ||
+                    a.fileName != otherImage.fileName ||
+                    a.syncState != otherImage.syncState
+                ) return false
             }
         }
     }

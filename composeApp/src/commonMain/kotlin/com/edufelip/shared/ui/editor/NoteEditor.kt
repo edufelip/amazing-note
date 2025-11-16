@@ -48,6 +48,8 @@ import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.ImageSyncState
 import com.edufelip.shared.domain.model.TextBlock
 import com.edufelip.shared.ui.designsystem.designTokens
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.storage.storage
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -229,6 +231,23 @@ private fun ImageBlockView(
     val dragThreshold = with(LocalDensity.current) { 36.dp.toPx() }
     var dragDelta by remember(block.id) { mutableStateOf(0f) }
     var dragging by remember(block.id) { mutableStateOf(false) }
+    var remoteUrl by remember(block.storagePath, block.thumbnailStoragePath) { mutableStateOf<String?>(null) }
+    LaunchedEffect(block.storagePath, block.thumbnailStoragePath) {
+        val path = block.thumbnailStoragePath ?: block.storagePath
+        if (path.isNullOrBlank()) {
+            remoteUrl = null
+            return@LaunchedEffect
+        }
+        remoteUrl = runCatching {
+            Firebase.storage.reference.child(path).getDownloadUrl()
+        }.getOrNull()
+    }
+    val displayModel = block.localUri
+        ?: block.thumbnailLocalUri
+        ?: remoteUrl
+        ?: block.legacyRemoteUri
+        ?: block.legacyUri
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -273,7 +292,7 @@ private fun ImageBlockView(
         },
     ) {
         AsyncImage(
-            model = block.localUri ?: block.uri,
+            model = displayModel,
             contentDescription = block.alt,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxWidth(),

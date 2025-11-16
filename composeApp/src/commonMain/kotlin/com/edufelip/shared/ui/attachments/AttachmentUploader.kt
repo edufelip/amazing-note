@@ -40,6 +40,7 @@ suspend fun uploadAttachmentWithGitLive(
             fileName = payload.fileName ?: "$id.${inferFileExtension(payload.mimeType)}",
             width = payload.width,
             height = payload.height,
+            storagePath = payload.storagePath,
         )
     } finally {
         payload.cleanUp?.invoke()

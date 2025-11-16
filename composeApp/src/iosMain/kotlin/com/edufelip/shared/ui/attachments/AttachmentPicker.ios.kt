@@ -93,6 +93,7 @@ private suspend fun persistLocally(
         fileName = effectiveFileName,
         width = width,
         height = height,
+        localUri = tempFileUrl.absoluteString,
     )
 }
 

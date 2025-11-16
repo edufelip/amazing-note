@@ -2,6 +2,7 @@ package com.edufelip.shared.data.cloud
 
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
+import com.edufelip.shared.domain.model.remoteSafe
 import com.edufelip.shared.domain.model.toJson
 import com.edufelip.shared.domain.model.toSummary
 import com.edufelip.shared.domain.model.withFallbacks
@@ -129,14 +130,16 @@ private fun foldersCollection(uid: String) = Firebase.firestore
     .collection("folders")
 
 private fun Note.toFirestoreData(useServerUpdatedAt: Boolean): Map<String, Any?> {
-    val summary = content.toSummary().withFallbacks(description, descriptionSpans, attachments)
+    val remoteContent = content.remoteSafe()
+    val summary = remoteContent.toSummary().withFallbacks(description, descriptionSpans, attachments)
+    val remoteAttachments = summary.attachments.remoteSafe().filter { it.storagePath != null }
     return buildMap {
         put("id", id)
         put("title", title)
         put("description", summary.description)
         put("descriptionSpans", summary.spans.toJson())
-        put("attachments", summary.attachments.toJson())
-        put("contentJson", content.toJson())
+        put("attachments", remoteAttachments.toJson())
+        put("contentJson", remoteContent.toJson())
         put("blocks", "[]")
         put("deleted", deleted)
         put("folderId", folderId)
