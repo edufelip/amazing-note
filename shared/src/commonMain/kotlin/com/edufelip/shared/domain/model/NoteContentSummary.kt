@@ -37,7 +37,7 @@ fun Note.withSummaryFromContent(): Note = withSummary(
 
 fun ImageBlock.toAttachment(): NoteAttachment = NoteAttachment(
     id = id,
-    downloadUrl = storagePath ?: legacyRemoteUri ?: legacyUri ?: localUri.orEmpty(),
+    downloadUrl = storagePath ?: localUri.orEmpty(),
     thumbnailUrl = thumbnailStoragePath ?: thumbnailUri,
     mimeType = metadata.mimeType ?: mimeType ?: "image/*",
     fileName = fileName ?: alt,

@@ -37,7 +37,6 @@ fun insertImageAtCaret(
     caret,
     ImageBlock(
         localUri = imageUri,
-        legacyUri = imageUri,
         width = width,
         height = height,
         alt = alt,

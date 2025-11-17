@@ -37,6 +37,10 @@ CREATE TABLE folder_pending_deletion(
   deleted_at INTEGER NOT NULL
 );
 
+CREATE TABLE attachment_pending_deletion(
+  path TEXT NOT NULL PRIMARY KEY
+);
+
 selectAll:
 SELECT *
 FROM note
@@ -77,6 +81,9 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 updateNote:
 UPDATE note SET title = ?, description = ?, description_spans = ?, attachments = ?, blocks = ?, content_json = ?, deleted = ?, updated_at = ?, local_dirty = 1, local_updated_at = ?, folder_id = ?
 WHERE id = ?;
+
+updateCachedContent:
+UPDATE note SET content_json = ?, local_updated_at = ? WHERE id = ?;
 
 setDeleted:
 UPDATE note SET deleted = ?, updated_at = ?, local_dirty = 1, local_updated_at = ? WHERE id = ?;
@@ -186,6 +193,21 @@ DELETE FROM note_pending_deletion;
 
 deleteAllPendingFolderDeletions:
 DELETE FROM folder_pending_deletion;
+
+deleteAllPendingAttachmentDeletions:
+DELETE FROM attachment_pending_deletion;
+
+insertPendingAttachmentDeletion:
+INSERT OR IGNORE INTO attachment_pending_deletion(path)
+VALUES (?);
+
+selectPendingAttachmentDeletions:
+SELECT path
+FROM attachment_pending_deletion
+ORDER BY path ASC;
+
+deletePendingAttachmentDeletionByPath:
+DELETE FROM attachment_pending_deletion WHERE path = ?;
 
 countNotesInFolder:
 SELECT COUNT(*)

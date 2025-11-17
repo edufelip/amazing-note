@@ -3,6 +3,7 @@ package com.edufelip.shared.ui.attachments
 import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.ImageSyncState
 import com.edufelip.shared.domain.model.NoteContent
+import com.edufelip.shared.ui.attachments.platform.localFileExists
 
 suspend fun NoteContent.resolvePendingImageAttachments(
     uploader: suspend (ImageBlock) -> UploadedImage,
@@ -12,7 +13,19 @@ suspend fun NoteContent.resolvePendingImageAttachments(
     var mutated = false
     val updatedBlocks = blocks.map { block ->
         if (block is ImageBlock && block.requiresUpload()) {
-            val uploadingBlock = block.copy(syncState = ImageSyncState.Uploading)
+            val rawSourceUri = block.localUri
+            if (rawSourceUri.isNullOrBlank()) {
+                mutated = true
+                return@map block.copy(syncState = ImageSyncState.UploadFailed)
+            }
+            if (rawSourceUri.startsWith("file:", ignoreCase = true) && !localFileExists(rawSourceUri)) {
+                mutated = true
+                return@map block.copy(syncState = ImageSyncState.UploadFailed)
+            }
+            val uploadingBlock = block.copy(
+                syncState = ImageSyncState.Uploading,
+                localUri = rawSourceUri,
+            )
             val uploadResult = runCatching { uploader(uploadingBlock) }
             mutated = true
             uploadResult.fold(
@@ -21,7 +34,6 @@ suspend fun NoteContent.resolvePendingImageAttachments(
                     uploadingBlock.copy(
                         storagePath = uploaded.storagePath,
                         thumbnailStoragePath = uploaded.thumbnailStoragePath ?: block.thumbnailStoragePath,
-                        legacyUri = uploaded.storagePath,
                         thumbnailLocalUri = block.thumbnailLocalUri ?: block.thumbnailUri,
                         syncState = ImageSyncState.Synced,
                     )

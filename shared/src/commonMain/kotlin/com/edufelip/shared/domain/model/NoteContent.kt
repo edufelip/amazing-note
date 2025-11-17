@@ -124,8 +124,6 @@ fun NoteContent.remoteSafe(): NoteContent = copy(
 fun ImageBlock.remoteSafe(): ImageBlock = copy(
     localUri = null,
     thumbnailLocalUri = null,
-    legacyRemoteUri = null,
-    legacyUri = storagePath ?: legacyUri,
     thumbnailUri = null,
     syncState = if (storagePath != null) ImageSyncState.Synced else syncState,
 )
@@ -148,6 +146,18 @@ fun NoteContent.normalizedForSync(): NoteContent = copy(
     },
 )
 
+/** Capture storage and cached URIs for diffing and cleanup. */
+fun NoteContent.imagePaths(): List<String> = blocks
+    .filterIsInstance<ImageBlock>()
+    .flatMap { image ->
+        listOfNotNull(
+            image.storagePath,
+            image.thumbnailStoragePath,
+            image.cachedRemoteUri,
+            image.cachedThumbnailUri,
+        )
+    }
+
 private fun ImageBlock.normalizedForSync(): ImageBlock {
     val mergedMetadata = metadata.copy(
         width = metadata.width ?: width,
@@ -160,3 +170,51 @@ private fun ImageBlock.normalizedForSync(): ImageBlock {
         syncState = if (shouldMarkSynced) ImageSyncState.Synced else syncState,
     )
 }
+
+/** Promote cached URIs into local fields and retain resolved remote URLs. */
+fun NoteContent.normalizeCachedImages(): NoteContent = copy(
+    blocks = blocks.map { block ->
+        when (block) {
+            is ImageBlock -> block.copy(
+                localUri = block.localUri ?: block.cachedRemoteUri,
+                thumbnailLocalUri = block.thumbnailLocalUri ?: block.cachedThumbnailUri,
+                resolvedDownloadUrl = block.resolvedDownloadUrl ?: block.legacyRemoteUri,
+                resolvedThumbnailUrl = block.resolvedThumbnailUrl ?: block.thumbnailUri,
+                legacyRemoteUri = block.legacyRemoteUri ?: block.resolvedDownloadUrl,
+            )
+            else -> block
+        }
+    },
+)
+
+/** Merge cached local URIs from [other] into this content based on storage or block id. */
+fun NoteContent.mergeCachedImages(other: NoteContent): NoteContent {
+    val cacheByKey = other.blocks.filterIsInstance<ImageBlock>().associateBy { keyForImage(it) }
+    return copy(
+        blocks = blocks.map { block ->
+            if (block !is ImageBlock) return@map block
+            val key = keyForImage(block)
+            val cached = cacheByKey[key] ?: return@map block
+            block.copy(
+                cachedRemoteUri = block.cachedRemoteUri ?: cached.cachedRemoteUri,
+                cachedThumbnailUri = block.cachedThumbnailUri ?: cached.cachedThumbnailUri,
+                localUri = block.localUri ?: cached.localUri ?: cached.cachedRemoteUri,
+                thumbnailLocalUri = block.thumbnailLocalUri ?: cached.thumbnailLocalUri ?: cached.cachedThumbnailUri,
+                legacyRemoteUri = block.legacyRemoteUri ?: cached.legacyRemoteUri,
+                resolvedDownloadUrl = block.resolvedDownloadUrl ?: cached.resolvedDownloadUrl ?: cached.legacyRemoteUri,
+                resolvedThumbnailUrl = block.resolvedThumbnailUrl ?: cached.resolvedThumbnailUrl,
+            )
+        },
+    )
+}
+
+private fun keyForImage(image: ImageBlock): String =
+    image.storagePath
+        ?: image.thumbnailStoragePath
+        ?: image.id
+
+fun NoteContent.trimEmptyTextBlocks(): NoteContent = copy(
+    blocks = blocks.filterNot { block ->
+        block is TextBlock && block.text.isBlank() && block.spans.isEmpty()
+    },
+)

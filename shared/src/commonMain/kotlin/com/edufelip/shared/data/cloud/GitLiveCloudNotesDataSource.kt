@@ -1,7 +1,9 @@
 package com.edufelip.shared.data.cloud
 
 import com.edufelip.shared.domain.model.Folder
+import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.Note
+import com.edufelip.shared.domain.model.normalizeCachedImages
 import com.edufelip.shared.domain.model.remoteSafe
 import com.edufelip.shared.domain.model.toJson
 import com.edufelip.shared.domain.model.toSummary
@@ -14,6 +16,7 @@ import dev.gitlive.firebase.firestore.firestore
 import dev.gitlive.firebase.firestore.firestoreSettings
 import dev.gitlive.firebase.firestore.memoryCacheSettings
 import dev.gitlive.firebase.firestore.memoryEagerGcSettings
+import dev.gitlive.firebase.storage.storage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
@@ -34,6 +37,7 @@ internal object GitLiveCloudNotesDataSource : CloudNotesDataSource {
                 snapshot.documents
                     .mapNotNull { document -> document.toNoteOrNull() }
                     .sortedBy { it.updatedAt }
+                    .withResolvedStorageUrls()
             }
         val foldersFlow = foldersCollection(uid)
             .snapshots
@@ -52,6 +56,7 @@ internal object GitLiveCloudNotesDataSource : CloudNotesDataSource {
             .get()
             .documents
             .mapNotNull { it.toNoteOrNull() }
+            .withResolvedStorageUrls()
         val foldersFromSubcollections = foldersCollection(uid)
             .get()
             .documents
@@ -130,7 +135,8 @@ private fun foldersCollection(uid: String) = Firebase.firestore
     .collection("folders")
 
 private fun Note.toFirestoreData(useServerUpdatedAt: Boolean): Map<String, Any?> {
-    val remoteContent = content.remoteSafe()
+    val normalizedContent = content.normalizeCachedImages()
+    val remoteContent = normalizedContent.remoteSafe()
     val summary = remoteContent.toSummary().withFallbacks(description, descriptionSpans, attachments)
     val remoteAttachments = summary.attachments.remoteSafe().filter { it.storagePath != null }
     return buildMap {
@@ -140,7 +146,6 @@ private fun Note.toFirestoreData(useServerUpdatedAt: Boolean): Map<String, Any?>
         put("descriptionSpans", summary.spans.toJson())
         put("attachments", remoteAttachments.toJson())
         put("contentJson", remoteContent.toJson())
-        put("blocks", "[]")
         put("deleted", deleted)
         put("folderId", folderId)
         put(
@@ -169,4 +174,47 @@ private fun Long.toFirestoreTimestamp(): Timestamp = Timestamp(
 internal object GitLiveCurrentUserProvider : CurrentUserProvider {
     override val uid: Flow<String?> =
         Firebase.auth.authStateChanged.map { user -> user?.uid }
+}
+
+private suspend fun List<Note>.withResolvedStorageUrls(): List<Note> = map { note ->
+    note.withResolvedStorageUrls()
+}
+
+private suspend fun Note.withResolvedStorageUrls(): Note {
+    var mutated = false
+    val updatedBlocks = content.blocks.map { block ->
+        if (block is ImageBlock) {
+            val resolved = block.resolveDownloadUrls()
+            if (resolved !== block) mutated = true
+            resolved
+        } else block
+    }
+    if (!mutated) return this
+    val updatedContent = content.copy(blocks = updatedBlocks)
+    val summary = updatedContent.toSummary().withFallbacks(description, descriptionSpans, attachments)
+    return copy(
+        content = updatedContent,
+        description = summary.description,
+        descriptionSpans = summary.spans,
+        attachments = summary.attachments,
+    )
+}
+
+private suspend fun ImageBlock.resolveDownloadUrls(): ImageBlock {
+    var newRemote: String? = null
+    var newThumbRemote: String? = null
+    val storage = Firebase.storage
+    if (!storagePath.isNullOrBlank() && !storagePath.startsWith("http", ignoreCase = true)) {
+        newRemote = runCatching { storage.reference.child(storagePath!!).getDownloadUrl() }.getOrNull()
+    }
+    if (!thumbnailStoragePath.isNullOrBlank() && !thumbnailStoragePath.startsWith("http", ignoreCase = true)) {
+        newThumbRemote = runCatching { storage.reference.child(thumbnailStoragePath!!).getDownloadUrl() }.getOrNull()
+    }
+    if (newRemote == null && newThumbRemote == null) return this
+    return copy(
+        resolvedDownloadUrl = newRemote ?: resolvedDownloadUrl,
+        resolvedThumbnailUrl = newThumbRemote ?: resolvedThumbnailUrl,
+        legacyRemoteUri = newRemote ?: legacyRemoteUri,
+        thumbnailUri = newThumbRemote ?: thumbnailUri,
+    )
 }

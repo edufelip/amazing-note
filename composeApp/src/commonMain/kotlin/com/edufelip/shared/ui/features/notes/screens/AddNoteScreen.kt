@@ -35,6 +35,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.ImageBlock
+import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.TextBlock
 import com.edufelip.shared.resources.Res
@@ -157,7 +158,7 @@ fun AddNoteScreen(
                                 NoteEditor(
                                     state = editorState,
                                     placeholder = stringResource(Res.string.description),
-                                    modifier = Modifier.fillMaxSize(),
+                                    modifier = Modifier.fillMaxSize()
                                 )
                             }
                         }

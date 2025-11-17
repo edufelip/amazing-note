@@ -328,6 +328,9 @@ fun ListScreen(
                             )
                         }
                     }
+                    item {
+                        Spacer(modifier = Modifier.height(chrome.bottomBarHeight))
+                    }
                 }
             }
         }

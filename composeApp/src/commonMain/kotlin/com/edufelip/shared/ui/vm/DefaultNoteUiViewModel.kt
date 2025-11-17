@@ -1,5 +1,6 @@
 package com.edufelip.shared.ui.vm
 
+import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.NoteAttachment
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class DefaultNoteUiViewModel(
     private val useCases: NoteUseCases,
@@ -110,6 +112,30 @@ class DefaultNoteUiViewModel(
             )
         },
     )
+
+    override fun update(
+        note: Note,
+        title: String?,
+        description: String?,
+        deleted: Boolean?,
+        spans: List<NoteTextSpan>?,
+        attachments: List<NoteAttachment>?,
+        folderId: Long?,
+        content: NoteContent?
+    ) {
+        viewModelScope.launch {
+            useCases.updateNote(
+                id = note.id,
+                title = title ?: note.title,
+                description = description ?: note.description,
+                deleted = deleted ?: note.deleted,
+                folderId = folderId ?: note.folderId,
+                spans = spans ?: note.descriptionSpans,
+                attachments = attachments ?: note.attachments,
+                content = content ?: note.content,
+            )
+        }
+    }
 
     override fun setDeleted(id: Int, deleted: Boolean, syncAfter: Boolean) = launchAction(
         errorMessage = "Failed to update note",

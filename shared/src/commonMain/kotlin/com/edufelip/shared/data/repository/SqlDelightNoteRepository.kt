@@ -7,6 +7,7 @@ import com.edufelip.shared.core.time.nowEpochMs
 import com.edufelip.shared.data.db.decryptField
 import com.edufelip.shared.data.db.encryptField
 import com.edufelip.shared.db.NoteDatabase
+import com.edufelip.shared.db.NoteQueries
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.Note
@@ -15,17 +16,19 @@ import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
 import com.edufelip.shared.domain.model.attachmentsFromJson
 import com.edufelip.shared.domain.model.generateStableNoteId
+import com.edufelip.shared.domain.model.imagePaths
+import com.edufelip.shared.domain.model.normalizeCachedImages
 import com.edufelip.shared.domain.model.noteContentFromJson
 import com.edufelip.shared.domain.model.spansFromJson
 import com.edufelip.shared.domain.model.toJson
 import com.edufelip.shared.domain.model.toSummary
 import com.edufelip.shared.domain.model.withFallbacks
 import com.edufelip.shared.domain.repository.NoteRepository
+import com.edufelip.shared.platform.deleteLocalAttachment
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 class SqlDelightNoteRepository(
@@ -45,7 +48,7 @@ class SqlDelightNoteRepository(
         val contentJson = row.content_json?.let(::decryptField)
         val spans = spansFromJson(spansJson)
         val attachments = attachmentsFromJson(attachmentsJson)
-        val content = noteContentFromJson(contentJson)
+        val content = noteContentFromJson(contentJson).normalizeCachedImages()
         val summary = content.toSummary().withFallbacks(description, spans, attachments)
         val stableId = row.stable_id.takeIf { it.isNotBlank() } ?: row.id.toString()
         return Note(
@@ -94,11 +97,11 @@ class SqlDelightNoteRepository(
         content: NoteContent,
         stableId: String?,
     ) {
-        val finalContent = if (content.blocks.isEmpty()) NoteContent() else content
+        val finalContent = if (content.blocks.isEmpty()) NoteContent() else content.normalizeCachedImages()
         val summary = finalContent.toSummary()
         val normalizedDescription = summary.description.ifBlank { description }
         val normalizedSpans = summary.spans.ifEmpty { spans }
-        val normalizedAttachments = if (summary.attachments.isNotEmpty()) summary.attachments else attachments
+        val normalizedAttachments = summary.attachments.ifEmpty { attachments }
         val now = currentTimeMillis()
         val resolvedStableId = stableId?.takeIf { it.isNotBlank() } ?: generateStableNoteId()
         queries.insertNote(
@@ -126,12 +129,24 @@ class SqlDelightNoteRepository(
         attachments: List<NoteAttachment>,
         content: NoteContent,
     ) {
-        val finalContent = if (content.blocks.isEmpty()) NoteContent() else content
+        val existingRow = queries.selectById(id.toLong()).executeAsOneOrNullCompat()
+        val existingContent = existingRow
+            ?.content_json
+            ?.let(::decryptField)
+            ?.let(::noteContentFromJson)
+            ?.normalizeCachedImages()
+
+        val finalContent = if (content.blocks.isEmpty()) NoteContent() else content.normalizeCachedImages()
         val summary = finalContent.toSummary()
         val normalizedDescription = summary.description.ifBlank { description }
         val normalizedSpans = summary.spans.ifEmpty { spans }
-        val normalizedAttachments = if (summary.attachments.isNotEmpty()) summary.attachments else attachments
+        val normalizedAttachments = summary.attachments.ifEmpty { attachments }
         val now = currentTimeMillis()
+
+        val removedPaths = (existingContent?.imagePaths().orEmpty().toSet()) - finalContent.imagePaths().toSet()
+        if (removedPaths.isNotEmpty()) {
+            handleRemovedImagePaths(queries, removedPaths)
+        }
         queries.updateNote(
             title = encryptField(title),
             description = encryptField(normalizedDescription),
@@ -149,6 +164,12 @@ class SqlDelightNoteRepository(
 
     override suspend fun setDeleted(id: Int, deleted: Boolean) {
         val now = currentTimeMillis()
+        if (deleted) {
+            val row = queries.selectById(id.toLong()).executeAsOneOrNullCompat()
+            val contentJson = row?.content_json?.let(::decryptField)
+            val content = noteContentFromJson(contentJson).normalizeCachedImages()
+            cleanupCachedFiles(content.imagePaths())
+        }
         queries.setDeleted(
             deleted = if (deleted) 1 else 0,
             updated_at = now,
@@ -162,15 +183,18 @@ class SqlDelightNoteRepository(
         val row = queries.selectById(id.toLong()).executeAsOneOrNullCompat() ?: return
         val stableId = row.stable_id.takeIf { it.isNotBlank() } ?: row.id.toString()
         val contentJson = row.content_json?.let(::decryptField)
-        val content = noteContentFromJson(contentJson)
+        val content = noteContentFromJson(contentJson).normalizeCachedImages()
         val storagePaths = content.blocks
             .filterIsInstance<ImageBlock>()
             .flatMap { image ->
                 listOfNotNull(
                     image.storagePath?.takeIf { path -> path.isNotBlank() },
                     image.thumbnailStoragePath?.takeIf { it.isNotBlank() },
+                    image.cachedRemoteUri?.takeIf { it.startsWith("file:") },
+                    image.cachedThumbnailUri?.takeIf { it.startsWith("file:") },
                 )
             }
+        cleanupCachedFiles(storagePaths)
         queries.insertPendingNoteDeletion(
             id = row.id,
             deleted_at = now,
@@ -233,5 +257,26 @@ private fun <T : Any> Query<T>.executeAsOneOrNullCompat(): T? = try {
 }
 
 private fun encodeStoragePaths(paths: List<String>): String = storagePathsJson.encodeToString(paths)
+
+private fun cleanupCachedFiles(paths: Collection<String>) {
+    paths.forEach { path ->
+        val trimmed = path.trim()
+        if (trimmed.startsWith("file:", ignoreCase = true)) {
+            deleteLocalAttachment(trimmed)
+        }
+    }
+}
+
+private fun handleRemovedImagePaths(queries: NoteQueries, paths: Set<String>) {
+    paths.forEach { raw ->
+        val trimmed = raw.trim()
+        if (trimmed.isEmpty()) return@forEach
+        if (trimmed.startsWith("file:", ignoreCase = true)) {
+            deleteLocalAttachment(trimmed)
+        } else {
+            queries.insertPendingAttachmentDeletion(trimmed)
+        }
+    }
+}
 
 private val storagePathsJson = Json { ignoreUnknownKeys = true }

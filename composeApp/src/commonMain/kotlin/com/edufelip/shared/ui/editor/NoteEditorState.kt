@@ -100,6 +100,14 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         ensureCaretWithinBounds()
     }
 
+    fun replaceBlock(id: String, newBlock: NoteBlock) {
+        val index = blockList.indexOfFirst { it.id == id }
+        if (index >= 0) {
+            blockList[index] = newBlock
+            refreshTextFieldState()
+        }
+    }
+
     fun onTextChanged(
         blockId: String,
         updatedText: String,
@@ -206,7 +214,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         val payload = EditorClipboard.spawnImages() ?: return false
         var updated = false
         payload.forEach { block ->
-            val sourceUri = block.localUri ?: block.legacyUri ?: block.storagePath ?: block.legacyRemoteUri
+            val sourceUri = block.localUri ?: block.storagePath
             if (sourceUri.isNullOrBlank()) return@forEach
             insertImageAtCaret(
                 uri = sourceUri,
@@ -285,7 +293,6 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
                 ),
                 alt = alt,
                 fileName = fileName,
-                legacyUri = uri,
                 mimeType = mimeType,
                 width = width,
                 height = height,
@@ -605,7 +612,15 @@ private fun List<NoteBlock>.sameAs(other: List<NoteBlock>): Boolean {
                     a.storagePath != otherImage.storagePath ||
                     a.thumbnailLocalUri != otherImage.thumbnailLocalUri ||
                     a.thumbnailStoragePath != otherImage.thumbnailStoragePath ||
+                    a.resolvedDownloadUrl != otherImage.resolvedDownloadUrl ||
+                    a.resolvedThumbnailUrl != otherImage.resolvedThumbnailUrl ||
+                    a.legacyRemoteUri != otherImage.legacyRemoteUri ||
+                    a.cachedRemoteUri != otherImage.cachedRemoteUri ||
+                    a.cachedThumbnailUri != otherImage.cachedThumbnailUri ||
                     a.metadata != otherImage.metadata ||
+                    a.width != otherImage.width ||
+                    a.height != otherImage.height ||
+                    a.thumbnailUri != otherImage.thumbnailUri ||
                     a.mimeType != otherImage.mimeType ||
                     a.alt != otherImage.alt ||
                     a.fileName != otherImage.fileName ||

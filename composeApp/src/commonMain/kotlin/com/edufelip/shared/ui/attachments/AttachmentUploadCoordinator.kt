@@ -78,11 +78,11 @@ class AttachmentUploadCoordinator(
         }
     }
 
-    private fun buildStoragePath(context: UploadContext, fileName: String): String = "images/${context.userId}/${context.noteStableId}/$fileName"
+    private fun buildStoragePath(context: UploadContext, fileName: String): String = "notes/${context.userId}/${context.noteStableId}/$fileName"
 
     private fun renditionFromBlock(block: ImageBlock): AttachmentRendition {
-        val sourceUri = block.localUri ?: block.legacyUri ?: block.storagePath ?: block.legacyRemoteUri
-            ?: error("Image block missing source uri for upload")
+        val sourceUri = block.localUri
+            ?: error("Image block missing local source uri for upload")
         return AttachmentRendition(
             type = RenditionType.Display,
             localUri = sourceUri,

@@ -16,11 +16,14 @@ import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.TextBlock
 import com.edufelip.shared.domain.model.attachmentsFromJson
+import com.edufelip.shared.domain.model.mergeCachedImages
 import com.edufelip.shared.domain.model.noteContentFromJson
+import com.edufelip.shared.domain.model.normalizeCachedImages
 import com.edufelip.shared.domain.model.spansFromJson
 import com.edufelip.shared.domain.model.toJson
 import com.edufelip.shared.domain.model.toSummary
 import com.edufelip.shared.domain.model.withFallbacks
+import com.edufelip.shared.platform.deleteLocalAttachment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -72,7 +75,6 @@ class NotesSyncManager(
 
     suspend fun syncNow(uid: String? = null) {
         val uid = uid ?: awaitCurrentUid() ?: return
-        println("SYNC STARTED 1")
         emitSyncStarted()
         resetMergeThrottle()
         val payload = runCatching { cloud.getAll(uid) }
@@ -92,21 +94,18 @@ class NotesSyncManager(
 
     suspend fun syncLocalToRemoteOnly() {
         val uid = awaitCurrentUid() ?: return
-        println("SYNC STARTED 2")
-        emitSyncStarted()
-        val pushedSomething = pushPendingFolderDeletions(uid) || pushPendingNoteDeletions(uid) || pushDirtyFoldersNow(uid)
+        val pushedSomething = pushPendingFolderDeletions(uid) ||
+            pushPendingNoteDeletions(uid) ||
+            pushPendingAttachmentDeletions(uid) ||
+            pushDirtyFoldersNow(uid)
         // Push only dirty rows to avoid unnecessary writes and reordering
         val dirtyRows = db.noteQueries.selectDirty().executeAsList()
-        if (dirtyRows.isEmpty() && !pushedSomething) {
-            emitSyncCompleted()
-            return
-        }
+        if (dirtyRows.isEmpty() && !pushedSomething) return
         for (row in dirtyRows) {
             val note = rowToNote(row)
             cloud.upsertPreserveUpdatedAt(uid, note)
             db.noteQueries.clearDirtyById(row.id)
         }
-        emitSyncCompleted()
     }
 
     private suspend fun pushDirtyFoldersNow(uid: String): Boolean {
@@ -150,6 +149,9 @@ class NotesSyncManager(
             val storageResult = runCatching {
                 if (storagePaths.isNotEmpty()) {
                     attachmentStorage.deleteNoteAttachments(storagePaths)
+                    storagePaths.filter { it.startsWith("file:") }.forEach { path ->
+                        deleteLocalAttachment(path)
+                    }
                 }
             }
             if (storageResult.isFailure) {
@@ -160,6 +162,18 @@ class NotesSyncManager(
             pushed = true
         }
         return pushed
+    }
+
+    private suspend fun pushPendingAttachmentDeletions(uid: String): Boolean {
+        val paths = db.noteQueries.selectPendingAttachmentDeletions().executeAsList().map { it.trim() }.filter { it.isNotEmpty() }
+        if (paths.isEmpty()) return false
+        val result = runCatching { attachmentStorage.deleteNoteAttachments(paths) }
+        if (result.isSuccess) {
+            paths.forEach { path -> db.noteQueries.deletePendingAttachmentDeletionByPath(path) }
+            return true
+        }
+        logSyncError("Failed to delete pending attachments", result.exceptionOrNull())
+        return false
     }
 
     private suspend fun pushPendingFolderDeletions(uid: String): Boolean {
@@ -184,14 +198,14 @@ class NotesSyncManager(
         var syncStarted = false
         fun ensureSyncStarted() {
             if (!syncStarted) {
-                println("SYNC STARTED 3 ")
                 emitSyncStarted()
                 syncStarted = true
             }
         }
         val pushedFolders = pushPendingFolderDeletions(uid)
         val pushedNotes = pushPendingNoteDeletions(uid)
-        val pushedPending = pushedFolders || pushedNotes
+        val pushedAttachments = pushPendingAttachmentDeletions(uid)
+        val pushedPending = pushedFolders || pushedNotes || pushedAttachments
         if (pushedPending) ensureSyncStarted()
         val remoteNotes = payload.notes
         val remoteFolders = payload.folders
@@ -207,6 +221,7 @@ class NotesSyncManager(
         val localHash = combinedHash(localNotes, localFolders)
         if (!pushedPending && currentRemoteHash == localHash) {
             lastRemoteHash = currentRemoteHash
+            emitSyncCompleted()
             return
         }
 
@@ -222,7 +237,9 @@ class NotesSyncManager(
 
         if (overwrites > 0) _events.tryEmit(SyncEvent.OverwritesApplied(overwrites))
         lastRemoteHash = currentRemoteHash
-        if (syncStarted) emitSyncCompleted()
+        if (syncStarted) {
+            emitSyncCompleted()
+        }
         mergingDisabled = true
         storedRemoteHash = currentRemoteHash
     }
@@ -339,6 +356,7 @@ class NotesSyncManager(
         db.noteQueries.deleteAllFolders()
         db.noteQueries.deleteAllPendingNoteDeletions()
         db.noteQueries.deleteAllPendingFolderDeletions()
+        db.noteQueries.deleteAllPendingAttachmentDeletions()
         emitSyncCompleted()
     }
 
@@ -348,7 +366,7 @@ class NotesSyncManager(
         val spans = spansFromJson(decryptField(row.description_spans))
         val attachments = attachmentsFromJson(decryptField(row.attachments))
         val contentJson = row.content_json?.let(::decryptField)
-        val content = noteContentFromJson(contentJson)
+        val content = noteContentFromJson(contentJson).normalizeCachedImages()
         val summary = content.toSummary().withFallbacks(description, spans, attachments)
         val stableId = row.stable_id.takeIf { it.isNotBlank() } ?: row.id.toString()
         return Note(
@@ -387,7 +405,7 @@ class NotesSyncManager(
             description_spans = encryptField(summary.spans.toJson()),
             attachments = encryptField(summary.attachments.toJson()),
             blocks = "[]",
-            content_json = encryptField(note.content.toJson()),
+            content_json = encryptField(note.content.normalizeCachedImages().toJson()),
             deleted = if (note.deleted) 1 else 0,
             created_at = note.createdAt,
             updated_at = note.updatedAt,
@@ -409,14 +427,21 @@ class NotesSyncManager(
     }
 
     private fun updateLocalNoteFromRemote(id: Int, note: Note) {
-        val summary = note.content.toSummary().withFallbacks(note.description, note.descriptionSpans, note.attachments)
+        val existingRow = db.noteQueries.selectById(id.toLong()).executeAsOneOrNull() // could be null if deleted during merge
+        val existingContent = existingRow
+            ?.content_json
+            ?.let(::decryptField)
+            ?.let(::noteContentFromJson)
+            ?.normalizeCachedImages()
+        val mergedContent = if (existingContent != null) note.content.mergeCachedImages(existingContent) else note.content
+        val summary = mergedContent.toSummary().withFallbacks(note.description, note.descriptionSpans, note.attachments)
         db.noteQueries.updateFromRemote(
             title = encryptField(note.title),
             description = encryptField(summary.description),
             description_spans = encryptField(summary.spans.toJson()),
             attachments = encryptField(summary.attachments.toJson()),
             blocks = "[]",
-            content_json = encryptField(note.content.toJson()),
+            content_json = encryptField(mergedContent.normalizeCachedImages().toJson()),
             deleted = if (note.deleted) 1 else 0,
             updated_at = note.updatedAt,
             folder_id = note.folderId,
@@ -474,13 +499,11 @@ class NotesSyncManager(
     }
 
     private fun emitSyncCompleted() {
-        println("SYNC COMPLETED")
         _syncing.value = false
         _events.tryEmit(SyncEvent.SyncCompleted)
     }
 
     private fun emitSyncFailed(message: String) {
-        println("SYNC FAILED")
         _syncing.value = false
         _events.tryEmit(SyncEvent.SyncFailed(message))
     }

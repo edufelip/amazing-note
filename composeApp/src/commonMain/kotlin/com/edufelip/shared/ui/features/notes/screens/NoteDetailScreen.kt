@@ -24,7 +24,9 @@ import com.edufelip.shared.domain.model.NoteAttachment
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
 import com.edufelip.shared.domain.model.generateStableNoteId
+import com.edufelip.shared.domain.model.mergeCachedImages
 import com.edufelip.shared.domain.model.toSummary
+import com.edufelip.shared.domain.model.trimEmptyTextBlocks
 import com.edufelip.shared.domain.model.withSummaryFromContent
 import com.edufelip.shared.domain.validation.NoteValidationError
 import com.edufelip.shared.domain.validation.NoteValidationError.DescriptionTooLong
@@ -139,13 +141,13 @@ fun NoteDetailScreen(
         derivedStateOf {
             titleState.text != baselineTitle ||
                 selectedFolderId != baselineFolderId ||
-                currentContent != baselineContent
+                currentContent.blocks != baselineContent.blocks
         }
     }
-
     val isNewNote = id == null
     var discardDialogVisible by remember(noteKey) { mutableStateOf(false) }
     val pendingLocalAttachments = remember(noteKey) { mutableStateListOf<String>() }
+    var persistedCachedUris by remember(noteKey) { mutableStateOf(currentContent.cachedFileUris()) }
 
     val errorTitleRequiredTpl = stringResource(Res.string.error_title_required)
     val errorTitleTooLongTpl = stringResource(Res.string.error_title_too_long)
@@ -217,7 +219,7 @@ fun NoteDetailScreen(
                     securityLogger.logSanitized(flow = "note", field = "title", rawSample = trimmedTitle)
                 }
                 val sanitizedContentResult = sanitizeNoteContent(syncedContent)
-                val sanitizedContent = sanitizedContentResult.value
+                val sanitizedContent = sanitizedContentResult.value.trimEmptyTextBlocks()
                 val summary = sanitizedContent.toSummary()
                 if (sanitizedContentResult.modified) {
                     securityLogger.logSanitized(flow = "note", field = "content", rawSample = summary.description)
@@ -254,13 +256,11 @@ fun NoteDetailScreen(
 
     fun requestNavigateBack() {
         if (isSaving) return
-        when {
-            isNewNote && hasUnsavedChanges -> discardDialogVisible = true
-            hasUnsavedChanges -> launchSave(navigateBack = true)
-            else -> {
-                cleanupPendingLocalAttachments(deleteFiles = false)
-                latestOnBack()
-            }
+        if (hasUnsavedChanges) {
+            discardDialogVisible = true
+        } else {
+            cleanupPendingLocalAttachments(deleteFiles = false)
+            latestOnBack()
         }
     }
 
@@ -404,3 +404,13 @@ fun NoteDetailScreen(
 }
 
 private fun isRemoteUri(uri: String): Boolean = uri.startsWith("http", ignoreCase = true)
+
+private fun NoteContent.cachedFileUris(): Set<String> = blocks
+    .filterIsInstance<ImageBlock>()
+    .flatMap { image ->
+        listOfNotNull(
+            image.cachedRemoteUri?.takeIf { it.startsWith("file:", ignoreCase = true) },
+            image.cachedThumbnailUri?.takeIf { it.startsWith("file:", ignoreCase = true) },
+        )
+    }
+    .toSet()

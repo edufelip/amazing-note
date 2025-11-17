@@ -2,6 +2,7 @@ package com.edufelip.shared.ui.editor
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -44,12 +45,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.compose.rememberAsyncImagePainter
 import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.ImageSyncState
+import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.TextBlock
 import com.edufelip.shared.ui.designsystem.designTokens
-import dev.gitlive.firebase.Firebase
-import dev.gitlive.firebase.storage.storage
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -75,10 +76,11 @@ fun NoteEditor(
                 if (up == null || up.isConsumed) return@awaitEachGesture
                 state.clearImageSelection()
                 state.focusFirstTextBlock()
-            }
         }
+    }
     val document = state.document
     val firstTextBlockId = document.firstOrNull { it is TextBlock }?.id
+    val hasImages = document.any { it is ImageBlock }
     LazyColumn(
         modifier = contentAwareModifier,
         verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -92,7 +94,7 @@ fun NoteEditor(
                     block = block,
                     state = state,
                     placeholder = placeholder,
-                    showPlaceholder = block.id == firstTextBlockId,
+                    showPlaceholder = block.id == firstTextBlockId && !hasImages,
                 )
 
                 is ImageBlock -> ImageBlockView(
@@ -231,22 +233,12 @@ private fun ImageBlockView(
     val dragThreshold = with(LocalDensity.current) { 36.dp.toPx() }
     var dragDelta by remember(block.id) { mutableStateOf(0f) }
     var dragging by remember(block.id) { mutableStateOf(false) }
-    var remoteUrl by remember(block.storagePath, block.thumbnailStoragePath) { mutableStateOf<String?>(null) }
-    LaunchedEffect(block.storagePath, block.thumbnailStoragePath) {
-        val path = block.thumbnailStoragePath ?: block.storagePath
-        if (path.isNullOrBlank()) {
-            remoteUrl = null
-            return@LaunchedEffect
-        }
-        remoteUrl = runCatching {
-            Firebase.storage.reference.child(path).getDownloadUrl()
-        }.getOrNull()
-    }
-    val displayModel = block.localUri
-        ?: block.thumbnailLocalUri
-        ?: remoteUrl
-        ?: block.legacyRemoteUri
-        ?: block.legacyUri
+    var localModel by remember(block.id) { mutableStateOf(block.cachedRemoteUri ?: block.localUri ?: block.thumbnailLocalUri) }
+    val remoteCandidates = listOfNotNull(
+        block.resolvedDownloadUrl,
+        block.resolvedThumbnailUrl,
+        block.legacyRemoteUri,
+    ).firstOrNull { it.startsWith("http", ignoreCase = true) }
 
     Surface(
         modifier = Modifier
@@ -291,12 +283,24 @@ private fun ImageBlockView(
             else -> null
         },
     ) {
-        AsyncImage(
-            model = displayModel,
-            contentDescription = block.alt,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxWidth(),
-        )
+        val currentModel = localModel
+        if (currentModel != null && currentModel.startsWith("file:", ignoreCase = true)) {
+            val painter = rememberAsyncImagePainter(model = currentModel)
+            Image(
+                painter = painter,
+                contentDescription = block.alt,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        } else {
+            val model = remoteCandidates ?: localModel
+            AsyncImage(
+                model = model,
+                contentDescription = block.alt,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
     }
 }
 

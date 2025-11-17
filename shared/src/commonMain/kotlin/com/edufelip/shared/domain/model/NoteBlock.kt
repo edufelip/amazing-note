@@ -36,7 +36,17 @@ data class TextBlock(
     override val id: String = generateBlockId(),
     val text: String,
     val spans: List<NoteTextSpan> = emptyList(),
-) : NoteBlock
+) : NoteBlock {
+    override fun equals(other: Any?): Boolean {
+        return other is TextBlock &&
+                other.text == text &&
+                other.spans == spans
+    }
+
+    override fun hashCode(): Int {
+        return super.hashCode()
+    }
+}
 
 @Serializable
 @SerialName("image")
@@ -50,15 +60,30 @@ data class ImageBlock(
     val metadata: ImageMetadata = ImageMetadata(),
     val alt: String? = null,
     val fileName: String? = null,
-    @SerialName("uri")
-    val legacyUri: String? = null,
-    @SerialName("remoteUri")
+    /** Legacy remote URL stored on older records. */
     val legacyRemoteUri: String? = null,
+    /** Resolved download URL derived from storagePath when fetched from cloud. */
+    val resolvedDownloadUrl: String? = null,
+    /** Resolved download URL for thumbnail. */
+    val resolvedThumbnailUrl: String? = null,
+    /** Local cached copy of the resolved download URL. */
+    val cachedRemoteUri: String? = null,
+    /** Local cached copy of the resolved thumbnail URL. */
+    val cachedThumbnailUri: String? = null,
     val mimeType: String? = null,
     val width: Int? = null,
     val height: Int? = null,
     val thumbnailUri: String? = null,
-) : NoteBlock
+) : NoteBlock {
+    override fun equals(other: Any?): Boolean {
+        return other is ImageBlock &&
+                other.resolvedDownloadUrl == resolvedDownloadUrl
+    }
+
+    override fun hashCode(): Int {
+        return super.hashCode()
+    }
+}
 
 fun generateBlockId(): String = buildString(capacity = BLOCK_ID_LENGTH) {
     repeat(BLOCK_ID_LENGTH) {

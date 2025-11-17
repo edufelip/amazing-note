@@ -149,7 +149,7 @@ fun TrashTimeline(
                             selectedIds = emptySet()
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = tokens.colors.accent,
+                            containerColor = tokens.colors.surface,
                             contentColor = tokens.colors.onSurface,
                         ),
                     ) {

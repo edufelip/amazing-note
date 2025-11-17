@@ -86,7 +86,7 @@ private suspend fun copyToCache(context: Context, source: Uri, fileName: String?
             input.copyTo(output)
         }
     }
-    targetFile.toURI().toString()
+    "file://${targetFile.absolutePath}"
 }
 
 private fun ContentResolver.resolveFileName(uri: Uri): String? = query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
