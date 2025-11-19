@@ -123,7 +123,7 @@ fun ListScreen(
                 if (showFab && hasAnyNotes) {
                     val navigationBottom = chrome.navigationBarBottomInset()
                     val fabBottomPadding = when {
-                        chrome.bottomBarHeight == Dp.Zero -> tokens.spacing.lg
+                        chrome.bottomBarHeight == tokens.spacing.zero -> tokens.spacing.lg
                         else -> chrome.bottomBarHeight + (navigationBottom * 2)
                     }
                     FloatingActionButton(
@@ -175,7 +175,7 @@ fun ListScreen(
 
                 val grouped: Map<Bucket, List<Note>> =
                     notes.groupBy { bucket(if (useUpdated.value) it.updatedAt else it.createdAt) }
-                val listBottomPadding = Dp.Zero
+                val listBottomPadding = tokens.spacing.zero
                 val searchHorizontalPadding = tokens.spacing.md
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),

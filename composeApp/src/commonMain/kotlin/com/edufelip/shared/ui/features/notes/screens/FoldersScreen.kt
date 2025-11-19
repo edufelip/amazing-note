@@ -146,7 +146,7 @@ fun FoldersScreen(
             if (!isEmpty) {
                 val navigationBottom = chrome.navigationBarBottomInset()
                 val fabBottomPadding = when {
-                    chrome.bottomBarHeight == Dp.Zero -> tokens.spacing.lg
+                    chrome.bottomBarHeight == tokens.spacing.zero -> tokens.spacing.lg
                     else -> chrome.bottomBarHeight + (navigationBottom * 2)
                 }
                 ExtendedFloatingActionButton(
