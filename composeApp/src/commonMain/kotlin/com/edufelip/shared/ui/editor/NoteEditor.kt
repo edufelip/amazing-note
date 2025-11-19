@@ -48,7 +48,6 @@ import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
 import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.ImageSyncState
-import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.TextBlock
 import com.edufelip.shared.ui.designsystem.designTokens
 
@@ -243,7 +242,7 @@ private fun ImageBlockView(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp)
+            .padding(horizontal = tokens.spacing.xs)
             .clickable(onClick = onSelect)
             .pointerInput(block.id) {
                 detectDragGesturesAfterLongPress(

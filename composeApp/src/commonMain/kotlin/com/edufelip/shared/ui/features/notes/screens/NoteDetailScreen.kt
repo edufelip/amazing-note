@@ -24,7 +24,6 @@ import com.edufelip.shared.domain.model.NoteAttachment
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
 import com.edufelip.shared.domain.model.generateStableNoteId
-import com.edufelip.shared.domain.model.mergeCachedImages
 import com.edufelip.shared.domain.model.toSummary
 import com.edufelip.shared.domain.model.trimEmptyTextBlocks
 import com.edufelip.shared.domain.model.withSummaryFromContent
@@ -34,6 +33,7 @@ import com.edufelip.shared.domain.validation.NoteValidationError.EmptyDescriptio
 import com.edufelip.shared.domain.validation.NoteValidationError.EmptyTitle
 import com.edufelip.shared.domain.validation.NoteValidationError.TitleTooLong
 import com.edufelip.shared.domain.validation.NoteValidationRules
+import com.edufelip.shared.domain.validation.validateNoteInput
 import com.edufelip.shared.platform.deleteLocalAttachment
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.error_description_required
@@ -118,6 +118,7 @@ fun NoteDetailScreen(
         initialContent = initialContent,
         onContentChanged = { updated -> currentContent = updated },
     )
+    val shouldShowBlockingLoader = isSaving && editorState.content.blocks.any { it is ImageBlock }
     var baselineContent by remember(noteKey) { mutableStateOf(editorState.content) }
     val attachmentProcessor = rememberAttachmentProcessor()
     val pendingRenditions = remember(noteKey) { mutableStateMapOf<String, AttachmentProcessingResult>() }
@@ -207,27 +208,43 @@ fun NoteDetailScreen(
         scope.launch {
             try {
                 val trimmedTitle = titleState.text.trim()
-                val syncedContent = if (uploadContext != null) {
-                    currentContent.resolvePendingImageAttachments(
+                val sanitizedTitle = sanitizeInlineInput(trimmedTitle, maxLength = noteValidationRules.maxTitleLength)
+                val sanitizedContentResult = sanitizeNoteContent(currentContent)
+                val sanitizedContent = sanitizedContentResult.value.trimEmptyTextBlocks()
+                val validationSummary = sanitizedContent.toSummary()
+                val validationDescription = sanitizeMultilineInput(
+                    validationSummary.description,
+                    maxLength = noteValidationRules.maxDescriptionLength,
+                )
+                val validationErrors = validateNoteInput(
+                    title = sanitizedTitle.value,
+                    description = validationDescription.value,
+                    rules = noteValidationRules,
+                )
+                if (validationErrors.isNotEmpty()) {
+                    applyValidationErrors(validationErrors)
+                    isSaving = false
+                    return@launch
+                }
+
+                val resolvedContent = if (uploadContext != null) {
+                    sanitizedContent.resolvePendingImageAttachments(
                         uploader = renditionAwareUploader,
                     )
                 } else {
-                    currentContent
+                    sanitizedContent
                 }
-                val sanitizedTitle = sanitizeInlineInput(trimmedTitle, maxLength = noteValidationRules.maxTitleLength)
-                if (sanitizedTitle.modified) {
-                    securityLogger.logSanitized(flow = "note", field = "title", rawSample = trimmedTitle)
-                }
-                val sanitizedContentResult = sanitizeNoteContent(syncedContent)
-                val sanitizedContent = sanitizedContentResult.value.trimEmptyTextBlocks()
-                val summary = sanitizedContent.toSummary()
-                if (sanitizedContentResult.modified) {
-                    securityLogger.logSanitized(flow = "note", field = "content", rawSample = summary.description)
-                }
+                val summary = resolvedContent.toSummary()
                 val sanitizedDescription = sanitizeMultilineInput(
                     summary.description,
                     maxLength = noteValidationRules.maxDescriptionLength,
                 )
+                if (sanitizedTitle.modified) {
+                    securityLogger.logSanitized(flow = "note", field = "title", rawSample = trimmedTitle)
+                }
+                if (sanitizedContentResult.modified) {
+                    securityLogger.logSanitized(flow = "note", field = "content", rawSample = summary.description)
+                }
                 if (sanitizedDescription.modified) {
                     securityLogger.logSanitized(flow = "note", field = "description", rawSample = summary.description)
                 }
@@ -235,15 +252,15 @@ fun NoteDetailScreen(
                 if (sanitizedTitleValue != titleState.text) {
                     titleState = TextFieldValue(sanitizedTitleValue, TextRange(sanitizedTitleValue.length))
                 }
-                currentContent = sanitizedContent
+                currentContent = resolvedContent
                 onSaveNote(
                     id,
-                    sanitizedTitle.value,
+                    sanitizedTitleValue,
                     sanitizedDescription.value,
                     summary.spans,
                     summary.attachments,
                     selectedFolderId,
-                    sanitizedContent,
+                    resolvedContent,
                     noteStableId,
                     navigateBack,
                 )
@@ -337,6 +354,7 @@ fun NoteDetailScreen(
             }
         },
         onAddImage = addImageHandler,
+        showBlockingLoader = shouldShowBlockingLoader,
         titleError = titleError,
         contentError = contentError,
         isSaving = isSaving,
