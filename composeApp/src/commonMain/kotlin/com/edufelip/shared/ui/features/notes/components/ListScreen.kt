@@ -41,7 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
@@ -123,7 +123,7 @@ fun ListScreen(
                 if (showFab && hasAnyNotes) {
                     val navigationBottom = chrome.navigationBarBottomInset()
                     val fabBottomPadding = when {
-                        chrome.bottomBarHeight == 0.dp -> tokens.spacing.lg
+                        chrome.bottomBarHeight == Dp.Zero -> tokens.spacing.lg
                         else -> chrome.bottomBarHeight + (navigationBottom * 2)
                     }
                     FloatingActionButton(
@@ -175,7 +175,7 @@ fun ListScreen(
 
                 val grouped: Map<Bucket, List<Note>> =
                     notes.groupBy { bucket(if (useUpdated.value) it.updatedAt else it.createdAt) }
-                val listBottomPadding = 0.dp
+                val listBottomPadding = Dp.Zero
                 val searchHorizontalPadding = tokens.spacing.md
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),

@@ -44,7 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
@@ -146,7 +146,7 @@ fun FoldersScreen(
             if (!isEmpty) {
                 val navigationBottom = chrome.navigationBarBottomInset()
                 val fabBottomPadding = when {
-                    chrome.bottomBarHeight == 0.dp -> tokens.spacing.lg
+                    chrome.bottomBarHeight == Dp.Zero -> tokens.spacing.lg
                     else -> chrome.bottomBarHeight + (navigationBottom * 2)
                 }
                 ExtendedFloatingActionButton(

@@ -30,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.delete_folder_message
@@ -152,7 +151,10 @@ fun FolderDetailScreen(
     ) { padding ->
         if (notes.isEmpty() && query.isBlank()) {
             Column(
-                modifier = Modifier.padding(padding).fillMaxSize().padding(horizontal = 24.dp),
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .padding(horizontal = tokens.spacing.xl),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -161,7 +163,7 @@ fun FolderDetailScreen(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(tokens.spacing.sm))
                 Text(
                     text = stringResource(Res.string.folder_detail_empty_hint),
                     style = MaterialTheme.typography.bodyMedium,

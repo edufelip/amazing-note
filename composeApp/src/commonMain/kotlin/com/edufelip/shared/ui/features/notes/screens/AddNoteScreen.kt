@@ -37,7 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.NoteContent
@@ -48,6 +47,7 @@ import com.edufelip.shared.ui.components.molecules.notes.NoteTitleField
 import com.edufelip.shared.ui.components.organisms.notes.FolderSelectionSection
 import com.edufelip.shared.ui.components.organisms.notes.NoteEditorActionBar
 import com.edufelip.shared.ui.components.organisms.notes.NoteEditorTopBar
+import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.editor.EditorImplementation
 import com.edufelip.shared.ui.editor.NoteEditor
 import com.edufelip.shared.ui.editor.NoteEditorState
@@ -78,6 +78,7 @@ fun AddNoteScreen(
     showBlockingLoader: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
+    val tokens = designTokens()
     val listState = rememberLazyListState()
     val editorImplementation = remember { currentEditor() }
     val imageCount = editorState.content.blocks.count { it is ImageBlock }
@@ -97,7 +98,7 @@ fun AddNoteScreen(
                 .safeDrawingPadding()
                 .imePadding()
                 .background(MaterialTheme.colorScheme.background)
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = tokens.spacing.lg + tokens.spacing.xs),
         ) {
             NoteEditorTopBar(
                 onBack = onBack,
@@ -112,8 +113,8 @@ fun AddNoteScreen(
             LazyColumn(
                 modifier = Modifier.weight(1f, fill = true),
                 state = listState,
-                verticalArrangement = Arrangement.spacedBy(24.dp),
-                contentPadding = PaddingValues(vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(tokens.spacing.xl),
+                contentPadding = PaddingValues(vertical = tokens.spacing.md),
             ) {
                 item(key = "title") {
                     NoteTitleField(
@@ -130,19 +131,19 @@ fun AddNoteScreen(
                     )
                 }
                 item(key = "editor") {
-                    val editorMinHeight = 320.dp
+                    val editorMinHeight = tokens.spacing.xxl * 10
                     Surface(
                         modifier = Modifier
                             .fillParentMaxHeight()
                             .fillMaxWidth()
                             .heightIn(min = editorMinHeight),
-                        shape = RoundedCornerShape(20.dp),
-                        tonalElevation = 1.dp,
+                        shape = RoundedCornerShape(tokens.spacing.lg + tokens.spacing.xs),
+                        tonalElevation = tokens.spacing.xxs / 2,
                         color = MaterialTheme.colorScheme.surface,
                     ) {
                         Column(
                             modifier = Modifier
-                                .padding(16.dp)
+                                .padding(tokens.spacing.lg)
                                 .fillMaxSize()
                                 .pointerInput(editorState) {
                                     detectTapGestures {
@@ -169,7 +170,7 @@ fun AddNoteScreen(
                                 }
                             }
                             if (!contentError.isNullOrBlank()) {
-                                Spacer(modifier = Modifier.height(12.dp))
+                                Spacer(modifier = Modifier.height(tokens.spacing.md))
                                 Text(
                                     text = contentError,
                                     style = MaterialTheme.typography.bodySmall,
