@@ -101,6 +101,7 @@ fun AmazingNoteTheme(
     content: @Composable () -> Unit,
 ) {
     val chrome = platformChromeStrategy()
+    ApplySystemBarStyle(darkTheme)
     val platformScheme = rememberPlatformColorScheme(darkTheme, useDynamicColor)
     val colorScheme = platformScheme ?: if (darkTheme) darkScheme else lightScheme
     val dynamicActive = platformScheme != null && useDynamicColor
@@ -127,6 +128,9 @@ expect fun rememberPlatformColorScheme(
     darkTheme: Boolean,
     useDynamicColor: Boolean,
 ): ColorScheme?
+
+@Composable
+internal expect fun ApplySystemBarStyle(isDarkTheme: Boolean)
 
 // Expose whether dynamic color is active on the current platform
 val LocalDynamicColorActive = staticCompositionLocalOf { false }

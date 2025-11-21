@@ -15,6 +15,10 @@ fun String.toVersionCode(): Int {
     return (major * 10000) + (minor * 100) + patch
 }
 
+fun envOrProperty(key: String): String? =
+    (properties[key] as? String)?.takeIf { it.isNotBlank() }
+        ?: System.getenv(key)?.takeIf { it.isNotBlank() }
+
 val gitVersionName = rootProject.version.toString()
 
 android {
@@ -27,6 +31,29 @@ android {
         targetSdk = 36
         versionName = gitVersionName
         versionCode = gitVersionName.toVersionCode()
+    }
+
+    val releaseStoreFile = envOrProperty("RELEASE_STORE_FILE")
+    val releaseStorePassword = envOrProperty("RELEASE_STORE_PASSWORD")
+    val releaseKeyAlias = envOrProperty("RELEASE_KEY_ALIAS")
+    val releaseKeyPassword = envOrProperty("RELEASE_KEY_PASSWORD")
+
+    signingConfigs {
+        val hasReleaseKeystore =
+            listOf(releaseStoreFile, releaseStorePassword, releaseKeyAlias, releaseKeyPassword).all {
+                !it.isNullOrBlank()
+            }
+        create("release") {
+            if (hasReleaseKeystore) {
+                storeFile = file(releaseStoreFile!!)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            } else {
+                // Fall back to the debug keystore so release builds are still signable locally.
+                initWith(getByName("debug"))
+            }
+        }
     }
 
     buildTypes {
@@ -43,6 +70,7 @@ android {
                 "proguard-rules.pro",
             )
             isDebuggable = false
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
