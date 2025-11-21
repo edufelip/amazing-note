@@ -14,8 +14,8 @@ plugins {
 
 versioner {
     startFrom {
-        major = 1
-        minor = 1
+        major = 2
+        minor = 0
         patch = 0
     }
     tag {
