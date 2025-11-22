@@ -8,6 +8,8 @@
     <true/>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundleDisplayName</key>
+    <string>Amazing Note</string>
     <key>CFBundleIdentifier</key>
     <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
     <key>CFBundleInfoDictionaryVersion</key>
@@ -18,11 +20,29 @@
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
     <string>1.0</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Amazing Note needs access to your photo library so you can attach images to notes.</string>
     <key>CFBundleVersion</key>
     <string>1</string>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
     <key>CFBundleURLTypes</key>
     <array>
         <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
             <key>CFBundleURLSchemes</key>
             <array>
                 <string>com.googleusercontent.apps.77317364066-1l2l9nnovcgvfn7pnfn5e35ltk7ron6j</string>

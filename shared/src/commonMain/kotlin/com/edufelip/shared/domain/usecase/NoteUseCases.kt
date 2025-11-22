@@ -1,12 +1,14 @@
 package com.edufelip.shared.domain.usecase
 
+import com.edufelip.shared.domain.model.Folder
+import com.edufelip.shared.domain.model.Note
+import com.edufelip.shared.domain.model.NoteAttachment
+import com.edufelip.shared.domain.model.NoteContent
+import com.edufelip.shared.domain.model.NoteTextSpan
 import com.edufelip.shared.domain.repository.NoteRepository
 import com.edufelip.shared.domain.validation.NoteActionResult
 import com.edufelip.shared.domain.validation.NoteValidationRules
 import com.edufelip.shared.domain.validation.validateNoteInput
-import com.edufelip.shared.model.Folder
-import com.edufelip.shared.model.Note
-import com.edufelip.shared.model.Priority
 import kotlinx.coroutines.flow.Flow
 
 class ObserveNotes(private val repository: NoteRepository) {
@@ -33,10 +35,19 @@ class InsertNote(
     private val repository: NoteRepository,
     private val rules: NoteValidationRules,
 ) {
-    suspend operator fun invoke(title: String, priority: Priority, description: String, folderId: Long?): NoteActionResult {
+    suspend operator fun invoke(
+        title: String,
+        description: String,
+        folderId: Long?,
+        spans: List<NoteTextSpan>,
+        attachments: List<NoteAttachment>,
+        content: NoteContent = NoteContent(),
+        stableId: String? = null,
+    ): NoteActionResult {
         val errors = validateNoteInput(title, description, rules)
         if (errors.isNotEmpty()) return NoteActionResult.Invalid(errors)
-        repository.insert(title, priority, description, folderId)
+        val finalContent = if (content.blocks.isEmpty()) NoteContent() else content
+        repository.insert(title, description, folderId, spans, attachments, finalContent, stableId)
         return NoteActionResult.Success
     }
 }
@@ -48,14 +59,17 @@ class UpdateNote(
     suspend operator fun invoke(
         id: Int,
         title: String,
-        priority: Priority,
         description: String,
         deleted: Boolean,
         folderId: Long?,
+        spans: List<NoteTextSpan>,
+        attachments: List<NoteAttachment>,
+        content: NoteContent = NoteContent(),
     ): NoteActionResult {
         val errors = validateNoteInput(title, description, rules)
         if (errors.isNotEmpty()) return NoteActionResult.Invalid(errors)
-        repository.update(id, title, priority, description, deleted, folderId)
+        val finalContent = if (content.blocks.isEmpty()) NoteContent() else content
+        repository.update(id, title, description, deleted, folderId, spans, attachments, finalContent)
         return NoteActionResult.Success
     }
 }

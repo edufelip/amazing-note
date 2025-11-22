@@ -3,73 +3,72 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1C81D6F669B7BB6D2FFCCEB3 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 617043448F4869026C2F0BB4 /* FirebaseAuth */; };
+		379D4C6DBBA934A8EF44CDDE /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = B6E18E1D8AEE3BF1FDA1E5E9 /* GoogleSignIn */; };
+		445C052442747365B7CB2124 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 84FCD721953CC33D9035BCCD /* FirebaseFirestore */; };
+		6F26ACE1E3C90FD234DE7A46 /* AppMain.swift in Sources */ = {isa = PBXBuildFile; fileRef = C678D2A4430FF615DBC7217B /* AppMain.swift */; };
 		88ABACE0259DE83261737B99 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1285E8A7B7E7359EA11B9591 /* SceneDelegate.swift */; };
-		FB768F192E6F6E4B00DD44F2 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FB768F182E6F6E3F00DD44F2 /* libsqlite3.tbd */; };
-		FB768F1A2E6F6E5600DD44F2 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FB768F182E6F6E3F00DD44F2 /* libsqlite3.tbd */; };
-/* Firebase SPM references removed: now using CocoaPods via shared */
+		99D2B24B2F3E0A6D00C2D875 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 99D2B24A2F3E0A6D00C2D875 /* Assets.xcassets */; };
+		B7C4F6137AC8345E71E92063 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = A61EAF9635BFCCA5966D2AE0 /* FirebaseStorage */; };
+		C87B4FA04BDA1DA04158D48E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A55143988C4C8F291BE72E9A /* GoogleService-Info.plist */; };
+		F6407843737A5AC3042BDDF5 /* LiquidRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC2B4ED6760D21408C91A4A /* LiquidRoot.swift */; };
+		F7C33B50A94DA01F2E82C280 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 245434685F34A9A15B1AC406 /* libsqlite3.tbd */; };
+		FB0A0DBD2EBA95660061D43C /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = FB0A0DBC2EBA95660061D43C /* FirebaseCrashlytics */; };
+		FB1CE39A2EBD251F0050A069 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = FB1CE3992EBD251F0050A069 /* FirebaseCore */; };
+		FB1CE39C2EBD251F0050A069 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = FB1CE39B2EBD251F0050A069 /* FirebaseCrashlytics */; };
+		FB1CE39E2EBD26100050A069 /* FirebaseAppDistribution-Beta in Frameworks */ = {isa = PBXBuildFile; productRef = FB1CE39D2EBD26100050A069 /* FirebaseAppDistribution-Beta */; };
+		FB1CE3A02EBD26100050A069 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = FB1CE39F2EBD26100050A069 /* FirebaseCore */; };
+		FB1CE3A22EBD26100050A069 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = FB1CE3A12EBD26100050A069 /* FirebaseCrashlytics */; };
+		FB613E562EBA80C700CBDFF5 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = FB613E552EBA80C700CBDFF5 /* FirebaseDatabase */; };
+		FBD7CB772EBD1D1300B7209A /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = FBD7CB762EBD1D1300B7209A /* FirebaseAppCheck */; };
+		FBD7CB792EBD1D1300B7209A /* FirebaseAppDistribution-Beta in Frameworks */ = {isa = PBXBuildFile; productRef = FBD7CB782EBD1D1300B7209A /* FirebaseAppDistribution-Beta */; };
+		FBD7CB7B2EBD1D1300B7209A /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = FBD7CB7A2EBD1D1300B7209A /* FirebaseCore */; };
+		FBD7CB7D2EBD1D1300B7209A /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = FBD7CB7C2EBD1D1300B7209A /* FirebaseCrashlytics */; };
+		FBD7CB7F2EBD1D1300B7209A /* FirebasePerformance in Frameworks */ = {isa = PBXBuildFile; productRef = FBD7CB7E2EBD1D1300B7209A /* FirebasePerformance */; };
+		FBD7CB812EBD1D1300B7209A /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = FBD7CB802EBD1D1300B7209A /* FirebaseRemoteConfig */; };
 		FDE52B8D57A097A60A4CF366 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6C1F485E0CF8BB70C9DDD2 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		FB05269A2E6E5B6E008B31BB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 242FB5348943441C388468CE /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = FB0526882E6E5B6C008B31BB;
-			remoteInfo = amazingnote;
-		};
-		FB0526A42E6E5B6E008B31BB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 242FB5348943441C388468CE /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = FB0526882E6E5B6C008B31BB;
-			remoteInfo = amazingnote;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
 		1285E8A7B7E7359EA11B9591 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		245434685F34A9A15B1AC406 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		86038AE1032E284E79B32AD6 /* iosApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iosApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B6C1F485E0CF8BB70C9DDD2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		FB0526892E6E5B6C008B31BB /* amazingnote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = amazingnote.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		FB0526992E6E5B6E008B31BB /* amazingnoteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = amazingnoteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		FB0526A32E6E5B6E008B31BB /* amazingnoteUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = amazingnoteUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		FB768F182E6F6E3F00DD44F2 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		99D2B24A2F3E0A6D00C2D875 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A55143988C4C8F291BE72E9A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		BDC2B4ED6760D21408C91A4A /* LiquidRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidRoot.swift; sourceTree = "<group>"; };
+		C678D2A4430FF615DBC7217B /* AppMain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMain.swift; sourceTree = "<group>"; };
+		FB54EE8E2EB2691B007A2F0E /* ComposeApp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ComposeApp.framework; sourceTree = "<group>"; };
+		FB54EE912EB2696A007A2F0E /* ComposeApp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ComposeApp.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		E4F1A5D83BA204744AD54907 /* Frameworks */ = {
+		EF8A6E9BFD470986D9D5C9B5 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				/* Firebase SPM frameworks removed */
-				FB768F192E6F6E4B00DD44F2 /* libsqlite3.tbd in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FB0526862E6E5B6C008B31BB /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				FB768F1A2E6F6E5600DD44F2 /* libsqlite3.tbd in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FB0526962E6E5B6E008B31BB /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FB0526A02E6E5B6E008B31BB /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				FBD7CB772EBD1D1300B7209A /* FirebaseAppCheck in Frameworks */,
+				FB613E562EBA80C700CBDFF5 /* FirebaseDatabase in Frameworks */,
+				FB1CE3A02EBD26100050A069 /* FirebaseCore in Frameworks */,
+				FBD7CB7F2EBD1D1300B7209A /* FirebasePerformance in Frameworks */,
+				1C81D6F669B7BB6D2FFCCEB3 /* FirebaseAuth in Frameworks */,
+				FB1CE39A2EBD251F0050A069 /* FirebaseCore in Frameworks */,
+				445C052442747365B7CB2124 /* FirebaseFirestore in Frameworks */,
+				FB0A0DBD2EBA95660061D43C /* FirebaseCrashlytics in Frameworks */,
+				FB1CE39E2EBD26100050A069 /* FirebaseAppDistribution-Beta in Frameworks */,
+				FBD7CB7D2EBD1D1300B7209A /* FirebaseCrashlytics in Frameworks */,
+				B7C4F6137AC8345E71E92063 /* FirebaseStorage in Frameworks */,
+				FBD7CB7B2EBD1D1300B7209A /* FirebaseCore in Frameworks */,
+				379D4C6DBBA934A8EF44CDDE /* GoogleSignIn in Frameworks */,
+				FBD7CB812EBD1D1300B7209A /* FirebaseRemoteConfig in Frameworks */,
+				FB1CE39C2EBD251F0050A069 /* FirebaseCrashlytics in Frameworks */,
+				FB1CE3A22EBD26100050A069 /* FirebaseCrashlytics in Frameworks */,
+				F7C33B50A94DA01F2E82C280 /* libsqlite3.tbd in Frameworks */,
+				FBD7CB792EBD1D1300B7209A /* FirebaseAppDistribution-Beta in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -80,69 +79,59 @@
 			isa = PBXGroup;
 			children = (
 				8B6C1F485E0CF8BB70C9DDD2 /* AppDelegate.swift */,
+				C678D2A4430FF615DBC7217B /* AppMain.swift */,
+				A55143988C4C8F291BE72E9A /* GoogleService-Info.plist */,
+				BDC2B4ED6760D21408C91A4A /* LiquidRoot.swift */,
 				1285E8A7B7E7359EA11B9591 /* SceneDelegate.swift */,
+				99D2B24A2F3E0A6D00C2D875 /* Assets.xcassets */,
 			);
-			path = iosApp;
+			name = iosApp;
+			path = ../iosApp/iosApp;
+			sourceTree = "<group>";
+		};
+		3666012298E772D226418813 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				FB54EE8F2EB2691B007A2F0E /* iphonesimulator */,
+				245434685F34A9A15B1AC406 /* libsqlite3.tbd */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		38B69C3F79CD97858CF7B609 = {
 			isa = PBXGroup;
 			children = (
+				FB54EE922EB2696A007A2F0E /* iphonesimulator */,
 				1DB4B685CAEE8BEFEBBAEF94 /* iosApp */,
-				FB05268A2E6E5B6C008B31BB /* amazingnote */,
-				FB05269C2E6E5B6E008B31BB /* amazingnoteTests */,
-				FB0526A62E6E5B6E008B31BB /* amazingnoteUITests */,
+				3666012298E772D226418813 /* Frameworks */,
 				94C98B8B3A2BFC1966447269 /* Products */,
-				860EC59CF2364E01381ACD36 /* Pods */,
-				FB768F172E6F6E3F00DD44F2 /* Frameworks */,
 			);
-			sourceTree = "<group>";
-		};
-		860EC59CF2364E01381ACD36 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Pods;
 			sourceTree = "<group>";
 		};
 		94C98B8B3A2BFC1966447269 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				86038AE1032E284E79B32AD6 /* iosApp.app */,
-				FB0526892E6E5B6C008B31BB /* amazingnote.app */,
-				FB0526992E6E5B6E008B31BB /* amazingnoteTests.xctest */,
-				FB0526A32E6E5B6E008B31BB /* amazingnoteUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		FB05268A2E6E5B6C008B31BB /* amazingnote */ = {
+		FB54EE8F2EB2691B007A2F0E /* iphonesimulator */ = {
 			isa = PBXGroup;
 			children = (
+				FB54EE8E2EB2691B007A2F0E /* ComposeApp.framework */,
 			);
-			path = amazingnote;
+			name = iphonesimulator;
+			path = "../shared/build/xcode-frameworks/Debug/iphonesimulator";
 			sourceTree = "<group>";
 		};
-		FB05269C2E6E5B6E008B31BB /* amazingnoteTests */ = {
+		FB54EE922EB2696A007A2F0E /* iphonesimulator */ = {
 			isa = PBXGroup;
 			children = (
+				FB54EE912EB2696A007A2F0E /* ComposeApp.framework */,
 			);
-			path = amazingnoteTests;
-			sourceTree = "<group>";
-		};
-		FB0526A62E6E5B6E008B31BB /* amazingnoteUITests */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = amazingnoteUITests;
-			sourceTree = "<group>";
-		};
-		FB768F172E6F6E3F00DD44F2 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				FB768F182E6F6E3F00DD44F2 /* libsqlite3.tbd */,
-			);
-			name = Frameworks;
+			name = iphonesimulator;
+			path = "../shared/build/xcode-frameworks/Debug/iphonesimulator";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -152,71 +141,38 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 29DCA9F0B3A40325067EB163 /* Build configuration list for PBXNativeTarget "iosApp" */;
 			buildPhases = (
-				FB917A422E6E663200229801 /* ShellScript */,
+				FB54EE932EB26976007A2F0E /* Compile Kotlin Framework */,
 				297B59D9CE634556D6007C40 /* Sources */,
-				E4F1A5D83BA204744AD54907 /* Frameworks */,
+				1623B02D10928C8101C1F806 /* Resources */,
+				EF8A6E9BFD470986D9D5C9B5 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = iosApp;
+			packageProductDependencies = (
+				617043448F4869026C2F0BB4 /* FirebaseAuth */,
+				84FCD721953CC33D9035BCCD /* FirebaseFirestore */,
+				A61EAF9635BFCCA5966D2AE0 /* FirebaseStorage */,
+				B6E18E1D8AEE3BF1FDA1E5E9 /* GoogleSignIn */,
+				FB613E552EBA80C700CBDFF5 /* FirebaseDatabase */,
+				FB0A0DBC2EBA95660061D43C /* FirebaseCrashlytics */,
+				FBD7CB762EBD1D1300B7209A /* FirebaseAppCheck */,
+				FBD7CB782EBD1D1300B7209A /* FirebaseAppDistribution-Beta */,
+				FBD7CB7A2EBD1D1300B7209A /* FirebaseCore */,
+				FBD7CB7C2EBD1D1300B7209A /* FirebaseCrashlytics */,
+				FBD7CB7E2EBD1D1300B7209A /* FirebasePerformance */,
+				FBD7CB802EBD1D1300B7209A /* FirebaseRemoteConfig */,
+				FB1CE3992EBD251F0050A069 /* FirebaseCore */,
+				FB1CE39B2EBD251F0050A069 /* FirebaseCrashlytics */,
+				FB1CE39D2EBD26100050A069 /* FirebaseAppDistribution-Beta */,
+				FB1CE39F2EBD26100050A069 /* FirebaseCore */,
+				FB1CE3A12EBD26100050A069 /* FirebaseCrashlytics */,
+			);
 			productName = iosApp;
 			productReference = 86038AE1032E284E79B32AD6 /* iosApp.app */;
 			productType = "com.apple.product-type.application";
-		};
-		FB0526882E6E5B6C008B31BB /* amazingnote */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = FB0526B12E6E5B6E008B31BB /* Build configuration list for PBXNativeTarget "amazingnote" */;
-			buildPhases = (
-				FB0526852E6E5B6C008B31BB /* Sources */,
-				FB0526862E6E5B6C008B31BB /* Frameworks */,
-				FB0526872E6E5B6C008B31BB /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = amazingnote;
-			productName = amazingnote;
-			productReference = FB0526892E6E5B6C008B31BB /* amazingnote.app */;
-			productType = "com.apple.product-type.application";
-		};
-		FB0526982E6E5B6E008B31BB /* amazingnoteTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = FB0526B22E6E5B6E008B31BB /* Build configuration list for PBXNativeTarget "amazingnoteTests" */;
-			buildPhases = (
-				FB0526952E6E5B6E008B31BB /* Sources */,
-				FB0526962E6E5B6E008B31BB /* Frameworks */,
-				FB0526972E6E5B6E008B31BB /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				FB05269B2E6E5B6E008B31BB /* PBXTargetDependency */,
-			);
-			name = amazingnoteTests;
-			productName = amazingnoteTests;
-			productReference = FB0526992E6E5B6E008B31BB /* amazingnoteTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		FB0526A22E6E5B6E008B31BB /* amazingnoteUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = FB0526B32E6E5B6E008B31BB /* Build configuration list for PBXNativeTarget "amazingnoteUITests" */;
-			buildPhases = (
-				FB05269F2E6E5B6E008B31BB /* Sources */,
-				FB0526A02E6E5B6E008B31BB /* Frameworks */,
-				FB0526A12E6E5B6E008B31BB /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				FB0526A52E6E5B6E008B31BB /* PBXTargetDependency */,
-			);
-			name = amazingnoteUITests;
-			productName = amazingnoteUITests;
-			productReference = FB0526A32E6E5B6E008B31BB /* amazingnoteUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
@@ -225,21 +181,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastSwiftUpdateCheck = 1610;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-					FB0526882E6E5B6C008B31BB = {
-						CreatedOnToolsVersion = 16.1;
-					};
-					FB0526982E6E5B6E008B31BB = {
-						CreatedOnToolsVersion = 16.1;
-						TestTargetID = FB0526882E6E5B6C008B31BB;
-					};
-					FB0526A22E6E5B6E008B31BB = {
-						CreatedOnToolsVersion = 16.1;
-						TestTargetID = FB0526882E6E5B6C008B31BB;
-					};
-				};
 			};
 			buildConfigurationList = FF7CA1CA754D017066F1822F /* Build configuration list for PBXProject "iosApp" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -250,47 +192,35 @@
 				en,
 			);
 			mainGroup = 38B69C3F79CD97858CF7B609;
+			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				7C4F1707FE80007C7DCEAE3C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				DF1BCD5B98717A06C1B5AE17 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
-			productRefGroup = 94C98B8B3A2BFC1966447269 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				78B53CC79860CBFC2F5543C6 /* iosApp */,
-				FB0526882E6E5B6C008B31BB /* amazingnote */,
-				FB0526982E6E5B6E008B31BB /* amazingnoteTests */,
-				FB0526A22E6E5B6E008B31BB /* amazingnoteUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		FB0526872E6E5B6C008B31BB /* Resources */ = {
+		1623B02D10928C8101C1F806 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FB0526972E6E5B6E008B31BB /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FB0526A12E6E5B6E008B31BB /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				99D2B24B2F3E0A6D00C2D875 /* Assets.xcassets in Resources */,
+				C87B4FA04BDA1DA04158D48E /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		FB917A422E6E663200229801 /* ShellScript */ = {
+		FB54EE932EB26976007A2F0E /* Compile Kotlin Framework */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -298,13 +228,14 @@
 			);
 			inputPaths = (
 			);
+			name = "Compile Kotlin Framework";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$SRCROOT/..\"\n./gradlew :shared:embedAndSignAppleFrameworkForXcode\n";
+			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :composeApp:embedAndSignAppleFrameworkForXcode\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -314,45 +245,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDE52B8D57A097A60A4CF366 /* AppDelegate.swift in Sources */,
+				6F26ACE1E3C90FD234DE7A46 /* AppMain.swift in Sources */,
+				F6407843737A5AC3042BDDF5 /* LiquidRoot.swift in Sources */,
 				88ABACE0259DE83261737B99 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FB0526852E6E5B6C008B31BB /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FB0526952E6E5B6E008B31BB /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FB05269F2E6E5B6E008B31BB /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		FB05269B2E6E5B6E008B31BB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = FB0526882E6E5B6C008B31BB /* amazingnote */;
-			targetProxy = FB05269A2E6E5B6E008B31BB /* PBXContainerItemProxy */;
-		};
-		FB0526A52E6E5B6E008B31BB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = FB0526882E6E5B6C008B31BB /* amazingnote */;
-			targetProxy = FB0526A42E6E5B6E008B31BB /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		11814011E7D6EC822BFBC66D /* Release */ = {
@@ -400,7 +299,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -462,7 +361,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -478,17 +377,33 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = L4N9Z3Z82V;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				FRAMEWORK_SEARCH_PATHS = "\" $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(PLATFORM_NAME)\"";
+				"FRAMEWORK_SEARCH_PATHS[arch=*]" = " $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(PLATFORM_NAME)\n";
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"$(CONFIGURATION_BUILD_DIR)",
+					"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(PLATFORM_NAME)",
+				);
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = (
+					"$(inherited)",
+					"$(CONFIGURATION_BUILD_DIR)",
+					"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(PLATFORM_NAME)",
+				);
 				INFOPLIST_FILE = iosApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					ComposeApp,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnote.iosApp;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -498,224 +413,35 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = L4N9Z3Z82V;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				FRAMEWORK_SEARCH_PATHS = "\" $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(PLATFORM_NAME)\"";
+				"FRAMEWORK_SEARCH_PATHS[arch=*]" = " $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(PLATFORM_NAME)\n";
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"$(CONFIGURATION_BUILD_DIR)",
+					"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(PLATFORM_NAME)",
+				);
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = (
+					"$(inherited)",
+					"$(CONFIGURATION_BUILD_DIR)",
+					"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(PLATFORM_NAME)",
+				);
 				INFOPLIST_FILE = iosApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					ComposeApp,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnote.iosApp;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		FB0526AB2E6E5B6E008B31BB /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CODE_SIGN_ENTITLEMENTS = amazingnote/amazingnote.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"amazingnote/Preview Content\"";
-				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				GENERATE_INFOPLIST_FILE = YES;
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
-				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
-				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.1;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnote;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				XROS_DEPLOYMENT_TARGET = 2.1;
-			};
-			name = Debug;
-		};
-		FB0526AC2E6E5B6E008B31BB /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CODE_SIGN_ENTITLEMENTS = amazingnote/amazingnote.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"amazingnote/Preview Content\"";
-				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = YES;
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
-				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
-				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.1;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnote;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				XROS_DEPLOYMENT_TARGET = 2.1;
-			};
-			name = Release;
-		};
-		FB0526AD2E6E5B6E008B31BB /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.1;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnoteTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/amazingnote.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/amazingnote";
-				XROS_DEPLOYMENT_TARGET = 2.1;
-			};
-			name = Debug;
-		};
-		FB0526AE2E6E5B6E008B31BB /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.1;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnoteTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/amazingnote.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/amazingnote";
-				XROS_DEPLOYMENT_TARGET = 2.1;
-			};
-			name = Release;
-		};
-		FB0526AF2E6E5B6E008B31BB /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.1;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnoteUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_TARGET_NAME = amazingnote;
-				XROS_DEPLOYMENT_TARGET = 2.1;
-			};
-			name = Debug;
-		};
-		FB0526B02E6E5B6E008B31BB /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.1;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnoteUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_TARGET_NAME = amazingnote;
-				XROS_DEPLOYMENT_TARGET = 2.1;
 			};
 			name = Release;
 		};
@@ -731,33 +457,6 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		FB0526B12E6E5B6E008B31BB /* Build configuration list for PBXNativeTarget "amazingnote" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				FB0526AB2E6E5B6E008B31BB /* Debug */,
-				FB0526AC2E6E5B6E008B31BB /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
-		FB0526B22E6E5B6E008B31BB /* Build configuration list for PBXNativeTarget "amazingnoteTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				FB0526AD2E6E5B6E008B31BB /* Debug */,
-				FB0526AE2E6E5B6E008B31BB /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
-		FB0526B32E6E5B6E008B31BB /* Build configuration list for PBXNativeTarget "amazingnoteUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				FB0526AF2E6E5B6E008B31BB /* Debug */,
-				FB0526B02E6E5B6E008B31BB /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
 		FF7CA1CA754D017066F1822F /* Build configuration list for PBXProject "iosApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -769,9 +468,99 @@
 		};
 /* End XCConfigurationList section */
 
-/* Firebase Swift Package reference removed */
+/* Begin XCRemoteSwiftPackageReference section */
+		7C4F1707FE80007C7DCEAE3C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.4.0;
+			};
+		};
+		DF1BCD5B98717A06C1B5AE17 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
 
-/* Firebase Swift Package product dependencies removed */
+/* Begin XCSwiftPackageProductDependency section */
+		617043448F4869026C2F0BB4 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7C4F1707FE80007C7DCEAE3C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		84FCD721953CC33D9035BCCD /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7C4F1707FE80007C7DCEAE3C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		A61EAF9635BFCCA5966D2AE0 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7C4F1707FE80007C7DCEAE3C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+		B6E18E1D8AEE3BF1FDA1E5E9 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DF1BCD5B98717A06C1B5AE17 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		FB0A0DBC2EBA95660061D43C /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseCrashlytics;
+		};
+		FB1CE3992EBD251F0050A069 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseCore;
+		};
+		FB1CE39B2EBD251F0050A069 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseCrashlytics;
+		};
+		FB1CE39D2EBD26100050A069 /* FirebaseAppDistribution-Beta */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "FirebaseAppDistribution-Beta";
+		};
+		FB1CE39F2EBD26100050A069 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseCore;
+		};
+		FB1CE3A12EBD26100050A069 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseCrashlytics;
+		};
+		FB613E552EBA80C700CBDFF5 /* FirebaseDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseDatabase;
+		};
+		FBD7CB762EBD1D1300B7209A /* FirebaseAppCheck */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseAppCheck;
+		};
+		FBD7CB782EBD1D1300B7209A /* FirebaseAppDistribution-Beta */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "FirebaseAppDistribution-Beta";
+		};
+		FBD7CB7A2EBD1D1300B7209A /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseCore;
+		};
+		FBD7CB7C2EBD1D1300B7209A /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseCrashlytics;
+		};
+		FBD7CB7E2EBD1D1300B7209A /* FirebasePerformance */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebasePerformance;
+		};
+		FBD7CB802EBD1D1300B7209A /* FirebaseRemoteConfig */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseRemoteConfig;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 242FB5348943441C388468CE /* Project object */;
 }

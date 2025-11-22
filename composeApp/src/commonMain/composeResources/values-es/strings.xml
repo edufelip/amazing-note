@@ -1,0 +1,181 @@
+<resources>
+    <!-- Navegación -->
+    <string name="your_notes">Notas</string>
+    <string name="trash">Basura</string>
+    <string name="trash_count">Basura (%1$d)</string>
+    <string name="privacy_policy">Política de Privacidad</string>
+    <string name="sync_now">Sincronizar ahora</string>
+
+    <!-- Autenticación - General -->
+    <string name="login">Iniciar sesión</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="google_sign_in">Iniciar con Google</string>
+    <string name="continue_with_google">Continuar con Google</string>
+    <string name="login_title">Inicia sesión en tu cuenta</string>
+    <string name="name">Nombre</string>
+    <string name="email">Correo electrónico</string>
+    <string name="password">Contraseña</string>
+    <string name="forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="forgot_password_description">Ingresa tu correo para recibir un enlace de restablecimiento.</string>
+    <string name="forgot_password_send_email">Enviar correo de restablecimiento</string>
+    <string name="sign_up">Registrarse</string>
+    <string name="reset_email_sent">Correo de restablecimiento de contraseña enviado</string>
+    <string name="sign_up_success">Cuenta creada con éxito</string>
+    <string name="sign_out_success">Sesión cerrada</string>
+    <string name="login_success">Sesión iniciada</string>
+    <string name="login_error_invalid_credentials">Verifica si el correo y la contraseña son correctos.</string>
+    <string name="google_sign_in_canceled">Inicio de sesión con Google cancelado</string>
+    <string name="logout_canceled">Cierre de sesión cancelado</string>
+    <string name="welcome_user">Bienvenido, %1$s</string>
+    <string name="guest">Invitado</string>
+    <string name="auth_generic_validation_error">Verifica tus credenciales e inténtalo de nuevo.</string>
+    <string name="auth_network_error">Revisa tu conexión a internet e inténtalo nuevamente.</string>
+    <string name="name_required">El nombre es obligatorio.</string>
+    <string name="email_required">El correo electrónico es obligatorio.</string>
+    <string name="email_invalid_format">Ingresa un correo electrónico válido.</string>
+    <string name="password_required">La contraseña es obligatoria.</string>
+    <string name="forgot_password_invalid_email">Ingresa un correo válido para restablecer tu contraseña.</string>
+    <string name="forgot_password_try_again">No pudimos enviar el correo. Inténtalo de nuevo en unos minutos.</string>
+    <string name="forgot_password_success_title">Revisa tu bandeja</string>
+    <string name="forgot_password_success_body">Enviamos las instrucciones de restablecimiento a %1$s.</string>
+    <string name="forgot_password_success_ok">Aceptar</string>
+    <string name="login_rate_limit">Demasiados intentos. Inténtalo de nuevo en %1$d segundos.</string>
+
+    <!-- Notas - Lista y Filtros -->
+    <string name="order_by">Ordenar por</string>
+    <string name="filters">Filtros</string>
+    <string name="search">Buscar</string>
+
+    <!-- Notas - Campos -->
+    <string name="title">Título</string>
+    <string name="description">Cuerpo</string>
+    <string name="note_discard_title">¿Descartar nota?</string>
+    <string name="note_discard_message">Tienes cambios sin guardar. Si sales ahora, se perderán.</string>
+    <string name="note_discard_confirm">Descartar</string>
+    <string name="attachment_uploading">Subiendo %1$s… %2$d%%</string>
+    <string name="attachment_upload_failed">Error al subir el archivo.</string>
+    <string name="attachment_upload_failed_with_detail">Error al subir el archivo: %1$s</string>
+    <string name="attachment_generic_name">archivo</string>
+    <string name="attachments_label">Archivos adjuntos</string>
+    <string name="editor_add_image">Agregar imagen</string>
+    <string name="editor_copy_image">Copiar imagen</string>
+    <string name="editor_cut_image">Cortar imagen</string>
+    <string name="editor_paste_image">Pegar imagen</string>
+
+    <!-- Notas - Estados vacíos -->
+    <string name="empty_notes_greeting">Buenos días</string>
+    <string name="empty_notes_subtitle">¿Listo para capturar una idea?</string>
+    <string name="empty_notes_title">Aún no hay notas</string>
+    <string name="empty_notes_hint">Toca el botón + para crear tu primera nota</string>
+    <string name="notes_empty_unlock_label">Desbloquea la 1.ª nota</string>
+    <string name="notes_empty_action">Crear nota</string>
+    <string name="empty_trash_title">La papelera está vacía</string>
+    <string name="empty_trash_hint">Las notas eliminadas aparecerán aquí</string>
+    <string name="empty_trash_description">Las notas en la papelera se eliminan permanentemente después de 7 días.</string>
+    <string name="select_a_note_to_start">Selecciona una nota para empezar</string>
+    <string name="trash_deleted_today">Eliminada hoy</string>
+    <string name="trash_deleted_yesterday">Eliminada ayer</string>
+    <string name="trash_deleted_days_ago">Eliminada hace %1$d días</string>
+    <string name="trash_recover_selected">Recuperar seleccionadas (%1$d)</string>
+    <string name="trash_empty_action">Vaciar papelera</string>
+    <string name="no_notes_match_search">Ninguna nota coincide con tu búsqueda</string>
+
+    <!-- Tiempo y Actividad -->
+    <string name="today">Hoy</string>
+    <string name="this_week">Esta semana</string>
+    <string name="this_month">Este mes</string>
+    <string name="earlier">Anterior</string>
+    <string name="updated">Actualizado</string>
+    <string name="created">Creado</string>
+    <string name="updated_just_now">Actualizado ahora</string>
+    <string name="updated_minutes_ago">Actualizado hace %1$d minutos</string>
+    <string name="updated_hours_ago">Actualizado hace %1$d horas</string>
+    <string name="updated_days_ago">Actualizado hace %1$d días</string>
+    <string name="created_just_now">Creado ahora</string>
+    <string name="created_minutes_ago">Creado hace %1$d minutos</string>
+    <string name="created_hours_ago">Creado hace %1$d horas</string>
+    <string name="created_days_ago">Creado hace %1$d días</string>
+
+    <!-- Descripciones de contenido (a11y) -->
+    <string name="cd_open_drawer">Abrir menú de navegación</string>
+    <string name="cd_add">Agregar</string>
+    <string name="cd_back">Atrás</string>
+    <string name="cd_save">Guardar</string>
+    <string name="cd_delete">Eliminar</string>
+    <string name="cd_undo">Deshacer</string>
+    <string name="cd_redo">Rehacer</string>
+    <string name="cd_more">Más opciones</string>
+    <string name="cd_restore">Restaurar</string>
+    <string name="cd_search">Buscar</string>
+    <string name="cd_clear_search">Limpiar búsqueda</string>
+    <string name="cd_toggle_dark_theme">Alternar tema oscuro</string>
+
+    <!-- Errores y Validación -->
+    <string name="error_title_required">El título es obligatorio</string>
+    <string name="error_description_required">La descripción es obligatoria</string>
+    <string name="error_title_too_long">Título demasiado largo (máx. %1$d)</string>
+    <string name="error_description_too_long">Descripción demasiado larga (máx. %1$d)</string>
+
+    <!-- Carpetas y navegación inferior -->
+    <string name="bottom_notes">Notas</string>
+    <string name="bottom_folders">Carpetas</string>
+    <string name="bottom_settings">Ajustes</string>
+    <string name="new_folder">Nueva carpeta</string>
+    <string name="rename_folder">Renombrar carpeta</string>
+    <string name="delete_folder">Eliminar carpeta</string>
+    <string name="delete_folder_message">Las notas se moverán a Sin asignar.</string>
+    <string name="folder_options_rename">Renombrar</string>
+    <string name="folder_options_delete">Eliminar</string>
+    <string name="folder_name">Nombre de la carpeta</string>
+    <string name="folders_empty_title">¡Misión de organización!</string>
+    <string name="folders_empty_hint">¡Tu vitrina de trofeos te espera! Crea tu primera carpeta para desbloquear un logro de organización.</string>
+    <string name="folders_empty_unlock_label">Desbloquea la 1.ª carpeta</string>
+    <string name="folders_header_title">Carpetas</string>
+    <string name="folders_header_subtitle">Organiza tus notas en carpetas.</string>
+    <string name="folders_view_all">Ver todo</string>
+    <string name="home_new_folder">Nueva carpeta</string>
+    <string name="folder_note_count_one">1 nota</string>
+    <string name="folder_note_count_other">%1$d notas</string>
+    <string name="unassigned_subtitle">Notas sin carpeta</string>
+    <string name="folder_detail_empty_title">Aún no hay notas</string>
+    <string name="folder_detail_empty_hint">Añade notas a esta carpeta para mantener el orden.</string>
+    <string name="folder_add_note">Añadir nota</string>
+    <string name="no_folder_label">Sin carpeta</string>
+    <string name="folder_field_label">Carpeta</string>
+    <string name="unassigned_notes">Sin asignar</string>
+
+    <!-- Ajustes -->
+    <string name="settings_header">Ajustes</string>
+    <string name="settings_review_reminder_title">Fecha del recordatorio de repaso</string>
+    <string name="personalize_title">Personaliza tus notas</string>
+    <string name="personalize_subtitle">Ajusta la apariencia a tu gusto.</string>
+    <string name="welcome_message">Inicia sesión para sincronizar en todos tus dispositivos.</string>
+    <string name="appearance_section">Apariencia</string>
+    <string name="theme_option">Modo oscuro</string>
+    <string name="theme_subtitle">Alterna entre el tema claro y oscuro.</string>
+    <string name="account_section">Cuenta</string>
+    <string name="management_section">Accesos directos</string>
+    <string name="trash_subtitle">Notas eliminadas recientemente</string>
+    <string name="app_version_label">Versión de la app</string>
+
+    <!-- Acciones -->
+    <string name="restore">Restaurar</string>
+    <string name="dialog_ok">Aceptar</string>
+    <string name="dialog_cancel">Cancelar</string>
+
+    <!-- Autenticación - Diálogos de cierre de sesión -->
+    <string name="logout_confirm_title">Confirmar cierre de sesión</string>
+    <string name="logout_confirm_message">¿Estás seguro de que quieres cerrar sesión?</string>
+    <string name="yes">Sí</string>
+    <string name="no">No</string>
+    <string name="signing_out">Cerrando sesión</string>
+
+    <!-- Vista previa del sistema de diseño -->
+    <string name="design_typography_title">Tipografía</string>
+    <string name="design_display_title">Encabezado / Título</string>
+    <string name="design_display_description">El cuerpo de texto ilustra el estilo base usado en toda la app.</string>
+    <string name="design_swatches">Muestras</string>
+    <string name="design_swatch_accent">Acento</string>
+    <string name="design_swatch_surface">Superficie</string>
+    <string name="design_swatch_muted">Atenuado</string>
+</resources>

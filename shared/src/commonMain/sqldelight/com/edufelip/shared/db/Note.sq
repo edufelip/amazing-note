@@ -1,21 +1,44 @@
 CREATE TABLE note(
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
-  priority INTEGER NOT NULL,
   description TEXT NOT NULL,
+  description_spans TEXT NOT NULL DEFAULT '[]',
+  attachments TEXT NOT NULL DEFAULT '[]',
+  blocks TEXT NOT NULL DEFAULT '[]',
+  content_json TEXT,
   deleted INTEGER NOT NULL,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
   local_dirty INTEGER NOT NULL DEFAULT 0,
   local_updated_at INTEGER NOT NULL DEFAULT 0,
-  folder_id INTEGER
+  folder_id INTEGER,
+  stable_id TEXT NOT NULL
 );
 
 CREATE TABLE folder(
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL
+  updated_at INTEGER NOT NULL,
+  deleted INTEGER NOT NULL DEFAULT 0,
+  local_dirty INTEGER NOT NULL DEFAULT 0,
+  local_updated_at INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE note_pending_deletion(
+  id INTEGER NOT NULL PRIMARY KEY,
+  deleted_at INTEGER NOT NULL,
+  stable_id TEXT NOT NULL,
+  storage_paths TEXT NOT NULL DEFAULT '[]'
+);
+
+CREATE TABLE folder_pending_deletion(
+  id INTEGER NOT NULL PRIMARY KEY,
+  deleted_at INTEGER NOT NULL
+);
+
+CREATE TABLE attachment_pending_deletion(
+  path TEXT NOT NULL PRIMARY KEY
 );
 
 selectAll:
@@ -48,16 +71,19 @@ WHERE deleted = 0 AND folder_id IS NULL
 ORDER BY updated_at DESC, id DESC;
 
 insertNote:
-INSERT INTO note(title, priority, description, deleted, created_at, updated_at, local_dirty, local_updated_at, folder_id)
-VALUES (?, ?, ?, 0, ?, ?, 1, ?, ?);
+INSERT INTO note(title, description, description_spans, attachments, blocks, content_json, deleted, created_at, updated_at, local_dirty, local_updated_at, folder_id, stable_id)
+VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, 1, ?, ?, ?);
 
 insertWithId:
-INSERT INTO note(id, title, priority, description, deleted, created_at, updated_at, folder_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO note(id, title, description, description_spans, attachments, blocks, content_json, deleted, created_at, updated_at, folder_id, stable_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updateNote:
-UPDATE note SET title = ?, priority = ?, description = ?, deleted = ?, updated_at = ?, local_dirty = 1, local_updated_at = ?, folder_id = ?
+UPDATE note SET title = ?, description = ?, description_spans = ?, attachments = ?, blocks = ?, content_json = ?, deleted = ?, updated_at = ?, local_dirty = 1, local_updated_at = ?, folder_id = ?
 WHERE id = ?;
+
+updateCachedContent:
+UPDATE note SET content_json = ?, local_updated_at = ? WHERE id = ?;
 
 setDeleted:
 UPDATE note SET deleted = ?, updated_at = ?, local_dirty = 1, local_updated_at = ? WHERE id = ?;
@@ -78,7 +104,7 @@ clearDirtyById:
 UPDATE note SET local_dirty = 0 WHERE id = ?;
 
 updateFromRemote:
-UPDATE note SET title = ?, priority = ?, description = ?, deleted = ?, updated_at = ?, local_dirty = 0, folder_id = ? WHERE id = ?;
+UPDATE note SET title = ?, description = ?, description_spans = ?, attachments = ?, blocks = ?, content_json = ?, deleted = ?, updated_at = ?, local_dirty = 0, folder_id = ?, stable_id = ? WHERE id = ?;
 
 setNoteFolder:
 UPDATE note SET folder_id = ?, updated_at = ?, local_dirty = 1, local_updated_at = ? WHERE id = ?;
@@ -89,21 +115,99 @@ UPDATE note SET folder_id = NULL, updated_at = ?, local_dirty = 1, local_updated
 selectFolders:
 SELECT *
 FROM folder
+WHERE deleted = 0
 ORDER BY updated_at DESC, id DESC;
 
+selectAllFolders:
+SELECT *
+FROM folder
+ORDER BY updated_at DESC, id DESC;
+
+selectDirtyFolders:
+SELECT *
+FROM folder
+WHERE local_dirty = 1
+ORDER BY updated_at DESC, id DESC;
+
+selectFolderById:
+SELECT *
+FROM folder
+WHERE id = ?;
+
 insertFolder:
-INSERT INTO folder(name, created_at, updated_at)
-VALUES (?, ?, ?);
+INSERT INTO folder(name, created_at, updated_at, deleted, local_dirty, local_updated_at)
+VALUES (?, ?, ?, 0, 1, ?);
+
+insertFolderWithId:
+INSERT INTO folder(id, name, created_at, updated_at, deleted, local_dirty, local_updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 updateFolder:
-UPDATE folder SET name = ?, updated_at = ?
+UPDATE folder SET name = ?, updated_at = ?, local_dirty = 1, local_updated_at = ?
+WHERE id = ?;
+
+updateFolderFromRemote:
+UPDATE folder SET name = ?, updated_at = ?, deleted = ?, local_dirty = 0
 WHERE id = ?;
 
 deleteFolder:
 DELETE FROM folder WHERE id = ?;
 
+markFolderDeleted:
+UPDATE folder SET deleted = 1, updated_at = ?, local_dirty = 1, local_updated_at = ?
+WHERE id = ?;
+
+clearFolderDirtyById:
+UPDATE folder SET local_dirty = 0 WHERE id = ?;
+
+
 deleteAllFolders:
 DELETE FROM folder;
+
+insertPendingNoteDeletion:
+INSERT OR REPLACE INTO note_pending_deletion(id, deleted_at, stable_id, storage_paths)
+VALUES (?, ?, ?, ?);
+
+selectPendingNoteDeletions:
+SELECT *
+FROM note_pending_deletion
+ORDER BY deleted_at ASC;
+
+deletePendingNoteDeletionById:
+DELETE FROM note_pending_deletion WHERE id = ?;
+
+insertPendingFolderDeletion:
+INSERT OR REPLACE INTO folder_pending_deletion(id, deleted_at)
+VALUES (?, ?);
+
+selectPendingFolderDeletions:
+SELECT *
+FROM folder_pending_deletion
+ORDER BY deleted_at ASC;
+
+deletePendingFolderDeletionById:
+DELETE FROM folder_pending_deletion WHERE id = ?;
+
+deleteAllPendingNoteDeletions:
+DELETE FROM note_pending_deletion;
+
+deleteAllPendingFolderDeletions:
+DELETE FROM folder_pending_deletion;
+
+deleteAllPendingAttachmentDeletions:
+DELETE FROM attachment_pending_deletion;
+
+insertPendingAttachmentDeletion:
+INSERT OR IGNORE INTO attachment_pending_deletion(path)
+VALUES (?);
+
+selectPendingAttachmentDeletions:
+SELECT path
+FROM attachment_pending_deletion
+ORDER BY path ASC;
+
+deletePendingAttachmentDeletionByPath:
+DELETE FROM attachment_pending_deletion WHERE path = ?;
 
 countNotesInFolder:
 SELECT COUNT(*)

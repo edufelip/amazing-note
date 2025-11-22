@@ -21,21 +21,14 @@
 Go to [Google Play](https://play.google.com/store/apps/details?id=com.edufelip.amazing_note) to download the latest App version.
 
 ## This project uses
-* Compose Multiplatform UI (shared Android/iOS), Material 3 (Material You)
-* SQLDelight (shared persistence)
+* Compose Multiplatform UI (shared Android/iOS)
+* SQLDelight (Shared Persistence)
 * Kotlin Coroutines
-* Dagger Hilt (Android DI)
-* Firebase Authentication (Android/iOS)
+* Koin (Multiplatform DI)
+* Git Versioner (Git-driven semantic versioning)
+* Firebase Authentication, Cloud Storage and Firestore
 * Google Identity Services (Android sign-in via Credential Manager + Google ID)
 * JUnit and Mockito for unit tests
-
-Key recent changes
-- One shared SQLDelight database instance is used by UI and sync to avoid state drift.
-- Logout or account switch clears the local DB and Firestore offline cache so notes are not visible across sessions.
-- Sync can run in push-only mode (local → remote): only dirty local changes are uploaded, and remote is not merged back.
-- Firestore `createdAt`/`updatedAt` are stored as Timestamp; push-only preserves `updatedAt` to keep list order stable.
-- Swipe-to-delete removed; delete/restore are explicit actions.
-- Notes list uses a single simple scroll; section labels (Today/This week/This month/Earlier) are not sticky.
 
 ## Installation
 Clone this repository and import into **Android Studio**
@@ -56,19 +49,48 @@ Android
   - Build debug APK: `./gradlew :app:assembleDebug`
   - Install on device: `./gradlew :app:installDebug`
   - Unit tests: `./gradlew :app:testDebugUnitTest`
-  - Lint: `./gradlew :app:lintDebug`
- - Gradle Wrapper: 9.0-milestone-1
+- Lint: `./gradlew :app:lintDebug`
+- Gradle Wrapper: 9.0-milestone-1
+- Versioning: Android `versionName`/`versionCode` come from Git Versioner; tag commits with `[major]`, `[minor]`, or `[patch]` (or adjust the matcher) instead of bumping Gradle properties manually.
 
-iOS (CocoaPods + Compose Multiplatform)
-- Requirements: Xcode, CocoaPods, JDK 17
-- Bootstrap (generates KMP framework + installs Pods):
-  - `chmod +x scripts/ios_bootstrap.sh && ./scripts/ios_bootstrap.sh`
-- Open workspace in Xcode:
-  - `open iosApp/iosApp.xcworkspace`
+iOS (SwiftPM + ComposeApp Framework)
+- Requirements: Xcode 15+, JDK 17
+- First-time setup / refresh shared framework slices:
+  - `./scripts/rebuild_ios.sh`
+- Open the project in Xcode:
+  - `open iosApp/iosApp.xcodeproj`
+- Manual Gradle invocation if you prefer not to use the helper script:
+  - `./gradlew -PCONFIGURATION=Debug -PSDK_NAME=iphonesimulator :composeApp:packForXcode :iosApp:packForXcode`
+- Subsequent runs: Xcode picks up the freshly synced `ComposeApp.framework` from `iosApp/Frameworks/<CONFIGURATION>-<platform>/`, so hitting Run in Xcode is enough.
+- Android Studio integration: the `iosApp` Kotlin Multiplatform module now exposes the usual `runDebugExecutableIosSimulatorArm64` task, so the KMM plug-in restores the iOS run configuration (it still defers to Xcode/`run_ios_app.sh` for real execution).
 
 Notes
-- iOS integrates FirebaseAuth + GoogleSignIn via CocoaPods (configured in shared/build.gradle.kts cocoapods block).
 - Ensure `GoogleService-Info.plist` is present in `iosApp/iosApp/` and your URL scheme (REVERSED_CLIENT_ID) is set in `Info.plist`.
+- Google Sign-In currently falls back to Android only (the iOS launcher returns `null` until a native integration is added).
+
+### iOS Firebase frameworks
+
+GitLive’s Firebase KMP bindings do **not** bundle the native Firebase Apple binaries. When linking the iOS targets (including tests) make sure the following pods or SPM packages are available to Xcode:
+
+```kotlin
+cocoapods {
+    pod("FirebaseCore")
+    pod("FirebaseAuth")
+    pod("FirebaseFirestore")
+    pod("FirebaseStorage")
+    pod("FirebaseCrashlytics")
+}
+```
+
+Without them the linker will fail with `framework 'FirebaseCore' not found` when Gradle builds the Kotlin/Native test executables.
+
+Expose the directory containing the built xcframeworks to Gradle at build time:
+
+```bash
+./gradlew :shared:check -Pfirebase.ios.frameworks.dir="/path/to/FirebaseXCFrameworks"
+```
+
+Point it at the folder that contains `FirebaseCore.xcframework`, `FirebaseAuth.xcframework`, etc. (If you use SwiftPM, Xcode caches them under `~/Library/Developer/Xcode/DerivedData/.../SourcePackages/artifacts`).
 
 Firestore rules
 - Per-user access is required or Firestore will reject writes (PERMISSION_DENIED). Example rules:
@@ -88,11 +110,11 @@ Minimal CI steps you can copy into your pipeline:
 
 - Android (GitHub Actions job snippet)
 ```
-    - name: Set up JDK 17
+    - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
-        distribution: temurin
-        java-version: '17'
+        distribution: /Users/eduardosantos/Library/Java/JavaVirtualMachines/jbr-21.0.8
+        java-version: '21'
     - name: Build Debug APK
       run: ./gradlew :app:assembleDebug --stacktrace
     - name: Spotless Check (format enforcement)
@@ -101,17 +123,15 @@ Minimal CI steps you can copy into your pipeline:
       run: ./gradlew verifyL10n --stacktrace
 ```
 
-- iOS (macOS runner) – CocoaPods + KMP
+- iOS (macOS runner) – SwiftPM + ComposeApp framework
 ```
-    - name: Set up JDK 17
+    - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
-        distribution: temurin
-        java-version: '17'
-    - name: Bootstrap iOS (Pods + KMP framework)
-      run: |
-        chmod +x scripts/ios_bootstrap.sh
-        ./scripts/ios_bootstrap.sh
+        distribution: /Users/eduardosantos/Library/Java/JavaVirtualMachines/jbr-21.0.8
+        java-version: '21'
+    - name: Build Compose framework and run xcodebuild
+      run: ./scripts/rebuild_ios.sh
     - name: Spotless Check (format enforcement)
       run: ./gradlew spotlessCheck --stacktrace
     - name: Verify Localization
@@ -129,69 +149,57 @@ Minimal CI steps you can copy into your pipeline:
   - CI runs `spotlessCheck` as part of the `ci` task.
 
 ## Android Previews
-- Android previews need a strings provider. Use the helper wrapper:
-  - `PreviewLocalized { /* your composable */ }`
-  - See: `shared/src/androidMain/kotlin/com/edufelip/shared/ui/preview/PreviewWrappers.kt`
+- Android previews need the shared theme wrapper. Use:
+  - `DevicePreviewContainer { /* your composable */ }`
+  - Optional multi-device annotation: `@DevicePreviews`
+  - Source: `composeApp/src/commonMain/kotlin/com/edufelip/shared/ui/preview/PreviewScaffold.kt`
 
-## Navigation Helpers (shared UI)
+## Navigation Helpers (Compose UI)
 - In-memory navigation for the shared UI uses a simple back stack of `AppRoutes`.
-- Reusable helpers live in `shared/src/commonMain/kotlin/com/edufelip/shared/ui/nav/BackStackHelpers.kt`:
+- Reusable helpers live in `composeApp/src/commonMain/kotlin/com/edufelip/shared/ui/nav/BackStackHelpers.kt`:
   - `backStack.navigate(AppRoutes.SomeRoute)` – push (singleTop by default)
   - `backStack.goBack()` – pop if possible, returns `true` if popped
   - `backStack.popToRoot()` – clear to root
   - Prefer these over direct `add/remove` to keep behavior consistent.
 
-## Android DI (Hilt + SQLDelight)
+## Compose UI Structure
+- Compose UI follows an atomic hierarchy under `composeApp/src/commonMain/kotlin/com/edufelip/shared/ui/components/`:
+  - `atoms/` for foundational controls (buttons, indicators, small visuals).
+  - `molecules/` for small reusable clusters (e.g., note rows, folder cards).
+  - `organisms/` for larger connected widgets, layouts, and empty states.
+- Feature-specific surfaces live in `composeApp/src/commonMain/kotlin/com/edufelip/shared/ui/features/<feature>/` with nested folders such as `screens/`, `components/`, and `dialogs/`.
+- Every reusable component and screen owns its own `@Preview`; platform-specific preview providers mirror the same feature structure under `composeApp/src/{androidMain,iosMain}/kotlin/com/edufelip/shared/ui/features/`.
+- When creating new UI, start with an atom or molecule in `ui/components`, compose them into an organism if needed, and keep feature wiring inside `ui/features/.../screens`.
+
+## Dependency Injection (Koin + SQLDelight)
 
 Architecture (Clean): UI → ViewModel → UseCases → Repository → Data Source
 
-- UI (shared Compose in `shared/ui`) now consumes a platform ViewModel via a shared interface `com.edufelip.shared.presentation.NoteUiViewModel`.
-- ViewModel (Android: `KmpNoteViewModel`) depends on `NoteUseCases`.
-- UseCases depend on the domain `NoteRepository`.
-- Data layer (`SqlDelightNoteRepository`) implements the domain repository and talks to SQLDelight.
+- UI (Compose Multiplatform in `composeApp`) consumes the shared `NoteUiViewModel` interface.
+- `DefaultNoteUiViewModel` lives in `composeApp` and depends only on `NoteUseCases`.
+- `NoteUseCases` depend on the domain `NoteRepository` (implemented by `SqlDelightNoteRepository`).
+- All of the above are registered inside the Koin modules under `composeApp/src/commonMain/kotlin/com/edufelip/shared/di/`.
 
-The Android app injects `NoteUseCases` and exposes `KmpNoteViewModel` to the shared UI, keeping the layering intact.
+Each platform contributes a `platformModule()` implementation:
 
-Authentication on Android uses FirebaseAuth and Google Identity Services:
-- Credential Manager + Google ID retrieves an ID token which is exchanged with FirebaseAuth.
+- Android installs `AndroidSettings`, the SQLDelight driver, and the repository, then starts Koin from `ItemApplication` using `androidContext`.
+- iOS registers `IosSettings`, the native SQLDelight driver, and the repository when `MainViewController` launches.
 
-- Provider: see `app/src/main/java/com/edufelip/amazing_note/di/AppModule.kt`
-- Usage example in an Activity:
+Whichever shell needs a dependency (Android Activity, iOS controller, previews) simply grabs it from `getSharedKoin()` and hands it to `AmazingNoteApp`. No platform-specific ViewModel wrapper is required any longer.
 
-```kotlin
-@AndroidEntryPoint
-class SomeActivity : ComponentActivity() {
-    // Android ViewModel exposed to shared UI
-    private val vm: KmpNoteViewModel by viewModels()
-
-    setContent {
-        ProvideAndroidStrings {
-            AmazingNoteApp(
-                viewModel = vm,
-                // FirebaseAuth service is provided in MainActivity
-                onRequestGoogleSignIn = { /* delegated to MainActivity */ }
-            )
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent { /* see above */ }
-    }
-}
-```
+Authentication on Android still uses FirebaseAuth + Google Identity Services. Credential Manager retrieves an ID token which is exchanged with FirebaseAuth; `MainActivity` wires that into the shared UI alongside the `NoteUiViewModel` pulled from Koin.
 
 MainActivity follows this pattern and is the app launcher.
 
 ## Material You & UX
 - Dynamic color-aware theme on Android and iOS.
 - Section labels grouped by date (Today, This week, This month, Earlier) – labels scroll with content (not sticky).
-- Search + priority FilterChips (All/High/Medium/Low).
+- Search bar anchored directly above the notes feed.
 - Toggle between Created vs. Updated for grouping and note timestamps.
 - Persisted UI state:
   - Dark theme toggle
-  - Priority filter selection
   - Date mode (Created vs. Updated)
+- Note editor now highlights tapped images, deletes them on any key press (including backspace when the caret sits after an image), renames the CTA to “Add Image,” and exposes centered undo/redo controls backed by a 20-step stack.
 
 Delete/Restore
 - Swipe gestures were removed to avoid accidental actions.
@@ -217,11 +225,6 @@ Usage:
 New groups and relative time strings added for headers and time labels. If you localize iOS, add keys:
 - `today`, `this_week`, `this_month`, `earlier`
 - `updated`, `created`, `updated_just_now`, `updated_minutes_ago`, `updated_hours_ago`, `updated_days_ago`, `created_just_now`, `created_minutes_ago`, `created_hours_ago`, `created_days_ago`
-
-## Enum String Serialization
-- Enums that need stable string representations implement `shared/util/StringEnum.kt`.
-- Example: `Priority` overrides `toString()` to return `high|medium|low` and exposes `Priority.fromString("high")` for parsing.
-- Use `enum.toString()` for persistence and `EnumType.fromString(value)` when reading back to avoid hardcoded strings scattered across the codebase.
 
 ## Layouts
 <br>
@@ -265,17 +268,17 @@ Architecture Overview
 
 ```mermaid
 flowchart LR
-  subgraph UI[Compose UI (shared)]
+  subgraph UI [Compose UI Shared]
     A[Home/List/Detail/Trash]
   end
-  VM[NoteUiViewModel (Android: KmpNoteViewModel)]
+  VM[NoteUiViewModel - shared via Koin]
   UC[NoteUseCases]
   REP[NoteRepository]
   subgraph Local[Local Persistence]
-    SQL[SQLDelight NoteDatabase\n(note table)]
+    SQL[SQLDelight NoteDatabase\n - note table]
   end
   subgraph Cloud[Cloud]
-    FS[Firestore\nusers/{uid}/notes/{id}]
+    FS[Firestore\nusers/uid/notes/id]
   end
   SYNC[NotesSyncManager]
 
@@ -319,6 +322,8 @@ sequenceDiagram
   SM-->>UI: SyncCompleted
 ```
 
+> **Offline-first:** When no Firebase user is signed in we skip `syncLocalToRemoteOnly()` and attachment uploads, so edits (and their local image files) stay on-device until the next authenticated save.
+
 Data Model
 
 ```mermaid
@@ -326,7 +331,6 @@ classDiagram
   class Note {
     +Int id
     +String title
-    +Int priority 0|1|2
     +String description
     +Boolean deleted
     +Long createdAt (epoch ms)
@@ -351,7 +355,7 @@ flowchart TD
 ## Data sync and offline
 
 - Local database: SQLDelight (Android: `AndroidSqliteDriver`, iOS: native driver). DB name: `notes.db`.
-- Firestore: `users/{uid}/notes/{id}`; documents contain id, title, description, priority (0/1/2), deleted (bool), createdAt (Timestamp), updatedAt (Timestamp).
+- Firestore: `users/{uid}/notes/{id}`; documents contain id, title, description, deleted (bool), createdAt (Timestamp), updatedAt (Timestamp).
 - Two sync modes used in the app:
   - Two‑way merge: fetches remote, merges into local, and pushes local‑newer to remote (used on login and some flows).
   - Push‑only: uploads only local dirty changes; does not merge from remote (used on insert/update/delete/restore flows). Push‑only preserves `updatedAt` to avoid reordering.
@@ -371,7 +375,3 @@ About SQLDelight query result types
 - Named queries that list columns generate a named result type (e.g., `SelectAll`).
 - To get the generated table row type (`com.edufelip.shared.db.Note`), write `SELECT *`.
 - You can also provide a mapper to return your domain model directly from a query.
-
-QA checklists
-- Full test plan: `docs/QA_TEST_PLAN.md`
-- Quick regression list: `docs/QA_CHECKLIST.md`

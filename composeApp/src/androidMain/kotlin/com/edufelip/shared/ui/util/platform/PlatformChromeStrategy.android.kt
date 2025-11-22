@@ -1,0 +1,52 @@
+package com.edufelip.shared.ui.util.platform
+
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+
+private object AndroidPlatformChromeStrategy : PlatformChromeStrategy {
+    override val defaultShowBottomBar: Boolean = true
+    override val bottomBarHeight: Dp = 72.dp
+    override val contentWindowInsets: WindowInsets = WindowInsets(0)
+
+    override fun Modifier.applyTopBarStatusPadding(): Modifier = statusBarsPadding()
+    override val topBarWindowInsets: WindowInsets = WindowInsets(0)
+
+    override fun topBarContainerColor(defaultColor: Color): Color = defaultColor
+
+    override fun Modifier.applyNavigationBarsPadding(): Modifier = composed {
+        navigationBarsPadding()
+    }
+    override fun Modifier.applyAdditionalContentPadding(topBarVisible: Boolean): Modifier = this
+
+    @Composable
+    override fun navigationBarBottomInset(): Dp {
+        val density = LocalDensity.current
+        val px = WindowInsets.navigationBars.getBottom(density)
+        return (px / density.density).dp
+    }
+
+    override fun calculateBottomPadding(
+        isBottomBarEnabled: Boolean,
+        bottomBarTargetVisible: Boolean,
+        safeAreaPadding: PaddingValues,
+        bottomBarHeight: Dp,
+    ): Dp = if (isBottomBarEnabled && bottomBarTargetVisible) {
+        bottomBarHeight
+    } else {
+        0.dp
+    }
+
+    override val useCupertinoLook: Boolean = false
+}
+
+actual fun platformChromeStrategy(): PlatformChromeStrategy = AndroidPlatformChromeStrategy

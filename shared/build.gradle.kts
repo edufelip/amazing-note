@@ -1,10 +1,13 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.Framework
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.native.cocoapods")
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.compose.multiplatform)
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -12,29 +15,54 @@ kotlin {
     @Suppress("UNUSED_VARIABLE")
     androidTarget()
 
-    // iOS targets
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+    val iosArm64 = iosArm64()
+    val iosSimArm64 = iosSimulatorArm64()
+    val iosX64 = iosX64()
+    val firebaseIosFrameworksDir: String? = project.findProperty("firebase.ios.frameworks.dir") as String?
+    if (firebaseIosFrameworksDir == null) {
+        logger.warn("firebase.ios.frameworks.dir is not set; relying on Xcode toolchain search paths for Firebase frameworks.")
+    }
 
-    cocoapods {
-        version = "1.1.0"
-        summary = "Shared KMP module for Amazing Note"
-        homepage = "https://example.com/amazing-note"
-        ios.deploymentTarget = "14.0"
-        // Firebase Auth for iOS
-        pod("FirebaseAuth")
-        // Firestore for iOS
-        pod("FirebaseFirestore")
-        // Google Sign-In for iOS (used by iosMain Kotlin)
-        pod("GoogleSignIn")
-        // Ensure CocoaPods links sqlite3 when integrating the shared framework
-        // Value is injected verbatim into the podspec, so include quotes/array.
-        extraSpecAttributes["libraries"] = "['sqlite3']"
-        framework {
-            // The name your iOS app will import
-            baseName = "shared"
+    fun KotlinNativeTarget.configureFirebaseLinkerOpts() {
+        binaries.all {
+            linkerOpts(
+                "-framework",
+                "FirebaseCore",
+                "-framework",
+                "FirebaseAuth",
+                "-framework",
+                "FirebaseFirestore",
+                "-framework",
+                "FirebaseStorage",
+                "-framework",
+                "FirebaseCrashlytics",
+            )
+            firebaseIosFrameworksDir?.let { linkerOpts("-F", it) }
+        }
+    }
+
+    listOf(iosArm64, iosSimArm64, iosX64).forEach { t ->
+        t.binaries.framework {
+            baseName = "Shared"
             isStatic = true
+            linkerOpts("-lsqlite3")
+        }
+        t.configureFirebaseLinkerOpts()
+        t.compilations.getByName("main") {
+            cinterops.create("commonCrypto") {
+                defFile(project.file("src/nativeInterop/cinterop/commonCrypto.def"))
+                includeDirs(project.file("src/nativeInterop/cinterop"))
+            }
+        }
+    }
+
+    tasks.register("printFrameworkPaths") {
+        doLast {
+            kotlin.targets.withType(KotlinNativeTarget::class.java).configureEach {
+                binaries.withType(Framework::class.java).configureEach {
+                    println("${target.name}:$buildType:${outputFile.absolutePath}")
+                }
+            }
         }
     }
 
@@ -43,41 +71,34 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.coroutines.core)
                 implementation(compose.runtime)
-                implementation(compose.foundation)
-                implementation(compose.material3)
                 implementation(compose.ui)
-                // Compose Multiplatform Resources
-                implementation(compose.components.resources)
-                // Coil 3 multiplatform
-                implementation(libs.coil3.compose)
-                implementation(libs.coil3.network.ktor3)
-                implementation(compose.materialIconsExtended)
                 implementation(libs.sqldelight.runtime)
                 implementation(libs.sqldelight.coroutines)
+                implementation(libs.kotlinx.serialization.json)
+                implementation(libs.gitlive.firestore)
+                implementation(libs.gitlive.auth)
+                implementation(libs.gitlive.storage)
+                implementation(libs.gitlive.crashlytics)
             }
         }
         commonTest {
             dependencies {
                 implementation(kotlin("test"))
+                implementation(libs.kotlin.coroutines.test)
             }
         }
         androidMain {
             dependencies {
-                implementation(libs.sqldelight.android.driver)
-                implementation(compose.preview)
-                implementation(compose.uiTooling)
-                implementation(compose.components.resources)
-                implementation(libs.activity.compose)
-                implementation(libs.ktor.client.okhttp)
                 implementation(libs.firebase.auth.ktx)
-                implementation(libs.firebase.firestore.ktx)
+                implementation(libs.firebase.common.ktx)
+                implementation(libs.firebase.crashlytics)
+                implementation(libs.sqldelight.android.driver)
+                implementation(libs.android.security.crypto)
             }
         }
         iosMain {
             dependencies {
                 implementation(libs.sqldelight.native.driver)
-                implementation(libs.ktor.client.darwin)
-                implementation(compose.components.resources)
             }
         }
     }
@@ -90,33 +111,6 @@ kotlin {
                 }
             }
         }
-    }
-}
-
-compose {
-    resources {
-        packageOfResClass = "com.edufelip.shared.resources"
-    }
-}
-
-// Ensure compose resource accessors are generated before Kotlin compilation for all targets
-tasks
-    .matching { it.name.startsWith("compile") && it.name.contains("Kotlin") && it.project.path == ":shared" }
-    .configureEach {
-        dependsOn(tasks.named("generateComposeResClass"))
-    }
-
-// Ensure Android target compiles after common metadata so generated accessors are available
-tasks
-    .matching { it.name == "compileDebugKotlinAndroid" || it.name == "compileReleaseKotlinAndroid" }
-    .configureEach {
-        dependsOn(tasks.named("compileKotlinMetadata"))
-    }
-
-// Ensure all Kotlin/Native iOS binaries link with SQLite3
-kotlin.targets.withType(org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget::class.java).configureEach {
-    binaries.all {
-        linkerOpts("-lsqlite3")
     }
 }
 

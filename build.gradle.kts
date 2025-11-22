@@ -1,17 +1,29 @@
 plugins {
     alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
     alias(libs.plugins.kotlin.android) apply false
-    alias(libs.plugins.kotlin.kapt) apply false
     alias(libs.plugins.kotlin.parcelize) apply false
-    alias(libs.plugins.hilt.android) apply false
-    alias(libs.plugins.ksp) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.compose.multiplatform) apply false
     alias(libs.plugins.sqldelight) apply false
     alias(libs.plugins.google.services) apply false
-    id("com.diffplug.spotless") version "6.25.0"
+    alias(libs.plugins.git.versioner)
+    alias(libs.plugins.spotless)
 }
+
+versioner {
+    startFrom {
+        major = 2
+        minor = 0
+        patch = 0
+    }
+    tag {
+        prefix = "v"
+    }
+}
+
+versioner.apply()
 
 // Code formatting & import optimization (approx. Android Studio Cmd+Opt+L / Ctrl+Alt+O)
 spotless {

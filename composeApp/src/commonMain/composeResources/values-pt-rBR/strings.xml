@@ -1,0 +1,189 @@
+<resources>
+    <!-- Navegação -->
+    <string name="your_notes">Suas notas</string>
+    <string name="trash">Lixeira</string>
+    <string name="trash_count">Lixeira (%1$d)</string>
+    <string name="privacy_policy">Política de Privacidade</string>
+    <string name="sync_now">Sincronizar agora</string>
+
+    <!-- Autenticação - Geral -->
+    <string name="login">Entrar</string>
+    <string name="logout">Sair</string>
+    <string name="google_sign_in">Entrar com o Google</string>
+    <string name="continue_with_google">Continuar com o Google</string>
+    <string name="login_title">Entre na sua conta</string>
+    <string name="name">Nome</string>
+    <string name="email">E-mail</string>
+    <string name="password">Senha</string>
+    <string name="forgot_password">Esqueceu a senha?</string>
+    <string name="forgot_password_description">Digite seu e-mail para receber um link de redefinição.</string>
+    <string name="forgot_password_send_email">Enviar e-mail de redefinição</string>
+    <string name="sign_up">Criar conta</string>
+    <string name="reset_email_sent">E-mail de redefinição enviado</string>
+    <string name="sign_up_success">Conta criada com sucesso</string>
+    <string name="sign_out_success">Sessão encerrada</string>
+    <string name="login_success">Login realizado</string>
+    <string name="login_error_invalid_credentials">Verifique se e-mail e senha estão corretos.</string>
+    <string name="google_sign_in_canceled">Login com Google cancelado</string>
+    <string name="logout_canceled">Saída cancelada</string>
+    <string name="welcome_user">Bem-vindo, %1$s</string>
+    <string name="guest">Convidado</string>
+    <string name="auth_generic_validation_error">Verifique suas credenciais e tente novamente.</string>
+    <string name="auth_network_error">Verifique sua conexão com a internet e tente novamente.</string>
+    <string name="name_required">O nome é obrigatório.</string>
+    <string name="email_required">E-mail é obrigatório.</string>
+    <string name="email_invalid_format">Informe um e-mail válido.</string>
+    <string name="password_required">Senha é obrigatória.</string>
+    <string name="forgot_password_invalid_email">Informe um e-mail válido para redefinir sua senha.</string>
+    <string name="forgot_password_try_again">Não foi possível enviar o e-mail. Tente novamente em alguns minutos.</string>
+    <string name="forgot_password_success_title">Verifique sua caixa de entrada</string>
+    <string name="forgot_password_success_body">Enviamos as instruções de redefinição para %1$s.</string>
+    <string name="forgot_password_success_ok">OK</string>
+    <string name="login_rate_limit">Muitas tentativas. Tente novamente em %1$d segundos.</string>
+
+    <!-- Autenticação - Tela de cadastro -->
+    <string name="sign_up_title">Crie sua conta</string>
+    <string name="confirm_password">Confirmar senha</string>
+    <string name="password_requirements">Mín. 8 caracteres, maiúscula, minúscula, dígito, símbolo</string>
+    <string name="passwords_do_not_match">As senhas não coincidem</string>
+    <string name="cd_hide_password">Ocultar senha</string>
+    <string name="cd_show_password">Mostrar senha</string>
+
+    <!-- Autenticação - Diálogos de saída -->
+    <string name="logout_confirm_title">Confirmar saída</string>
+    <string name="logout_confirm_message">Tem certeza de que deseja sair?</string>
+    <string name="yes">Sim</string>
+    <string name="no">Não</string>
+    <string name="signing_out">Saindo</string>
+
+    <!-- Notas - Lista e Filtros -->
+    <string name="order_by">Ordenar por</string>
+    <string name="filters">Filtros</string>
+    <string name="search">Procurar</string>
+
+    <!-- Notas - Campos -->
+    <string name="title">Título</string>
+    <string name="description">Corpo</string>
+    <string name="note_discard_title">Descartar nota?</string>
+    <string name="note_discard_message">Você tem alterações não salvas. Se sair agora, elas serão perdidas.</string>
+    <string name="note_discard_confirm">Descartar</string>
+    <string name="attachment_uploading">Enviando %1$s… %2$d%%</string>
+    <string name="attachment_upload_failed">Falha ao enviar o arquivo.</string>
+    <string name="attachment_upload_failed_with_detail">Falha ao enviar o arquivo: %1$s</string>
+    <string name="attachment_generic_name">arquivo</string>
+    <string name="attachments_label">Anexos</string>
+    <string name="editor_add_image">Adicionar imagem</string>
+    <string name="editor_copy_image">Copiar imagem</string>
+    <string name="editor_cut_image">Recortar imagem</string>
+    <string name="editor_paste_image">Colar imagem</string>
+
+    <!-- Notas - Estados vazios -->
+    <string name="empty_notes_greeting">Bom dia</string>
+    <string name="empty_notes_subtitle">Pronto para capturar um pensamento?</string>
+    <string name="empty_notes_title">Sem notas ainda</string>
+    <string name="empty_notes_hint">Toque no botão + para criar sua primeira nota</string>
+    <string name="notes_empty_unlock_label">Desbloqueie a 1ª nota</string>
+    <string name="notes_empty_action">Criar nota</string>
+    <string name="empty_trash_title">A lixeira está vazia</string>
+    <string name="empty_trash_hint">Notas excluídas aparecerão aqui</string>
+    <string name="empty_trash_description">Notas na lixeira são apagadas permanentemente após 7 dias.</string>
+    <string name="select_a_note_to_start">Selecione uma nota para começar</string>
+    <string name="trash_deleted_today">Excluída hoje</string>
+    <string name="trash_deleted_yesterday">Excluída há 1 dia</string>
+    <string name="trash_deleted_days_ago">Excluída há %1$d dias</string>
+    <string name="trash_recover_selected">Recuperar selecionadas (%1$d)</string>
+    <string name="trash_empty_action">Esvaziar lixeira</string>
+    <string name="no_notes_match_search">Nenhuma nota corresponde à sua pesquisa</string>
+
+    <!-- Tempo e Atividade -->
+    <string name="today">Hoje</string>
+    <string name="this_week">Esta semana</string>
+    <string name="this_month">Este mês</string>
+    <string name="earlier">Anterior</string>
+    <string name="updated">Atualizado</string>
+    <string name="created">Criado</string>
+    <string name="updated_just_now">Atualizado agora</string>
+    <string name="updated_minutes_ago">Atualizado há %1$d minutos</string>
+    <string name="updated_hours_ago">Atualizado há %1$d horas</string>
+    <string name="updated_days_ago">Atualizado há %1$d dias</string>
+    <string name="created_just_now">Criado agora</string>
+    <string name="created_minutes_ago">Criado há %1$d minutos</string>
+    <string name="created_hours_ago">Criado há %1$d horas</string>
+    <string name="created_days_ago">Criado há %1$d dias</string>
+
+    <!-- Descrições de conteúdo (a11y) -->
+    <string name="cd_open_drawer">Abrir menu de navegação</string>
+    <string name="cd_add">Adicionar</string>
+    <string name="cd_back">Voltar</string>
+    <string name="cd_save">Salvar</string>
+    <string name="cd_delete">Excluir</string>
+    <string name="cd_undo">Desfazer</string>
+    <string name="cd_redo">Refazer</string>
+    <string name="cd_more">Mais opções</string>
+    <string name="cd_restore">Restaurar</string>
+    <string name="cd_search">Pesquisar</string>
+    <string name="cd_clear_search">Limpar pesquisa</string>
+    <string name="cd_toggle_dark_theme">Alternar tema escuro</string>
+
+    <!-- Erros e Validação -->
+    <string name="error_title_required">Título é obrigatório</string>
+    <string name="error_description_required">Descrição é obrigatória</string>
+    <string name="error_title_too_long">Título muito longo (máx. %1$d)</string>
+    <string name="error_description_too_long">Descrição muito longa (máx. %1$d)</string>
+
+    <!-- Pastas e navegação inferior -->
+    <string name="bottom_notes">Notas</string>
+    <string name="bottom_folders">Pastas</string>
+    <string name="bottom_settings">Configurações</string>
+    <string name="new_folder">Nova pasta</string>
+    <string name="rename_folder">Renomear pasta</string>
+    <string name="delete_folder">Excluir pasta</string>
+    <string name="delete_folder_message">As notas serão movidas para Sem pasta.</string>
+    <string name="folder_options_rename">Renomear</string>
+    <string name="folder_options_delete">Excluir</string>
+    <string name="folder_name">Nome da pasta</string>
+    <string name="folders_empty_title">Missão pela organização!</string>
+    <string name="folders_empty_hint">Sua prateleira de troféus espera - crie a sua primeira pasta para desbloquear uma conquista de organização.</string>
+    <string name="folders_empty_unlock_label">Desbloqueie a 1ª pasta</string>
+    <string name="folders_header_title">Pastas</string>
+    <string name="folders_header_subtitle">Organize suas notas em pastas.</string>
+    <string name="folders_view_all">Ver tudo</string>
+    <string name="home_new_folder">Nova pasta</string>
+    <string name="folder_note_count_one">1 nota</string>
+    <string name="folder_note_count_other">%1$d notas</string>
+    <string name="unassigned_subtitle">Notas sem pasta</string>
+    <string name="folder_detail_empty_title">Ainda sem notas</string>
+    <string name="folder_detail_empty_hint">Adicione notas a esta pasta para manter tudo organizado.</string>
+    <string name="folder_add_note">Adicionar nota</string>
+    <string name="no_folder_label">Sem pasta</string>
+    <string name="folder_field_label">Pasta</string>
+    <string name="unassigned_notes">Sem pasta</string>
+
+    <!-- Configurações -->
+    <string name="settings_header">Configurações</string>
+    <string name="settings_review_reminder_title">Data do lembrete de revisão</string>
+    <string name="personalize_title">Personalize suas notas</string>
+    <string name="personalize_subtitle">Deixe o app com a sua cara.</string>
+    <string name="welcome_message">Entre para sincronizar em todos os dispositivos.</string>
+    <string name="appearance_section">Aparência</string>
+    <string name="theme_option">Modo escuro</string>
+    <string name="theme_subtitle">Alterne entre modo claro e escuro.</string>
+    <string name="account_section">Conta</string>
+    <string name="management_section">Atalhos</string>
+    <string name="trash_subtitle">Notas excluídas recentemente</string>
+    <string name="app_version_label">Versão do app</string>
+
+    <!-- Ações -->
+    <string name="restore">Restaurar</string>
+    <string name="dialog_ok">OK</string>
+    <string name="dialog_cancel">Cancelar</string>
+
+    <!-- Prévia do sistema de design -->
+    <string name="design_typography_title">Tipografia</string>
+    <string name="design_display_title">Destaque / Título</string>
+    <string name="design_display_description">O corpo do texto ilustra o estilo base usado em todo o app.</string>
+    <string name="design_swatches">Paleta</string>
+    <string name="design_swatch_accent">Acento</string>
+    <string name="design_swatch_surface">Superfície</string>
+    <string name="design_swatch_muted">Suave</string>
+</resources>

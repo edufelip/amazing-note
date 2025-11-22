@@ -8,18 +8,88 @@ configs:
 settings:
   IPHONEOS_DEPLOYMENT_TARGET: 14.0
   SWIFT_VERSION: 5.0
+packages:
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    from: 12.4.0
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    from: 9.0.0
 targets:
   iosApp:
     type: application
     platform: iOS
-    deploymentTarget: "14.0"
+    deploymentTarget: "15.0"
     sources:
       - path: iosApp
         excludes:
           - "**/*.plist"
+      - path: iosApp/GoogleService-Info.plist
+        type: file
+        buildPhase: resources
     settings:
       INFOPLIST_FILE: iosApp/Info.plist
       PRODUCT_BUNDLE_IDENTIFIER: com.edufelip.amazingnote.iosApp
+      FRAMEWORK_SEARCH_PATHS:
+        - "$(inherited)"
+        - "$(CONFIGURATION_BUILD_DIR)"
+      FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]:
+        - "$(inherited)"
+        - "$(CONFIGURATION_BUILD_DIR)"
+        - "$(SRCROOT)/Frameworks/$(CONFIGURATION)-iphonesimulator"
+      FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]:
+        - "$(inherited)"
+        - "$(CONFIGURATION_BUILD_DIR)"
+        - "$(SRCROOT)/Frameworks/$(CONFIGURATION)-iphoneos"
+      EXCLUDED_ARCHS[sdk=iphonesimulator*]: x86_64
+      OTHER_LDFLAGS:
+        - "$(inherited)"
+        - "-framework"
+        - "ComposeApp"
+    resources: []
+    dependencies:
+      - package: Firebase
+        product: FirebaseAuth
+      - package: Firebase
+        product: FirebaseFirestore
+      - package: Firebase
+        product: FirebaseStorage
+      - package: Firebase
+        product: FirebaseCrashlytics
+      - package: GoogleSignIn
+        product: GoogleSignIn
+      - sdk: libsqlite3.tbd
+    postbuildScripts:
+      - name: Crashlytics dSYM Upload
+        shellPath: /bin/sh
+        basedOnDependencyAnalysis: false
+        script: |
+          set -euo pipefail
+
+          if [[ "${CONFIGURATION}" == "Debug" ]]; then
+            echo "Crashlytics dSYM upload skipped for Debug configuration."
+            exit 0
+          fi
+
+          GOOGLE_SERVICE_INFO_PLIST="${SRCROOT}/iosApp/GoogleService-Info.plist"
+
+          if [[ ! -f "${GOOGLE_SERVICE_INFO_PLIST}" ]]; then
+            echo "warning: GoogleService-Info.plist not found at ${GOOGLE_SERVICE_INFO_PLIST}. Skipping Crashlytics upload."
+            exit 0
+          fi
+
+          if [[ -z "${DWARF_DSYM_FOLDER_PATH:-}" || -z "${DWARF_DSYM_FILE_NAME:-}" ]]; then
+            echo "warning: dSYM information not available. Skipping Crashlytics upload."
+            exit 0
+          fi
+
+          "${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run" \
+            -gsp "${GOOGLE_SERVICE_INFO_PLIST}" \
+            -d "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}"
+        inputFiles:
+          - "$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)"
+          - "$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)/Contents/Resources/DWARF/$(PRODUCT_NAME)"
+          - "$(SRCROOT)/iosApp/GoogleService-Info.plist"
     scheme:
       testTargets: []
       gatherCoverageData: false

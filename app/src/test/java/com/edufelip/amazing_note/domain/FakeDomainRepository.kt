@@ -1,9 +1,12 @@
 package com.edufelip.amazing_note.domain
 
+import com.edufelip.shared.domain.model.Folder
+import com.edufelip.shared.domain.model.Note
+import com.edufelip.shared.domain.model.NoteAttachment
+import com.edufelip.shared.domain.model.NoteContent
+import com.edufelip.shared.domain.model.NoteTextSpan
+import com.edufelip.shared.domain.model.generateStableNoteId
 import com.edufelip.shared.domain.repository.NoteRepository
-import com.edufelip.shared.model.Folder
-import com.edufelip.shared.model.Note
-import com.edufelip.shared.model.Priority
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -24,30 +27,57 @@ class FakeDomainRepository : NoteRepository {
 
     override fun folders(): Flow<List<Folder>> = folderState
 
-    override suspend fun insert(title: String, priority: Priority, description: String, folderId: Long?) {
+    override suspend fun insert(
+        title: String,
+        description: String,
+        folderId: Long?,
+        spans: List<NoteTextSpan>,
+        attachments: List<NoteAttachment>,
+        content: NoteContent,
+        stableId: String?,
+    ) {
         val nextId = (notes.maxOfOrNull { it.id } ?: 0) + 1
         val now = System.currentTimeMillis()
-        notes += Note(nextId, title, priority, description, false, createdAt = now, updatedAt = now, folderId = folderId)
+        val finalContent = if (content.blocks.isEmpty()) NoteContent() else content
+        val resolvedStableId = stableId ?: generateStableNoteId()
+        notes += Note(
+            id = nextId,
+            stableId = resolvedStableId,
+            title = title,
+            description = description,
+            deleted = false,
+            createdAt = now,
+            updatedAt = now,
+            folderId = folderId,
+            descriptionSpans = spans,
+            attachments = attachments,
+            content = finalContent,
+        )
         state.value = notes.toList()
     }
 
     override suspend fun update(
         id: Int,
         title: String,
-        priority: Priority,
         description: String,
         deleted: Boolean,
         folderId: Long?,
+        spans: List<NoteTextSpan>,
+        attachments: List<NoteAttachment>,
+        content: NoteContent,
     ) {
         val idx = notes.indexOfFirst { it.id == id }.takeIf { it >= 0 } ?: return
         val now = System.currentTimeMillis()
+        val finalContent = if (content.blocks.isEmpty()) NoteContent() else content
         notes[idx] = notes[idx].copy(
             title = title,
-            priority = priority,
             description = description,
             deleted = deleted,
             updatedAt = now,
             folderId = folderId,
+            descriptionSpans = spans,
+            attachments = attachments,
+            content = finalContent,
         )
         state.value = notes.toList()
     }
