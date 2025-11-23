@@ -87,13 +87,13 @@ private suspend fun persistLocally(
     val effectiveFileName = fileName ?: tempFileUrl.lastPathComponent
     return NoteAttachment(
         id = NSUUID().UUIDString(),
-        downloadUrl = tempFileUrl.absoluteString,
+        downloadUrl = tempFileUrl.absoluteString ?: "",
         thumbnailUrl = null,
         mimeType = mimeType,
         fileName = effectiveFileName,
         width = width,
         height = height,
-        localUri = tempFileUrl.absoluteString,
+        localUri = tempFileUrl.absoluteString ?: "",
     )
 }
 

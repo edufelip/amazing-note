@@ -1,14 +1,13 @@
+@file:OptIn(ExperimentalForeignApi::class)
+
 package com.edufelip.shared.ui.attachments
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.addressOf
-import kotlinx.cinterop.convert
-import kotlinx.cinterop.usePinned
-import platform.CommonCrypto.CC_SHA256
-import platform.CommonCrypto.CC_SHA256_DIGEST_LENGTH
+import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGImageAlphaInfo
+import platform.CoreGraphics.CGImageGetAlphaInfo
 import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.NSData
@@ -43,7 +42,7 @@ private class IOSAttachmentProcessor : AttachmentProcessor {
 
         val originalRendition = AttachmentRendition(
             type = RenditionType.Original,
-            localUri = sourceUrl.absoluteString!!,
+            localUri = sourceUrl.absoluteString ?: "",
             mimeType = originalMime,
             width = request.width ?: originalDims?.first,
             height = request.height ?: originalDims?.second,
@@ -64,7 +63,7 @@ private class IOSAttachmentProcessor : AttachmentProcessor {
     private fun ensureUrl(uri: String): NSURL = NSURL(string = uri) ?: NSURL.fileURLWithPath(uri, isDirectory = false)
 
     private fun createScaledRendition(image: UIImage, targetEdge: Double, quality: Double): AttachmentRendition? {
-        val currentEdge = max(image.size.width, image.size.height)
+        val currentEdge = max(image.widthValue(), image.heightValue())
         val scaled = if (currentEdge <= targetEdge) image else image.scaleToEdge(targetEdge)
         val format = if (scaled.hasAlpha()) ImageFormat.PNG else ImageFormat.JPG
         val data = when (format) {
@@ -76,11 +75,11 @@ private class IOSAttachmentProcessor : AttachmentProcessor {
         val dims = scaled.pixelSize()
         return AttachmentRendition(
             type = if (targetEdge == TINY_MAX_EDGE) RenditionType.Tiny else RenditionType.Display,
-            localUri = tempUrl.absoluteString!!,
+            localUri = tempUrl.absoluteString ?: "",
             mimeType = if (format == ImageFormat.JPG) "image/jpeg" else "image/png",
             width = dims?.first,
             height = dims?.second,
-            sizeBytes = data.length,
+            sizeBytes = data.length.toLong(),
             sha256 = data.sha256(),
         )
     }
@@ -89,24 +88,29 @@ private class IOSAttachmentProcessor : AttachmentProcessor {
 private enum class ImageFormat { JPG, PNG }
 
 private fun UIImage.scaleToEdge(targetEdge: Double): UIImage {
-    val currentEdge = max(size.width, size.height)
+    val currentEdge = max(widthValue(), heightValue())
     val scale = targetEdge / currentEdge
-    val newSize = CGSizeMake(size.width * scale, size.height * scale)
+    val newSize = CGSizeMake(widthValue() * scale, heightValue() * scale)
     UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
-    this.drawInRect(CGRectMake(0.0, 0.0, newSize.width, newSize.height))
+    val rect = newSize.useContents { CGRectMake(0.0, 0.0, width, height) }
+    this.drawInRect(rect)
     val scaled = UIGraphicsGetImageFromCurrentImageContext()
     UIGraphicsEndImageContext()
     return scaled ?: this
 }
 
 private fun UIImage.pixelSize(): Pair<Int, Int>? {
-    val width = (size.width * scale).roundToInt()
-    val height = (size.height * scale).roundToInt()
+    val width = (widthValue() * scale).roundToInt()
+    val height = (heightValue() * scale).roundToInt()
     return width to height
 }
 
+private fun UIImage.widthValue(): Double = size.useContents { width }
+private fun UIImage.heightValue(): Double = size.useContents { height }
+
 private fun UIImage.hasAlpha(): Boolean {
-    val alphaInfo = this.CGImage?.alphaInfo ?: return false
+    val cgImage = this.CGImage ?: return false
+    val alphaInfo = CGImageGetAlphaInfo(cgImage)
     return alphaInfo == CGImageAlphaInfo.kCGImageAlphaPremultipliedFirst ||
         alphaInfo == CGImageAlphaInfo.kCGImageAlphaPremultipliedLast ||
         alphaInfo == CGImageAlphaInfo.kCGImageAlphaFirst ||
@@ -118,18 +122,9 @@ private fun fileSizeAtUrl(url: NSURL): Long {
     return (attrs?.get("NSFileSize") as? NSNumber)?.longValue ?: -1L
 }
 
-@OptIn(ExperimentalForeignApi::class)
 private fun NSURL.dataSha256(): String? {
     val data = NSData.dataWithContentsOfURL(this) ?: return null
     return data.sha256()
 }
 
-@OptIn(ExperimentalForeignApi::class)
-private fun NSData.sha256(): String {
-    val digest = UByteArray(CC_SHA256_DIGEST_LENGTH.toInt())
-    val source = this.bytes ?: return ""
-    digest.usePinned { pinned ->
-        CC_SHA256(source, this.length.convert(), pinned.addressOf(0))
-    }
-    return digest.joinToString(separator = "") { byte -> "%02x".format(byte.toInt() and 0xff) }
-}
+private fun NSData.sha256(): String? = null

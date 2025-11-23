@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+
 package com.edufelip.shared.ui.attachments.platform
 
 import platform.Foundation.NSFileManager

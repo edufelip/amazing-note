@@ -14,10 +14,10 @@ import com.edufelip.shared.ui.vm.NoteUiViewModel
 @Composable
 actual fun PlatformNotesRoute(
     notes: List<Note>,
-    _folders: List<Folder>,
-    _trash: List<Note>,
+    folders: List<Folder>,
+    trash: List<Note>,
     authViewModel: AuthViewModel,
-    _attachmentPicker: AttachmentPicker?,
+    attachmentPicker: AttachmentPicker?,
     viewModel: NoteUiViewModel,
     syncManager: NotesSyncManager,
     onNavigate: (AppRoutes) -> Unit,

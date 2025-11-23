@@ -9,13 +9,20 @@ import kotlinx.cinterop.convert
 import kotlinx.cinterop.interpretObjCPointerOrNull
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
+import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.usePinned
 import kotlinx.cinterop.value
+import platform.CoreFoundation.CFDataCreate
+import platform.CoreFoundation.CFDictionaryCreateMutable
 import platform.CoreFoundation.CFDictionaryRef
+import platform.CoreFoundation.CFDictionarySetValue
+import platform.CoreFoundation.CFMutableDictionaryRef
+import platform.CoreFoundation.CFStringCreateWithCString
 import platform.CoreFoundation.kCFBooleanTrue
-import platform.Foundation.NSCopyingProtocol
+import platform.CoreFoundation.kCFStringEncodingUTF8
+import platform.CoreFoundation.kCFTypeDictionaryKeyCallBacks
+import platform.CoreFoundation.kCFTypeDictionaryValueCallBacks
 import platform.Foundation.NSData
-import platform.Foundation.NSMutableDictionary
 import platform.Foundation.NSString
 import platform.Foundation.NSUserDefaults
 import platform.Foundation.create
@@ -102,22 +109,42 @@ actual class SecureKeyStore actual constructor() {
     private fun baseQuery(
         returnData: Boolean = false,
         value: NSData? = null,
-    ): CFDictionaryRef? {
-        val dictionary = NSMutableDictionary()
-        dictionary.setObject(kSecClassGenericPassword, forKey = kSecClass as NSCopyingProtocol)
-        dictionary.setObject(SERVICE.toNSString(), forKey = kSecAttrService as NSCopyingProtocol)
-        dictionary.setObject(KEY_ALIAS.toNSString(), forKey = kSecAttrAccount as NSCopyingProtocol)
-        dictionary.setObject(kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly, forKey = kSecAttrAccessible as NSCopyingProtocol)
+    ): CFDictionaryRef? = memScoped {
+        val dict: CFMutableDictionaryRef? = CFDictionaryCreateMutable(
+            null,
+            0,
+            kCFTypeDictionaryKeyCallBacks.ptr,
+            kCFTypeDictionaryValueCallBacks.ptr,
+        )
+
+        val service = CFStringCreateWithCString(null, SERVICE, kCFStringEncodingUTF8)
+        val account = CFStringCreateWithCString(null, KEY_ALIAS, kCFStringEncodingUTF8)
+
+        CFDictionarySetValue(dict, kSecClass, kSecClassGenericPassword)
+        CFDictionarySetValue(dict, kSecAttrService, service)
+        CFDictionarySetValue(dict, kSecAttrAccount, account)
+        CFDictionarySetValue(dict, kSecAttrAccessible, kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly)
+
         if (returnData) {
-            dictionary.setObject(kCFBooleanTrue, forKey = kSecReturnData as NSCopyingProtocol)
-            dictionary.setObject(kSecMatchLimitOne, forKey = kSecMatchLimit as NSCopyingProtocol)
+            CFDictionarySetValue(dict, kSecReturnData, kCFBooleanTrue)
+            CFDictionarySetValue(dict, kSecMatchLimit, kSecMatchLimitOne)
         }
         if (value != null) {
-            dictionary.setObject(value, forKey = kSecValueData as NSCopyingProtocol)
+            // Convert NSData to CFDataRef for the keychain API.
+            val cfData = value.toCFData()
+            CFDictionarySetValue(dict, kSecValueData, cfData)
         }
-        return dictionary as CFDictionaryRef
+
+        dict
     }
 }
+
+@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
+private fun NSData.toCFData() = CFDataCreate(
+    null,
+    this.bytes?.reinterpret(),
+    this.length.convert(),
+)
 
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 private fun ByteArray.toNSData(): NSData = usePinned { pinned ->

@@ -1,10 +1,15 @@
+@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+
 package com.edufelip.shared.ui.effects.toast
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import kotlinx.cinterop.useContents
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import platform.CoreGraphics.CGRectGetHeight
+import platform.CoreGraphics.CGRectGetWidth
 import platform.CoreGraphics.CGRectMake
 import platform.UIKit.NSTextAlignmentCenter
 import platform.UIKit.UIApplication
@@ -42,7 +47,12 @@ private class IosToastController : ToastController {
 private fun buildToastLabel(message: String, window: UIWindow): UILabel {
     val horizontalPadding = 32.0
     val height = 48.0
-    val label = UILabel(frame = CGRectMake(horizontalPadding, 0.0, window.frame.size.width - (horizontalPadding * 2), height)).apply {
+    val windowWidth = CGRectGetWidth(window.frame)
+    val windowHeight = CGRectGetHeight(window.frame)
+    val safeBottom = window.safeAreaInsets.useContents { bottom }
+    val yPosition = windowHeight - height - maxOf(24.0, safeBottom + 12.0)
+    val labelFrame = CGRectMake(horizontalPadding, yPosition, windowWidth - (horizontalPadding * 2), height)
+    val label = UILabel(frame = labelFrame).apply {
         text = message
         textAlignment = NSTextAlignmentCenter
         textColor = UIColor.whiteColor
@@ -52,9 +62,6 @@ private fun buildToastLabel(message: String, window: UIWindow): UILabel {
         layer.cornerRadius = 14.0
         clipsToBounds = true
     }
-    val safeBottom = window.safeAreaInsets.bottom
-    val yPosition = window.frame.size.height - height - maxOf(24.0, safeBottom + 12.0)
-    label.frame = CGRectMake(label.frame.origin.x, yPosition, label.frame.size.width, height)
     return label
 }
 
@@ -63,7 +70,7 @@ private fun activeWindow(): UIWindow? {
     val key = application.keyWindow
     if (key != null) return key
     val windows = application.windows
-    return windows?.firstOrNull { it is UIWindow } as? UIWindow
+    return windows.firstOrNull { it is UIWindow } as? UIWindow
 }
 
 private fun ToastDuration.toMillis(): Long = when (this) {

@@ -23,6 +23,7 @@
 		FB1CE39E2EBD26100050A069 /* FirebaseAppDistribution-Beta in Frameworks */ = {isa = PBXBuildFile; productRef = FB1CE39D2EBD26100050A069 /* FirebaseAppDistribution-Beta */; };
 		FB1CE3A02EBD26100050A069 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = FB1CE39F2EBD26100050A069 /* FirebaseCore */; };
 		FB1CE3A22EBD26100050A069 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = FB1CE3A12EBD26100050A069 /* FirebaseCrashlytics */; };
+		FB29B48F2ED3A27C003F04CC /* note_cipher_ios.c in Sources */ = {isa = PBXBuildFile; fileRef = FB29B48D2ED3A27C003F04CC /* note_cipher_ios.c */; };
 		FB613E562EBA80C700CBDFF5 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = FB613E552EBA80C700CBDFF5 /* FirebaseDatabase */; };
 		FBD7CB772EBD1D1300B7209A /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = FBD7CB762EBD1D1300B7209A /* FirebaseAppCheck */; };
 		FBD7CB792EBD1D1300B7209A /* FirebaseAppDistribution-Beta in Frameworks */ = {isa = PBXBuildFile; productRef = FBD7CB782EBD1D1300B7209A /* FirebaseAppDistribution-Beta */; };
@@ -42,6 +43,9 @@
 		A55143988C4C8F291BE72E9A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		BDC2B4ED6760D21408C91A4A /* LiquidRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidRoot.swift; sourceTree = "<group>"; };
 		C678D2A4430FF615DBC7217B /* AppMain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMain.swift; sourceTree = "<group>"; };
+		FB29B48C2ED3A22F003F04CC /* iosApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iosApp-Bridging-Header.h"; sourceTree = "<group>"; };
+		FB29B48D2ED3A27C003F04CC /* note_cipher_ios.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = note_cipher_ios.c; path = ../shared/src/nativeInterop/cinterop/note_cipher_ios.c; sourceTree = SOURCE_ROOT; };
+		FB29B48E2ED3A27C003F04CC /* NoteCipherBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = NoteCipherBridge.h; path = ../shared/src/nativeInterop/cinterop/NoteCipherBridge.h; sourceTree = SOURCE_ROOT; };
 		FB54EE8E2EB2691B007A2F0E /* ComposeApp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ComposeApp.framework; sourceTree = "<group>"; };
 		FB54EE912EB2696A007A2F0E /* ComposeApp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ComposeApp.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -101,10 +105,13 @@
 		38B69C3F79CD97858CF7B609 = {
 			isa = PBXGroup;
 			children = (
+				FB29B48D2ED3A27C003F04CC /* note_cipher_ios.c */,
+				FB29B48E2ED3A27C003F04CC /* NoteCipherBridge.h */,
 				FB54EE922EB2696A007A2F0E /* iphonesimulator */,
 				1DB4B685CAEE8BEFEBBAEF94 /* iosApp */,
 				3666012298E772D226418813 /* Frameworks */,
 				94C98B8B3A2BFC1966447269 /* Products */,
+				FB29B48C2ED3A22F003F04CC /* iosApp-Bridging-Header.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -182,6 +189,11 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					78B53CC79860CBFC2F5543C6 = {
+						LastSwiftMigration = 2600;
+					};
+				};
 			};
 			buildConfigurationList = FF7CA1CA754D017066F1822F /* Build configuration list for PBXProject "iosApp" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -246,6 +258,7 @@
 			files = (
 				FDE52B8D57A097A60A4CF366 /* AppDelegate.swift in Sources */,
 				6F26ACE1E3C90FD234DE7A46 /* AppMain.swift in Sources */,
+				FB29B48F2ED3A27C003F04CC /* note_cipher_ios.c in Sources */,
 				F6407843737A5AC3042BDDF5 /* LiquidRoot.swift in Sources */,
 				88ABACE0259DE83261737B99 /* SceneDelegate.swift in Sources */,
 			);
@@ -377,6 +390,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = L4N9Z3Z82V;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
@@ -405,6 +419,9 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnote.iosApp;
 				SDKROOT = iphoneos;
+				SWIFT_OBJC_BRIDGING_HEADER = "iosApp-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -413,6 +430,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = L4N9Z3Z82V;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
@@ -441,6 +459,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnote.iosApp;
 				SDKROOT = iphoneos;
+				SWIFT_OBJC_BRIDGING_HEADER = "iosApp-Bridging-Header.h";
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
