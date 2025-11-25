@@ -9,18 +9,24 @@ import com.edufelip.shared.ui.util.findTopViewController
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.suspendCancellableCoroutine
+import platform.Foundation.NSCachesDirectory
 import platform.Foundation.NSData
 import platform.Foundation.NSFileManager
+import platform.Foundation.NSLog
+import platform.Foundation.NSSearchPathForDirectoriesInDomains
 import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL
 import platform.Foundation.NSUUID
+import platform.Foundation.NSUserDomainMask
+import platform.UIKit.UIImageJPEGRepresentation
 import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.PHPickerConfiguration
 import platform.PhotosUI.PHPickerFilter
 import platform.PhotosUI.PHPickerResult
 import platform.PhotosUI.PHPickerViewController
 import platform.PhotosUI.PHPickerViewControllerDelegateProtocol
-import platform.UIKit.*
+import platform.UIKit.UIImage
+import platform.UIKit.UIViewController
 import platform.darwin.NSObject
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
@@ -30,6 +36,7 @@ import kotlin.coroutines.resumeWithException
 @Composable
 actual fun rememberAttachmentPicker(): AttachmentPicker? = remember {
     AttachmentPicker { _ ->
+        NSLog("AttachmentPicker: Launching iOS photo picker")
         val pickedData = pickImageFromLibrary() ?: return@AttachmentPicker null
         runCatching {
             persistLocally(
@@ -37,7 +44,8 @@ actual fun rememberAttachmentPicker(): AttachmentPicker? = remember {
                 typeIdentifier = pickedData.typeIdentifier,
                 fileName = pickedData.fileName,
             )
-        }.getOrNull()
+        }.onFailure { NSLog("AttachmentPicker: Persist failed - " + it.toString()) }
+            .getOrNull()
     }
 }
 
@@ -55,10 +63,13 @@ private suspend fun pickImageFromLibrary(): PickedData? = suspendCancellableCoro
     PickerDelegateStore.retain(delegate)
 
     val presenter: UIViewController = findTopViewController() ?: run {
+        NSLog("AttachmentPicker: No presenter found for photo picker")
         PickerDelegateStore.release(delegate)
         cont.resume(null)
         return@suspendCancellableCoroutine
     }
+
+    NSLog("AttachmentPicker: Presenting PHPicker from ${presenter::class}")
 
     dispatch_async(dispatch_get_main_queue()) {
         presenter.presentViewController(viewControllerToPresent = picker, animated = true, completion = null)
@@ -83,17 +94,19 @@ private suspend fun persistLocally(
     val width = dimensions?.first
     val height = dimensions?.second
     val inferredExtension = fileExtension(typeIdentifier)
-    val tempFileUrl = createTemporaryFile(data, inferredExtension)
-    val effectiveFileName = fileName ?: tempFileUrl.lastPathComponent
+    val savedUrl = createPersistentFile(data, inferredExtension)
+    val effectiveFileName = fileName ?: savedUrl.lastPathComponent
+    val absolute = savedUrl.absoluteString ?: ""
+    val normalized = if (absolute.startsWith("file://")) absolute else "file://$absolute"
     return NoteAttachment(
         id = NSUUID().UUIDString(),
-        downloadUrl = tempFileUrl.absoluteString ?: "",
+        downloadUrl = normalized,
         thumbnailUrl = null,
         mimeType = mimeType,
         fileName = effectiveFileName,
         width = width,
         height = height,
-        localUri = tempFileUrl.absoluteString ?: "",
+        localUri = normalized,
     )
 }
 
@@ -113,21 +126,37 @@ private class PickerDelegate(
         }
         val pickerResult = didFinishPicking.firstOrNull() as? PHPickerResult
         if (pickerResult == null) {
+            NSLog("AttachmentPicker: Picker cancelled or empty selection")
             complete(Result.success(null))
             return
         }
         val provider = pickerResult.itemProvider
-        val typeIdentifier = (provider.registeredTypeIdentifiers.firstOrNull() as? String) ?: DEFAULT_TYPE_IDENTIFIER
-        if (!provider.hasItemConformingToTypeIdentifier(typeIdentifier)) {
-            complete(Result.success(null))
-            return
-        }
-        provider.loadDataRepresentationForTypeIdentifier(typeIdentifier) { data, error ->
-            when {
-                error != null -> complete(Result.failure(RuntimeException(error.localizedDescription ?: "Failed to load image data")))
-                data != null -> complete(Result.success(PickedData(data, typeIdentifier, provider.suggestedName)))
-                else -> complete(Result.success(null))
+        val primaryType = (provider.registeredTypeIdentifiers.firstOrNull() as? String) ?: DEFAULT_TYPE_IDENTIFIER
+        val preferredTypes = listOf("public.heic", "public.jpeg", "public.png", primaryType).distinct()
+
+        fun loadFor(typeId: String) {
+            provider.loadDataRepresentationForTypeIdentifier(typeId) { data, error ->
+                when {
+                    error != null -> {
+                        val reason = error.localizedDescription ?: "unknown"
+                        NSLog("AttachmentPicker: Load data failed for " + typeId + ": " + reason)
+                        complete(Result.failure(RuntimeException(error.localizedDescription ?: "Failed to load image data")))
+                    }
+                    data != null -> {
+                        NSLog("AttachmentPicker: Loaded data size=" + data.length + " type=" + typeId)
+                        complete(Result.success(PickedData(data, typeId, provider.suggestedName)))
+                    }
+                    else -> complete(Result.success(null))
+                }
             }
+        }
+
+        val chosenType = preferredTypes.firstOrNull { provider.hasItemConformingToTypeIdentifier(it) }
+        if (chosenType != null) {
+            loadFor(chosenType)
+        } else {
+            NSLog("AttachmentPicker: Provider missing all preferred types")
+            complete(Result.success(null))
         }
     }
 
@@ -161,11 +190,16 @@ private fun fileExtension(typeIdentifier: String): String = when {
     else -> "img"
 }
 
-private fun createTemporaryFile(data: NSData, extension: String): NSURL {
-    val tempDirectory = NSTemporaryDirectory()
+private fun createPersistentFile(data: NSData, extension: String): NSURL {
+    val cachesDir = (NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, true).firstOrNull() as? String)
+    val baseDir = cachesDir ?: NSTemporaryDirectory()
+    val normalizedBase = if (baseDir.endsWith("/")) baseDir else "$baseDir/"
     val fileName = "${NSUUID().UUIDString()}.$extension"
-    val filePath = tempDirectory + fileName
-    NSFileManager.defaultManager.createFileAtPath(filePath, contents = data, attributes = null)
+    val filePath = normalizedBase + fileName
+    val created = NSFileManager.defaultManager.createFileAtPath(filePath, contents = data, attributes = null)
+    if (!created) {
+        NSLog("AttachmentPicker: Failed to create file at " + filePath)
+    }
     return NSURL.fileURLWithPath(filePath, isDirectory = false)
 }
 

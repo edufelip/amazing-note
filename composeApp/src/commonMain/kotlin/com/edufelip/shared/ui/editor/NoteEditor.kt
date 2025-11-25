@@ -3,6 +3,7 @@ package com.edufelip.shared.ui.editor
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -31,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
@@ -48,8 +50,11 @@ import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
 import com.edufelip.shared.domain.model.ImageBlock
 import com.edufelip.shared.domain.model.ImageSyncState
+import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.TextBlock
 import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -58,6 +63,7 @@ fun NoteEditor(
     modifier: Modifier = Modifier,
     placeholder: String = "",
 ) {
+    val tokens = designTokens()
     val contentAwareModifier = modifier
         .noteEditorReceiveContent { uri ->
             val localUri = uri.takeUnless { isRemoteUri(it) }
@@ -75,13 +81,14 @@ fun NoteEditor(
                 if (up == null || up.isConsumed) return@awaitEachGesture
                 state.clearImageSelection()
                 state.focusFirstTextBlock()
+            }
         }
-    }
     val document = state.document
     val firstTextBlockId = document.firstOrNull { it is TextBlock }?.id
     val hasImages = document.any { it is ImageBlock }
     LazyColumn(
-        modifier = contentAwareModifier,
+        modifier = contentAwareModifier.background(color = Color.Transparent)
+            .padding(horizontal = tokens.spacing.sm, vertical = tokens.spacing.md),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         items(
@@ -104,6 +111,25 @@ fun NoteEditor(
                 )
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun NoteEditorPreview() {
+    val content = NoteContent(
+        blocks = listOf(
+            TextBlock(text = "Jot something memorable..."),
+            TextBlock(text = "• Add bullets\n• Paste images\n• Undo/Redo works"),
+        ),
+    )
+    DevicePreviewContainer {
+        val state = rememberNoteEditorState(noteKey = "preview", initialContent = content)
+        NoteEditor(
+            state = state,
+            placeholder = "Start typing",
+            modifier = Modifier.padding(16.dp),
+        )
     }
 }
 
@@ -138,7 +164,22 @@ private fun TextBlockEditor(
     BasicTextField(
         value = value,
         onValueChange = { newValue ->
-            state.consumeSelectedImageBeforeTextInput()
+            val selectedRemoved = state.consumeSelectedImageBeforeTextInput()
+
+            val deletingAtStart =
+                value.selection.start == value.selection.end &&
+                    value.selection.start == 0 &&
+                    newValue.text.length < value.text.length
+
+            if (!selectedRemoved && deletingAtStart) {
+                val imageRemoved = state.removeImageBefore(block.id)
+                if (imageRemoved) {
+                    // keep original text (avoid eating the first character)
+                    state.onTextFieldValueChange(block.id, value)
+                    return@BasicTextField
+                }
+            }
+
             state.onTextFieldValueChange(block.id, newValue)
         },
         textStyle = typography.copy(color = textColor),
@@ -190,7 +231,8 @@ private fun TextBlockEditor(
                     }
                     if (pressedKey == Key.Backspace || pressedKey == Key.Delete) {
                         val selection = value.selection
-                        val collapsedAtStart = selection.start == selection.end && selection.start == 0
+                        val collapsedAtStart =
+                            selection.start == selection.end && selection.start == 0
                         if (collapsedAtStart && state.removeImageBefore(block.id)) {
                             return@onPreviewKeyEvent true
                         }
@@ -232,7 +274,11 @@ private fun ImageBlockView(
     val dragThreshold = with(LocalDensity.current) { 36.dp.toPx() }
     var dragDelta by remember(block.id) { mutableStateOf(0f) }
     var dragging by remember(block.id) { mutableStateOf(false) }
-    var localModel by remember(block.id) { mutableStateOf(block.cachedRemoteUri ?: block.localUri ?: block.thumbnailLocalUri) }
+    var localModel by remember(block.id) {
+        mutableStateOf(
+            block.cachedRemoteUri ?: block.localUri ?: block.thumbnailLocalUri
+        )
+    }
     val remoteCandidates = listOfNotNull(
         block.resolvedDownloadUrl,
         block.resolvedThumbnailUrl,
@@ -311,8 +357,10 @@ private fun KeyEvent.isPasteShortcut(): Boolean = isShortcut(Key.V)
 
 private fun KeyEvent.isUndoShortcut(): Boolean = isShortcut(Key.Z) && !isShiftPressed
 
-private fun KeyEvent.isRedoShortcut(): Boolean = (isShortcut(Key.Z) && isShiftPressed) || isShortcut(Key.Y)
+private fun KeyEvent.isRedoShortcut(): Boolean =
+    (isShortcut(Key.Z) && isShiftPressed) || isShortcut(Key.Y)
 
-private fun KeyEvent.isShortcut(targetKey: Key): Boolean = type == KeyEventType.KeyDown && (isCtrlPressed || isMetaPressed) && key == targetKey
+private fun KeyEvent.isShortcut(targetKey: Key): Boolean =
+    type == KeyEventType.KeyDown && (isCtrlPressed || isMetaPressed) && key == targetKey
 
 private fun isRemoteUri(uri: String): Boolean = uri.startsWith("http", ignoreCase = true)

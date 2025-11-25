@@ -439,16 +439,20 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
     }
 
     private fun ensureTrailingBlankLine() {
-        val lastIndex = blockList.indexOfLast { it is TextBlock }
-        if (lastIndex == -1) return
-        val block = blockList[lastIndex] as TextBlock
-        if (!block.text.endsWith("\n")) {
-            val updated = block.copy(text = block.text + "\n")
-            blockList[lastIndex] = updated
-            refreshTextFieldState()
-            setCaretFrom(Caret(updated.id, updated.text.length))
-            focusedBlockId = updated.id
-            requestFocus(updated.id)
+        val last = blockList.lastOrNull() ?: return
+        when (last) {
+            is TextBlock -> {
+                // Keep text blocks as-is; don't append synthetic blank lines that create phantom caret rows on iOS.
+            }
+            is ImageBlock -> {
+                // Provide a text block after trailing image so the caret has a place to land.
+                val newBlock = TextBlock(text = "")
+                blockList += newBlock
+                refreshTextFieldState()
+                setCaretFrom(Caret(newBlock.id, 0))
+                focusedBlockId = newBlock.id
+                requestFocus(newBlock.id)
+            }
         }
     }
 

@@ -52,28 +52,38 @@ class AmazingNoteAppState internal constructor(
     val stackDepth: Int
         get() = navigationController.stackDepth
 
+    private fun refreshBottomBarVisibility() {
+        isBottomBarVisible = bottomBarTargetVisible
+    }
+
     val topBarVisible: Boolean
         get() = if (isBottomBarEnabled) isBottomBarVisible else navigationController.currentRoute in tabRoutes
 
     fun navigate(route: AppRoutes, singleTop: Boolean = true) {
         navigationController.navigate(route, singleTop)
         reportRoute(navigationController.currentRoute)
+        refreshBottomBarVisibility()
     }
 
     fun popBack(): Boolean {
         val popped = navigationController.popBack()
-        if (popped) reportRoute(navigationController.currentRoute)
+        if (popped) {
+            reportRoute(navigationController.currentRoute)
+            refreshBottomBarVisibility()
+        }
         return popped
     }
 
     fun popToRoot() {
         navigationController.popToRoot()
         reportRoute(navigationController.currentRoute)
+        refreshBottomBarVisibility()
     }
 
     fun setRoot(destination: AppRoutes) {
         navigationController.setRoot(destination)
         reportRoute(navigationController.currentRoute)
+        refreshBottomBarVisibility()
     }
 
     fun toggleTheme(enabled: Boolean? = null) {

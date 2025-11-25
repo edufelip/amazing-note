@@ -6,6 +6,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,13 +18,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,11 +48,8 @@ import com.edufelip.shared.ui.components.organisms.notes.FolderSelectionSection
 import com.edufelip.shared.ui.components.organisms.notes.NoteEditorActionBar
 import com.edufelip.shared.ui.components.organisms.notes.NoteEditorTopBar
 import com.edufelip.shared.ui.designsystem.designTokens
-import com.edufelip.shared.ui.editor.EditorImplementation
 import com.edufelip.shared.ui.editor.NoteEditor
 import com.edufelip.shared.ui.editor.NoteEditorState
-import com.edufelip.shared.ui.editor.SimpleIosNoteEditor
-import com.edufelip.shared.ui.editor.currentEditor
 import com.edufelip.shared.ui.editor.rememberNoteEditorState
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -80,7 +77,6 @@ fun AddNoteScreen(
 ) {
     val tokens = designTokens()
     val listState = rememberLazyListState()
-    val editorImplementation = remember { currentEditor() }
     val imageCount = editorState.content.blocks.count { it is ImageBlock }
     var previousImageCount by remember { mutableStateOf(imageCount) }
     val overlayInteractionSource = remember { MutableInteractionSource() }
@@ -91,118 +87,114 @@ fun AddNoteScreen(
         }
         previousImageCount = imageCount
     }
-    Box(modifier = modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
+    Scaffold {
+        Box(
+            modifier = modifier
+                .padding(top = it.calculateTopPadding())
                 .fillMaxSize()
-                .safeDrawingPadding()
-                .imePadding()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(horizontal = tokens.spacing.lg + tokens.spacing.xs),
         ) {
-            NoteEditorTopBar(
-                onBack = onBack,
-                onSave = onSave,
-                onDelete = onDelete,
-                isSaving = isSaving,
-                onUndo = { editorState.undo() },
-                onRedo = { editorState.redo() },
-                canUndo = editorState.canUndo,
-                canRedo = editorState.canRedo,
-            )
-            LazyColumn(
-                modifier = Modifier.weight(1f, fill = true),
-                state = listState,
-                verticalArrangement = Arrangement.spacedBy(tokens.spacing.xl),
-                contentPadding = PaddingValues(vertical = tokens.spacing.md),
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .imePadding()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(horizontal = tokens.spacing.lg + tokens.spacing.xs),
             ) {
-                item(key = "title") {
-                    NoteTitleField(
-                        titleState = titleState,
-                        onTitleChange = onTitleChange,
-                        error = titleError,
-                    )
-                }
-                item(key = "folder") {
-                    FolderSelectionSection(
-                        folders = folders,
-                        selectedFolderId = selectedFolderId,
-                        onFolderChange = onFolderChange,
-                    )
-                }
-                item(key = "actions") {
-                    NoteEditorActionBar(
-                        onAddImage = onAddImage,
-                        onPaste = { editorState.pasteBlocks() },
-                        onCopy = { editorState.copySelectedBlocks() },
-                        onCut = { editorState.cutSelectedBlocks() },
-                    )
-                }
-                item(key = "editor") {
-                    val editorMinHeight = tokens.spacing.xxl * 10
-                    Surface(
-                        modifier = Modifier
-                            .fillParentMaxHeight()
-                            .fillMaxWidth()
-                            .heightIn(min = editorMinHeight),
-                        shape = RoundedCornerShape(tokens.spacing.lg + tokens.spacing.xs),
-                        tonalElevation = tokens.spacing.xxs / 2,
-                        color = MaterialTheme.colorScheme.surface,
-                    ) {
-                        Column(
+                NoteEditorTopBar(
+                    onBack = onBack,
+                    onSave = onSave,
+                    onDelete = onDelete,
+                    isSaving = isSaving,
+                    onUndo = { editorState.undo() },
+                    onRedo = { editorState.redo() },
+                    canUndo = editorState.canUndo,
+                    canRedo = editorState.canRedo,
+                )
+                LazyColumn(
+                    modifier = Modifier.weight(1f, fill = true),
+                    state = listState,
+                    verticalArrangement = Arrangement.spacedBy(tokens.spacing.sm),
+                    contentPadding = PaddingValues(
+                        top = tokens.spacing.sm,
+                        bottom = tokens.spacing.zero
+                    ),
+                ) {
+                    item(key = "title") {
+                        NoteTitleField(
+                            titleState = titleState,
+                            onTitleChange = onTitleChange,
+                            error = titleError,
+                        )
+                    }
+                    item(key = "folder") {
+                        FolderSelectionSection(
+                            folders = folders,
+                            selectedFolderId = selectedFolderId,
+                            onFolderChange = onFolderChange,
+                        )
+                    }
+                    item(key = "actions") {
+                        NoteEditorActionBar(
+                            onAddImage = onAddImage,
+                            onPaste = { editorState.pasteBlocks() },
+                            onCopy = { editorState.copySelectedBlocks() },
+                            onCut = { editorState.cutSelectedBlocks() },
+                        )
+                    }
+                    item(key = "editor") {
+                        val editorMinHeight = tokens.spacing.xxl * 10
+                        Surface(
                             modifier = Modifier
-                                .padding(tokens.spacing.lg)
-                                .fillMaxSize()
-                                .pointerInput(editorState) {
-                                    detectTapGestures {
-                                        editorState.clearImageSelection()
-                                        editorState.focusFirstTextBlock()
-                                    }
-                                },
+                                .fillParentMaxHeight()
+                                .fillMaxWidth()
+                                .heightIn(min = editorMinHeight),
+                            shape = RoundedCornerShape(tokens.spacing.lg + tokens.spacing.xs),
+                            tonalElevation = tokens.spacing.xxs / 2,
+                            color = MaterialTheme.colorScheme.surface,
                         ) {
-                            when (editorImplementation) {
-                                EditorImplementation.Simple -> {
-                                    SimpleIosNoteEditor(
-                                        editorState = editorState,
-                                        placeholder = stringResource(Res.string.description),
-                                        modifier = Modifier.fillMaxSize(),
+                            Column(
+                                modifier = Modifier
+                                    .padding(tokens.spacing.xs)
+                                    .fillMaxSize()
+                                    .pointerInput(editorState) {
+                                        detectTapGestures {
+                                            editorState.clearImageSelection()
+                                            editorState.focusFirstTextBlock()
+                                        }
+                                    },
+                            ) {
+                                NoteEditor(
+                                    state = editorState,
+                                    placeholder = stringResource(Res.string.description),
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                                if (!contentError.isNullOrBlank()) {
+                                    Spacer(modifier = Modifier.height(tokens.spacing.md))
+                                    Text(
+                                        text = contentError,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.error,
                                     )
                                 }
-
-                                EditorImplementation.Rich -> {
-                            NoteEditor(
-                                state = editorState,
-                                placeholder = stringResource(Res.string.description),
-                                modifier = Modifier.fillMaxSize(),
-                            )
-                        }
-                            }
-                            if (!contentError.isNullOrBlank()) {
-                                Spacer(modifier = Modifier.height(tokens.spacing.md))
-                                Text(
-                                    text = contentError,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.error,
-                                )
                             }
                         }
                     }
                 }
             }
-        }
-        if (showBlockingLoader) {
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.6f))
-                    .clickable(
-                        interactionSource = overlayInteractionSource,
-                        indication = null,
-                        onClick = {},
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                CircularProgressIndicator()
+            if (showBlockingLoader) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.6f))
+                        .clickable(
+                            interactionSource = overlayInteractionSource,
+                            indication = null,
+                            onClick = {},
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator()
+                }
             }
         }
     }
@@ -257,6 +249,7 @@ internal fun AddNoteScreenPreview(
     )
 }
 
-internal expect class AddNoteScreenPreviewProvider() : PreviewParameterProvider<AddNoteScreenPreviewState> {
+internal expect class AddNoteScreenPreviewProvider() :
+    PreviewParameterProvider<AddNoteScreenPreviewState> {
     override val values: Sequence<AddNoteScreenPreviewState>
 }

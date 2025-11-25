@@ -28,6 +28,7 @@ import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun NoteEditorActionBar(
@@ -45,11 +46,7 @@ fun NoteEditorActionBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .horizontalScroll(scrollState)
-            .padding(
-                top = tokens.spacing.sm,
-                bottom = tokens.spacing.xxl,
-            ),
+            .horizontalScroll(scrollState),
         horizontalArrangement = Arrangement.spacedBy(tokens.spacing.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -103,6 +100,7 @@ private fun EditorAssistChip(
     )
 }
 
+@Preview
 @DevicePreviews
 @Composable
 private fun NoteEditorActionBarPreview() {
