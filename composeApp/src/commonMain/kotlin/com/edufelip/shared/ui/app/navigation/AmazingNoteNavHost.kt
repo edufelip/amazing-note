@@ -34,7 +34,6 @@ import com.edufelip.shared.ui.features.trash.routes.TrashRoute
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.util.platform.platformBehavior
-import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.vm.NoteUiViewModel
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalLayoutApi::class)
@@ -50,22 +49,18 @@ fun AmazingNoteNavHost(
 ) {
     val environment = state.environment
     val layoutDirection = LocalLayoutDirection.current
-    val chrome = platformChromeStrategy()
     val platformBehavior = platformBehavior()
     val authUiState by state.authViewModel.uiState.collectWithLifecycle()
     val isUserAuthenticated = authUiState.user != null
 
-    val contentModifier = with(chrome) {
-        Modifier
-            .fillMaxSize()
-            .consumeWindowInsets(padding)
-            .padding(
-                start = padding.startPadding(layoutDirection),
-                top = padding.topPadding(),
-                end = padding.endPadding(layoutDirection),
-            )
-            .applyAdditionalContentPadding(state.topBarVisible)
-    }
+    val contentModifier = Modifier
+        .fillMaxSize()
+        .consumeWindowInsets(padding)
+        .padding(
+            start = padding.startPadding(layoutDirection),
+            top = padding.topPadding(),
+            end = padding.endPadding(layoutDirection),
+        )
 
     @Composable
     fun SceneContent(scene: NavScene) {

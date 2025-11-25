@@ -35,12 +35,5 @@ actual fun PlatformNotesRoute(
             onNavigate(AppRoutes.NoteDetail(note.id, note.folderId))
         },
         onAdd = { onNavigate(AppRoutes.NoteDetail(null, null)) },
-        onDelete = { note ->
-            viewModel.setDeleted(
-                id = note.id,
-                deleted = true,
-                syncAfter = isUserAuthenticated,
-            )
-        },
     )
 }

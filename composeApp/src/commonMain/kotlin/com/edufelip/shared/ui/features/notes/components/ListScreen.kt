@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,7 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.Dp
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
@@ -61,7 +61,6 @@ import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.settings.LocalAppPreferences
-import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
@@ -86,7 +85,6 @@ fun ListScreen(
 ) {
     val appPrefs = LocalAppPreferences.current
     var showFilters by rememberSaveable { mutableStateOf(false) }
-    val chrome = platformChromeStrategy()
     val tokens = designTokens()
 
     @Composable
@@ -99,7 +97,7 @@ fun ListScreen(
         Scaffold(
             modifier = Modifier.fillMaxSize().background(scaffoldContainerColor),
             containerColor = Color.Transparent,
-            contentWindowInsets = chrome.contentWindowInsets,
+            contentWindowInsets = WindowInsets(),
             topBar = if (showTopAppBar) {
                 (
                     {
@@ -121,13 +119,8 @@ fun ListScreen(
             },
             floatingActionButton = {
                 if (showFab && hasAnyNotes) {
-                    val navigationBottom = chrome.navigationBarBottomInset()
-                    val fabBottomPadding = when {
-                        chrome.bottomBarHeight == tokens.spacing.zero -> tokens.spacing.lg
-                        else -> chrome.bottomBarHeight + (navigationBottom * 2)
-                    }
                     FloatingActionButton(
-                        modifier = Modifier.padding(bottom = fabBottomPadding),
+                        modifier = Modifier.padding(bottom = tokens.spacing.xxxl),
                         onClick = onAddClick,
                         containerColor = tokens.colors.accent,
                         contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -140,7 +133,7 @@ fun ListScreen(
                     }
                 }
             },
-        ) { padding ->
+        ) { _ ->
             Box(
                 modifier = Modifier.fillMaxSize(),
             ) {
@@ -329,7 +322,7 @@ fun ListScreen(
                         }
                     }
                     item {
-                        Spacer(modifier = Modifier.height(chrome.bottomBarHeight))
+                        Spacer(modifier = Modifier.height(tokens.spacing.xxxl))
                     }
                 }
             }

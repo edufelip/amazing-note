@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Description
@@ -61,10 +62,6 @@ import com.slapps.cupertino.adaptive.ExperimentalAdaptiveApi
 import com.slapps.cupertino.adaptive.icons.AdaptiveIcons
 import org.jetbrains.compose.resources.stringResource
 
-object AppChromeDefaults {
-    val bottomBarHeight get() = platformChromeStrategy().bottomBarHeight
-}
-
 @OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 fun AmazingTopBar(user: AuthUser?) {
@@ -79,12 +76,12 @@ fun AmazingTopBar(user: AuthUser?) {
     val topBarModifier = with(chrome) {
         Modifier
             .fillMaxWidth()
-            .applyTopBarStatusPadding()
+            .statusBarsPadding()
     }
 
     AdaptiveTopAppBar(
         modifier = topBarModifier,
-        windowInsets = chrome.topBarWindowInsets,
+        windowInsets = WindowInsets(),
         navigationIcon = {
             Row(
                 modifier = Modifier.padding(start = tokens.spacing.xl, end = tokens.spacing.sm),

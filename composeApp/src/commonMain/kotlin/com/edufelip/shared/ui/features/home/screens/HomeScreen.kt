@@ -3,6 +3,7 @@
 package com.edufelip.shared.ui.features.home.screens
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -15,7 +16,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.edufelip.shared.data.sync.LocalNotesSyncManager
@@ -27,7 +27,6 @@ import com.edufelip.shared.ui.features.notes.components.ListScreen
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
-import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.vm.AuthViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
@@ -40,7 +39,6 @@ fun HomeScreen(
     auth: AuthViewModel?,
     onOpenNote: (Note) -> Unit,
     onAdd: () -> Unit,
-    onDelete: (Note) -> Unit,
 ) {
     val currentUserState = auth?.uiState?.collectWithLifecycle()?.value
     val currentUid = currentUserState?.user?.uid
@@ -63,13 +61,12 @@ fun HomeScreen(
         }
 
     val hasNotes = notes.isNotEmpty()
-    val chrome = platformChromeStrategy()
     val tokens = designTokens()
 
     Scaffold(
         topBar = { AmazingTopBar(user = currentUserState?.user) },
         containerColor = Color.Transparent,
-        contentWindowInsets = chrome.contentWindowInsets,
+        contentWindowInsets = WindowInsets(),
     ) { padding ->
         Box(
             modifier = Modifier
@@ -119,7 +116,6 @@ internal fun HomeScreenPreview(
             auth = null,
             onOpenNote = {},
             onAdd = {},
-            onDelete = {},
         )
     }
 }

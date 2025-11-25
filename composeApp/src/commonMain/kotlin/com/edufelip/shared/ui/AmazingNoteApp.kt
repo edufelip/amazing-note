@@ -63,8 +63,8 @@ fun AmazingNoteApp(
     val authState by resolvedAuthViewModel.uiState.collectWithLifecycle()
     val isUserResolved = authState.isUserResolved
     val isUserAuthenticated = authState.user != null
-    val sessionKey = authState.user?.uid ?: "guest"
-    val navigationController = remember(sessionKey) { NavigationController(initialRoute) }
+    // Keep a stable nav controller across auth transitions so we don’t pop the user back to Notes mid-navigation.
+    val navigationController = remember { NavigationController(initialRoute) }
 
     val state = rememberAmazingNoteAppState(
         googleSignInConfig = googleSignInConfig,

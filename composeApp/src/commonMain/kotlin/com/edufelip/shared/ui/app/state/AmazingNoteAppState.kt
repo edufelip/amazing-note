@@ -2,8 +2,8 @@ package com.edufelip.shared.ui.app.state
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -115,7 +115,7 @@ fun rememberAmazingNoteAppState(
         onDispose { authViewModel.clear() }
     }
 
-    return remember(environment, navigationController, showBottomBar) {
+    val state = remember(environment, navigationController, showBottomBar) {
         AmazingNoteAppState(
             environment = environment,
             initialRoute = initialRoute,
@@ -125,4 +125,12 @@ fun rememberAmazingNoteAppState(
             navigationController = navigationController,
         )
     }
+
+    // Ensure the current route is reported once on launch so hosts (e.g., iOS tab bar) receive
+    // the correct initial screen instead of the default "notes".
+    LaunchedEffect(state, initialRoute) {
+        state.setRoot(initialRoute)
+    }
+
+    return state
 }

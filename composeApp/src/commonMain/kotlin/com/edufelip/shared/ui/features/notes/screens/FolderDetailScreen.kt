@@ -44,7 +44,6 @@ import com.edufelip.shared.ui.features.notes.dialogs.DeleteFolderDialog
 import com.edufelip.shared.ui.features.notes.dialogs.FolderNameDialog
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
-import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -56,7 +55,6 @@ fun FolderDetailScreen(
     onBack: () -> Unit,
     onOpenNote: (Note) -> Unit,
     onAddNote: () -> Unit,
-    onDeleteNote: (Note) -> Unit,
     onRenameFolder: ((String) -> Unit)? = null,
     onDeleteFolder: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -67,7 +65,6 @@ fun FolderDetailScreen(
     var deleteDialog by remember { mutableStateOf(false) }
     var nameInput by rememberSaveable { mutableStateOf(title) }
     var menuExpanded by remember { mutableStateOf(false) }
-    val chrome = platformChromeStrategy()
 
     val filteredNotes = remember(notes, query) {
         if (query.isBlank()) {
@@ -138,7 +135,7 @@ fun FolderDetailScreen(
             FloatingActionButton(
                 onClick = onAddNote,
                 modifier = Modifier.padding(
-                    bottom = tokens.spacing.lg + chrome.navigationBarBottomInset(),
+                    bottom = tokens.spacing.xxl,
                     end = tokens.spacing.lg,
                 ),
             ) {
@@ -240,7 +237,6 @@ private fun FolderDetailScreenPreview() {
             onBack = {},
             onOpenNote = {},
             onAddNote = {},
-            onDeleteNote = {},
             onRenameFolder = {},
             onDeleteFolder = {},
         )

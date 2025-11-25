@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -44,7 +45,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
@@ -58,7 +58,6 @@ import com.edufelip.shared.resources.rename_folder
 import com.edufelip.shared.resources.search_no_results
 import com.edufelip.shared.resources.search_reset
 import com.edufelip.shared.ui.app.chrome.AmazingTopBar
-import com.edufelip.shared.ui.app.chrome.AppChromeDefaults
 import com.edufelip.shared.ui.components.organisms.notes.FolderLayout
 import com.edufelip.shared.ui.components.organisms.notes.FoldersGrid
 import com.edufelip.shared.ui.components.organisms.notes.FoldersHeader
@@ -141,16 +140,11 @@ fun FoldersScreen(
         modifier = modifier.fillMaxSize(),
         topBar = { AmazingTopBar(user = currentUserState?.user) },
         containerColor = tokens.colors.canvas,
-        contentWindowInsets = chrome.contentWindowInsets,
+        contentWindowInsets = WindowInsets(),
         floatingActionButton = {
             if (!isEmpty) {
-                val navigationBottom = chrome.navigationBarBottomInset()
-                val fabBottomPadding = when {
-                    chrome.bottomBarHeight == tokens.spacing.zero -> tokens.spacing.lg
-                    else -> chrome.bottomBarHeight + (navigationBottom * 2)
-                }
                 ExtendedFloatingActionButton(
-                    modifier = Modifier.padding(bottom = fabBottomPadding, end = tokens.spacing.sm),
+                    modifier = Modifier.padding(bottom = tokens.spacing.xxxl, end = tokens.spacing.sm),
                     onClick = { openCreate() },
                     icon = {
                         Icon(
@@ -356,7 +350,7 @@ private fun EmptyFoldersState(
             modifier
                 .padding(horizontal = tokens.spacing.xl)
                 .applyNavigationBarsPadding()
-                .padding(bottom = AppChromeDefaults.bottomBarHeight)
+                .padding(bottom = tokens.spacing.xxxl)
         },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,

@@ -36,6 +36,7 @@ data class SpacingTokens(
     val lg: Dp = 16.dp,
     val xl: Dp = 24.dp,
     val xxl: Dp = 32.dp,
+    val xxxl: Dp = 64.dp,
 )
 
 data class RadiusTokens(

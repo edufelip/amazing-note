@@ -119,13 +119,6 @@ fun FolderDetailRoute(
         onAddNote = {
             onNavigate(AppRoutes.NoteDetail(null, folderId))
         },
-        onDeleteNote = { note ->
-            viewModel.setDeleted(
-                id = note.id,
-                deleted = true,
-                syncAfter = isUserAuthenticated,
-            )
-        },
         onRenameFolder = folderId?.let { id ->
             { newName ->
                 val sanitized = sanitizeInlineInput(newName, maxLength = 50)

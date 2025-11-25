@@ -29,7 +29,6 @@ import com.edufelip.shared.resources.cd_back
 import com.edufelip.shared.resources.trash
 import com.edufelip.shared.resources.trash_count
 import com.edufelip.shared.resources.trash_empty_action
-import com.edufelip.shared.ui.app.chrome.AppChromeDefaults
 import com.edufelip.shared.ui.components.organisms.trash.TrashTimeline
 import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
@@ -101,7 +100,7 @@ fun TrashScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(bottom = AppChromeDefaults.bottomBarHeight),
+                .padding(bottom = tokens.spacing.xxxl),
         ) {
             TrashTimeline(
                 notes = notes,

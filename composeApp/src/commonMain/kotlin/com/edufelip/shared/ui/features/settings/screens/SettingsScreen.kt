@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -132,7 +133,7 @@ fun SettingsScreen(
         modifier = modifier.fillMaxSize(),
         topBar = { AmazingTopBar(user = userState) },
         containerColor = tokens.colors.canvas,
-        contentWindowInsets = chrome.contentWindowInsets,
+        contentWindowInsets = WindowInsets(),
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -325,7 +326,7 @@ fun SettingsScreen(
                         Modifier
                             .fillMaxWidth()
                             .applyNavigationBarsPadding()
-                            .padding(bottom = chrome.bottomBarHeight)
+                            .padding(bottom = tokens.spacing.xxxl)
                     },
                 )
             }
