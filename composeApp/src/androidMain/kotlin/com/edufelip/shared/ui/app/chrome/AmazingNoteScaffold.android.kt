@@ -71,7 +71,7 @@ actual fun AmazingNoteScaffold(
         Scaffold(
             modifier = baseModifier,
             containerColor = Color.Transparent,
-            contentWindowInsets = chrome.contentWindowInsets,
+            contentWindowInsets = WindowInsets(),
             topBar = topBar,
         ) { padding ->
             content(padding, 0.dp)
@@ -82,20 +82,20 @@ actual fun AmazingNoteScaffold(
     when (layout) {
         AndroidChromeLayout.BottomBar -> {
             val bottomHeight = if (state.isBottomBarVisible) {
-                AppChromeDefaults.bottomBarHeight
+                tokens.spacing.xxxl
             } else {
                 0.dp
             }
             Scaffold(
                 modifier = baseModifier,
                 containerColor = Color.Transparent,
-                contentWindowInsets = chrome.contentWindowInsets,
+                contentWindowInsets = WindowInsets(),
                 topBar = topBar,
                 bottomBar = {
                     val bottomBarModifier = with(chrome) {
                         Modifier
                             .fillMaxWidth()
-                            .heightIn(min = AppChromeDefaults.bottomBarHeight)
+                            .heightIn(min = tokens.spacing.xxxl)
                     }
                     Box(modifier = bottomBarModifier) {
                         AnimatedVisibility(
@@ -175,7 +175,7 @@ actual fun AmazingNoteScaffold(
                         .weight(1f)
                         .fillMaxHeight(),
                     containerColor = Color.Transparent,
-                    contentWindowInsets = chrome.contentWindowInsets,
+                    contentWindowInsets = WindowInsets(),
                     topBar = topBar,
                 ) { padding ->
                     content(padding, 0.dp)

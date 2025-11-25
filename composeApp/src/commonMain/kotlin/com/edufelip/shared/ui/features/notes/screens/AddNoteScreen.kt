@@ -130,6 +130,14 @@ fun AddNoteScreen(
                         onFolderChange = onFolderChange,
                     )
                 }
+                item(key = "actions") {
+                    NoteEditorActionBar(
+                        onAddImage = onAddImage,
+                        onPaste = { editorState.pasteBlocks() },
+                        onCopy = { editorState.copySelectedBlocks() },
+                        onCut = { editorState.cutSelectedBlocks() },
+                    )
+                }
                 item(key = "editor") {
                     val editorMinHeight = tokens.spacing.xxl * 10
                     Surface(
@@ -162,12 +170,12 @@ fun AddNoteScreen(
                                 }
 
                                 EditorImplementation.Rich -> {
-                                    NoteEditor(
-                                        state = editorState,
-                                        placeholder = stringResource(Res.string.description),
-                                        modifier = Modifier.fillMaxSize(),
-                                    )
-                                }
+                            NoteEditor(
+                                state = editorState,
+                                placeholder = stringResource(Res.string.description),
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
                             }
                             if (!contentError.isNullOrBlank()) {
                                 Spacer(modifier = Modifier.height(tokens.spacing.md))
@@ -181,12 +189,6 @@ fun AddNoteScreen(
                     }
                 }
             }
-            NoteEditorActionBar(
-                onAddImage = onAddImage,
-                onPaste = { editorState.pasteBlocks() },
-                onCopy = { editorState.copySelectedBlocks() },
-                onCut = { editorState.cutSelectedBlocks() },
-            )
         }
         if (showBlockingLoader) {
             Box(

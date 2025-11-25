@@ -64,14 +64,6 @@ actual fun PlatformNotesRoute(
         configuration.screenWidthDp < 600
     }
 
-    val onDelete: (Note) -> Unit = { note ->
-        viewModel.setDeleted(
-            id = note.id,
-            deleted = true,
-            syncAfter = isUserAuthenticated,
-        )
-    }
-
     if (isCompactWidth) {
         HomeScreen(
             notes = notes,
@@ -80,7 +72,6 @@ actual fun PlatformNotesRoute(
                 onNavigate(AppRoutes.NoteDetail(note.id, note.folderId))
             },
             onAdd = { onNavigate(AppRoutes.NoteDetail(null, null)) },
-            onDelete = onDelete,
         )
         return
     }
@@ -100,7 +91,6 @@ actual fun PlatformNotesRoute(
                 onCreateNote = {
                     navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, NotesPaneDestination())
                 },
-                onDelete = onDelete,
             )
         },
         detailPane = {
@@ -126,7 +116,6 @@ private fun NotesListPane(
     authViewModel: AuthViewModel,
     onNavigateToDetail: (NotesPaneDestination) -> Unit,
     onCreateNote: () -> Unit,
-    onDelete: (Note) -> Unit,
 ) {
     HomeScreen(
         notes = notes,
@@ -140,7 +129,6 @@ private fun NotesListPane(
             )
         },
         onAdd = onCreateNote,
-        onDelete = onDelete,
     )
 }
 

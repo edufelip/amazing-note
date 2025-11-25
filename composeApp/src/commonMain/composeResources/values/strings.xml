@@ -66,6 +66,9 @@
     <string name="note_discard_title">Discard note?</string>
     <string name="note_discard_message">You have unsaved changes. If you leave now, they will be lost.</string>
     <string name="note_discard_confirm">Discard</string>
+    <string name="note_delete_title">Delete note?</string>
+    <string name="note_delete_message">This will move the note to trash.</string>
+    <string name="note_delete_confirm">Delete</string>
     <string name="attachment_uploading">Uploading %1$s… %2$d%%</string>
     <string name="attachment_upload_failed">Attachment upload failed.</string>
     <string name="attachment_upload_failed_with_detail">Attachment upload failed: %1$s</string>

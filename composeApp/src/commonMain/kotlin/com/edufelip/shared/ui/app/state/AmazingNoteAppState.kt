@@ -49,6 +49,9 @@ class AmazingNoteAppState internal constructor(
     val bottomBarTargetVisible: Boolean
         get() = isBottomBarEnabled && navigationController.currentRoute in tabRoutes
 
+    val stackDepth: Int
+        get() = navigationController.stackDepth
+
     val topBarVisible: Boolean
         get() = if (isBottomBarEnabled) isBottomBarVisible else navigationController.currentRoute in tabRoutes
 

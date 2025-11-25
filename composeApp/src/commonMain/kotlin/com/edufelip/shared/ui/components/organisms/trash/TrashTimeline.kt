@@ -62,11 +62,7 @@ fun TrashTimeline(
 
     if (notes.isEmpty()) {
         EmptyTrashState(
-            modifier = with(chrome) {
-                modifier
-                    .fillMaxSize()
-                    .applyNavigationBarsPadding()
-            },
+            modifier = modifier.fillMaxSize(),
         )
         return
     }
@@ -79,13 +75,7 @@ fun TrashTimeline(
         .sortedByDescending { it.updatedAt }
         .groupBy { ((now - it.updatedAt).coerceAtLeast(0L) / DAY_IN_MILLIS).toInt() }
 
-    Box(
-        modifier = with(chrome) {
-            modifier
-                .fillMaxSize()
-                .applyNavigationBarsPadding()
-        },
-    ) {
+    Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
@@ -121,7 +111,7 @@ fun TrashTimeline(
             val bottomSpacerHeight: Dp = if (selectedNotes.isNotEmpty()) {
                 tokens.spacing.xxl * 4
             } else {
-                tokens.spacing.xl
+                tokens.spacing.md
             }
             item { Spacer(modifier = Modifier.height(bottomSpacerHeight)) }
         }

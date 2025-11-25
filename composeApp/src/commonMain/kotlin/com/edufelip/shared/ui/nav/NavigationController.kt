@@ -16,6 +16,9 @@ class NavigationController(initialRoute: AppRoutes) {
     val backStack: SnapshotStateList<AppRoutes>
         get() = _backStack
 
+    val stackDepth: Int
+        get() = _backStack.size
+
     fun navigate(destination: AppRoutes, singleTop: Boolean = true) {
         if (singleTop && _backStack.lastOrNull() == destination) return
         _backStack.add(destination)

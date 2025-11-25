@@ -1,12 +1,15 @@
 package com.edufelip.shared.ui.app.navigation
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -21,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.IntOffset
 import com.edufelip.shared.ui.app.state.AmazingNoteAppState
 import com.edufelip.shared.ui.features.auth.routes.LoginRoute
 import com.edufelip.shared.ui.features.auth.routes.SignUpRoute
@@ -137,24 +141,30 @@ fun AmazingNoteNavHost(
         }
     }
 
-    val targetScene = NavScene(state.currentRoute, themeKey)
-
-    if (!platformBehavior.supportsContentTransitions) {
-        Box(modifier = contentModifier.then(modifier)) {
-            SceneContent(targetScene)
-        }
-        return
-    }
+    val targetScene = NavScene(state.currentRoute, themeKey, state.stackDepth)
 
     key(themeKey) {
         AnimatedContent(
             modifier = contentModifier.then(modifier),
             targetState = targetScene,
             contentKey = { scene -> scene.route to scene.themeVersion },
+            label = "nav_host_transition",
             transitionSpec = {
-                val fadeDuration = 200
-                fadeIn(animationSpec = tween(fadeDuration)) togetherWith
-                    fadeOut(animationSpec = tween(fadeDuration))
+                val isForward = targetState.depth > initialState.depth
+                val slideSpec = tween<IntOffset>(durationMillis = 700)
+                val fadeSpec = tween<Float>(durationMillis = 220)
+
+                val enterOffset: (Int) -> Int = { fullWidth -> if (isForward) fullWidth else -fullWidth }
+                val exitOffset: (Int) -> Int = { fullWidth -> if (isForward) -fullWidth else fullWidth }
+
+                (slideInHorizontally(
+                    initialOffsetX = enterOffset,
+                    animationSpec = slideSpec,
+                ) + fadeIn(animationSpec = fadeSpec)) togetherWith
+                    (slideOutHorizontally(
+                        targetOffsetX = exitOffset,
+                        animationSpec = slideSpec,
+                    ) + fadeOut(animationSpec = fadeSpec)) using SizeTransform(clip = false)
             },
         ) { scene ->
             SceneContent(scene)
@@ -162,7 +172,7 @@ fun AmazingNoteNavHost(
     }
 }
 
-private data class NavScene(val route: AppRoutes, val themeVersion: Boolean)
+private data class NavScene(val route: AppRoutes, val themeVersion: Boolean, val depth: Int)
 
 private fun PaddingValues.topPadding(): Dp = calculateTopPadding()
 

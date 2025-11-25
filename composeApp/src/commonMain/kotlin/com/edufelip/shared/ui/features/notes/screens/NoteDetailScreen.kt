@@ -53,6 +53,7 @@ import com.edufelip.shared.ui.editor.rememberNoteEditorState
 import com.edufelip.shared.ui.effects.toast.rememberToastController
 import com.edufelip.shared.ui.effects.toast.show
 import com.edufelip.shared.ui.features.notes.dialogs.DiscardNoteDialog
+import com.edufelip.shared.ui.features.notes.dialogs.DeleteNoteDialog
 import com.edufelip.shared.ui.util.OnSystemBack
 import com.edufelip.shared.ui.util.security.SecurityLogger
 import com.edufelip.shared.ui.util.security.sanitizeInlineInput
@@ -147,6 +148,7 @@ fun NoteDetailScreen(
     }
     val isNewNote = id == null
     var discardDialogVisible by remember(noteKey) { mutableStateOf(false) }
+    var deleteDialogVisible by remember(noteKey) { mutableStateOf(false) }
     val pendingLocalAttachments = remember(noteKey) { mutableStateListOf<String>() }
     var persistedCachedUris by remember(noteKey) { mutableStateOf(currentContent.cachedFileUris()) }
 
@@ -349,8 +351,7 @@ fun NoteDetailScreen(
         onSave = { launchSave(navigateBack = true) },
         onDelete = id?.let { noteId ->
             {
-                onDelete(noteId)
-                latestOnBack()
+                deleteDialogVisible = true
             }
         },
         onAddImage = addImageHandler,
@@ -383,6 +384,17 @@ fun NoteDetailScreen(
             onConfirm = {
                 discardDialogVisible = false
                 cleanupPendingLocalAttachments(deleteFiles = true)
+                latestOnBack()
+            },
+        )
+    }
+
+    if (deleteDialogVisible && id != null) {
+        DeleteNoteDialog(
+            onDismiss = { deleteDialogVisible = false },
+            onConfirm = {
+                deleteDialogVisible = false
+                onDelete(id)
                 latestOnBack()
             },
         )
