@@ -40,6 +40,8 @@ class AmazingNoteAppState internal constructor(
     val darkTheme: Boolean
         get() = darkThemeFlow.value
 
+    private var hasReportedInitialRoute = false
+
     var isBottomBarEnabled by mutableStateOf(showBottomBar)
         private set
 
@@ -52,38 +54,34 @@ class AmazingNoteAppState internal constructor(
     val stackDepth: Int
         get() = navigationController.stackDepth
 
-    private fun refreshBottomBarVisibility() {
-        isBottomBarVisible = bottomBarTargetVisible
-    }
-
     val topBarVisible: Boolean
         get() = if (isBottomBarEnabled) isBottomBarVisible else navigationController.currentRoute in tabRoutes
+
+    fun reportInitialRouteIfNeeded() {
+        if (hasReportedInitialRoute) return
+        hasReportedInitialRoute = true
+        reportRoute(currentRoute)
+    }
 
     fun navigate(route: AppRoutes, singleTop: Boolean = true) {
         navigationController.navigate(route, singleTop)
         reportRoute(navigationController.currentRoute)
-        refreshBottomBarVisibility()
     }
 
     fun popBack(): Boolean {
         val popped = navigationController.popBack()
-        if (popped) {
-            reportRoute(navigationController.currentRoute)
-            refreshBottomBarVisibility()
-        }
+        if (popped) reportRoute(navigationController.currentRoute)
         return popped
     }
 
     fun popToRoot() {
         navigationController.popToRoot()
         reportRoute(navigationController.currentRoute)
-        refreshBottomBarVisibility()
     }
 
     fun setRoot(destination: AppRoutes) {
         navigationController.setRoot(destination)
         reportRoute(navigationController.currentRoute)
-        refreshBottomBarVisibility()
     }
 
     fun toggleTheme(enabled: Boolean? = null) {
@@ -140,9 +138,9 @@ fun rememberAmazingNoteAppState(
     }
 
     // Ensure the current route is reported once on launch so hosts (e.g., iOS tab bar) receive
-    // the correct initial screen instead of the default "notes".
-    LaunchedEffect(state, initialRoute) {
-        state.setRoot(initialRoute)
+    // the correct initial screen instead of the default "notes". Avoid resetting navigation on recomposition.
+    LaunchedEffect(state) {
+        state.reportInitialRouteIfNeeded()
     }
 
     return state

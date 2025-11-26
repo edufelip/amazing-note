@@ -3,14 +3,21 @@ import UIKit
 import SwiftUI
 import ComposeApp
 
+@MainActor
 final class TabBarVisibility: ObservableObject {
     @Published var isVisible: Bool = true
 }
 
+@MainActor
 struct LiquidRoot: View {
     @AppStorage("dark_theme") private var darkThemeEnabled: Bool = true
     @State private var selection: Tab = .notes
     @StateObject private var tabBar = TabBarVisibility()
+    @State private var lastRouteHandled: String?
+    @State private var lastShouldShow: Bool?
+
+    private static var lastRouteHandledGlobal: String?
+    private static var lastShouldShowGlobal: Bool?
 
     private var themeHostIdentifier: String {
         darkThemeEnabled ? "theme-dark" : "theme-light"
@@ -20,12 +27,12 @@ struct LiquidRoot: View {
         TabView(selection: $selection) {
             ComposeHost(
                 tabBar: tabBar,
-                onRouteChanged: handleRouteChange,
+                onRouteChanged: { route, isBottomBarVisible in
+                    handleRouteChange(route, isBottomBarVisible)
+                },
                 controllerFactory: { tabBar, routeHandler in
                     MainViewControllerKt.makeNotesViewController(
-                        tabBarVisibility: { [weak tabBar] isVisible in
-                            Self.updateTabBar(tabBar, value: isVisible)
-                        },
+                        tabBarVisibility: nil, // avoid double-driving visibility; use route-based visibility instead
                         onRouteChanged: routeHandler
                     )
                 }
@@ -37,12 +44,12 @@ struct LiquidRoot: View {
 
             ComposeHost(
                 tabBar: tabBar,
-                onRouteChanged: handleRouteChange,
+                onRouteChanged: { route, isBottomBarVisible in
+                    handleRouteChange(route, isBottomBarVisible)
+                },
                 controllerFactory: { tabBar, routeHandler in
                     MainViewControllerKt.makeFoldersViewController(
-                        tabBarVisibility: { [weak tabBar] isVisible in
-                            Self.updateTabBar(tabBar, value: isVisible)
-                        },
+                        tabBarVisibility: nil,
                         onRouteChanged: routeHandler
                     )
                 }
@@ -54,12 +61,12 @@ struct LiquidRoot: View {
 
             ComposeHost(
                 tabBar: tabBar,
-                onRouteChanged: handleRouteChange,
+                onRouteChanged: { route, isBottomBarVisible in
+                    handleRouteChange(route, isBottomBarVisible)
+                },
                 controllerFactory: { tabBar, routeHandler in
                     MainViewControllerKt.makeSettingsViewController(
-                        tabBarVisibility: { [weak tabBar] isVisible in
-                            Self.updateTabBar(tabBar, value: isVisible)
-                        },
+                        tabBarVisibility: nil,
                         onRouteChanged: routeHandler
                     )
                 }
@@ -73,11 +80,31 @@ struct LiquidRoot: View {
         .animation(.easeInOut, value: tabBar.isVisible)
     }
 
-    private func handleRouteChange(_ route: String) {
+    private func handleRouteChange(_ route: String, _ isBottomBarVisible: Bool) {
         let resolved = Tab(routeID: route)
-        let shouldShow = resolved != nil
-        Self.updateOnMain {
-            tabBar.isVisible = shouldShow
+        let shouldShow = resolved != nil && isBottomBarVisible
+        NSLog(
+            "RouteChange route=%@ bottomBar=%d resolved=%@ currentVisible=%d shouldShow=%d",
+            route,
+            isBottomBarVisible ? 1 : 0,
+            String(describing: resolved),
+            tabBar.isVisible ? 1 : 0,
+            shouldShow ? 1 : 0
+        )
+        if route == lastRouteHandled && shouldShow == lastShouldShow {
+            return
+        }
+        lastRouteHandled = route
+        lastShouldShow = shouldShow
+        if route == Self.lastRouteHandledGlobal && shouldShow == Self.lastShouldShowGlobal {
+            return
+        }
+        Self.lastRouteHandledGlobal = route
+        Self.lastShouldShowGlobal = shouldShow
+        if (tabBar.isVisible != shouldShow) {
+            Self.updateOnMain {
+                tabBar.isVisible = shouldShow
+            }
         }
         if let resolved, selection != resolved {
             selection = resolved
@@ -105,6 +132,7 @@ struct LiquidRoot: View {
         }
     }
 
+    @MainActor
     private static func updateTabBar(_ tabBar: TabBarVisibility?, value: Any?) {
         guard let tabBar else { return }
         let resolved: Bool
@@ -115,24 +143,20 @@ struct LiquidRoot: View {
         } else {
             return
         }
-        updateOnMain {
-            tabBar.isVisible = resolved
-        }
+        tabBar.isVisible = resolved
     }
 
-    private static func updateOnMain(_ action: @escaping () -> Void) {
-        if Thread.isMainThread {
-            action()
-            return
-        }
-        DispatchQueue.main.async(execute: action)
+    @MainActor
+    private static func updateOnMain(_ action: () -> Void) {
+        NSLog("TabBarVisibility::updateOnMain dispatch")
+        action()
     }
 }
 
 private struct ComposeHost: UIViewControllerRepresentable {
     @ObservedObject var tabBar: TabBarVisibility
-    let onRouteChanged: (String) -> Void
-    let controllerFactory: (TabBarVisibility, @escaping (String) -> Void) -> UIViewController
+    let onRouteChanged: (String, Bool) -> Void
+    let controllerFactory: (TabBarVisibility, @escaping (String, KotlinBoolean) -> Void) -> UIViewController
 
     func makeCoordinator() -> Coordinator {
         Coordinator(onRouteChanged: onRouteChanged)
@@ -151,15 +175,24 @@ private struct ComposeHost: UIViewControllerRepresentable {
     }
 
     final class Coordinator {
-        var onRouteChanged: (String) -> Void
+        var onRouteChanged: (String, Bool) -> Void
         var cachedTabBarHeight: CGFloat?
+        private var lastRoute: String?
+        private var lastVisible: Bool?
 
-        init(onRouteChanged: @escaping (String) -> Void) {
+        init(onRouteChanged: @escaping (String, Bool) -> Void) {
             self.onRouteChanged = onRouteChanged
         }
 
-        lazy var routeHandler: (String) -> Void = { [weak self] route in
-            self?.onRouteChanged(route)
+        lazy var routeHandler: (String, KotlinBoolean) -> Void = { [weak self] route, isBottomBarVisible in
+            guard let self else { return }
+            let visible = isBottomBarVisible.boolValue
+            if route == lastRoute && visible == lastVisible {
+                return
+            }
+            lastRoute = route
+            lastVisible = visible
+            self.onRouteChanged(route, visible)
         }
     }
 
