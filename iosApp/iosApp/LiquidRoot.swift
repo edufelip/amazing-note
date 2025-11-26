@@ -76,6 +76,11 @@ struct LiquidRoot: View {
             .tabItem { Label("Settings", systemImage: "gearshape") }
             .tag(Tab.settings)
         }
+        .preferredColorScheme(darkThemeEnabled ? .dark : .light)
+        .onChange(of: darkThemeEnabled) { _ in
+            // Keep the user on Settings after theme-triggered controller rebuilds.
+            selection = .settings
+        }
         .toolbar(tabBar.isVisible ? .visible : .hidden, for: .tabBar)
         .animation(.easeInOut, value: tabBar.isVisible)
     }
