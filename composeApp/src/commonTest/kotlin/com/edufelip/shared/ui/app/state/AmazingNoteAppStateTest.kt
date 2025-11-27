@@ -130,7 +130,7 @@ class AmazingNoteAppStateTest {
 
         override suspend fun sendPasswordResetEmail(email: String) {}
 
-        override suspend fun signInWithGoogle(idToken: String) {}
+        override suspend fun signInWithGoogle(idToken: String, accessToken: String?) {}
 
         override suspend fun signOut() {}
     }

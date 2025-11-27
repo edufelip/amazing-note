@@ -87,7 +87,7 @@ fun LoginScreen(
     onOpenSignUp: () -> Unit,
     showLocalSuccessToast: Boolean,
     onLogin: (String, String) -> Unit,
-    onGoogleSignIn: (String) -> Unit,
+    onGoogleSignIn: (String, String?) -> Unit,
     onSendPasswordReset: (String) -> Unit,
     onClearError: () -> Unit,
     onSetError: (String) -> Unit,
@@ -364,7 +364,6 @@ fun LoginScreen(
                 )
             }
             Spacer(modifier = Modifier.height(tokens.spacing.lg))
-            val googleCanceledText = stringResource(Res.string.google_sign_in_canceled)
             GoogleButton(
                 text = stringResource(Res.string.continue_with_google),
                 enabled = googleSignInLauncher != null && !loading && !isLockedOut,
@@ -374,13 +373,13 @@ fun LoginScreen(
                         val result = launcher.signIn()
                         when {
                             !result.idToken.isNullOrBlank() -> {
-                                onGoogleSignIn(result.idToken)
+                                onGoogleSignIn(result.idToken, result.accessToken)
                             }
                             !result.errorMessage.isNullOrBlank() -> {
                                 onSetError(result.errorMessage)
                                 toastController.show(result.errorMessage)
                             }
-                            else -> toastController.show(googleCanceledText)
+                            else -> Unit // user dismissed; no toast
                         }
                     }
                 },
@@ -457,7 +456,7 @@ private fun LoginScreenPreview() {
             onOpenSignUp = {},
             showLocalSuccessToast = true,
             onLogin = { _, _ -> },
-            onGoogleSignIn = {},
+            onGoogleSignIn = { _, _ -> },
             onSendPasswordReset = {},
             onClearError = {},
             onSetError = {},

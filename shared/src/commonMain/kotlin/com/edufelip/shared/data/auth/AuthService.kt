@@ -7,7 +7,7 @@ interface AuthService {
     suspend fun signInWithEmailPassword(email: String, password: String)
     suspend fun signUpWithEmailPassword(email: String, password: String)
     suspend fun sendPasswordResetEmail(email: String)
-    suspend fun signInWithGoogle(idToken: String)
+    suspend fun signInWithGoogle(idToken: String, accessToken: String?)
     suspend fun signOut()
     suspend fun setUserName(name: String)
 }

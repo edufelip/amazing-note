@@ -52,16 +52,17 @@ private class AndroidGoogleSignInLauncher(
         }
 
         if (!idToken.isNullOrBlank()) {
-            GoogleSignInResult(idToken = idToken, errorMessage = null)
+            GoogleSignInResult(idToken = idToken, accessToken = null, errorMessage = null)
         } else {
-            GoogleSignInResult(idToken = null, errorMessage = "Missing Google ID token")
+            GoogleSignInResult(idToken = null, accessToken = null, errorMessage = "Missing Google ID token")
         }
     } catch (e: GetCredentialException) {
         GoogleSignInResult(
             idToken = null,
+            accessToken = null,
             errorMessage = e.message ?: "Google sign-in canceled",
         )
     } catch (e: Exception) {
-        GoogleSignInResult(idToken = null, errorMessage = e.message ?: "Google sign-in failed")
+        GoogleSignInResult(idToken = null, accessToken = null, errorMessage = e.message ?: "Google sign-in failed")
     }
 }

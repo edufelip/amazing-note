@@ -194,7 +194,7 @@ private class FakeAuthRepository : AuthRepository {
         resetRequests += email
     }
 
-    override suspend fun signInWithGoogle(idToken: String) {
+    override suspend fun signInWithGoogle(idToken: String, accessToken: String?) {
         _currentUser.value = AuthUser(
             uid = "google",
             displayName = "Google User",

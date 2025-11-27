@@ -30,13 +30,17 @@ fun LoginRoute(
         onOpenSignUp = { onNavigate(AppRoutes.SignUp) },
         showLocalSuccessToast = showLocalSuccessToast,
         onLogin = { email, password -> auth.loginWithEmail(email, password) },
-        onGoogleSignIn = { token -> auth.signInWithGoogleToken(token) },
+        onGoogleSignIn = { idToken, accessToken -> auth.signInWithGoogleToken(idToken, accessToken) },
         onSendPasswordReset = { email -> auth.sendPasswordReset(email) },
         onClearError = { auth.clearError() },
         onSetError = { auth.setError(it) },
         events = auth.events,
         onLoginSuccess = {
-            state.setRoot(AppRoutes.Notes)
+            // Login is reached from Settings; return there so the authenticated state is visible.
+            val popped = state.popBack()
+            if (!popped || state.currentRoute != AppRoutes.Settings) {
+                state.setRoot(AppRoutes.Settings)
+            }
         },
     )
 }

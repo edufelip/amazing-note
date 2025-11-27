@@ -31,8 +31,9 @@ class GitLiveAuthService(
         auth.sendPasswordResetEmail(email)
     }
 
-    override suspend fun signInWithGoogle(idToken: String) {
-        val credential = GoogleAuthProvider.credential(idToken, null)
+    override suspend fun signInWithGoogle(idToken: String, accessToken: String?) {
+        val token = accessToken ?: idToken // gitlive iOS expects non-null accessToken; fallback to idToken
+        val credential = GoogleAuthProvider.credential(idToken, token)
         auth.signInWithCredential(credential)
     }
 

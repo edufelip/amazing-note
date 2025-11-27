@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 
 data class GoogleSignInResult(
     val idToken: String?,
+    val accessToken: String?,
     val errorMessage: String?,
 )
 

@@ -9,6 +9,7 @@ import com.edufelip.shared.domain.validation.PasswordConfirmationError
 import com.edufelip.shared.domain.validation.PasswordConfirmationResult
 import com.edufelip.shared.domain.validation.PasswordValidationError
 import com.edufelip.shared.ui.util.security.SecurityLogger
+import com.edufelip.shared.util.debugLog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -97,7 +98,7 @@ class AuthViewModel(
         }
     }
 
-    fun signInWithGoogleToken(idToken: String) {
+    fun signInWithGoogleToken(idToken: String, accessToken: String?) {
         if (_uiState.value.loading) return
         if (idToken.isBlank()) {
             SecurityLogger.logValidationFailure(
@@ -111,11 +112,13 @@ class AuthViewModel(
         }
         setLoading()
         launchInScope {
-            val result = runCatching { useCases.signInWithGoogle(idToken) }
+            val result = runCatching { useCases.signInWithGoogle(idToken, accessToken) }
             if (result.isSuccess) {
                 _events.emit(AuthEvent.LoginSuccess)
             } else {
-                publishError(result.exceptionOrNull()!!)
+                val error = result.exceptionOrNull()!!
+                debugLog("Firebase Google sign-in failed: ${error.message ?: "no message"}")
+                publishError(error)
             }
             stopLoading()
         }

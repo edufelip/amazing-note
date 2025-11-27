@@ -55,7 +55,7 @@ class Logout(private val repository: AuthRepository) {
 }
 
 class SignInWithGoogle(private val repository: AuthRepository) {
-    suspend operator fun invoke(token: String) = repository.signInWithGoogle(token)
+    suspend operator fun invoke(idToken: String, accessToken: String?) = repository.signInWithGoogle(idToken, accessToken)
 }
 
 class UpdateUserName(private val repository: AuthRepository) {

@@ -18,7 +18,7 @@ class DefaultAuthRepository(
 
     override suspend fun sendPasswordResetEmail(email: String) = service.sendPasswordResetEmail(email)
 
-    override suspend fun signInWithGoogle(idToken: String) = service.signInWithGoogle(idToken)
+    override suspend fun signInWithGoogle(idToken: String, accessToken: String?) = service.signInWithGoogle(idToken, accessToken)
 
     override suspend fun signOut() = service.signOut()
 }
