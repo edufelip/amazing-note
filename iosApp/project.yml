@@ -29,7 +29,7 @@ targets:
         buildPhase: resources
     settings:
       INFOPLIST_FILE: iosApp/Info.plist
-      PRODUCT_BUNDLE_IDENTIFIER: com.edufelip.amazingnote.iosApp
+      PRODUCT_BUNDLE_IDENTIFIER: com.edufelip.amazingnote
       FRAMEWORK_SEARCH_PATHS:
         - "$(inherited)"
         - "$(CONFIGURATION_BUILD_DIR)"

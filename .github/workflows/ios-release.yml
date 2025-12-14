@@ -21,7 +21,7 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 60
     env:
-      BUNDLE_ID: com.edufelip.amazingnote.iosApp
+      BUNDLE_ID: com.edufelip.amazingnote
       KEYCHAIN_PASSWORD: ${{ secrets.IOS_KEYCHAIN_PASSWORD }}
       EXPORT_METHOD: ${{ github.event.inputs.export_method || 'app-store' }}
     steps:
