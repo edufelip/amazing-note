@@ -80,6 +80,11 @@ jobs:
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
           cp "$PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/AmazingNote.mobileprovision"
 
+          PROFILE_UUID=$(security cms -D -i "$PROFILE_PATH" | /usr/libexec/PlistBuddy -c 'Print:UUID' /dev/stdin)
+          PROFILE_NAME=$(security cms -D -i "$PROFILE_PATH" | /usr/libexec/PlistBuddy -c 'Print:Name' /dev/stdin)
+          echo "PROFILE_UUID=$PROFILE_UUID" >> "$GITHUB_ENV"
+          echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+
       - name: Build archive
         env:
           KEYCHAIN_PATH: ${{ runner.temp }}/amazing-note.keychain-db
@@ -93,7 +98,7 @@ jobs:
             -destination "generic/platform=iOS" \
             CODE_SIGN_STYLE=Manual \
             DEVELOPMENT_TEAM=${{ secrets.IOS_TEAM_ID }} \
-            PROVISIONING_PROFILE_SPECIFIER="${{ secrets.IOS_PROFILE_NAME }}" \
+            PROVISIONING_PROFILE_SPECIFIER="${PROFILE_UUID:-${{ secrets.IOS_PROFILE_NAME }}}" \
             OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN_PATH" \
             archive
 
@@ -110,7 +115,7 @@ jobs:
               <key>signingStyle</key><string>manual</string>
               <key>provisioningProfiles</key>
               <dict>
-                <key>${BUNDLE_ID}</key><string>${{ secrets.IOS_PROFILE_NAME }}</string>
+                <key>${BUNDLE_ID}</key><string>${PROFILE_NAME:-${{ secrets.IOS_PROFILE_NAME }}}</string>
               </dict>
               <key>stripSwiftSymbols</key><true/>
               <key>compileBitcode</key><false/>
