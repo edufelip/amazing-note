@@ -48,6 +48,9 @@ jobs:
       - name: Decode release keystore
         run: echo "${{ secrets.ANDROID_RELEASE_KEYSTORE_BASE64 }}" | base64 --decode > "$RELEASE_STORE_FILE"
 
+      - name: Validate keystore credentials
+        run: keytool -list -keystore "$RELEASE_STORE_FILE" -storepass "$RELEASE_STORE_PASSWORD" -alias "$RELEASE_KEY_ALIAS" -keypass "$RELEASE_KEY_PASSWORD" >/dev/null
+
       - name: Write google-services.json
         run: |
           mkdir -p app
