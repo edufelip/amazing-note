@@ -45,7 +45,7 @@ jobs:
           echo "$IOS_GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 --decode > iosApp/iosApp/GoogleService-Info.plist
 
       - name: Build Compose frameworks (Release/iphoneos)
-        run: ./gradlew -Dorg.gradle.jvmargs="-Xmx6g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8" -PCONFIGURATION=Release -PSDK_NAME=iphoneos :composeApp:packForXcode :iosApp:packForXcode --stacktrace
+        run: ./gradlew -Dorg.gradle.jvmargs="-Xmx8g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8" -PCONFIGURATION=Release -PSDK_NAME=iphoneos :composeApp:packForXcode :iosApp:packForXcode --stacktrace
 
       - name: Bump iOS build number
         run: /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" iosApp/iosApp/Info.plist
