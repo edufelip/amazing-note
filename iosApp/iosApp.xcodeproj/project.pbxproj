@@ -48,6 +48,7 @@
 		FB29B48E2ED3A27C003F04CC /* NoteCipherBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = NoteCipherBridge.h; path = ../shared/src/nativeInterop/cinterop/NoteCipherBridge.h; sourceTree = SOURCE_ROOT; };
 		FB54EE8E2EB2691B007A2F0E /* ComposeApp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ComposeApp.framework; sourceTree = "<group>"; };
 		FB54EE912EB2696A007A2F0E /* ComposeApp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ComposeApp.framework; sourceTree = "<group>"; };
+		FB8480A72EEF0BD700F646F0 /* iosApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = iosApp.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,6 +83,7 @@
 		1DB4B685CAEE8BEFEBBAEF94 /* iosApp */ = {
 			isa = PBXGroup;
 			children = (
+				FB8480A72EEF0BD700F646F0 /* iosApp.entitlements */,
 				8B6C1F485E0CF8BB70C9DDD2 /* AppDelegate.swift */,
 				C678D2A4430FF615DBC7217B /* AppMain.swift */,
 				A55143988C4C8F291BE72E9A /* GoogleService-Info.plist */,
@@ -391,6 +393,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = iosApp/iosApp.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = L4N9Z3Z82V;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
@@ -417,7 +420,7 @@
 					"-framework",
 					ComposeApp,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnote.iosApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnote;
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "iosApp-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -431,6 +434,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = iosApp/iosApp.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = L4N9Z3Z82V;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
@@ -457,7 +461,7 @@
 					"-framework",
 					ComposeApp,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnote.iosApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnote;
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "iosApp-Bridging-Header.h";
 				SWIFT_VERSION = 6.0;
