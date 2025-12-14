@@ -3,7 +3,7 @@ name: Android Release
 on:
   push:
     branch:
-      - "hotfix/*"
+      - "main"
   workflow_dispatch:
     inputs:
       track:
