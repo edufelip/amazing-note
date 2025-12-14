@@ -122,6 +122,7 @@ jobs:
             -archivePath iosApp/build/iosApp.xcarchive \
             -destination "generic/platform=iOS" \
             CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
             DEVELOPMENT_TEAM=${{ secrets.IOS_TEAM_ID }} \
             OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN_PATH" \
             archive
