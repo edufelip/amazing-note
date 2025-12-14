@@ -44,12 +44,6 @@ jobs:
           mkdir -p iosApp/iosApp
           echo "$IOS_GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 --decode > iosApp/iosApp/GoogleService-Info.plist
 
-      - name: Build Compose frameworks (Release/iphoneos)
-        run: ./gradlew -Dorg.gradle.jvmargs="-Xmx8g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8" -PCONFIGURATION=Release -PSDK_NAME=iphoneos :composeApp:packForXcode :iosApp:packForXcode --stacktrace
-
-      - name: Bump iOS build number
-        run: /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" iosApp/iosApp/Info.plist
-
       - name: Set up keychain and certificates
         env:
           CERT_P12_BASE64: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
@@ -80,10 +74,26 @@ jobs:
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
           cp "$PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/AmazingNote.mobileprovision"
 
-          PROFILE_UUID=$(security cms -D -i "$PROFILE_PATH" | /usr/libexec/PlistBuddy -c 'Print:UUID' /dev/stdin)
-          PROFILE_NAME=$(security cms -D -i "$PROFILE_PATH" | /usr/libexec/PlistBuddy -c 'Print:Name' /dev/stdin)
+          PROFILE_PLIST="$RUNNER_TEMP/profile.plist"
+          security cms -D -i "$PROFILE_PATH" > "$PROFILE_PLIST"
+
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print:UUID' "$PROFILE_PLIST" 2>/dev/null || true)
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print:Name' "$PROFILE_PLIST" 2>/dev/null || true)
+
+          if [ -z "$PROFILE_UUID" ] || [ -z "$PROFILE_NAME" ]; then
+            echo "Failed to read provisioning profile metadata (UUID/Name)."
+            ls -l "$PROFILE_PATH" "$PROFILE_PLIST" || true
+            head -n 40 "$PROFILE_PLIST" || true
+            exit 1
+          fi
           echo "PROFILE_UUID=$PROFILE_UUID" >> "$GITHUB_ENV"
           echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+
+      - name: Build Compose frameworks (Release/iphoneos)
+        run: ./gradlew -Dorg.gradle.jvmargs="-Xmx8g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8" -PCONFIGURATION=Release -PSDK_NAME=iphoneos :composeApp:packForXcode :iosApp:packForXcode --stacktrace
+
+      - name: Bump iOS build number
+        run: /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" iosApp/iosApp/Info.plist
 
       - name: Build archive
         env:
