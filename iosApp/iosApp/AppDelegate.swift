@@ -14,6 +14,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         #else
         Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
         #endif
+        logBuildInfo()
         return true
     }
 
@@ -36,5 +37,21 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         options: [UIApplication.OpenURLOptionsKey: Any] = [:]
     ) -> Bool {
         GIDSignIn.sharedInstance.handle(url)
+    }
+
+    private func logBuildInfo() {
+        let info = Bundle.main.infoDictionary
+        let sdkName = (info?["DTSDKName"] as? String) ?? "unknown"
+        let xcode = (info?["DTXcode"] as? String) ?? "unknown"
+        let xcodeBuild = (info?["DTXcodeBuild"] as? String) ?? "unknown"
+
+        NSLog("BuildInfo DTXcode=\(xcode) DTXcodeBuild=\(xcodeBuild) DTSDKName=\(sdkName)")
+
+        #if !DEBUG
+        let crashlytics = Crashlytics.crashlytics()
+        crashlytics.setCustomValue(sdkName, forKey: "dt_sdk_name")
+        crashlytics.setCustomValue(xcode, forKey: "dt_xcode")
+        crashlytics.setCustomValue(xcodeBuild, forKey: "dt_xcode_build")
+        #endif
     }
 }
