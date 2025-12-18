@@ -91,7 +91,7 @@
 				1285E8A7B7E7359EA11B9591 /* SceneDelegate.swift */,
 				99D2B24A2F3E0A6D00C2D875 /* Assets.xcassets */,
 			);
-			name = iosApp;
+			name = AmazingNote;
 			path = ../iosApp/iosApp;
 			sourceTree = "<group>";
 		};
@@ -159,7 +159,7 @@
 			);
 			dependencies = (
 			);
-			name = iosApp;
+    		name = AmazingNote;
 			packageProductDependencies = (
 				617043448F4869026C2F0BB4 /* FirebaseAuth */,
 				84FCD721953CC33D9035BCCD /* FirebaseFirestore */,
@@ -179,7 +179,7 @@
 				FB1CE39F2EBD26100050A069 /* FirebaseCore */,
 				FB1CE3A12EBD26100050A069 /* FirebaseCrashlytics */,
 			);
-			productName = iosApp;
+			productName = AmazingNote;
 			productReference = 86038AE1032E284E79B32AD6 /* iosApp.app */;
 			productType = "com.apple.product-type.application";
 		};
