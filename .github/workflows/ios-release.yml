@@ -132,8 +132,10 @@ jobs:
             -sdk iphoneos \
             -archivePath iosApp/build/iosApp.xcarchive \
             -destination "generic/platform=iOS" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
             DEVELOPMENT_TEAM=${{ secrets.IOS_TEAM_ID }} \
-            APPSTORE_PROFILE_SPECIFIER="${PROFILE_UUID:-${PROFILE_NAME:-${{ secrets.IOS_PROFILE_NAME }}}}" \
+            PROVISIONING_PROFILE_SPECIFIER="${PROFILE_NAME:-${{ secrets.IOS_PROFILE_NAME }}}" \
             OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN_PATH" \
             archive
 
