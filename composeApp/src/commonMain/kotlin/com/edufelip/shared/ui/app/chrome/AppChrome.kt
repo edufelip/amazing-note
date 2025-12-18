@@ -81,6 +81,7 @@ fun AmazingTopBar(
         Modifier
             .fillMaxWidth()
             .statusBarsPadding()
+            .padding(vertical = 8.dp)
     }
 
     AdaptiveTopAppBar(

@@ -282,10 +282,8 @@ fun ListScreen(
                         }
                     }
 
-                    if (searchVisible) {
-                        item(key = "list_header_spacing") {
-                            Spacer(modifier = Modifier.height(tokens.spacing.md))
-                        }
+                    item(key = "list_header_spacing") {
+                        Spacer(modifier = Modifier.height(tokens.spacing.md))
                     }
 
                     // If search is active and nothing matches, show a search-specific message.
@@ -328,7 +326,7 @@ fun ListScreen(
                                 color = tokens.colors.onSurface,
                                 modifier = Modifier.padding(
                                     horizontal = tokens.spacing.xl,
-                                    vertical = tokens.spacing.sm,
+                                    vertical = tokens.spacing.md,
                                 ),
                             )
                         }

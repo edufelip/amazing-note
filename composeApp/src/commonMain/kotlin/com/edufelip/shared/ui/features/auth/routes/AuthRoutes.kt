@@ -36,10 +36,8 @@ fun LoginRoute(
         onSetError = { auth.setError(it) },
         events = auth.events,
         onLoginSuccess = {
-            // Login is reached from Settings; return there so the authenticated state is visible.
-            val popped = state.popBack()
-            if (!popped || state.currentRoute != AppRoutes.Settings) {
-                state.setRoot(AppRoutes.Settings)
+            if (!state.popBack()) {
+                state.setRoot(AppRoutes.Notes)
             }
         },
     )

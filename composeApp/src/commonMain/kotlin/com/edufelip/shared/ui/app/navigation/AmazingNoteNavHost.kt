@@ -121,6 +121,10 @@ fun AmazingNoteNavHost(
                     viewModel = viewModel,
                     syncManager = environment.notesSyncManager,
                     onNavigate = state::navigate,
+                    onAddNote = {
+                        // Always push a fresh note editor; avoid singleTop skips.
+                        state.navigate(AppRoutes.NoteDetail(id = null, folderId = route.id), singleTop = false)
+                    },
                     onBack = { state.popBack() },
                     isUserAuthenticated = isUserAuthenticated,
                 )

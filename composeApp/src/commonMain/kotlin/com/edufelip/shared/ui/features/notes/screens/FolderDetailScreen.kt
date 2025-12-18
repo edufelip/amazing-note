@@ -8,12 +8,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +31,6 @@ import androidx.compose.ui.text.font.FontWeight
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.delete_folder_message
-import com.edufelip.shared.resources.folder_add_note
 import com.edufelip.shared.resources.folder_detail_empty_hint
 import com.edufelip.shared.resources.folder_detail_empty_title
 import com.edufelip.shared.resources.folder_options_delete
@@ -130,20 +127,6 @@ fun FolderDetailScreen(
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddNote,
-                modifier = Modifier.padding(
-                    bottom = tokens.spacing.xxl,
-                    end = tokens.spacing.lg,
-                ),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(Res.string.folder_add_note),
-                )
-            }
         },
     ) { padding ->
         if (notes.isEmpty() && query.isBlank()) {
