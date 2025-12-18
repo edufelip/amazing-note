@@ -179,7 +179,6 @@
 
     <!-- Settings -->
     <string name="settings_header">Settings</string>
-    <string name="settings_review_reminder_title">Review reminder date</string>
     <string name="personalize_title">Personalize your notes</string>
     <string name="personalize_subtitle">Make the app yours by tweaking the look and feel.</string>
     <string name="welcome_message">Sign in to sync across devices.</string>

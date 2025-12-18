@@ -18,6 +18,10 @@
     <string name="forgot_password">Esqueceu a senha?</string>
     <string name="forgot_password_description">Digite seu e-mail para receber um link de redefinição.</string>
     <string name="forgot_password_send_email">Enviar e-mail de redefinição</string>
+    <string name="sign_up_title">Crie sua conta</string>
+    <string name="sign_up_subtitle">Junte-se à nossa comunidade de anotadores!</string>
+    <string name="sign_up_need_help">Precisa de ajuda?</string>
+    <string name="sign_up_primary_cta">Criar conta</string>
     <string name="sign_up">Criar conta</string>
     <string name="reset_email_sent">E-mail de redefinição enviado</string>
     <string name="sign_up_success">Conta criada com sucesso</string>
@@ -26,6 +30,11 @@
     <string name="login_error_invalid_credentials">Verifique se e-mail e senha estão corretos.</string>
     <string name="google_sign_in_canceled">Login com Google cancelado</string>
     <string name="logout_canceled">Saída cancelada</string>
+    <string name="login_headline">Bem-vindo de volta!</string>
+    <string name="login_subheadline">Entre para continuar gerenciando suas notas.</string>
+    <string name="login_dont_have_account">Não tem uma conta?</string>
+    <string name="login_signup_cta">Cadastre-se</string>
+    <string name="login_help">Precisa de ajuda?</string>
     <string name="welcome_user">Bem-vindo, %1$s</string>
     <string name="guest">Convidado</string>
     <string name="auth_generic_validation_error">Verifique suas credenciais e tente novamente.</string>
@@ -127,6 +136,9 @@
     <string name="cd_search">Pesquisar</string>
     <string name="cd_clear_search">Limpar pesquisa</string>
     <string name="cd_toggle_dark_theme">Alternar tema escuro</string>
+    <string name="cd_help">Ajuda</string>
+    <string name="folder_layout_list_content_description">Mudar para visualização em lista</string>
+    <string name="folder_layout_grid_content_description">Mudar para visualização em grade</string>
 
     <!-- Erros e Validação -->
     <string name="error_title_required">Título é obrigatório</string>
@@ -151,6 +163,9 @@
     <string name="folders_header_title">Pastas</string>
     <string name="folders_header_subtitle">Organize suas notas em pastas.</string>
     <string name="folders_view_all">Ver tudo</string>
+    <string name="search_hint_folders">Buscar pastas</string>
+    <string name="search_reset">Redefinir busca</string>
+    <string name="search_no_results">Nenhuma pasta encontrada</string>
     <string name="home_new_folder">Nova pasta</string>
     <string name="folder_note_count_one">1 nota</string>
     <string name="folder_note_count_other">%1$d notas</string>
@@ -161,10 +176,10 @@
     <string name="no_folder_label">Sem pasta</string>
     <string name="folder_field_label">Pasta</string>
     <string name="unassigned_notes">Sem pasta</string>
+    <string name="contact_us">Fale conosco</string>
 
     <!-- Configurações -->
     <string name="settings_header">Configurações</string>
-    <string name="settings_review_reminder_title">Data do lembrete de revisão</string>
     <string name="personalize_title">Personalize suas notas</string>
     <string name="personalize_subtitle">Deixe o app com a sua cara.</string>
     <string name="welcome_message">Entre para sincronizar em todos os dispositivos.</string>

@@ -18,7 +18,14 @@
     <string name="forgot_password">¿Olvidaste tu contraseña?</string>
     <string name="forgot_password_description">Ingresa tu correo para recibir un enlace de restablecimiento.</string>
     <string name="forgot_password_send_email">Enviar correo de restablecimiento</string>
+    <string name="sign_up_title">Crea tu cuenta</string>
+    <string name="sign_up_subtitle">¡Únete a nuestra comunidad de tomadores de notas!</string>
+    <string name="confirm_password">Confirmar contraseña</string>
+    <string name="password_requirements">Mín 8 caracteres, mayúscula, minúscula, dígito, símbolo</string>
+    <string name="passwords_do_not_match">Las contraseñas no coinciden</string>
     <string name="sign_up">Registrarse</string>
+    <string name="sign_up_primary_cta">Crear cuenta</string>
+    <string name="sign_up_need_help">¿Necesitas ayuda?</string>
     <string name="reset_email_sent">Correo de restablecimiento de contraseña enviado</string>
     <string name="sign_up_success">Cuenta creada con éxito</string>
     <string name="sign_out_success">Sesión cerrada</string>
@@ -26,6 +33,11 @@
     <string name="login_error_invalid_credentials">Verifica si el correo y la contraseña son correctos.</string>
     <string name="google_sign_in_canceled">Inicio de sesión con Google cancelado</string>
     <string name="logout_canceled">Cierre de sesión cancelado</string>
+    <string name="login_headline">¡Bienvenido de nuevo!</string>
+    <string name="login_subheadline">Inicia sesión para seguir gestionando tus notas.</string>
+    <string name="login_dont_have_account">¿No tienes una cuenta?</string>
+    <string name="login_signup_cta">Regístrate</string>
+    <string name="login_help">¿Necesitas ayuda?</string>
     <string name="welcome_user">Bienvenido, %1$s</string>
     <string name="guest">Invitado</string>
     <string name="auth_generic_validation_error">Verifica tus credenciales e inténtalo de nuevo.</string>
@@ -112,6 +124,11 @@
     <string name="cd_search">Buscar</string>
     <string name="cd_clear_search">Limpiar búsqueda</string>
     <string name="cd_toggle_dark_theme">Alternar tema oscuro</string>
+    <string name="cd_help">Ayuda</string>
+    <string name="cd_hide_password">Ocultar contraseña</string>
+    <string name="cd_show_password">Mostrar contraseña</string>
+    <string name="folder_layout_list_content_description">Cambiar a vista de lista</string>
+    <string name="folder_layout_grid_content_description">Cambiar a vista de cuadrícula</string>
 
     <!-- Errores y Validación -->
     <string name="error_title_required">El título es obligatorio</string>
@@ -136,6 +153,9 @@
     <string name="folders_header_title">Carpetas</string>
     <string name="folders_header_subtitle">Organiza tus notas en carpetas.</string>
     <string name="folders_view_all">Ver todo</string>
+    <string name="search_hint_folders">Buscar carpetas</string>
+    <string name="search_reset">Reiniciar búsqueda</string>
+    <string name="search_no_results">No se encontraron carpetas</string>
     <string name="home_new_folder">Nueva carpeta</string>
     <string name="folder_note_count_one">1 nota</string>
     <string name="folder_note_count_other">%1$d notas</string>
@@ -146,10 +166,10 @@
     <string name="no_folder_label">Sin carpeta</string>
     <string name="folder_field_label">Carpeta</string>
     <string name="unassigned_notes">Sin asignar</string>
+    <string name="contact_us">Contáctanos</string>
 
     <!-- Ajustes -->
     <string name="settings_header">Ajustes</string>
-    <string name="settings_review_reminder_title">Fecha del recordatorio de repaso</string>
     <string name="personalize_title">Personaliza tus notas</string>
     <string name="personalize_subtitle">Ajusta la apariencia a tu gusto.</string>
     <string name="welcome_message">Inicia sesión para sincronizar en todos tus dispositivos.</string>
