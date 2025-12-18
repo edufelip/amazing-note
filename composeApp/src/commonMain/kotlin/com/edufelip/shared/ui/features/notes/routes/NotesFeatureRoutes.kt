@@ -28,6 +28,8 @@ fun FoldersRoute(
     isDarkTheme: Boolean,
     authViewModel: AuthViewModel,
     isUserAuthenticated: Boolean,
+    onAvatarClick: () -> Unit,
+    onLogout: () -> Unit,
 ) {
     CollectNoteSyncEvents(
         viewModel = viewModel,
@@ -50,6 +52,7 @@ fun FoldersRoute(
         onOpenFolder = { folder ->
             onNavigate(AppRoutes.FolderDetail(folder.id))
         },
+        onAvatarClick = onAvatarClick,
         onCreateFolder = { name ->
             val sanitized = sanitizeInlineInput(name, maxLength = 50)
             if (sanitized.modified) {
@@ -78,6 +81,7 @@ fun FoldersRoute(
         onDeleteFolder = { folder ->
             viewModel.deleteFolder(folder.id, syncAfter = isUserAuthenticated)
         },
+        onLogout = onLogout,
     )
 }
 

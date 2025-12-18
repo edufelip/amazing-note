@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,6 +33,9 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PrivacyTip
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -43,7 +47,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,6 +65,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.PaddingValues
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.account_section
 import com.edufelip.shared.resources.app_version_label
@@ -76,7 +80,6 @@ import com.edufelip.shared.resources.personalize_subtitle
 import com.edufelip.shared.resources.personalize_title
 import com.edufelip.shared.resources.privacy_policy
 import com.edufelip.shared.resources.settings_header
-import com.edufelip.shared.resources.settings_review_reminder_title
 import com.edufelip.shared.resources.theme_option
 import com.edufelip.shared.resources.theme_subtitle
 import com.edufelip.shared.resources.trash
@@ -84,23 +87,22 @@ import com.edufelip.shared.resources.trash_subtitle
 import com.edufelip.shared.resources.welcome_message
 import com.edufelip.shared.resources.yes
 import com.edufelip.shared.ui.app.chrome.AmazingTopBar
+import com.edufelip.shared.ui.components.atoms.common.AvatarImage
 import com.edufelip.shared.ui.components.organisms.settings.PersonalizeHeroIllustration
 import com.edufelip.shared.ui.designsystem.designTokens
-import com.edufelip.shared.ui.ios.IosDatePicker
-import com.edufelip.shared.ui.settings.LocalSettings
 import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.util.platform.Haptics
-import com.edufelip.shared.ui.util.platform.currentEpochMillis
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.util.security.sanitizeUserDisplay
 import com.edufelip.shared.ui.vm.AuthViewModel
 import com.slapps.cupertino.CupertinoButtonDefaults
 import com.slapps.cupertino.adaptive.AdaptiveButton
 import com.slapps.cupertino.adaptive.ExperimentalAdaptiveApi
+import androidx.compose.material3.ExperimentalMaterial3Api
 import com.slapps.cupertino.adaptive.icons.AdaptiveIcons
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalAdaptiveApi::class)
+@OptIn(ExperimentalAdaptiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     darkTheme: Boolean,
@@ -117,21 +119,24 @@ fun SettingsScreen(
     val userState = auth?.uiState?.collectWithLifecycle()?.value?.user
     val tokens = designTokens()
     val itemsSpacing = tokens.spacing.lg
-    val settingsStore = LocalSettings.current
-    val reviewDateKey = "daily_review_epoch"
-    var reviewReminder by rememberSaveable(reviewDateKey) {
-        mutableStateOf(
-            settingsStore.getString(reviewDateKey, "").toLongOrNull() ?: currentEpochMillis(),
-        )
-    }
     var logoutDialogVisible by remember { mutableStateOf(false) }
-    LaunchedEffect(reviewReminder) {
-        settingsStore.setString(reviewDateKey, reviewReminder.toString())
-    }
+    var showAccountSheet by rememberSaveable { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        topBar = { AmazingTopBar(user = userState) },
+        topBar = {
+            AmazingTopBar(
+                user = userState,
+                onAvatarClick = {
+                    if (userState == null) {
+                        onLogin()
+                    } else {
+                        showAccountSheet = true
+                    }
+                },
+            )
+        },
         containerColor = tokens.colors.canvas,
         contentWindowInsets = WindowInsets(),
     ) { padding ->
@@ -173,32 +178,6 @@ fun SettingsScreen(
                         )
                     },
                 )
-            }
-
-            if (chrome.useCupertinoLook) {
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                tokens.colors.elevatedSurface,
-                                RoundedCornerShape(tokens.radius.lg + tokens.radius.sm),
-                            )
-                            .padding(tokens.spacing.lg),
-                        verticalArrangement = Arrangement.spacedBy(tokens.spacing.md),
-                    ) {
-                        Text(
-                            text = stringResource(Res.string.settings_review_reminder_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = tokens.colors.onSurface,
-                        )
-                        IosDatePicker(
-                            epochMillis = reviewReminder,
-                            onChange = { reviewReminder = it },
-                        )
-                    }
-                }
             }
 
             item { SectionTitle(text = stringResource(Res.string.account_section)) }
@@ -329,6 +308,64 @@ fun SettingsScreen(
                             .padding(bottom = tokens.spacing.xxxl)
                     },
                 )
+            }
+        }
+    }
+
+    if (showAccountSheet && userState != null) {
+        ModalBottomSheet(
+            onDismissRequest = { showAccountSheet = false },
+            sheetState = sheetState,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(tokens.spacing.xl),
+                verticalArrangement = Arrangement.spacedBy(tokens.spacing.md),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(tokens.spacing.md),
+                ) {
+                    AvatarImage(
+                        photoUrl = userState.photoUrl,
+                        size = tokens.spacing.xxl,
+                    )
+                    Column {
+                        Text(
+                            text = userState.displayName?.takeIf { it.isNotBlank() }
+                                ?: userState.email.orEmpty(),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = tokens.colors.onSurface,
+                        )
+                        userState.email?.let {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = tokens.colors.muted,
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(tokens.spacing.xxl))
+
+                OutlinedButton(
+                    onClick = {
+                        showAccountSheet = false
+                        logoutDialogVisible = true
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(vertical = tokens.spacing.md),
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Logout,
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = tokens.spacing.sm),
+                    )
+                    Text(text = stringResource(Res.string.logout))
+                }
+                Spacer(modifier = Modifier.height(tokens.spacing.md + 8.dp))
             }
         }
     }

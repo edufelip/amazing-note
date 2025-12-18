@@ -51,7 +51,6 @@
     <string name="login_rate_limit">Muitas tentativas. Tente novamente em %1$d segundos.</string>
 
     <!-- Autenticação - Tela de cadastro -->
-    <string name="sign_up_title">Crie sua conta</string>
     <string name="confirm_password">Confirmar senha</string>
     <string name="password_requirements">Mín. 8 caracteres, maiúscula, minúscula, dígito, símbolo</string>
     <string name="passwords_do_not_match">As senhas não coincidem</string>

@@ -1,8 +1,16 @@
 package com.edufelip.shared.ui.components.organisms.notes
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.ViewAgenda
@@ -36,6 +44,7 @@ fun FoldersHeader(
     onToggleLayout: () -> Unit,
     modifier: Modifier = Modifier,
     showControls: Boolean = true,
+    showSearchBar: Boolean = true,
 ) {
     val tokens = designTokens()
     Column(
@@ -46,23 +55,44 @@ fun FoldersHeader(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(tokens.spacing.md),
             ) {
-                MaterialSearchBar(
-                    modifier = Modifier.weight(1f),
-                    query = query,
-                    onQueryChange = onQueryChange,
-                )
-                FilledTonalIconButton(
-                    onClick = onToggleLayout,
-                    colors = IconButtonDefaults.filledTonalIconButtonColors(
-                        containerColor = tokens.colors.accentMuted,
-                        contentColor = tokens.colors.onSurface,
-                    ),
-                ) {
-                    val (icon, description) = when (layoutMode) {
-                        FolderLayout.Grid -> Icons.Outlined.ViewAgenda to stringResource(Res.string.folder_layout_list_content_description)
-                        FolderLayout.List -> Icons.Outlined.GridView to stringResource(Res.string.folder_layout_grid_content_description)
+                androidx.compose.foundation.layout.Box(Modifier.weight(1f)) {
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = showSearchBar,
+                        enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
+                        exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut(),
+                    ) {
+                        MaterialSearchBar(
+                            modifier = Modifier,
+                            query = query,
+                            onQueryChange = onQueryChange,
+                        )
                     }
-                    Icon(imageVector = icon, contentDescription = description)
+                }
+
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = showSearchBar,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(tokens.spacing.sm),
+                    ) {
+                        Spacer(modifier = Modifier.width(tokens.spacing.sm))
+                        FilledTonalIconButton(
+                            onClick = onToggleLayout,
+                            colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                containerColor = tokens.colors.accentMuted,
+                                contentColor = tokens.colors.onSurface,
+                            ),
+                        ) {
+                            val (icon, description) = when (layoutMode) {
+                                FolderLayout.Grid -> Icons.Outlined.ViewAgenda to stringResource(Res.string.folder_layout_list_content_description)
+                                FolderLayout.List -> Icons.Outlined.GridView to stringResource(Res.string.folder_layout_grid_content_description)
+                            }
+                            Icon(imageVector = icon, contentDescription = description)
+                        }
+                    }
                 }
             }
         }

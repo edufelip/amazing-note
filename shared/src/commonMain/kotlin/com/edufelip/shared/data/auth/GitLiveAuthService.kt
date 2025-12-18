@@ -45,6 +45,6 @@ class GitLiveAuthService(
         uid = uid,
         displayName = displayName,
         email = email,
-        photoUrl = photoURL,
+        photoUrl = photoURL ?: providerData.firstNotNullOfOrNull { it.photoURL },
     )
 }

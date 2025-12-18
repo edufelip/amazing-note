@@ -64,7 +64,11 @@ import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalAdaptiveApi::class)
 @Composable
-fun AmazingTopBar(user: AuthUser?) {
+fun AmazingTopBar(
+    user: AuthUser?,
+    actions: @Composable RowScope.() -> Unit = {},
+    onAvatarClick: () -> Unit = {},
+) {
     val name = sanitizeUserDisplay(
         user?.displayName?.takeIf { it.isNotBlank() }
             ?: user?.email?.takeIf { it.isNotBlank() }
@@ -90,6 +94,7 @@ fun AmazingTopBar(user: AuthUser?) {
                 AvatarImage(
                     photoUrl = user?.photoUrl,
                     size = tokens.spacing.xl + tokens.spacing.sm,
+                    modifier = Modifier.clickable(onClick = onAvatarClick),
                 )
             }
         },
@@ -101,7 +106,7 @@ fun AmazingTopBar(user: AuthUser?) {
                 modifier = Modifier.padding(vertical = tokens.spacing.xs),
             )
         },
-        actions = {},
+        actions = actions,
     ) {
         material {
             colors = TopAppBarDefaults.topAppBarColors(

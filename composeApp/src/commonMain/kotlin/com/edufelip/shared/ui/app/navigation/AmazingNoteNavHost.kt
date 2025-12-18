@@ -39,6 +39,7 @@ import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.util.platform.platformBehavior
 import com.edufelip.shared.ui.vm.NoteUiViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalLayoutApi::class)
 @Composable
@@ -56,6 +57,14 @@ fun AmazingNoteNavHost(
     val platformBehavior = platformBehavior()
     val authUiState by state.authViewModel.uiState.collectWithLifecycle()
     val isUserAuthenticated = authUiState.user != null
+    val logoutAndSync: () -> Unit = {
+        state.coroutineScope.launch {
+            if (state.authViewModel.uiState.value.user != null) {
+                runCatching { environment.notesSyncManager.syncLocalToRemoteOnly() }
+            }
+            state.authViewModel.logout()
+        }
+    }
 
     val contentModifier = Modifier
         .fillMaxSize()
@@ -77,6 +86,12 @@ fun AmazingNoteNavHost(
                     onNavigate = state::navigate,
                     attachmentPicker = environment.attachmentPicker,
                     isUserAuthenticated = isUserAuthenticated,
+                    onAvatarClick = {
+                        if (!isUserAuthenticated) {
+                            state.navigate(AppRoutes.Login)
+                        }
+                    },
+                    onLogout = logoutAndSync,
                 )
 
                 AppRoutes.Folders -> FoldersRoute(
@@ -86,6 +101,12 @@ fun AmazingNoteNavHost(
                     isDarkTheme = darkTheme,
                     authViewModel = state.authViewModel,
                     isUserAuthenticated = isUserAuthenticated,
+                    onAvatarClick = {
+                        if (!isUserAuthenticated) {
+                            state.navigate(AppRoutes.Login)
+                        }
+                    },
+                    onLogout = logoutAndSync,
                 )
 
                 AppRoutes.Settings -> SettingsRoute(

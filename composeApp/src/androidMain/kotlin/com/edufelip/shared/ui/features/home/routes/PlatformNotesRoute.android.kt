@@ -51,6 +51,8 @@ actual fun PlatformNotesRoute(
     syncManager: NotesSyncManager,
     onNavigate: (AppRoutes) -> Unit,
     isUserAuthenticated: Boolean,
+    onAvatarClick: () -> Unit,
+    onLogout: () -> Unit,
 ) {
     CollectNoteSyncEvents(
         viewModel = viewModel,
@@ -66,12 +68,14 @@ actual fun PlatformNotesRoute(
 
     if (isCompactWidth) {
         HomeScreen(
-            notes = notes,
-            auth = authViewModel,
-            onOpenNote = { note ->
-                onNavigate(AppRoutes.NoteDetail(note.id, note.folderId))
-            },
-            onAdd = { onNavigate(AppRoutes.NoteDetail(null, null)) },
+        notes = notes,
+        auth = authViewModel,
+        onOpenNote = { note ->
+            onNavigate(AppRoutes.NoteDetail(note.id, note.folderId))
+        },
+        onAdd = { onNavigate(AppRoutes.NoteDetail(null, null)) },
+        onAvatarClick = onAvatarClick,
+        onLogout = onLogout,
         )
         return
     }
@@ -129,6 +133,8 @@ private fun NotesListPane(
             )
         },
         onAdd = onCreateNote,
+        onAvatarClick = onAvatarClick,
+        onLogout = onLogout,
     )
 }
 

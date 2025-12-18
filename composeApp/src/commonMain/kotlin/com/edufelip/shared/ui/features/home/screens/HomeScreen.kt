@@ -8,16 +8,48 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import com.edufelip.shared.ui.components.atoms.common.AvatarImage
+import com.edufelip.shared.resources.Res
+import com.edufelip.shared.resources.cd_clear_search
+import com.edufelip.shared.resources.cd_search
+import com.edufelip.shared.resources.logout
 import com.edufelip.shared.data.sync.LocalNotesSyncManager
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.ui.app.chrome.AmazingTopBar
@@ -39,6 +71,8 @@ fun HomeScreen(
     auth: AuthViewModel?,
     onOpenNote: (Note) -> Unit,
     onAdd: () -> Unit,
+    onAvatarClick: () -> Unit = {},
+    onLogout: () -> Unit = {},
 ) {
     val currentUserState = auth?.uiState?.collectWithLifecycle()?.value
     val currentUid = currentUserState?.user?.uid
@@ -49,6 +83,9 @@ fun HomeScreen(
     }
 
     val query = remember { mutableStateOf("") }
+    var searchVisible by rememberSaveable { mutableStateOf(false) }
+    var showAccountSheet by rememberSaveable { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val filteredNotes =
         if (query.value.isBlank()) {
@@ -62,9 +99,55 @@ fun HomeScreen(
 
     val hasNotes = notes.isNotEmpty()
     val tokens = designTokens()
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+    LaunchedEffect(hasNotes) {
+        if (!hasNotes) {
+            searchVisible = false
+            query.value = ""
+        }
+    }
 
     Scaffold(
-        topBar = { AmazingTopBar(user = currentUserState?.user) },
+        topBar = {
+            AmazingTopBar(
+                user = currentUserState?.user,
+                onAvatarClick = {
+                    if (currentUserState?.user == null) {
+                        onAvatarClick()
+                    } else {
+                        showAccountSheet = true
+                    }
+                },
+                actions = {
+                    if (hasNotes) {
+                        IconButton(
+                            onClick = {
+                                if (searchVisible) {
+                                    searchVisible = false
+                                    query.value = ""
+                                    keyboardController?.hide()
+                                    focusManager.clearFocus()
+                                } else {
+                                    searchVisible = true
+                                }
+                            },
+                        ) {
+                            val isOpen = searchVisible
+                            Icon(
+                                imageVector = if (isOpen) Icons.Filled.Close else Icons.Filled.Search,
+                                contentDescription = if (isOpen) {
+                                    stringResource(Res.string.cd_clear_search)
+                                } else {
+                                    stringResource(Res.string.cd_search)
+                                },
+                                tint = tokens.colors.onSurface,
+                            )
+                        }
+                    }
+                },
+            )
+        },
         containerColor = Color.Transparent,
         contentWindowInsets = WindowInsets(),
     ) { padding ->
@@ -80,6 +163,7 @@ fun HomeScreen(
                 searchQuery = query.value,
                 onSearchQueryChange = { query.value = it },
                 showTopAppBar = false,
+                searchVisible = searchVisible,
                 hasAnyNotes = hasNotes,
                 headerContent = null,
                 emptyContent = {
@@ -95,6 +179,64 @@ fun HomeScreen(
                     color = tokens.colors.accent,
                     trackColor = tokens.colors.accentMuted.copy(alpha = 0.35f),
                 )
+            }
+        }
+    }
+
+    if (showAccountSheet && currentUserState?.user != null) {
+        ModalBottomSheet(
+            onDismissRequest = { showAccountSheet = false },
+            sheetState = sheetState,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(tokens.spacing.xl),
+                verticalArrangement = Arrangement.spacedBy(tokens.spacing.md),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(tokens.spacing.md),
+                ) {
+                    AvatarImage(
+                        photoUrl = currentUserState.user.photoUrl,
+                        size = tokens.spacing.xxl,
+                    )
+                    Column {
+                        Text(
+                            text = currentUserState.user.displayName?.takeIf { it.isNotBlank() }
+                                ?: currentUserState.user.email.orEmpty(),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = tokens.colors.onSurface,
+                        )
+                        currentUserState.user.email?.let {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = tokens.colors.muted,
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(tokens.spacing.xxl))
+
+                OutlinedButton(
+                    onClick = {
+                        showAccountSheet = false
+                        onLogout()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(vertical = tokens.spacing.md),
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Logout,
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = tokens.spacing.sm),
+                    )
+                    Text(text = stringResource(Res.string.logout))
+                }
+                Spacer(modifier = Modifier.height(tokens.spacing.md + 8.dp))
             }
         }
     }
@@ -116,6 +258,7 @@ internal fun HomeScreenPreview(
             auth = null,
             onOpenNote = {},
             onAdd = {},
+            onLogout = {},
         )
     }
 }
