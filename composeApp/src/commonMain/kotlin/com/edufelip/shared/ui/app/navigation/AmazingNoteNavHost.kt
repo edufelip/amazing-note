@@ -1,7 +1,6 @@
 package com.edufelip.shared.ui.app.navigation
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.tween
@@ -23,8 +22,8 @@ import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
 import com.edufelip.shared.ui.app.state.AmazingNoteAppState
 import com.edufelip.shared.ui.features.auth.routes.LoginRoute
 import com.edufelip.shared.ui.features.auth.routes.SignUpRoute
@@ -182,14 +181,18 @@ fun AmazingNoteNavHost(
                 val enterOffset: (Int) -> Int = { fullWidth -> if (isForward) fullWidth else -fullWidth }
                 val exitOffset: (Int) -> Int = { fullWidth -> if (isForward) -fullWidth else fullWidth }
 
-                (slideInHorizontally(
-                    initialOffsetX = enterOffset,
-                    animationSpec = slideSpec,
-                ) + fadeIn(animationSpec = fadeSpec)) togetherWith
-                    (slideOutHorizontally(
-                        targetOffsetX = exitOffset,
+                (
+                    slideInHorizontally(
+                        initialOffsetX = enterOffset,
                         animationSpec = slideSpec,
-                    ) + fadeOut(animationSpec = fadeSpec)) using SizeTransform(clip = false)
+                    ) + fadeIn(animationSpec = fadeSpec)
+                    ) togetherWith
+                    (
+                        slideOutHorizontally(
+                            targetOffsetX = exitOffset,
+                            animationSpec = slideSpec,
+                        ) + fadeOut(animationSpec = fadeSpec)
+                        ) using SizeTransform(clip = false)
             },
         ) { scene ->
             SceneContent(scene)

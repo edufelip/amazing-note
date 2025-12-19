@@ -276,7 +276,7 @@ private fun ImageBlockView(
     var dragging by remember(block.id) { mutableStateOf(false) }
     var localModel by remember(block.id) {
         mutableStateOf(
-            block.cachedRemoteUri ?: block.localUri ?: block.thumbnailLocalUri
+            block.cachedRemoteUri ?: block.localUri ?: block.thumbnailLocalUri,
         )
     }
     val remoteCandidates = listOfNotNull(
@@ -357,10 +357,8 @@ private fun KeyEvent.isPasteShortcut(): Boolean = isShortcut(Key.V)
 
 private fun KeyEvent.isUndoShortcut(): Boolean = isShortcut(Key.Z) && !isShiftPressed
 
-private fun KeyEvent.isRedoShortcut(): Boolean =
-    (isShortcut(Key.Z) && isShiftPressed) || isShortcut(Key.Y)
+private fun KeyEvent.isRedoShortcut(): Boolean = (isShortcut(Key.Z) && isShiftPressed) || isShortcut(Key.Y)
 
-private fun KeyEvent.isShortcut(targetKey: Key): Boolean =
-    type == KeyEventType.KeyDown && (isCtrlPressed || isMetaPressed) && key == targetKey
+private fun KeyEvent.isShortcut(targetKey: Key): Boolean = type == KeyEventType.KeyDown && (isCtrlPressed || isMetaPressed) && key == targetKey
 
 private fun isRemoteUri(uri: String): Boolean = uri.startsWith("http", ignoreCase = true)

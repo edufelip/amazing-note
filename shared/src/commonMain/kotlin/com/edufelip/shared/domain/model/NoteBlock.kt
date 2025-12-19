@@ -37,15 +37,11 @@ data class TextBlock(
     val text: String,
     val spans: List<NoteTextSpan> = emptyList(),
 ) : NoteBlock {
-    override fun equals(other: Any?): Boolean {
-        return other is TextBlock &&
-                other.text == text &&
-                other.spans == spans
-    }
+    override fun equals(other: Any?): Boolean = other is TextBlock &&
+        other.text == text &&
+        other.spans == spans
 
-    override fun hashCode(): Int {
-        return super.hashCode()
-    }
+    override fun hashCode(): Int = super.hashCode()
 }
 
 @Serializable
@@ -75,14 +71,10 @@ data class ImageBlock(
     val height: Int? = null,
     val thumbnailUri: String? = null,
 ) : NoteBlock {
-    override fun equals(other: Any?): Boolean {
-        return other is ImageBlock &&
-                other.resolvedDownloadUrl == resolvedDownloadUrl
-    }
+    override fun equals(other: Any?): Boolean = other is ImageBlock &&
+        other.resolvedDownloadUrl == resolvedDownloadUrl
 
-    override fun hashCode(): Int {
-        return super.hashCode()
-    }
+    override fun hashCode(): Int = super.hashCode()
 }
 
 fun generateBlockId(): String = buildString(capacity = BLOCK_ID_LENGTH) {

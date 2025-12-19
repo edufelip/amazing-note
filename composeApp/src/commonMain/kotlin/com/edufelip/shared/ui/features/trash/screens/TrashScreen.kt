@@ -106,7 +106,7 @@ fun TrashScreen(
                     top = padding.calculateTopPadding(),
                     start = padding.calculateStartPadding(LayoutDirection.Ltr),
                     end = padding.calculateEndPadding(LayoutDirection.Ltr),
-                )
+                ),
         ) {
             TrashTimeline(
                 notes = notes,

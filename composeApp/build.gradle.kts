@@ -45,6 +45,7 @@ kotlin {
             implementation(libs.compose.material3.adaptive)
             implementation(libs.compose.material3.window.size)
             implementation(libs.koin.android)
+            implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -74,6 +75,7 @@ kotlin {
         iosMain.dependencies {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+            implementation(libs.ktor.client.darwin)
         }
     }
 }

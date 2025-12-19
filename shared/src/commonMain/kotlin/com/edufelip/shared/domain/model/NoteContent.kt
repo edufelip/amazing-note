@@ -208,10 +208,9 @@ fun NoteContent.mergeCachedImages(other: NoteContent): NoteContent {
     )
 }
 
-private fun keyForImage(image: ImageBlock): String =
-    image.storagePath
-        ?: image.thumbnailStoragePath
-        ?: image.id
+private fun keyForImage(image: ImageBlock): String = image.storagePath
+    ?: image.thumbnailStoragePath
+    ?: image.id
 
 fun NoteContent.trimEmptyTextBlocks(): NoteContent = copy(
     blocks = blocks.filterNot { block ->

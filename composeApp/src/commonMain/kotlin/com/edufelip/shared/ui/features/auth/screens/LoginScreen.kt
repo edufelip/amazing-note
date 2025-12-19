@@ -43,7 +43,6 @@ import com.edufelip.shared.resources.email_required
 import com.edufelip.shared.resources.forgot_password
 import com.edufelip.shared.resources.forgot_password_invalid_email
 import com.edufelip.shared.resources.forgot_password_try_again
-import com.edufelip.shared.resources.google_sign_in_canceled
 import com.edufelip.shared.resources.login_error_invalid_credentials
 import com.edufelip.shared.resources.login_headline
 import com.edufelip.shared.resources.login_rate_limit

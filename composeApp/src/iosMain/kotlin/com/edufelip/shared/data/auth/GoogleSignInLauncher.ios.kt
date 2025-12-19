@@ -15,17 +15,17 @@ import platform.AuthenticationServices.ASWebAuthenticationSessionCompletionHandl
 import platform.Foundation.NSBundle
 import platform.Foundation.NSDictionary
 import platform.Foundation.NSJSONSerialization
+import platform.Foundation.NSMutableURLRequest
 import platform.Foundation.NSString
 import platform.Foundation.NSURL
 import platform.Foundation.NSURLComponents
 import platform.Foundation.NSURLQueryItem
-import platform.Foundation.NSUUID
-import platform.Foundation.NSMutableURLRequest
-import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.NSURLRequestReloadIgnoringLocalCacheData
 import platform.Foundation.NSURLSession
-import platform.Foundation.dataTaskWithRequest
+import platform.Foundation.NSUTF8StringEncoding
+import platform.Foundation.NSUUID
 import platform.Foundation.create
+import platform.Foundation.dataTaskWithRequest
 import platform.Foundation.dataUsingEncoding
 import platform.Foundation.setHTTPBody
 import platform.Foundation.setHTTPMethod
@@ -44,6 +44,7 @@ actual fun rememberGoogleSignInLauncher(config: GoogleSignInConfig): GoogleSignI
 
 private class IosGoogleSignInLauncher : GoogleSignInLauncher {
     private var session: ASWebAuthenticationSession? = null
+
     @Suppress("UnusedPrivateMember") // Kept to hold a strong reference while the session is active.
     private var presentationContext: PresentationContext? = null
 
@@ -313,7 +314,7 @@ private fun exchangeCodeForIdTokenAsync(
 
 private class PresentationContext(
     private val anchor: ASPresentationAnchor,
-) : NSObject(), ASWebAuthenticationPresentationContextProvidingProtocol {
-    override fun presentationAnchorForWebAuthenticationSession(session: ASWebAuthenticationSession): ASPresentationAnchor =
-        anchor
+) : NSObject(),
+    ASWebAuthenticationPresentationContextProvidingProtocol {
+    override fun presentationAnchorForWebAuthenticationSession(session: ASWebAuthenticationSession): ASPresentationAnchor = anchor
 }

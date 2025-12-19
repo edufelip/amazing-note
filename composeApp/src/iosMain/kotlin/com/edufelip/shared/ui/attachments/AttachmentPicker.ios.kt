@@ -18,7 +18,6 @@ import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL
 import platform.Foundation.NSUUID
 import platform.Foundation.NSUserDomainMask
-import platform.UIKit.UIImageJPEGRepresentation
 import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.PHPickerConfiguration
 import platform.PhotosUI.PHPickerFilter

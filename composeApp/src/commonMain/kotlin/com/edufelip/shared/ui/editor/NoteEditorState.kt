@@ -629,7 +629,9 @@ private fun List<NoteBlock>.sameAs(other: List<NoteBlock>): Boolean {
                     a.alt != otherImage.alt ||
                     a.fileName != otherImage.fileName ||
                     a.syncState != otherImage.syncState
-                ) return false
+                ) {
+                    return false
+                }
             }
         }
     }

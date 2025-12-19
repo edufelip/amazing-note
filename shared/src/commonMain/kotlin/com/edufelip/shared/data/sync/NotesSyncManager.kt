@@ -17,8 +17,8 @@ import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.domain.model.TextBlock
 import com.edufelip.shared.domain.model.attachmentsFromJson
 import com.edufelip.shared.domain.model.mergeCachedImages
-import com.edufelip.shared.domain.model.noteContentFromJson
 import com.edufelip.shared.domain.model.normalizeCachedImages
+import com.edufelip.shared.domain.model.noteContentFromJson
 import com.edufelip.shared.domain.model.spansFromJson
 import com.edufelip.shared.domain.model.toJson
 import com.edufelip.shared.domain.model.toSummary
@@ -82,9 +82,9 @@ class NotesSyncManager(
                 handleSyncError("manual sync", throwable)
             }
             .getOrNull() ?: run {
-                emitSyncCompleted()
-                return
-            }
+            emitSyncCompleted()
+            return
+        }
         if (payload.notes.isEmpty() && payload.folders.isEmpty()) {
             emitSyncCompleted()
             return

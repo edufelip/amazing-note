@@ -2,14 +2,13 @@ package com.edufelip.shared.ui.features.notes.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.Center
 import androidx.compose.foundation.layout.Box
@@ -35,7 +34,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.surfaceColorAtElevation
@@ -205,7 +203,6 @@ fun ListScreen(
                                 .background(tokens.colors.surface)
                                 .animateContentSize(animationSpec = tween(durationMillis = 220, easing = LinearEasing)),
                         ) {
-
                             AnimatedVisibility(
                                 visible = searchVisible,
                                 enter = slideInVertically(initialOffsetY = { -it }, animationSpec = tween(durationMillis = 220, easing = LinearEasing)) + fadeIn(tween(durationMillis = 220, easing = LinearEasing)),

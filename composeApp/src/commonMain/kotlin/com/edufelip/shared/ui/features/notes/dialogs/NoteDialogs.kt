@@ -5,12 +5,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.dialog_cancel
-import com.edufelip.shared.resources.note_discard_confirm
-import com.edufelip.shared.resources.note_discard_message
-import com.edufelip.shared.resources.note_discard_title
 import com.edufelip.shared.resources.note_delete_confirm
 import com.edufelip.shared.resources.note_delete_message
 import com.edufelip.shared.resources.note_delete_title
+import com.edufelip.shared.resources.note_discard_confirm
+import com.edufelip.shared.resources.note_discard_message
+import com.edufelip.shared.resources.note_discard_title
 import com.edufelip.shared.ui.util.platform.Haptics
 import com.slapps.cupertino.adaptive.AdaptiveAlertDialog
 import com.slapps.cupertino.adaptive.ExperimentalAdaptiveApi

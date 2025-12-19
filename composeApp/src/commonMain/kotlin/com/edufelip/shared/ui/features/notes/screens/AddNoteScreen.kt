@@ -91,7 +91,7 @@ fun AddNoteScreen(
         Box(
             modifier = modifier
                 .padding(top = it.calculateTopPadding())
-                .fillMaxSize()
+                .fillMaxSize(),
         ) {
             Column(
                 modifier = Modifier
@@ -116,7 +116,7 @@ fun AddNoteScreen(
                     verticalArrangement = Arrangement.spacedBy(tokens.spacing.sm),
                     contentPadding = PaddingValues(
                         top = tokens.spacing.sm,
-                        bottom = tokens.spacing.zero
+                        bottom = tokens.spacing.zero,
                     ),
                 ) {
                     item(key = "title") {
@@ -249,7 +249,6 @@ internal fun AddNoteScreenPreview(
     )
 }
 
-internal expect class AddNoteScreenPreviewProvider() :
-    PreviewParameterProvider<AddNoteScreenPreviewState> {
+internal expect class AddNoteScreenPreviewProvider() : PreviewParameterProvider<AddNoteScreenPreviewState> {
     override val values: Sequence<AddNoteScreenPreviewState>
 }

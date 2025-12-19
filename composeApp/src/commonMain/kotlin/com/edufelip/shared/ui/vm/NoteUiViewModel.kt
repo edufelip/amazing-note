@@ -61,7 +61,7 @@ interface NoteUiViewModel {
         spans: List<NoteTextSpan>? = null,
         attachments: List<NoteAttachment>? = null,
         folderId: Long? = null,
-        content: NoteContent? = null
+        content: NoteContent? = null,
     )
     fun setDeleted(id: Int, deleted: Boolean, syncAfter: Boolean = false)
     fun delete(id: Int, syncAfter: Boolean = false)

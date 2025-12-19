@@ -68,14 +68,14 @@ actual fun PlatformNotesRoute(
 
     if (isCompactWidth) {
         HomeScreen(
-        notes = notes,
-        auth = authViewModel,
-        onOpenNote = { note ->
-            onNavigate(AppRoutes.NoteDetail(note.id, note.folderId))
-        },
-        onAdd = { onNavigate(AppRoutes.NoteDetail(null, null)) },
-        onAvatarClick = onAvatarClick,
-        onLogout = onLogout,
+            notes = notes,
+            auth = authViewModel,
+            onOpenNote = { note ->
+                onNavigate(AppRoutes.NoteDetail(note.id, note.folderId))
+            },
+            onAdd = { onNavigate(AppRoutes.NoteDetail(null, null)) },
+            onAvatarClick = onAvatarClick,
+            onLogout = onLogout,
         )
         return
     }
