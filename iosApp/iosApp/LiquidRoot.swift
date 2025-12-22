@@ -14,6 +14,17 @@ struct LiquidRoot: View {
     @State private var selection: Tab = .notes
     @StateObject private var tabBar = TabBarVisibility()
     @State private var lastRouteHandled: String?
+    private let forcedColorScheme: ColorScheme?
+
+    init(
+        forcedColorScheme: ColorScheme? = nil,
+        initialTabId: String? = nil
+    ) {
+        self.forcedColorScheme = forcedColorScheme
+        if let initialTabId, let resolvedTab = Tab(routeID: initialTabId) {
+            _selection = State(initialValue: resolvedTab)
+        }
+    }
 
     private var themeHostIdentifier: String {
         darkThemeEnabled ? "theme-dark" : "theme-light"
@@ -84,7 +95,7 @@ struct LiquidRoot: View {
             .tabItem { Label("Settings", systemImage: "gearshape") }
             .tag(Tab.settings)
         }
-        .preferredColorScheme(darkThemeEnabled ? .dark : .light)
+        .preferredColorScheme(forcedColorScheme ?? (darkThemeEnabled ? .dark : .light))
         .onChange(of: darkThemeEnabled) { _ in
             // Keep the user on Settings after theme-triggered controller rebuilds.
             selection = .settings

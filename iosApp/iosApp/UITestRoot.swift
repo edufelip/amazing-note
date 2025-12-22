@@ -12,8 +12,19 @@ struct UITestRootView: View {
     }
 
     var body: some View {
-        ComposeRouteHost(route: resolveRoute())
-            .preferredColorScheme(darkMode ? .dark : .light)
+        if shouldUseTabHost {
+            LiquidRoot(
+                forcedColorScheme: darkMode ? .dark : .light,
+                initialTabId: screen
+            )
+        } else {
+            ComposeRouteHost(route: resolveRoute())
+                .preferredColorScheme(darkMode ? .dark : .light)
+        }
+    }
+
+    private var shouldUseTabHost: Bool {
+        screen == "notes" || screen == "folders" || screen == "settings"
     }
 
     private func resolveRoute() -> AppRoutes {
