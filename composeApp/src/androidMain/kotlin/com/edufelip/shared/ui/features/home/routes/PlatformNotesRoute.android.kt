@@ -89,6 +89,8 @@ actual fun PlatformNotesRoute(
             NotesListPane(
                 notes = notes,
                 authViewModel = authViewModel,
+                onAvatarClick = onAvatarClick,
+                onLogout = onLogout,
                 onNavigateToDetail = { destination ->
                     navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, destination)
                 },
@@ -118,6 +120,8 @@ actual fun PlatformNotesRoute(
 private fun NotesListPane(
     notes: List<Note>,
     authViewModel: AuthViewModel,
+    onAvatarClick: () -> Unit,
+    onLogout: () -> Unit,
     onNavigateToDetail: (NotesPaneDestination) -> Unit,
     onCreateNote: () -> Unit,
 ) {
