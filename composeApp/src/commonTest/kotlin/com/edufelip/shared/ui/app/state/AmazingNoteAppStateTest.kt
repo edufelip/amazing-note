@@ -14,6 +14,7 @@ import com.edufelip.shared.domain.usecase.buildAuthUseCases
 import com.edufelip.shared.ui.app.core.AmazingNoteAppEnvironment
 import com.edufelip.shared.ui.components.organisms.notes.FolderLayout
 import com.edufelip.shared.ui.nav.AppRoutes
+import com.edufelip.shared.ui.nav.NavigationController
 import com.edufelip.shared.ui.settings.AppPreferences
 import com.edufelip.shared.ui.settings.InMemorySettings
 import com.edufelip.shared.ui.settings.Settings
@@ -32,13 +33,15 @@ import kotlin.test.assertTrue
 
 class AmazingNoteAppStateTest {
 
+    private lateinit var navController: NavigationController
+
     @Test
     fun navigateAddsDestination() {
         val state = createState(initialRoute = AppRoutes.Notes)
 
         state.navigate(AppRoutes.Folders)
 
-        assertEquals(listOf(AppRoutes.Notes, AppRoutes.Folders), state.backStack.toList())
+        assertEquals(listOf(AppRoutes.Notes, AppRoutes.Folders), navController.backStack.toList())
     }
 
     @Test
@@ -49,7 +52,7 @@ class AmazingNoteAppStateTest {
         val popped = state.popBack()
 
         assertTrue(popped)
-        assertEquals(listOf(AppRoutes.Notes), state.backStack.toList())
+        assertEquals(listOf(AppRoutes.Notes), navController.backStack.toList())
     }
 
     @Test
@@ -60,7 +63,7 @@ class AmazingNoteAppStateTest {
 
         state.setRoot(AppRoutes.Settings)
 
-        assertEquals(listOf(AppRoutes.Settings), state.backStack.toList())
+        assertEquals(listOf(AppRoutes.Settings), navController.backStack.toList())
     }
 
     @Test
@@ -89,6 +92,7 @@ class AmazingNoteAppStateTest {
         settings: Settings = InMemorySettings(),
         appPreferences: AppPreferences = TestAppPreferences(settings),
     ): AmazingNoteAppState {
+        navController = NavigationController(initialRoute)
         val authRepository = TestAuthRepository()
         val authUseCases = buildAuthUseCases(authRepository)
         val driver = NoOpSqlDriver
@@ -115,6 +119,7 @@ class AmazingNoteAppStateTest {
             showBottomBar = showBottomBar,
             coroutineScope = scope,
             authViewModel = authViewModel,
+            navigationController = navController,
         )
     }
 
@@ -168,11 +173,13 @@ class AmazingNoteAppStateTest {
     }
 
     private object TestCloudNotesDataSource : com.edufelip.shared.data.cloud.CloudNotesDataSource {
-        override fun observe(uid: String) = emptyFlow<List<com.edufelip.shared.domain.model.Note>>()
-        override suspend fun getAll(uid: String) = emptyList<com.edufelip.shared.domain.model.Note>()
+        override fun observe(uid: String) = emptyFlow<com.edufelip.shared.data.cloud.RemoteSyncPayload>()
+        override suspend fun getAll(uid: String) = com.edufelip.shared.data.cloud.RemoteSyncPayload(emptyList(), emptyList())
         override suspend fun upsert(uid: String, note: com.edufelip.shared.domain.model.Note) {}
         override suspend fun delete(uid: String, id: Int) {}
         override suspend fun upsertPreserveUpdatedAt(uid: String, note: com.edufelip.shared.domain.model.Note) {}
+        override suspend fun upsertFolder(uid: String, folder: com.edufelip.shared.domain.model.Folder) {}
+        override suspend fun deleteFolder(uid: String, id: Long) {}
     }
 
     private object TestCurrentUserProvider : com.edufelip.shared.data.cloud.CurrentUserProvider {
