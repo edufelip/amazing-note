@@ -6,7 +6,7 @@ configs:
   Debug: debug
   Release: release
 settings:
-  IPHONEOS_DEPLOYMENT_TARGET: 14.0
+  IPHONEOS_DEPLOYMENT_TARGET: 16.0
   SWIFT_VERSION: 5.0
 packages:
   Firebase:
@@ -15,15 +15,20 @@ packages:
   GoogleSignIn:
     url: https://github.com/google/GoogleSignIn-iOS
     from: 9.0.0
+  SnapshotTesting:
+    url: https://github.com/pointfreeco/swift-snapshot-testing
+    from: 1.15.0
 targets:
   iosApp:
     type: application
     platform: iOS
-    deploymentTarget: "15.0"
+    deploymentTarget: "16.0"
     sources:
       - path: iosApp
         excludes:
           - "**/*.plist"
+      - path: note_cipher_ios.c
+        type: file
       - path: iosApp/GoogleService-Info.plist
         type: file
         buildPhase: resources
@@ -90,6 +95,85 @@ targets:
           - "$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)"
           - "$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)/Contents/Resources/DWARF/$(PRODUCT_NAME)"
           - "$(SRCROOT)/iosApp/GoogleService-Info.plist"
+      - name: Copy Compose Resources
+        shellPath: /bin/sh
+        script: |
+          set -euo pipefail
+
+          if [[ "${SDK_NAME:-}" == iphoneos* ]]; then
+            RESOURCE_ARCH="iosArm64"
+          else
+            RESOURCE_ARCH="iosSimulatorArm64"
+          fi
+
+          SRC_RESOURCES="${SRCROOT}/../composeApp/build/kotlin-multiplatform-resources/aggregated-resources/${RESOURCE_ARCH}/composeResources"
+          DEST_RESOURCES="${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}/compose-resources/composeResources"
+
+          if [[ -d "${SRC_RESOURCES}" ]]; then
+            mkdir -p "${DEST_RESOURCES}"
+            rsync -a "${SRC_RESOURCES}/" "${DEST_RESOURCES}/"
+          else
+            echo "warning: Compose resources not found at ${SRC_RESOURCES}"
+          fi
     scheme:
-      testTargets: []
+      testTargets:
+        - iosAppTests
+        - iosAppUITests
       gatherCoverageData: false
+  iosAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: iosAppTests
+    dependencies:
+      - target: iosApp
+      - package: SnapshotTesting
+        product: SnapshotTesting
+    settings:
+      GENERATE_INFOPLIST_FILE: YES
+      FRAMEWORK_SEARCH_PATHS:
+        - "$(inherited)"
+        - "$(CONFIGURATION_BUILD_DIR)"
+        - "$(SRCROOT)/Frameworks/$(CONFIGURATION)-iphonesimulator"
+      OTHER_LDFLAGS:
+        - "$(inherited)"
+        - "-framework"
+        - "ComposeApp"
+    postbuildScripts:
+      - name: Copy Compose Resources
+        shellPath: /bin/sh
+        script: |
+          set -euo pipefail
+          if [[ -n "${TEST_HOST:-}" ]]; then
+            HOST_APP_DIR="${TEST_HOST%/*}"
+          else
+            HOST_APP_DIR="${BUILT_PRODUCTS_DIR}/iosApp.app"
+          fi
+
+          SRC_RESOURCES="${HOST_APP_DIR}/compose-resources/composeResources"
+
+          if [[ ! -d "${SRC_RESOURCES}" ]]; then
+            if [[ "${SDK_NAME:-}" == iphoneos* ]]; then
+              RESOURCE_ARCH="iosArm64"
+            else
+              RESOURCE_ARCH="iosSimulatorArm64"
+            fi
+            SRC_RESOURCES="${SRCROOT}/../composeApp/build/kotlin-multiplatform-resources/aggregated-resources/${RESOURCE_ARCH}/composeResources"
+          fi
+          DEST_RESOURCES="${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}/compose-resources/composeResources"
+
+          if [[ -d "${SRC_RESOURCES}" ]]; then
+            mkdir -p "${DEST_RESOURCES}"
+            rsync -a "${SRC_RESOURCES}/" "${DEST_RESOURCES}/"
+          else
+            echo "warning: Compose resources not found at ${SRC_RESOURCES}"
+          fi
+  iosAppUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: iosAppUITests
+    dependencies:
+      - target: iosApp
+    settings:
+      GENERATE_INFOPLIST_FILE: YES

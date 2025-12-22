@@ -8,13 +8,17 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        FirebaseApp.configure()
-        #if DEBUG
-        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(false)
-        #else
-        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
-        #endif
-        logBuildInfo()
+        if FirebaseApp.app() == nil {
+            FirebaseApp.configure()
+        }
+        if !isRunningTests {
+            #if DEBUG
+            Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(false)
+            #else
+            Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
+            #endif
+            logBuildInfo()
+        }
         return true
     }
 
@@ -53,5 +57,10 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         crashlytics.setCustomValue(xcode, forKey: "dt_xcode")
         crashlytics.setCustomValue(xcodeBuild, forKey: "dt_xcode_build")
         #endif
+    }
+
+    private var isRunningTests: Bool {
+        let env = ProcessInfo.processInfo.environment
+        return env["XCTestConfigurationFilePath"] != nil || NSClassFromString("XCTestCase") != nil
     }
 }

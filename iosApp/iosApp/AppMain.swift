@@ -7,10 +7,20 @@ struct AmazingNoteiOSApp: App {
 
     var body: some Scene {
         WindowGroup {
-            LiquidRoot()
-                .onOpenURL { url in
-                    _ = GIDSignIn.sharedInstance.handle(url)
-                }
+            let env = ProcessInfo.processInfo.environment
+            let isUiTestMode = env["UITEST_MODE"] == "1"
+            let isRunningTests =
+                env["XCTestConfigurationFilePath"] != nil || NSClassFromString("XCTestCase") != nil
+            if isUiTestMode {
+                UITestRootView()
+            } else if isRunningTests {
+                Color.clear
+            } else {
+                LiquidRoot()
+                    .onOpenURL { url in
+                        _ = GIDSignIn.sharedInstance.handle(url)
+                    }
+            }
         }
     }
 }
