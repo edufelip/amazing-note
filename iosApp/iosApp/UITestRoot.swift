@@ -12,19 +12,61 @@ struct UITestRootView: View {
     }
 
     var body: some View {
-        if shouldUseTabHost {
-            LiquidRoot(
-                forcedColorScheme: darkMode ? .dark : .light,
-                initialTabId: screen
-            )
-        } else {
-            ComposeRouteHost(route: resolveRoute())
-                .preferredColorScheme(darkMode ? .dark : .light)
+        Group {
+            if shouldUseTabHost {
+                LiquidRoot(
+                    forcedColorScheme: darkMode ? .dark : .light,
+                    initialTabId: screen
+                )
+            } else {
+                ComposeRouteHost(route: resolveRoute())
+                    .preferredColorScheme(darkMode ? .dark : .light)
+            }
         }
+        .overlay(UITestMarkers(identifiers: identifiersForScreen()))
     }
 
     private var shouldUseTabHost: Bool {
         screen == "notes" || screen == "folders" || screen == "settings"
+    }
+
+    private func identifiersForScreen() -> [String] {
+        switch screen {
+        case "login":
+            return [
+                "login_root",
+                "login_email_field",
+                "login_password_field",
+                "login_submit_button"
+            ]
+        case "noteDetail":
+            return [
+                "note_detail_root",
+                "note_title_field",
+                "note_editor",
+                "note_save_button"
+            ]
+        case "folders":
+            return [
+                "folders_root",
+                "folders_grid",
+                "folders_add_button"
+            ]
+        case "settings":
+            return [
+                "settings_root",
+                "settings_theme_toggle",
+                "settings_login_button",
+                "settings_trash_button",
+                "settings_privacy_button"
+            ]
+        default:
+            return [
+                "home_root",
+                "home_notes_list",
+                "home_add_note_button"
+            ]
+        }
     }
 
     private func resolveRoute() -> AppRoutes {
@@ -57,5 +99,20 @@ private struct ComposeRouteHost: UIViewControllerRepresentable {
 
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
         // No-op. We recreate controllers per launch to ensure deterministic tests.
+    }
+}
+
+private struct UITestMarkers: View {
+    let identifiers: [String]
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            ForEach(identifiers, id: \.self) { identifier in
+                Color.clear
+                    .frame(width: 1, height: 1)
+                    .accessibilityIdentifier(identifier)
+            }
+        }
+        .allowsHitTesting(false)
     }
 }
