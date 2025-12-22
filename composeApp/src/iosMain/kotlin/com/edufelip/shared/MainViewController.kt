@@ -13,6 +13,7 @@ import com.edufelip.shared.ui.AmazingNoteApp
 import com.edufelip.shared.ui.app.navigation.currentRouteAsState
 import com.edufelip.shared.ui.indication.NoFeedbackIndication
 import com.edufelip.shared.ui.nav.AppRoutes
+import com.edufelip.shared.ui.nav.TabRoutePolicy
 import com.edufelip.shared.ui.settings.AppPreferences
 import com.edufelip.shared.ui.settings.Settings
 import com.edufelip.shared.ui.vm.AuthViewModel
@@ -68,7 +69,6 @@ fun createAmazingNoteViewController(
     onRouteChanged: ((String, Boolean) -> Unit)? = null,
 ): UIViewController {
     initKoin()
-    val tabRouteIds = setOf("notes", "folders", "settings")
     val controller = ComposeUIViewController {
         val koin = remember { getSharedKoin() }
         val vm = remember { koin.get<NoteUiViewModel>() }
@@ -79,7 +79,7 @@ fun createAmazingNoteViewController(
         CompositionLocalProvider(LocalIndication provides NoFeedbackIndication) {
             val currentRoute by currentRouteAsState()
             LaunchedEffect(currentRoute) {
-                val bottomBarVisible = currentRoute in tabRouteIds
+                val bottomBarVisible = TabRoutePolicy.isTabRouteId(currentRoute)
                 onRouteChanged?.invoke(currentRoute, bottomBarVisible)
             }
             AmazingNoteApp(

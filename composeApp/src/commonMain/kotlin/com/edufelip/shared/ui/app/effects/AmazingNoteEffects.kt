@@ -48,7 +48,7 @@ fun PlatformTabBarVisibilityEffect(
     state: AmazingNoteAppState,
     onVisibilityChanged: (Boolean) -> Unit,
 ) {
-    val isTabVisible = state.isTab(state.currentRoute)
+    val isTabVisible = state.tabRouteVisible
     LaunchedEffect(isTabVisible) {
         onVisibilityChanged(isTabVisible)
     }

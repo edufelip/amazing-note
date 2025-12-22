@@ -16,6 +16,7 @@ import com.edufelip.shared.ui.app.core.rememberAmazingNoteAppEnvironment
 import com.edufelip.shared.ui.app.navigation.reportRoute
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.nav.NavigationController
+import com.edufelip.shared.ui.nav.TabRoutePolicy
 import com.edufelip.shared.ui.settings.AppPreferences
 import com.edufelip.shared.ui.settings.DefaultAppPreferences
 import com.edufelip.shared.ui.settings.Settings
@@ -30,8 +31,6 @@ class AmazingNoteAppState internal constructor(
     val authViewModel: AuthViewModel,
     private val navigationController: NavigationController,
 ) {
-    private val tabRoutes = listOf(AppRoutes.Notes, AppRoutes.Folders, AppRoutes.Settings)
-
     val currentRoute: AppRoutes
         get() = navigationController.currentRoute
 
@@ -45,17 +44,20 @@ class AmazingNoteAppState internal constructor(
     var isBottomBarEnabled by mutableStateOf(showBottomBar)
         private set
 
-    var isBottomBarVisible by mutableStateOf(isBottomBarEnabled && initialRoute in tabRoutes)
+    var isBottomBarVisible by mutableStateOf(isBottomBarEnabled && TabRoutePolicy.isTabRoute(initialRoute))
         private set
 
     val bottomBarTargetVisible: Boolean
-        get() = isBottomBarEnabled && navigationController.currentRoute in tabRoutes
+        get() = isBottomBarEnabled && TabRoutePolicy.isTabRoute(navigationController.currentRoute)
+
+    val tabRouteVisible: Boolean
+        get() = TabRoutePolicy.isTabRoute(navigationController.currentRoute)
 
     val stackDepth: Int
         get() = navigationController.stackDepth
 
     val topBarVisible: Boolean
-        get() = if (isBottomBarEnabled) isBottomBarVisible else navigationController.currentRoute in tabRoutes
+        get() = if (isBottomBarEnabled) isBottomBarVisible else TabRoutePolicy.isTabRoute(navigationController.currentRoute)
 
     fun reportInitialRouteIfNeeded() {
         if (hasReportedInitialRoute) return
@@ -97,7 +99,7 @@ class AmazingNoteAppState internal constructor(
         isBottomBarVisible = visible
     }
 
-    fun isTab(route: AppRoutes): Boolean = route in tabRoutes
+    fun isTab(route: AppRoutes): Boolean = TabRoutePolicy.isTabRoute(route)
 }
 
 @Composable
