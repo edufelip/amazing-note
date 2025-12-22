@@ -40,6 +40,7 @@ robolectric = "4.14.1"
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 androidx-test-core-ktx = { group = "androidx.test", name = "core-ktx", version = "1.6.1" }
 androidx-test-ext-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version = "1.2.1" }
+androidx-test-runner = { group = "androidx.test", name = "runner", version = "1.6.1" }
 arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "core" }
 
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }

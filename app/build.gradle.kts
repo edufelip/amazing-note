@@ -31,6 +31,7 @@ android {
         targetSdk = 36
         versionName = gitVersionName
         versionCode = gitVersionName.toVersionCode()
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     val releaseStoreFile = envOrProperty("RELEASE_STORE_FILE")
@@ -151,6 +152,7 @@ dependencies {
     // Android UI Tests (Compose)
     androidTestImplementation(libs.androidx.test.core.ktx)
     androidTestImplementation(libs.androidx.test.ext.junit.ktx)
+    androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
