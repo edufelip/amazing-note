@@ -48,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
@@ -67,6 +68,7 @@ import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.settings.LocalAppPreferences
+import com.edufelip.shared.ui.util.TestTags
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
@@ -130,7 +132,9 @@ fun ListScreen(
             floatingActionButton = {
                 if (showFab && hasAnyNotes) {
                     FloatingActionButton(
-                        modifier = Modifier.padding(bottom = tokens.spacing.xxxl),
+                        modifier = Modifier
+                            .padding(bottom = tokens.spacing.xxxl)
+                            .testTag(TestTags.Home.ADD_NOTE_BUTTON),
                         onClick = onAddClick,
                         containerColor = tokens.colors.accent,
                         contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -181,7 +185,9 @@ fun ListScreen(
                 val listBottomPadding = tokens.spacing.zero
                 val searchHorizontalPadding = tokens.spacing.md
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .testTag(TestTags.Home.NOTES_LIST),
                     contentPadding = PaddingValues(bottom = listBottomPadding),
                 ) {
                     headerContent?.let { content ->

@@ -60,6 +60,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
@@ -90,6 +91,7 @@ import com.edufelip.shared.ui.app.chrome.AmazingTopBar
 import com.edufelip.shared.ui.components.atoms.common.AvatarImage
 import com.edufelip.shared.ui.components.organisms.settings.PersonalizeHeroIllustration
 import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.util.TestTags
 import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.util.platform.Haptics
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
@@ -123,7 +125,9 @@ fun SettingsScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .testTag(TestTags.Settings.ROOT),
         topBar = {
             AmazingTopBar(
                 user = userState,
@@ -174,6 +178,7 @@ fun SettingsScreen(
                                 Haptics.lightTap()
                                 onToggleDarkTheme(checked)
                             },
+                            modifier = Modifier.testTag(TestTags.Settings.THEME_TOGGLE),
                         )
                     },
                 )
@@ -188,6 +193,7 @@ fun SettingsScreen(
                         materialIcon = Icons.AutoMirrored.Filled.Login,
                         cupertinoSymbol = "rectangle.portrait.and.arrow.forward",
                         onClick = onLogin,
+                        modifier = Modifier.testTag(TestTags.Settings.LOGIN_BUTTON),
                     )
                 } else {
                     Column(
@@ -233,6 +239,7 @@ fun SettingsScreen(
                                 Haptics.lightTap()
                                 logoutDialogVisible = true
                             },
+                            modifier = Modifier.testTag(TestTags.Settings.LOGOUT_BUTTON),
                             adaptation = {
                                 material {
                                     colors = ButtonDefaults.buttonColors(
@@ -270,6 +277,7 @@ fun SettingsScreen(
                     materialIcon = Icons.Default.AutoDelete,
                     cupertinoSymbol = "trash",
                     onClick = onOpenTrash,
+                    modifier = Modifier.testTag(TestTags.Settings.TRASH_BUTTON),
                 )
             }
             item {
@@ -279,6 +287,7 @@ fun SettingsScreen(
                     materialIcon = Icons.Default.PrivacyTip,
                     cupertinoSymbol = "lock.shield",
                     onClick = onOpenPrivacy,
+                    modifier = Modifier.testTag(TestTags.Settings.PRIVACY_BUTTON),
                 )
             }
 
@@ -523,6 +532,7 @@ private fun SettingRow(
     onClick: (() -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
     enabled: Boolean = true,
+    modifier: Modifier = Modifier,
 ) {
     val chrome = platformChromeStrategy()
     val tokens = designTokens()
@@ -554,6 +564,7 @@ private fun SettingRow(
         Modifier
     }
     Surface(
+        modifier = modifier,
         shape = shape,
         tonalElevation = tokens.elevation.card,
     ) {

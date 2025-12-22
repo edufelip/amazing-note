@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.data.sync.LocalNotesSyncManager
 import com.edufelip.shared.domain.model.Note
@@ -55,6 +56,7 @@ import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.features.notes.components.ListScreen
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.util.TestTags
 import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.vm.AuthViewModel
 import org.jetbrains.compose.resources.stringResource
@@ -152,7 +154,8 @@ fun HomeScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
+                .padding(padding)
+                .testTag(TestTags.Home.ROOT),
         ) {
             ListScreen(
                 notes = filteredNotes,

@@ -55,6 +55,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -84,6 +85,7 @@ import com.edufelip.shared.ui.features.notes.dialogs.DeleteFolderDialog
 import com.edufelip.shared.ui.features.notes.dialogs.FolderNameDialog
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.util.TestTags
 import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.vm.AuthViewModel
@@ -167,7 +169,9 @@ fun FoldersScreen(
     val chrome = platformChromeStrategy()
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .testTag(TestTags.Folders.ROOT),
         topBar = {
             AmazingTopBar(
                 user = currentUserState?.user,
@@ -212,7 +216,9 @@ fun FoldersScreen(
         floatingActionButton = {
             if (!isEmpty) {
                 ExtendedFloatingActionButton(
-                    modifier = Modifier.padding(bottom = tokens.spacing.xxxl, end = tokens.spacing.sm),
+                    modifier = Modifier
+                        .padding(bottom = tokens.spacing.xxxl, end = tokens.spacing.sm)
+                        .testTag(TestTags.Folders.ADD_FOLDER_BUTTON),
                     onClick = { openCreate() },
                     icon = {
                         Icon(
@@ -275,7 +281,9 @@ fun FoldersScreen(
                             when (activeLayout) {
                                 FolderLayout.Grid -> {
                                     FoldersGrid(
-                                        modifier = Modifier.fillMaxSize(),
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .testTag(TestTags.Folders.GRID),
                                         folders = filteredFolders,
                                         notesByFolder = notesByFolder,
                                         accentPalette = accentPalette,
@@ -292,6 +300,7 @@ fun FoldersScreen(
 
                                 FolderLayout.List -> {
                                     FoldersList(
+                                        modifier = Modifier.testTag(TestTags.Folders.LIST),
                                         folders = filteredFolders,
                                         notesByFolder = notesByFolder,
                                         accentPalette = accentPalette,

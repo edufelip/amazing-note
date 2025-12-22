@@ -136,6 +136,12 @@ dependencies {
     testImplementation(libs.kotlin.coroutines.test)
     testImplementation(libs.truth)
 
+    // Android UI Tests (Compose)
+    androidTestImplementation(libs.androidx.test.core.ktx)
+    androidTestImplementation(libs.androidx.test.ext.junit.ktx)
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+
     // Firebase Auth (Android) via BoM
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)

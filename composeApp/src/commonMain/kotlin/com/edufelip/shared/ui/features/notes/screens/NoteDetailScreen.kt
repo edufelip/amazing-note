@@ -14,6 +14,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.edufelip.shared.domain.model.Folder
@@ -55,6 +56,7 @@ import com.edufelip.shared.ui.effects.toast.show
 import com.edufelip.shared.ui.features.notes.dialogs.DeleteNoteDialog
 import com.edufelip.shared.ui.features.notes.dialogs.DiscardNoteDialog
 import com.edufelip.shared.ui.util.OnSystemBack
+import com.edufelip.shared.ui.util.TestTags
 import com.edufelip.shared.ui.util.security.SecurityLogger
 import com.edufelip.shared.ui.util.security.sanitizeInlineInput
 import com.edufelip.shared.ui.util.security.sanitizeMultilineInput
@@ -365,7 +367,9 @@ fun NoteDetailScreen(
         titleError = titleError,
         contentError = contentError,
         isSaving = isSaving,
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag(TestTags.NoteDetail.ROOT),
     )
 
     LaunchedEffect(noteKey, uploadContext) {

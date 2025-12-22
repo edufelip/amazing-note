@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -64,6 +65,7 @@ import com.edufelip.shared.ui.features.auth.components.LoginIllustration
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.util.OnSystemBack
+import com.edufelip.shared.ui.util.TestTags
 import com.edufelip.shared.ui.util.platform.currentEpochMillis
 import com.edufelip.shared.ui.util.security.AuthRateLimiter
 import com.edufelip.shared.ui.util.security.SecurityLogger
@@ -288,7 +290,8 @@ fun LoginScreen(
                 .padding(padding)
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(horizontal = tokens.spacing.xl, vertical = tokens.spacing.lg),
+                .padding(horizontal = tokens.spacing.xl, vertical = tokens.spacing.lg)
+                .testTag(TestTags.Login.ROOT),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(tokens.spacing.lg))
@@ -394,6 +397,7 @@ fun LoginScreen(
                 },
                 enabled = !loading && !isLockedOut,
                 contentPadding = PaddingValues(Dp.Hairline),
+                modifier = Modifier.testTag(TestTags.Login.FORGOT_PASSWORD_BUTTON),
             ) {
                 Text(
                     text = stringResource(Res.string.forgot_password),

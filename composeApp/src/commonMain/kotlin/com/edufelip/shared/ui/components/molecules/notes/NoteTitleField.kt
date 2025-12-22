@@ -11,6 +11,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -19,6 +20,7 @@ import com.edufelip.shared.resources.title
 import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.util.TestTags
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -34,7 +36,9 @@ fun NoteTitleField(
         TextField(
             value = titleState,
             onValueChange = onTitleChange,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag(TestTags.NoteDetail.TITLE_FIELD),
             textStyle = textStyle,
             placeholder = { Text(text = stringResource(Res.string.title)) },
             singleLine = true,

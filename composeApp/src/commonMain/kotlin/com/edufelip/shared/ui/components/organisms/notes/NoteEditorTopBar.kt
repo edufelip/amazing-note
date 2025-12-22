@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_back
 import com.edufelip.shared.resources.cd_delete
@@ -27,6 +28,7 @@ import com.edufelip.shared.ui.components.atoms.buttons.CircularIconButton
 import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.util.TestTags
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -87,6 +89,7 @@ fun NoteEditorTopBar(
             onClick = onSave,
             enabled = !isSaving,
             background = tokens.colors.accent,
+            modifier = Modifier.testTag(TestTags.NoteDetail.SAVE_BUTTON),
         )
     }
 }
