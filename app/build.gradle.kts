@@ -39,6 +39,18 @@ android {
     val releaseKeyPassword = envOrProperty("RELEASE_KEY_PASSWORD")
 
     signingConfigs {
+        val debugStoreFile =
+            rootProject.layout.projectDirectory
+                .file("keystores/debug.keystore")
+                .asFile
+        getByName("debug") {
+            if (debugStoreFile.exists()) {
+                storeFile = debugStoreFile
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+        }
         val hasReleaseKeystore =
             listOf(releaseStoreFile, releaseStorePassword, releaseKeyAlias, releaseKeyPassword).all {
                 !it.isNullOrBlank()
