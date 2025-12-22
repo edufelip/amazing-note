@@ -11,6 +11,7 @@ final class AmazingNoteUITests: XCTestCase {
         XCTAssertTrue(app.textFields[UITestIdentifiers.loginEmail].exists)
         XCTAssertTrue(app.secureTextFields[UITestIdentifiers.loginPassword].exists)
         XCTAssertTrue(app.buttons[UITestIdentifiers.loginSubmit].exists)
+        assertTabBarHidden(app)
     }
 
     func testHomeScreen() {
@@ -18,6 +19,7 @@ final class AmazingNoteUITests: XCTestCase {
         XCTAssertTrue(app.otherElements[UITestIdentifiers.homeRoot].waitForExistence(timeout: 5))
         XCTAssertTrue(app.otherElements[UITestIdentifiers.homeNotesList].exists)
         XCTAssertTrue(app.buttons[UITestIdentifiers.homeAddNote].exists)
+        assertTabBarVisible(app)
     }
 
     func testFoldersScreen() {
@@ -25,6 +27,7 @@ final class AmazingNoteUITests: XCTestCase {
         XCTAssertTrue(app.otherElements[UITestIdentifiers.foldersRoot].waitForExistence(timeout: 5))
         XCTAssertTrue(app.otherElements[UITestIdentifiers.foldersGrid].exists)
         XCTAssertTrue(app.buttons[UITestIdentifiers.foldersAdd].exists)
+        assertTabBarVisible(app)
     }
 
     func testNoteDetailScreen() {
@@ -33,6 +36,7 @@ final class AmazingNoteUITests: XCTestCase {
         XCTAssertTrue(app.textFields[UITestIdentifiers.noteTitle].exists)
         XCTAssertTrue(app.otherElements[UITestIdentifiers.noteEditor].exists)
         XCTAssertTrue(app.buttons[UITestIdentifiers.noteSave].exists)
+        assertTabBarHidden(app)
     }
 
     func testSettingsScreen() {
@@ -42,6 +46,18 @@ final class AmazingNoteUITests: XCTestCase {
         XCTAssertTrue(app.otherElements[UITestIdentifiers.settingsLogin].exists)
         XCTAssertTrue(app.otherElements[UITestIdentifiers.settingsTrash].exists)
         XCTAssertTrue(app.otherElements[UITestIdentifiers.settingsPrivacy].exists)
+        assertTabBarVisible(app)
+    }
+
+    private func assertTabBarVisible(_ app: XCUIApplication) {
+        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 2))
+    }
+
+    private func assertTabBarHidden(_ app: XCUIApplication) {
+        let tabBar = app.tabBars.firstMatch
+        if tabBar.exists {
+            XCTAssertFalse(tabBar.isHittable)
+        }
     }
 
     @discardableResult
