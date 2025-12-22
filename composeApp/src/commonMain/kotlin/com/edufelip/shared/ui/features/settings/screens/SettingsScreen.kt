@@ -147,7 +147,8 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = tokens.spacing.lg),
+                .padding(horizontal = tokens.spacing.lg)
+                .testTag(TestTags.Settings.LIST),
             verticalArrangement = Arrangement.spacedBy(itemsSpacing),
         ) {
             item {

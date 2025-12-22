@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.edufelip.shared.ui.features.auth.screens.LoginScreen
 import com.edufelip.shared.ui.theme.AmazingNoteTheme
@@ -43,9 +44,9 @@ class LoginScreenUiTest {
         composeRule.onNodeWithTag(TestTags.Login.ROOT).assertIsDisplayed()
         composeRule.onNodeWithTag(TestTags.Login.EMAIL_FIELD).assertIsDisplayed()
         composeRule.onNodeWithTag(TestTags.Login.PASSWORD_FIELD).assertIsDisplayed()
-        composeRule.onNodeWithTag(TestTags.Login.SUBMIT_BUTTON).assertIsDisplayed()
-        composeRule.onNodeWithTag(TestTags.Login.GOOGLE_BUTTON).assertIsDisplayed()
-        composeRule.onNodeWithTag(TestTags.Login.SIGN_UP_BUTTON).assertIsDisplayed()
-        composeRule.onNodeWithTag(TestTags.Login.FORGOT_PASSWORD_BUTTON).assertIsDisplayed()
+        composeRule.onNodeWithTag(TestTags.Login.SUBMIT_BUTTON).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag(TestTags.Login.GOOGLE_BUTTON).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag(TestTags.Login.SIGN_UP_BUTTON).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag(TestTags.Login.FORGOT_PASSWORD_BUTTON).performScrollTo().assertIsDisplayed()
     }
 }

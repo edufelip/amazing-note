@@ -35,6 +35,7 @@ object TestTags {
 
     object Settings {
         const val ROOT = "settings_root"
+        const val LIST = "settings_list"
         const val THEME_TOGGLE = "settings_theme_toggle"
         const val LOGIN_BUTTON = "settings_login_button"
         const val LOGOUT_BUTTON = "settings_logout_button"

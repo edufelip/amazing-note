@@ -1,51 +1,63 @@
 package com.edufelip.amazing_note.ui
 
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import com.edufelip.shared.ui.app.chrome.AmazingBottomBar
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.nav.TabRoutePolicy
 import com.edufelip.shared.ui.theme.AmazingNoteTheme
 import com.edufelip.shared.ui.util.TestTags
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
 class BottomBarVisibilityUiTest {
 
     @get:Rule
-    val composeRule = createComposeRule()
+    val composeRule = createAndroidComposeRule<ComponentActivity>()
+
+    private val currentRoute = mutableStateOf<AppRoutes>(AppRoutes.Notes)
+
+    @Before
+    fun setUp() {
+        composeRule.setContent {
+            BottomBarTestContent(route = currentRoute.value)
+        }
+    }
 
     @Test
     fun bottomBarIsVisibleOnTabRoutes() {
-        renderRoute(AppRoutes.Notes)
+        updateRoute(AppRoutes.Notes)
         composeRule.onNodeWithTag(TestTags.BOTTOM_BAR).assertIsDisplayed()
 
-        renderRoute(AppRoutes.Folders)
+        updateRoute(AppRoutes.Folders)
         composeRule.onNodeWithTag(TestTags.BOTTOM_BAR).assertIsDisplayed()
 
-        renderRoute(AppRoutes.Settings)
+        updateRoute(AppRoutes.Settings)
         composeRule.onNodeWithTag(TestTags.BOTTOM_BAR).assertIsDisplayed()
     }
 
     @Test
     fun bottomBarIsHiddenOnNonTabRoutes() {
-        renderRoute(AppRoutes.Login)
+        updateRoute(AppRoutes.Login)
         composeRule.onAllNodes(hasTestTag(TestTags.BOTTOM_BAR)).assertCountEquals(0)
 
-        renderRoute(AppRoutes.NoteDetail(id = 1, folderId = null))
+        updateRoute(AppRoutes.NoteDetail(id = 1, folderId = null))
         composeRule.onAllNodes(hasTestTag(TestTags.BOTTOM_BAR)).assertCountEquals(0)
     }
 
-    private fun renderRoute(route: AppRoutes) {
-        composeRule.setContent {
-            BottomBarTestContent(route = route)
+    private fun updateRoute(route: AppRoutes) {
+        composeRule.runOnIdle {
+            currentRoute.value = route
         }
     }
 }
