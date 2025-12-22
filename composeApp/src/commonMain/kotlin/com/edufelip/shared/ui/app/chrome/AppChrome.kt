@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.data.auth.AuthUser
@@ -51,6 +52,7 @@ import com.edufelip.shared.resources.guest
 import com.edufelip.shared.ui.components.atoms.common.AvatarImage
 import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.nav.AppRoutes
+import com.edufelip.shared.ui.util.TestTags
 import com.edufelip.shared.ui.util.platform.Haptics
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.util.security.sanitizeUserDisplay
@@ -170,7 +172,9 @@ fun AmazingBottomBar(
 
     if (platformChromeStrategy().useCupertinoLook) {
         AdaptiveNavigationBar(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag(TestTags.BOTTOM_BAR),
             windowInsets = windowInsets,
             adaptation = {
                 material {
@@ -240,6 +244,7 @@ private fun GlassBottomBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .testTag(TestTags.BOTTOM_BAR)
             .padding(
                 start = tokens.spacing.xl,
                 end = tokens.spacing.xl,

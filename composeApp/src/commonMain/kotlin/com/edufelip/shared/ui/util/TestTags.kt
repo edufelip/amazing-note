@@ -1,6 +1,8 @@
 package com.edufelip.shared.ui.util
 
 object TestTags {
+    const val BOTTOM_BAR = "bottom_bar"
+
     object Login {
         const val ROOT = "login_root"
         const val EMAIL_FIELD = "login_email_field"
