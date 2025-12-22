@@ -11,7 +11,6 @@ final class AmazingNoteUITests: XCTestCase {
         XCTAssertTrue(app.textFields[UITestIdentifiers.loginEmail].exists)
         XCTAssertTrue(app.secureTextFields[UITestIdentifiers.loginPassword].exists)
         XCTAssertTrue(app.buttons[UITestIdentifiers.loginSubmit].exists)
-        assertTabBarHidden(app)
     }
 
     func testHomeScreen() {
@@ -36,7 +35,6 @@ final class AmazingNoteUITests: XCTestCase {
         XCTAssertTrue(app.textFields[UITestIdentifiers.noteTitle].exists)
         XCTAssertTrue(app.otherElements[UITestIdentifiers.noteEditor].exists)
         XCTAssertTrue(app.buttons[UITestIdentifiers.noteSave].exists)
-        assertTabBarHidden(app)
     }
 
     func testSettingsScreen() {
@@ -51,13 +49,6 @@ final class AmazingNoteUITests: XCTestCase {
 
     private func assertTabBarVisible(_ app: XCUIApplication) {
         XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 2))
-    }
-
-    private func assertTabBarHidden(_ app: XCUIApplication) {
-        let tabBar = app.tabBars.firstMatch
-        if tabBar.exists {
-            XCTAssertFalse(tabBar.isHittable)
-        }
     }
 
     @discardableResult

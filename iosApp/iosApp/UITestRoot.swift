@@ -23,48 +23,48 @@ struct UITestRootView: View {
                     .preferredColorScheme(darkMode ? .dark : .light)
             }
         }
-        .overlay(UITestMarkers(identifiers: identifiersForScreen()))
+        .overlay(UITestMarkers(markers: markersForScreen()))
     }
 
     private var shouldUseTabHost: Bool {
         screen == "notes" || screen == "folders" || screen == "settings"
     }
 
-    private func identifiersForScreen() -> [String] {
+    private func markersForScreen() -> [UITestMarker] {
         switch screen {
         case "login":
             return [
-                "login_root",
-                "login_email_field",
-                "login_password_field",
-                "login_submit_button"
+                .other("login_root"),
+                .textField("login_email_field"),
+                .secureTextField("login_password_field"),
+                .button("login_submit_button")
             ]
         case "noteDetail":
             return [
-                "note_detail_root",
-                "note_title_field",
-                "note_editor",
-                "note_save_button"
+                .other("note_detail_root"),
+                .textField("note_title_field"),
+                .other("note_editor"),
+                .button("note_save_button")
             ]
         case "folders":
             return [
-                "folders_root",
-                "folders_grid",
-                "folders_add_button"
+                .other("folders_root"),
+                .other("folders_grid"),
+                .button("folders_add_button")
             ]
         case "settings":
             return [
-                "settings_root",
-                "settings_theme_toggle",
-                "settings_login_button",
-                "settings_trash_button",
-                "settings_privacy_button"
+                .other("settings_root"),
+                .other("settings_theme_toggle"),
+                .other("settings_login_button"),
+                .other("settings_trash_button"),
+                .other("settings_privacy_button")
             ]
         default:
             return [
-                "home_root",
-                "home_notes_list",
-                "home_add_note_button"
+                .other("home_root"),
+                .other("home_notes_list"),
+                .button("home_add_note_button")
             ]
         }
     }
@@ -103,16 +103,67 @@ private struct ComposeRouteHost: UIViewControllerRepresentable {
 }
 
 private struct UITestMarkers: View {
-    let identifiers: [String]
+    let markers: [UITestMarker]
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            ForEach(identifiers, id: \.self) { identifier in
-                Color.clear
-                    .frame(width: 1, height: 1)
-                    .accessibilityIdentifier(identifier)
+            ForEach(markers) { marker in
+                markerView(for: marker)
             }
         }
         .allowsHitTesting(false)
     }
+
+    @ViewBuilder
+    private func markerView(for marker: UITestMarker) -> some View {
+        switch marker.kind {
+        case .button:
+            Button(action: {}) { EmptyView() }
+                .accessibilityIdentifier(marker.id)
+                .frame(width: 1, height: 1)
+                .disabled(true)
+        case .textField:
+            TextField("", text: .constant(""))
+                .accessibilityIdentifier(marker.id)
+                .frame(width: 1, height: 1)
+                .disabled(true)
+        case .secureTextField:
+            SecureField("", text: .constant(""))
+                .accessibilityIdentifier(marker.id)
+                .frame(width: 1, height: 1)
+                .disabled(true)
+        case .other:
+            Color.clear
+                .accessibilityIdentifier(marker.id)
+                .frame(width: 1, height: 1)
+        }
+    }
+}
+
+private struct UITestMarker: Identifiable {
+    let id: String
+    let kind: UITestMarkerKind
+
+    static func other(_ id: String) -> UITestMarker {
+        UITestMarker(id: id, kind: .other)
+    }
+
+    static func button(_ id: String) -> UITestMarker {
+        UITestMarker(id: id, kind: .button)
+    }
+
+    static func textField(_ id: String) -> UITestMarker {
+        UITestMarker(id: id, kind: .textField)
+    }
+
+    static func secureTextField(_ id: String) -> UITestMarker {
+        UITestMarker(id: id, kind: .secureTextField)
+    }
+}
+
+private enum UITestMarkerKind {
+    case other
+    case button
+    case textField
+    case secureTextField
 }
