@@ -9,6 +9,8 @@ plugins {
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.kover)
+    alias(libs.plugins.roborazzi)
 }
 
 lateinit var iosArm64Target: KotlinNativeTarget
@@ -72,6 +74,19 @@ kotlin {
             implementation(kotlin("test"))
             implementation(libs.kotlin.coroutines.test)
         }
+
+        val androidUnitTest by getting {
+            dependencies {
+                implementation(libs.junit)
+                implementation(libs.robolectric)
+                implementation(libs.roborazzi)
+                implementation(libs.roborazzi.compose)
+                implementation(libs.roborazzi.rule)
+                implementation(libs.androidx.compose.ui.test.junit4)
+                implementation(libs.androidx.test.core.ktx)
+                implementation(libs.androidx.test.ext.junit.ktx)
+            }
+        }
         iosMain.dependencies {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
@@ -86,6 +101,17 @@ android {
 
     defaultConfig {
         minSdk = 30
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            force("com.android.tools:common:31.4.2")
+        }
+    }
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
     }
 
     compileOptions {
