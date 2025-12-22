@@ -295,7 +295,8 @@ private fun Throwable.isNetworkError(): Boolean {
     var current: Throwable? = this
     while (current != null) {
         val name = current::class.simpleName?.lowercase()
-        if (name != null && (
+        if (name != null &&
+            (
                 "network" in name ||
                     "timeout" in name ||
                     "ioexception" in name
