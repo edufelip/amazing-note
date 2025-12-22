@@ -8,6 +8,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+.android/
  
 # Gradle build outputs (all modules)
 **/build/
