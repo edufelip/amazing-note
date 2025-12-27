@@ -138,9 +138,6 @@ fun AddNoteScreen(
                     item(key = "actions") {
                         NoteEditorActionBar(
                             onAddImage = onAddImage,
-                            onPaste = { editorState.pasteBlocks() },
-                            onCopy = { editorState.copySelectedBlocks() },
-                            onCut = { editorState.cutSelectedBlocks() },
                         )
                     }
                     item(key = "editor") {
