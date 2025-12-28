@@ -49,7 +49,7 @@ fun sanitizeNoteContent(content: NoteContent, maxBlockLength: Int = 4000): Sanit
         }
     }
     return if (modified) {
-        SanitizedNoteContent(NoteContent(sanitizedBlocks), true)
+        SanitizedNoteContent(NoteContent(blocks = sanitizedBlocks), true)
     } else {
         SanitizedNoteContent(content, false)
     }

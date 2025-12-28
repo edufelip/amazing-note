@@ -21,6 +21,7 @@ import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
 import com.edufelip.shared.domain.model.TextBlock
 import com.edufelip.shared.domain.model.insertImageAtCaret
+import com.edufelip.shared.domain.model.normalizedForEditor
 
 class NoteEditorState internal constructor(initialContent: NoteContent) {
     internal val blockList = mutableStateListOf<NoteBlock>()
@@ -51,7 +52,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
     }
 
     val content: NoteContent
-        get() = NoteContent(blockList.toList())
+        get() = NoteContent(blocks = blockList.toList())
 
     fun textFieldValueFor(block: TextBlock): TextFieldValue {
         val existing = textFieldValues[block.id]
@@ -91,7 +92,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
                 return
             }
         }
-        val normalized = newContent.normalizedBlocks()
+        val normalized = newContent.normalizedForEditor().blocks
         if (blockList.sameAs(normalized)) return
         blockList.clear()
         blockList.addAll(normalized)
@@ -263,7 +264,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
             ),
         )
         blockList.clear()
-        blockList.addAll(result.content.normalizedBlocks())
+        blockList.addAll(result.content.normalizedForEditor().blocks)
         refreshTextFieldState()
         setCaretFrom(result.nextCaret)
         focusedBlockId = result.nextCaret.blockId
@@ -480,7 +481,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
 
     internal fun replaceContentFromHistory(contentSnapshot: NoteContent, caretSnapshot: Caret?) {
         blockList.clear()
-        blockList.addAll(contentSnapshot.normalizedBlocks())
+        blockList.addAll(contentSnapshot.normalizedForEditor().blocks)
         refreshTextFieldState()
         setCaretFrom(caretSnapshot)
         focusedBlockId = caretSnapshot?.blockId
@@ -551,12 +552,6 @@ fun rememberNoteEditorState(
             .collect { latestCallback(it) }
     }
     return state
-}
-
-private fun NoteContent.normalizedBlocks(): List<NoteBlock> {
-    val sanitized = blocks.ifEmpty { listOf(TextBlock(text = "")) }
-    val last = sanitized.lastOrNull()
-    return if (last is TextBlock) sanitized else sanitized + TextBlock(text = "")
 }
 
 private fun List<NoteBlock>.sameAs(other: List<NoteBlock>): Boolean {
