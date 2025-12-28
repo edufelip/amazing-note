@@ -197,43 +197,6 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
 
     fun isImageSelected(blockId: String): Boolean = selectedImageBlockId == blockId
 
-    fun copySelectedBlocks(): Boolean {
-        val selectedId = selectedImageBlockId ?: return false
-        val block = blockList.firstOrNull { it.id == selectedId } as? ImageBlock ?: return false
-        EditorClipboard.storeImages(listOf(block))
-        return true
-    }
-
-    fun cutSelectedBlocks(): Boolean {
-        val copied = copySelectedBlocks()
-        if (!copied) return false
-        return removeSelectedImage()
-    }
-
-    fun pasteBlocks(): Boolean {
-        val payload = EditorClipboard.spawnImages() ?: return false
-        var updated = false
-        payload.forEach { block ->
-            val sourceUri = block.localUri ?: block.storagePath
-            if (sourceUri.isNullOrBlank()) return@forEach
-            insertImageAtCaret(
-                uri = sourceUri,
-                width = block.width,
-                height = block.height,
-                alt = block.alt,
-                mimeType = block.mimeType,
-                fileName = block.fileName,
-                thumbnailUri = block.thumbnailUri,
-                localUri = block.localUri,
-                storagePath = block.storagePath,
-                syncState = block.syncState,
-                thumbnailStoragePath = block.thumbnailStoragePath,
-            )
-            updated = true
-        }
-        return updated
-    }
-
     fun moveBlockBy(blockId: String, delta: Int): Boolean {
         if (delta == 0) return false
         val currentIndex = blockList.indexOfFirst { it.id == blockId }

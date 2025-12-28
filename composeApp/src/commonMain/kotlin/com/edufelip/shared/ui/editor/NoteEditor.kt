@@ -49,7 +49,6 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
 import com.edufelip.shared.domain.model.ImageBlock
-import com.edufelip.shared.domain.model.ImageSyncState
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.TextBlock
 import com.edufelip.shared.ui.designsystem.designTokens
@@ -65,14 +64,6 @@ fun NoteEditor(
 ) {
     val tokens = designTokens()
     val contentAwareModifier = modifier
-        .noteEditorReceiveContent { uri ->
-            val localUri = uri.takeUnless { isRemoteUri(it) }
-            state.insertImageAtCaret(
-                uri = uri,
-                localUri = localUri,
-                syncState = ImageSyncState.PendingUpload,
-            )
-        }
         .pointerInput(state) {
             awaitEachGesture {
                 val down = awaitFirstDown(requireUnconsumed = false)
@@ -120,7 +111,7 @@ private fun NoteEditorPreview() {
     val content = NoteContent(
         blocks = listOf(
             TextBlock(text = "Jot something memorable..."),
-            TextBlock(text = "• Add bullets\n• Paste images\n• Undo/Redo works"),
+            TextBlock(text = "• Add bullets\n• Attach images\n• Undo/Redo works"),
         ),
     )
     DevicePreviewContainer {
@@ -191,18 +182,6 @@ private fun TextBlockEditor(
             .onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown) {
                     when {
-                        event.isCopyShortcut() -> {
-                            if (state.copySelectedBlocks()) {
-                                return@onPreviewKeyEvent true
-                            }
-                        }
-
-                        event.isCutShortcut() -> {
-                            if (state.cutSelectedBlocks()) {
-                                return@onPreviewKeyEvent true
-                            }
-                        }
-
                         event.isUndoShortcut() -> {
                             if (state.undo()) {
                                 return@onPreviewKeyEvent true
@@ -211,12 +190,6 @@ private fun TextBlockEditor(
 
                         event.isRedoShortcut() -> {
                             if (state.redo()) {
-                                return@onPreviewKeyEvent true
-                            }
-                        }
-
-                        event.isPasteShortcut() -> {
-                            if (state.pasteBlocks()) {
                                 return@onPreviewKeyEvent true
                             }
                         }
@@ -349,16 +322,8 @@ private fun ImageBlockView(
     }
 }
 
-private fun KeyEvent.isCopyShortcut(): Boolean = isShortcut(Key.C)
-
-private fun KeyEvent.isCutShortcut(): Boolean = isShortcut(Key.X)
-
-private fun KeyEvent.isPasteShortcut(): Boolean = isShortcut(Key.V)
-
 private fun KeyEvent.isUndoShortcut(): Boolean = isShortcut(Key.Z) && !isShiftPressed
 
 private fun KeyEvent.isRedoShortcut(): Boolean = (isShortcut(Key.Z) && isShiftPressed) || isShortcut(Key.Y)
 
 private fun KeyEvent.isShortcut(targetKey: Key): Boolean = type == KeyEventType.KeyDown && (isCtrlPressed || isMetaPressed) && key == targetKey
-
-private fun isRemoteUri(uri: String): Boolean = uri.startsWith("http", ignoreCase = true)

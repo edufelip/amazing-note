@@ -40,13 +40,11 @@ fun NoteEditorActionBar(
         horizontalArrangement = Arrangement.spacedBy(tokens.spacing.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (onAddImage != null) {
-            EditorAssistChip(
-                label = stringResource(Res.string.editor_add_image),
-                icon = Icons.Outlined.Image,
-                onClick = onAddImage,
-            )
-        }
+        EditorAssistChip(
+            label = stringResource(Res.string.editor_add_image),
+            icon = Icons.Outlined.Image,
+            onClick = onAddImage,
+        )
     }
 }
 
