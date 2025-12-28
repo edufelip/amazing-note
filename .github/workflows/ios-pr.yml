@@ -81,5 +81,15 @@ jobs:
           xcodebuild test \
             -workspace iosApp/iosApp.xcworkspace \
             -scheme iosApp \
+            -derivedDataPath iosApp/build/DerivedData \
             -destination "platform=iOS Simulator,name=iPhone 15,OS=18.6" \
             -only-testing:iosAppTests
+
+      - name: Resolve SwiftPM frameworks dir
+        id: firebase-frameworks
+        run: echo "dir=$(./scripts/resolve_spm_frameworks_dir.sh)" >> "$GITHUB_OUTPUT"
+
+      - name: Run shared tests
+        env:
+          FIREBASE_IOS_FRAMEWORKS_DIR: ${{ steps.firebase-frameworks.outputs.dir }}
+        run: ./gradlew :shared:allTests --stacktrace
