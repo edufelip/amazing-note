@@ -24,7 +24,6 @@ import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -54,9 +53,6 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
@@ -67,7 +63,6 @@ import com.edufelip.shared.domain.model.TextBlock
 import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.util.platform.applyPlatformKeyboardAppearance
-import com.edufelip.shared.ui.util.platform.platformBehavior
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.math.roundToInt
 
@@ -168,10 +163,6 @@ private fun TextBlockEditor(
 
     val typography = MaterialTheme.typography.bodyLarge
     val textColor = MaterialTheme.colorScheme.onSurface
-    val focusManager = LocalFocusManager.current
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val imeAction = if (platformBehavior().platformName == "ios") ImeAction.Done else ImeAction.Default
-
     BasicTextField(
         value = value,
         onValueChange = { newValue ->
@@ -195,13 +186,7 @@ private fun TextBlockEditor(
         },
         cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
         textStyle = typography.copy(color = textColor),
-        keyboardOptions = KeyboardOptions(imeAction = imeAction),
-        keyboardActions = KeyboardActions(
-            onDone = {
-                keyboardController?.hide()
-                focusManager.clearFocus()
-            },
-        ),
+        keyboardOptions = KeyboardOptions.Default,
         modifier = modifier
             .fillMaxWidth()
             .focusRequester(focusRequester)
