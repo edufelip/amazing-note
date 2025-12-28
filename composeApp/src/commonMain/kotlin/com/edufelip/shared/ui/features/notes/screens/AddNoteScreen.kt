@@ -5,7 +5,9 @@ package com.edufelip.shared.ui.features.notes.screens
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,7 +36,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -82,6 +89,14 @@ fun AddNoteScreen(
     val imageCount = editorState.content.blocks.count { it is ImageBlock }
     var previousImageCount by remember { mutableStateOf(imageCount) }
     val overlayInteractionSource = remember { MutableInteractionSource() }
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    var rootBounds by remember { mutableStateOf<Rect?>(null) }
+    var editorBounds by remember { mutableStateOf<Rect?>(null) }
+    val dismissKeyboard = {
+        keyboardController?.hide()
+        focusManager.clearFocus()
+    }
     LaunchedEffect(imageCount) {
         if (imageCount > previousImageCount) {
             val target = (listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0)
@@ -93,7 +108,26 @@ fun AddNoteScreen(
         Box(
             modifier = modifier
                 .padding(top = it.calculateTopPadding())
-                .fillMaxSize(),
+                .fillMaxSize()
+                .onGloballyPositioned { coordinates ->
+                    rootBounds = coordinates.boundsInRoot()
+                }
+                .pointerInput(editorBounds, rootBounds) {
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false)
+                        val up = waitForUpOrCancellation()
+                        if (up != null) {
+                            val bounds = editorBounds
+                            val root = rootBounds
+                            if (bounds != null && root != null) {
+                                val rootPosition = down.position + root.topLeft
+                                if (!bounds.contains(rootPosition)) {
+                                    dismissKeyboard()
+                                }
+                            }
+                        }
+                    }
+                },
         ) {
             Column(
                 modifier = Modifier
@@ -146,7 +180,10 @@ fun AddNoteScreen(
                             modifier = Modifier
                                 .fillParentMaxHeight()
                                 .fillMaxWidth()
-                                .heightIn(min = editorMinHeight),
+                                .heightIn(min = editorMinHeight)
+                                .onGloballyPositioned { coordinates ->
+                                    editorBounds = coordinates.boundsInRoot()
+                                },
                             shape = RoundedCornerShape(tokens.spacing.lg + tokens.spacing.xs),
                             tonalElevation = tokens.spacing.xxs / 2,
                             color = MaterialTheme.colorScheme.surface,
@@ -156,9 +193,13 @@ fun AddNoteScreen(
                                     .padding(tokens.spacing.xs)
                                     .fillMaxSize()
                                     .pointerInput(editorState) {
-                                        detectTapGestures {
-                                            editorState.clearImageSelection()
-                                            editorState.focusFirstTextBlock()
+                                        awaitEachGesture {
+                                            awaitFirstDown(requireUnconsumed = false)
+                                            val up = waitForUpOrCancellation()
+                                            if (up != null) {
+                                                editorState.clearImageSelection()
+                                                editorState.focusFirstTextBlock()
+                                            }
                                         }
                                     },
                             ) {

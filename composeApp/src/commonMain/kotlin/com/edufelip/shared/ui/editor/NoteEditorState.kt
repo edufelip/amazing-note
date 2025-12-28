@@ -46,6 +46,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
     private val undoStack = ArrayDeque<DocOp>()
     private val redoStack = ArrayDeque<DocOp>()
     private var suppressHistory = false
+    private var preserveImageSelectionOnNextFocus = false
 
     init {
         setContent(initialContent)
@@ -145,9 +146,11 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         setCaretFrom(Caret(blockId, selectionStart, selectionEnd))
     }
 
-    fun markFocus(blockId: String) {
+    fun markFocus(blockId: String, preserveImageSelection: Boolean = false) {
         focusedBlockId = blockId
-        clearImageSelection()
+        if (!preserveImageSelection) {
+            clearImageSelection()
+        }
         if (pendingFocusId == blockId) {
             pendingFocusId = null
         }
@@ -157,6 +160,18 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
                 setCaretFrom(Caret(blockId, block.text.length))
             }
         }
+    }
+
+    fun clearFocus(blockId: String) {
+        if (focusedBlockId == blockId) {
+            focusedBlockId = null
+        }
+    }
+
+    fun consumePreserveImageSelectionOnNextFocus(): Boolean {
+        val preserve = preserveImageSelectionOnNextFocus
+        preserveImageSelectionOnNextFocus = false
+        return preserve
     }
 
     fun requestFocus(blockId: String) {
@@ -187,6 +202,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         selectedImageBlockId = if (selectedImageBlockId == blockId) {
             null
         } else {
+            preserveImageSelectionOnNextFocus = true
             focusTextAdjacentTo(blockId)
             blockId
         }
@@ -197,6 +213,9 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
     }
 
     fun isImageSelected(blockId: String): Boolean = selectedImageBlockId == blockId
+
+    val isTextFieldFocused: Boolean
+        get() = focusedBlockId != null
 
     fun moveBlockBy(blockId: String, delta: Int): Boolean {
         if (delta == 0) return false
@@ -212,6 +231,27 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         blockList.removeAt(currentIndex)
         blockList.add(targetIndex, block)
         refreshTextFieldState()
+        if (!suppressHistory) {
+            recordOperation(
+                ContentReplaceOp(
+                    beforeContent = beforeContent,
+                    afterContent = content,
+                    beforeCaret = beforeCaret,
+                    afterCaret = caret,
+                ),
+            )
+        }
+        return true
+    }
+
+    fun resizeImageBlock(blockId: String, width: Int, height: Int): Boolean {
+        val index = blockList.indexOfFirst { it.id == blockId }
+        if (index == -1) return false
+        val block = blockList[index] as? ImageBlock ?: return false
+        if (block.width == width && block.height == height) return false
+        val beforeContent = content
+        val beforeCaret = caret
+        blockList[index] = block.copy(width = width, height = height)
         if (!suppressHistory) {
             recordOperation(
                 ContentReplaceOp(

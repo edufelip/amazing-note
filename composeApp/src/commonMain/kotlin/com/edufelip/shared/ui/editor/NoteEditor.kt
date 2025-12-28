@@ -1,24 +1,31 @@
 package com.edufelip.shared.ui.editor
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -28,11 +35,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
@@ -45,15 +54,21 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
 import com.edufelip.shared.domain.model.ImageBlock
+import com.edufelip.shared.domain.model.ImageMetadata
 import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.TextBlock
 import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.util.platform.platformBehavior
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -99,6 +114,7 @@ fun NoteEditor(
                     selected = state.isImageSelected(block.id),
                     onSelect = { state.toggleImageSelection(block.id) },
                     onMove = { id, delta -> state.moveBlockBy(id, delta) },
+                    onResize = { id, width, height -> state.resizeImageBlock(id, width, height) },
                 )
             }
         }
@@ -151,6 +167,9 @@ private fun TextBlockEditor(
 
     val typography = MaterialTheme.typography.bodyLarge
     val textColor = MaterialTheme.colorScheme.onSurface
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val imeAction = if (platformBehavior().platformName == "ios") ImeAction.Done else ImeAction.Default
 
     BasicTextField(
         value = value,
@@ -173,7 +192,15 @@ private fun TextBlockEditor(
 
             state.onTextFieldValueChange(block.id, newValue)
         },
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
         textStyle = typography.copy(color = textColor),
+        keyboardOptions = KeyboardOptions(imeAction = imeAction),
+        keyboardActions = KeyboardActions(
+            onDone = {
+                keyboardController?.hide()
+                focusManager.clearFocus()
+            },
+        ),
         modifier = modifier
             .fillMaxWidth()
             .focusRequester(focusRequester)
@@ -215,14 +242,16 @@ private fun TextBlockEditor(
             }
             .onFocusChanged { focusState ->
                 if (focusState.isFocused) {
+                    val preserveSelection = state.consumePreserveImageSelectionOnNextFocus()
                     state.consumePendingFocus(block.id)
-                    state.markFocus(block.id)
-                    state.clearImageSelection()
+                    state.markFocus(block.id, preserveSelection)
                     pendingBringIntoView = true
+                } else {
+                    state.clearFocus(block.id)
                 }
             },
         decorationBox = { innerField ->
-            Box(modifier = Modifier.fillMaxWidth()) {
+            Box(modifier = Modifier.fillMaxSize()) {
                 if (showPlaceholder && value.text.isEmpty()) {
                     Text(
                         text = placeholder,
@@ -242,11 +271,15 @@ private fun ImageBlockView(
     selected: Boolean,
     onSelect: () -> Unit,
     onMove: (String, Int) -> Unit,
+    onResize: (String, Int, Int) -> Unit,
 ) {
     val tokens = designTokens()
     val dragThreshold = with(LocalDensity.current) { 36.dp.toPx() }
     var dragDelta by remember(block.id) { mutableStateOf(0f) }
     var dragging by remember(block.id) { mutableStateOf(false) }
+    var resizeStartWidthPx by remember(block.id) { mutableStateOf(0f) }
+    var resizeDelta by remember(block.id) { mutableStateOf(0f) }
+    var previewWidthPx by remember(block.id) { mutableStateOf<Float?>(null) }
     var localModel by remember(block.id) {
         mutableStateOf(
             block.cachedRemoteUri ?: block.localUri ?: block.thumbnailLocalUri,
@@ -258,66 +291,118 @@ private fun ImageBlockView(
         block.legacyRemoteUri,
     ).firstOrNull { it.startsWith("http", ignoreCase = true) }
 
-    Surface(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = tokens.spacing.xs)
-            .clickable(onClick = onSelect)
-            .pointerInput(block.id) {
-                detectDragGesturesAfterLongPress(
-                    onDragStart = {
-                        dragging = true
-                        dragDelta = 0f
-                    },
-                    onDragCancel = {
-                        dragging = false
-                        dragDelta = 0f
-                    },
-                    onDragEnd = {
-                        dragging = false
-                        dragDelta = 0f
-                    },
-                    onDrag = { change, amount ->
-                        dragDelta += amount.y
-                        when {
-                            dragDelta <= -dragThreshold -> {
-                                onMove(block.id, -1)
-                                dragDelta += dragThreshold
-                            }
-
-                            dragDelta >= dragThreshold -> {
-                                onMove(block.id, 1)
-                                dragDelta -= dragThreshold
-                            }
-                        }
-                    },
-                )
-            },
-        shape = RoundedCornerShape(18.dp),
-        tonalElevation = if (dragging) 4.dp else 1.dp,
-        border = when {
-            dragging -> BorderStroke(2.dp, tokens.colors.accent)
-            selected -> BorderStroke(2.dp, tokens.colors.accent)
-            else -> null
-        },
+            .padding(horizontal = tokens.spacing.xs),
+        contentAlignment = Alignment.CenterStart,
     ) {
-        val currentModel = localModel
-        if (currentModel != null && currentModel.startsWith("file:", ignoreCase = true)) {
-            val painter = rememberAsyncImagePainter(model = currentModel)
-            Image(
-                painter = painter,
-                contentDescription = block.alt,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        } else {
-            val model = remoteCandidates ?: localModel
-            AsyncImage(
-                model = model,
-                contentDescription = block.alt,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxWidth(),
-            )
+        val density = LocalDensity.current
+        val maxWidthPx = with(density) { maxWidth.toPx() }
+        val minWidthPx = with(density) { 64.dp.toPx() }
+        val aspectRatio = remember(block.id, block.width, block.height, block.metadata) {
+            resolveAspectRatio(block.width, block.height, block.metadata)
+        }
+        val baseWidthPx = (block.width?.toFloat() ?: maxWidthPx)
+        val clampedBaseWidthPx = baseWidthPx.coerceIn(minWidthPx, maxWidthPx)
+        val displayWidthPx = (previewWidthPx ?: clampedBaseWidthPx).coerceIn(minWidthPx, maxWidthPx)
+        val displayHeightPx = (displayWidthPx / aspectRatio).takeIf { it.isFinite() } ?: displayWidthPx
+        val displayWidthDp = with(density) { displayWidthPx.toDp() }
+        val displayHeightDp = with(density) { displayHeightPx.toDp() }
+
+        Surface(
+            modifier = Modifier
+                .size(displayWidthDp, displayHeightDp)
+                .clickable(onClick = onSelect)
+                .pointerInput(block.id) {
+                    detectDragGesturesAfterLongPress(
+                        onDragStart = {
+                            dragging = true
+                            dragDelta = 0f
+                        },
+                        onDragCancel = {
+                            dragging = false
+                            dragDelta = 0f
+                        },
+                        onDragEnd = {
+                            dragging = false
+                            dragDelta = 0f
+                        },
+                        onDrag = { change, amount ->
+                            dragDelta += amount.y
+                            when {
+                                dragDelta <= -dragThreshold -> {
+                                    onMove(block.id, -1)
+                                    dragDelta += dragThreshold
+                                }
+
+                                dragDelta >= dragThreshold -> {
+                                    onMove(block.id, 1)
+                                    dragDelta -= dragThreshold
+                                }
+                            }
+                        },
+                    )
+                },
+            shape = RoundedCornerShape(18.dp),
+            tonalElevation = if (dragging) 4.dp else 1.dp,
+            border = when {
+                dragging -> BorderStroke(2.dp, tokens.colors.accent)
+                selected -> BorderStroke(2.dp, tokens.colors.accent)
+                else -> null
+            },
+        ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                val currentModel = localModel
+                if (currentModel != null && currentModel.startsWith("file:", ignoreCase = true)) {
+                    val painter = rememberAsyncImagePainter(model = currentModel)
+                    Image(
+                        painter = painter,
+                        contentDescription = block.alt,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
+                    val model = remoteCandidates ?: localModel
+                    AsyncImage(
+                        model = model,
+                        contentDescription = block.alt,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+                ResizeHandle(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(6.dp)
+                        .pointerInput(block.id, maxWidthPx, aspectRatio) {
+                            detectDragGestures(
+                                onDragStart = {
+                                    resizeStartWidthPx = displayWidthPx
+                                    resizeDelta = 0f
+                                },
+                                onDragCancel = {
+                                    previewWidthPx = null
+                                    resizeDelta = 0f
+                                },
+                                onDragEnd = {
+                                    val commitWidthPx = previewWidthPx ?: displayWidthPx
+                                    val clampedWidthPx = commitWidthPx.coerceIn(minWidthPx, maxWidthPx)
+                                    val commitHeightPx = (clampedWidthPx / aspectRatio).roundToInt()
+                                    onResize(block.id, clampedWidthPx.roundToInt(), commitHeightPx)
+                                    previewWidthPx = null
+                                    resizeDelta = 0f
+                                },
+                                onDrag = { change, amount ->
+                                    change.consume()
+                                    resizeDelta += (amount.x + amount.y) / 2f
+                                    previewWidthPx = (resizeStartWidthPx + resizeDelta)
+                                        .coerceIn(minWidthPx, maxWidthPx)
+                                },
+                            )
+                        },
+                )
+            }
         }
     }
 }
@@ -327,3 +412,43 @@ private fun KeyEvent.isUndoShortcut(): Boolean = isShortcut(Key.Z) && !isShiftPr
 private fun KeyEvent.isRedoShortcut(): Boolean = (isShortcut(Key.Z) && isShiftPressed) || isShortcut(Key.Y)
 
 private fun KeyEvent.isShortcut(targetKey: Key): Boolean = type == KeyEventType.KeyDown && (isCtrlPressed || isMetaPressed) && key == targetKey
+
+private fun resolveAspectRatio(width: Int?, height: Int?, metadata: ImageMetadata): Float {
+    val metaWidth = metadata.width
+    val metaHeight = metadata.height
+    val ratio = when {
+        width != null && height != null && height > 0 -> width.toFloat() / height.toFloat()
+        metaWidth != null && metaHeight != null && metaHeight > 0 -> metaWidth.toFloat() / metaHeight.toFloat()
+        else -> 1f
+    }
+    return if (ratio.isFinite() && ratio > 0f) ratio else 1f
+}
+
+@Composable
+private fun ResizeHandle(modifier: Modifier = Modifier) {
+    val handleColor = MaterialTheme.colorScheme.onSurfaceVariant
+    Surface(
+        modifier = modifier.size(18.dp),
+        shape = RoundedCornerShape(6.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+        tonalElevation = 1.dp,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)),
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val strokeWidth = 1.5.dp.toPx()
+            val inset = size.minDimension * 0.25f
+            drawLine(
+                color = handleColor,
+                start = androidx.compose.ui.geometry.Offset(inset, size.height - inset),
+                end = androidx.compose.ui.geometry.Offset(size.width - inset, inset),
+                strokeWidth = strokeWidth,
+            )
+            drawLine(
+                color = handleColor,
+                start = androidx.compose.ui.geometry.Offset(inset * 1.4f, size.height - inset),
+                end = androidx.compose.ui.geometry.Offset(size.width - inset, inset * 1.4f),
+                strokeWidth = strokeWidth,
+            )
+        }
+    }
+}
