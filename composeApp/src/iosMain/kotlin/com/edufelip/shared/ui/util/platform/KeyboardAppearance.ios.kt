@@ -2,6 +2,7 @@
 
 package com.edufelip.shared.ui.util.platform
 
+import platform.Foundation.NSArray
 import platform.UIKit.UIApplication
 import platform.UIKit.UIKeyboardAppearanceDark
 import platform.UIKit.UIResponder
@@ -9,17 +10,18 @@ import platform.UIKit.UITextField
 import platform.UIKit.UITextView
 import platform.UIKit.UIView
 import platform.UIKit.UIWindow
+import platform.Foundation.NSSelectorFromString
 
 actual fun applyPlatformKeyboardAppearance() {
     val responder = findFirstResponder() ?: return
     when (responder) {
         is UITextView -> {
             responder.keyboardAppearance = UIKeyboardAppearanceDark
-            responder.reloadInputViews()
+            responder.reloadInputViewsSafe()
         }
         is UITextField -> {
             responder.keyboardAppearance = UIKeyboardAppearanceDark
-            responder.reloadInputViews()
+            responder.reloadInputViewsSafe()
         }
         else -> Unit
     }
@@ -27,22 +29,27 @@ actual fun applyPlatformKeyboardAppearance() {
 
 private fun findFirstResponder(): UIResponder? {
     val windows = UIApplication.sharedApplication.windows ?: return null
-    val count = windows.count.toInt()
-    for (index in 0 until count) {
-        val window = windows.objectAtIndex(index.toULong()) as? UIWindow ?: continue
+    windows.forEach { anyWindow ->
+        val window = anyWindow as? UIWindow ?: return@forEach
         val responder = window.findFirstResponderInView()
         if (responder != null) return responder
     }
     return null
 }
 
+private fun UIResponder.reloadInputViewsSafe() {
+    val selector = NSSelectorFromString("reloadInputViews")
+    if (respondsToSelector(selector)) {
+        performSelector(selector)
+    }
+}
+
 private fun UIResponder.findFirstResponderInView(): UIResponder? {
     if (this.isFirstResponder()) return this
     val view = this as? UIView ?: return null
     val subviews = view.subviews ?: return null
-    val count = subviews.count.toInt()
-    for (i in 0 until count) {
-        val child = subviews.objectAtIndex(i.toULong()) as? UIView ?: continue
+    subviews.forEach { anyView ->
+        val child = anyView as? UIView ?: return@forEach
         val responder = child.findFirstResponderInView()
         if (responder != null) return responder
     }
