@@ -66,6 +66,7 @@ import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.TextBlock
 import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
+import com.edufelip.shared.ui.util.platform.applyPlatformKeyboardAppearance
 import com.edufelip.shared.ui.util.platform.platformBehavior
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.math.roundToInt
@@ -246,6 +247,7 @@ private fun TextBlockEditor(
                     state.consumePendingFocus(block.id)
                     state.markFocus(block.id, preserveSelection)
                     pendingBringIntoView = true
+                    applyPlatformKeyboardAppearance()
                 } else {
                     state.clearFocus(block.id)
                 }

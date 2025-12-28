@@ -198,7 +198,6 @@ fun AddNoteScreen(
                                             val up = waitForUpOrCancellation()
                                             if (up != null) {
                                                 editorState.clearImageSelection()
-                                                editorState.focusFirstTextBlock()
                                             }
                                         }
                                     },
