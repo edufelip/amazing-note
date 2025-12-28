@@ -13,7 +13,7 @@ class PendingAttachmentResolverTest {
     fun resolvesPendingImages() = runTest {
         val pending = ImageBlock(localUri = "/local/image", syncState = ImageSyncState.PendingUpload)
         val remote = ImageBlock(storagePath = "images/user/remote", syncState = ImageSyncState.Synced)
-        val content = NoteContent(listOf(pending, remote))
+        val content = NoteContent(blocks = listOf(pending, remote))
         val cleaned = mutableListOf<String>()
 
         val result = content.resolvePendingImageAttachments(
@@ -40,7 +40,7 @@ class PendingAttachmentResolverTest {
     @Test
     fun returnsSameContentWhenNoPendingImages() = runTest {
         val remote = ImageBlock(storagePath = "images/cdn/image", syncState = ImageSyncState.Synced)
-        val content = NoteContent(listOf(remote))
+        val content = NoteContent(blocks = listOf(remote))
 
         val result = content.resolvePendingImageAttachments(
             uploader = { error("should not be called") },

@@ -12,7 +12,7 @@ class NoteEditorStateTest {
     @Test
     fun insertImageAdvancesCaretToTrailingBlock() {
         val initialBlock = TextBlock(text = "Hello world")
-        val state = NoteEditorState(NoteContent(listOf(initialBlock)))
+        val state = NoteEditorState(NoteContent(blocks = listOf(initialBlock)))
         state.updateCaret(initialBlock.id, 5, 5)
 
         val caret = state.insertImageAtCaret(
@@ -34,7 +34,7 @@ class NoteEditorStateTest {
     @Test
     fun undoAndRedoRestoreTextChanges() {
         val initialBlock = TextBlock(text = "Hello")
-        val state = NoteEditorState(NoteContent(listOf(initialBlock)))
+        val state = NoteEditorState(NoteContent(blocks = listOf(initialBlock)))
 
         state.onTextChanged(initialBlock.id, "Hello World")
 
@@ -53,7 +53,7 @@ class NoteEditorStateTest {
     fun removeImageBeforeTextBlockDeletesImage() {
         val text = TextBlock(text = "")
         val image = ImageBlock(localUri = "file://image")
-        val state = NoteEditorState(NoteContent(listOf(image, text)))
+        val state = NoteEditorState(NoteContent(blocks = listOf(image, text)))
 
         val removed = state.removeImageBefore(text.id)
 
@@ -65,7 +65,7 @@ class NoteEditorStateTest {
     fun selectedImageRemovalClearsSelection() {
         val text = TextBlock(text = "")
         val image = ImageBlock(localUri = "file://image")
-        val state = NoteEditorState(NoteContent(listOf(text, image)))
+        val state = NoteEditorState(NoteContent(blocks = listOf(text, image)))
 
         state.toggleImageSelection(image.id)
         assertTrue(state.isImageSelected(image.id))
@@ -80,7 +80,7 @@ class NoteEditorStateTest {
     @Test
     fun insertImageAddsTrailingBlankLineAndMovesCaret() {
         val text = TextBlock(text = "Body")
-        val state = NoteEditorState(NoteContent(listOf(text)))
+        val state = NoteEditorState(NoteContent(blocks = listOf(text)))
         state.updateCaret(text.id, text.text.length, text.text.length)
 
         state.insertImageAtCaret(uri = "file://local/image")
@@ -98,7 +98,7 @@ class NoteEditorStateTest {
         val first = TextBlock(text = "Hello ")
         val second = TextBlock(text = "world")
         val image = ImageBlock(localUri = "file://image")
-        val state = NoteEditorState(NoteContent(listOf(first, image, second)))
+        val state = NoteEditorState(NoteContent(blocks = listOf(first, image, second)))
 
         val removed = state.removeBlockById(image.id)
 
