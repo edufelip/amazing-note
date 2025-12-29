@@ -85,9 +85,6 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security list-keychain -d user -s "$KEYCHAIN_PATH"
 
-          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          cp "$PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/AmazingNote.mobileprovision"
-
           PROFILE_PLIST="$RUNNER_TEMP/profile.plist"
           security cms -D -i "$PROFILE_PATH" > "$PROFILE_PLIST"
 
@@ -115,11 +112,22 @@ jobs:
             security find-identity -p codesigning -v "$KEYCHAIN_PATH" || true
             exit 1
           fi
+
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp "$PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/${PROFILE_UUID}.mobileprovision"
           echo "PROFILE_UUID=$PROFILE_UUID" >> "$GITHUB_ENV"
           echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
 
       - name: Build Compose frameworks (Release/iphoneos)
         run: ./gradlew -Dorg.gradle.jvmargs="-Xmx8g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8" -PCONFIGURATION=Release -PSDK_NAME=iphoneos :composeApp:packForXcode :iosApp:packForXcode --stacktrace
+
+      - name: Verify Compose resources present
+        run: |
+          RESOURCE_DIR="composeApp/build/kotlin-multiplatform-resources/aggregated-resources/iosArm64/composeResources"
+          if [ ! -d "$RESOURCE_DIR" ]; then
+            echo "Compose resources missing at $RESOURCE_DIR"
+            exit 1
+          fi
 
       - name: Bump iOS build number
         run: /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" iosApp/iosApp/Info.plist
@@ -127,6 +135,7 @@ jobs:
       - name: Build archive
         env:
           KEYCHAIN_PATH: ${{ runner.temp }}/amazing-note.keychain-db
+          IOS_PROFILE_NAME: ${{ env.PROFILE_NAME }}
         run: |
           xcodebuild \
             -workspace iosApp/iosApp.xcworkspace \
@@ -135,8 +144,6 @@ jobs:
             -sdk iphoneos \
             -archivePath iosApp/build/iosApp.xcarchive \
             -destination "generic/platform=iOS" \
-            DEVELOPMENT_TEAM=${{ secrets.IOS_TEAM_ID }} \
-            APPSTORE_PROFILE_SPECIFIER="${PROFILE_UUID:-${PROFILE_NAME:-${{ secrets.IOS_PROFILE_NAME }}}}" \
             OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN_PATH" \
             archive
 
