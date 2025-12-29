@@ -75,6 +75,14 @@ fun NoteEditor(
 ) {
     val tokens = designTokens()
     val contentAwareModifier = modifier
+        .onPreviewKeyEvent { event ->
+            if (event.type == KeyEventType.KeyDown &&
+                (event.key == Key.Backspace || event.key == Key.Delete)
+            ) {
+                if (state.removeSelectedImage()) return@onPreviewKeyEvent true
+            }
+            false
+        }
         .pointerInput(state) {
             awaitEachGesture {
                 val down = awaitFirstDown(requireUnconsumed = false)

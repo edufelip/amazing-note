@@ -2,7 +2,7 @@
 
 package com.edufelip.shared.ui.util.platform
 
-import platform.Foundation.NSArray
+import platform.Foundation.NSSelectorFromString
 import platform.UIKit.UIApplication
 import platform.UIKit.UIKeyboardAppearanceDark
 import platform.UIKit.UIResponder
@@ -10,7 +10,6 @@ import platform.UIKit.UITextField
 import platform.UIKit.UITextView
 import platform.UIKit.UIView
 import platform.UIKit.UIWindow
-import platform.Foundation.NSSelectorFromString
 
 actual fun applyPlatformKeyboardAppearance() {
     val responder = findFirstResponder() ?: return

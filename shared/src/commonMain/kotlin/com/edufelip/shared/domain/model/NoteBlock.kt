@@ -70,12 +70,7 @@ data class ImageBlock(
     val width: Int? = null,
     val height: Int? = null,
     val thumbnailUri: String? = null,
-) : NoteBlock {
-    override fun equals(other: Any?): Boolean = other is ImageBlock &&
-        other.resolvedDownloadUrl == resolvedDownloadUrl
-
-    override fun hashCode(): Int = super.hashCode()
-}
+) : NoteBlock
 
 fun generateBlockId(): String = buildString(capacity = BLOCK_ID_LENGTH) {
     repeat(BLOCK_ID_LENGTH) {
