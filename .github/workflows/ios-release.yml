@@ -48,6 +48,9 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
+      - name: Generate Compose resources (iOS device)
+        run: ./gradlew :composeApp:iosArm64AggregateResources --stacktrace
+
       - name: Write GoogleService-Info.plist
         env:
           IOS_GOOGLE_SERVICE_INFO_PLIST_BASE64: ${{ secrets.IOS_GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
