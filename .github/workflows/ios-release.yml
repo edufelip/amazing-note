@@ -118,6 +118,14 @@ jobs:
       - name: Build Compose frameworks (Release/iphoneos)
         run: ./gradlew -Dorg.gradle.jvmargs="-Xmx8g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8" -PCONFIGURATION=Release -PSDK_NAME=iphoneos :composeApp:packForXcode :iosApp:packForXcode --stacktrace
 
+      - name: Verify Compose resources present
+        run: |
+          RESOURCE_DIR="composeApp/build/kotlin-multiplatform-resources/aggregated-resources/iosArm64/composeResources"
+          if [ ! -d "$RESOURCE_DIR" ]; then
+            echo "Compose resources missing at $RESOURCE_DIR"
+            exit 1
+          fi
+
       - name: Bump iOS build number
         run: /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" iosApp/iosApp/Info.plist
 
