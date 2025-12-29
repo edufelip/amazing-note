@@ -80,3 +80,7 @@ xcodebuild -project iosApp/iosApp.xcodeproj \
            -destination "$DEST" \
            CODE_SIGNING_ALLOWED=NO \
            build
+
+# Bump build number for fresh installs
+APP_VERSION="$(date +%s)"
+/usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${APP_VERSION}" iosApp/iosApp/Info.plist 2>/dev/null || true
