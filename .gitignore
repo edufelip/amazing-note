@@ -27,6 +27,7 @@ iosApp/Frameworks/
 *.xcuserstate
 /.kotlin
 AGENTS.md
+GEMINI.md
 .gradle-alt
 .gradle-cache
 .gradle-user
