@@ -8,24 +8,34 @@
 
 /* Begin PBXBuildFile section */
 		0D010AAA418E6C80D7063A54 /* AmazingNoteUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54A0E6A99CEA08BB10955449 /* AmazingNoteUITests.swift */; };
+		14F35A687CED62099E44CA2A /* testHomeDark.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 8352967DF8ACE2BBC1680581 /* testHomeDark.1.png */; };
 		1C81D6F669B7BB6D2FFCCEB3 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 617043448F4869026C2F0BB4 /* FirebaseAuth */; };
 		22EA1CB33A17DCC6FC82406D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F543015C899423D4B01CEB2E /* Assets.xcassets */; };
+		2EDDFBB66CA0DCE054D44156 /* testLoginLight.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 6B3C80E4FCA124A373109F9B /* testLoginLight.1.png */; };
 		2F2F436B9D10E935E983B1C5 /* UITestRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876D3BFB06C096BD7F39E76B /* UITestRoot.swift */; };
 		36E5AA829FB4EC77B708348E /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 009971E6712863BA1B6024B3 /* SnapshotTesting */; };
 		379D4C6DBBA934A8EF44CDDE /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 108F0D6F9A31550A5E7E3D81 /* FirebaseCrashlytics */; };
 		445C052442747365B7CB2124 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 84FCD721953CC33D9035BCCD /* FirebaseFirestore */; };
+		4994C2B2A42F77CB31E816AC /* testHomeLight.1.png in Resources */ = {isa = PBXBuildFile; fileRef = F375335985343F499275026C /* testHomeLight.1.png */; };
 		5ED1B54212695458BAB5F75A /* TestingSnapshotHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = A26ACE3AE7ED29EA2C082833 /* TestingSnapshotHost.swift */; };
 		68FBABCF560FEDBEDC2D8343 /* GoldenSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8914678EC2EA3D5F52B1CB2 /* GoldenSnapshotTests.swift */; };
+		6C1012F708D4EDC48A87889E /* testSettingsDark.1.png in Resources */ = {isa = PBXBuildFile; fileRef = C74F4307C31BB33581400FD9 /* testSettingsDark.1.png */; };
 		6F26ACE1E3C90FD234DE7A46 /* AppMain.swift in Sources */ = {isa = PBXBuildFile; fileRef = C678D2A4430FF615DBC7217B /* AppMain.swift */; };
+		6F98574BCA604BEBBECCD1EA /* testFoldersLight.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 10770701D4270AFB6C50BF86 /* testFoldersLight.1.png */; };
+		74F2EF9C383472C94551F5C8 /* testNoteDetailLight.1.png in Resources */ = {isa = PBXBuildFile; fileRef = C1FBBB773E92A9E91B879442 /* testNoteDetailLight.1.png */; };
+		75012C721FCA17755EF19EF5 /* testNoteDetailDark.1.png in Resources */ = {isa = PBXBuildFile; fileRef = F7839CFE0D803D2824B72ED4 /* testNoteDetailDark.1.png */; };
 		88ABACE0259DE83261737B99 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1285E8A7B7E7359EA11B9591 /* SceneDelegate.swift */; };
 		A825AC5F0531A8569219D47A /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = B6E18E1D8AEE3BF1FDA1E5E9 /* GoogleSignIn */; };
 		B7C4F6137AC8345E71E92063 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = A61EAF9635BFCCA5966D2AE0 /* FirebaseStorage */; };
 		C87B4FA04BDA1DA04158D48E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A55143988C4C8F291BE72E9A /* GoogleService-Info.plist */; };
+		C8907CF25572C763F8891FE3 /* testSettingsLight.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 56F0B02C175354781AA96475 /* testSettingsLight.1.png */; };
+		CA871C9D94C5C34D4C568562 /* testLoginDark.1.png in Resources */ = {isa = PBXBuildFile; fileRef = D7D0E869C0E2B044CA28CC66 /* testLoginDark.1.png */; };
 		CC9B69136F875C27A2567747 /* UITestIdentifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2F04356F5F9C274DF6EBBF /* UITestIdentifiers.swift */; };
 		E32F40C7B9C1E89645DFEDE5 /* note_cipher_ios.c in Sources */ = {isa = PBXBuildFile; fileRef = 22638A18D97134C26ECC57FD /* note_cipher_ios.c */; };
 		F6407843737A5AC3042BDDF5 /* LiquidRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC2B4ED6760D21408C91A4A /* LiquidRoot.swift */; };
 		F7C33B50A94DA01F2E82C280 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 245434685F34A9A15B1AC406 /* libsqlite3.tbd */; };
 		FDE52B8D57A097A60A4CF366 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6C1F485E0CF8BB70C9DDD2 /* AppDelegate.swift */; };
+		FF8C7D1F731CFA522AB609DA /* testFoldersDark.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 633FBD244BD4D6BA7A9DCB7E /* testFoldersDark.1.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,22 +57,32 @@
 
 /* Begin PBXFileReference section */
 		0C2F04356F5F9C274DF6EBBF /* UITestIdentifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestIdentifiers.swift; sourceTree = "<group>"; };
+		10770701D4270AFB6C50BF86 /* testFoldersLight.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testFoldersLight.1.png; sourceTree = "<group>"; };
 		1285E8A7B7E7359EA11B9591 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		22638A18D97134C26ECC57FD /* note_cipher_ios.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = note_cipher_ios.c; sourceTree = "<group>"; };
 		245434685F34A9A15B1AC406 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		323906AFB18147ABEDEBDB38 /* iosAppUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = iosAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		54A0E6A99CEA08BB10955449 /* AmazingNoteUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmazingNoteUITests.swift; sourceTree = "<group>"; };
 		56583BC252B5F01ED9DEA19D /* iosAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = iosAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		56F0B02C175354781AA96475 /* testSettingsLight.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testSettingsLight.1.png; sourceTree = "<group>"; };
+		633FBD244BD4D6BA7A9DCB7E /* testFoldersDark.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testFoldersDark.1.png; sourceTree = "<group>"; };
+		6B3C80E4FCA124A373109F9B /* testLoginLight.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testLoginLight.1.png; sourceTree = "<group>"; };
+		8352967DF8ACE2BBC1680581 /* testHomeDark.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testHomeDark.1.png; sourceTree = "<group>"; };
 		86038AE1032E284E79B32AD6 /* iosApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iosApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		876D3BFB06C096BD7F39E76B /* UITestRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestRoot.swift; sourceTree = "<group>"; };
 		8B6C1F485E0CF8BB70C9DDD2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A26ACE3AE7ED29EA2C082833 /* TestingSnapshotHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingSnapshotHost.swift; sourceTree = "<group>"; };
 		A55143988C4C8F291BE72E9A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		BDC2B4ED6760D21408C91A4A /* LiquidRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidRoot.swift; sourceTree = "<group>"; };
+		C1FBBB773E92A9E91B879442 /* testNoteDetailLight.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testNoteDetailLight.1.png; sourceTree = "<group>"; };
 		C49B0B02429FBBC9F867DDE1 /* iosApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = iosApp.entitlements; sourceTree = "<group>"; };
 		C678D2A4430FF615DBC7217B /* AppMain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMain.swift; sourceTree = "<group>"; };
+		C74F4307C31BB33581400FD9 /* testSettingsDark.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testSettingsDark.1.png; sourceTree = "<group>"; };
 		C8914678EC2EA3D5F52B1CB2 /* GoldenSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoldenSnapshotTests.swift; sourceTree = "<group>"; };
+		D7D0E869C0E2B044CA28CC66 /* testLoginDark.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testLoginDark.1.png; sourceTree = "<group>"; };
+		F375335985343F499275026C /* testHomeLight.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testHomeLight.1.png; sourceTree = "<group>"; };
 		F543015C899423D4B01CEB2E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F7839CFE0D803D2824B72ED4 /* testNoteDetailDark.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testNoteDetailDark.1.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -130,6 +150,7 @@
 			isa = PBXGroup;
 			children = (
 				C8914678EC2EA3D5F52B1CB2 /* GoldenSnapshotTests.swift */,
+				F0439D99FF642992A9DE0983 /* __Snapshots__ */,
 			);
 			path = iosAppTests;
 			sourceTree = "<group>";
@@ -142,6 +163,31 @@
 				323906AFB18147ABEDEBDB38 /* iosAppUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		C2C61BE64791432803123C4B /* GoldenSnapshotTests */ = {
+			isa = PBXGroup;
+			children = (
+				633FBD244BD4D6BA7A9DCB7E /* testFoldersDark.1.png */,
+				10770701D4270AFB6C50BF86 /* testFoldersLight.1.png */,
+				8352967DF8ACE2BBC1680581 /* testHomeDark.1.png */,
+				F375335985343F499275026C /* testHomeLight.1.png */,
+				D7D0E869C0E2B044CA28CC66 /* testLoginDark.1.png */,
+				6B3C80E4FCA124A373109F9B /* testLoginLight.1.png */,
+				F7839CFE0D803D2824B72ED4 /* testNoteDetailDark.1.png */,
+				C1FBBB773E92A9E91B879442 /* testNoteDetailLight.1.png */,
+				C74F4307C31BB33581400FD9 /* testSettingsDark.1.png */,
+				56F0B02C175354781AA96475 /* testSettingsLight.1.png */,
+			);
+			path = GoldenSnapshotTests;
+			sourceTree = "<group>";
+		};
+		F0439D99FF642992A9DE0983 /* __Snapshots__ */ = {
+			isa = PBXGroup;
+			children = (
+				C2C61BE64791432803123C4B /* GoldenSnapshotTests */,
+			);
+			path = __Snapshots__;
 			sourceTree = "<group>";
 		};
 		FC16215C5E8EEAF655CB992F /* iosAppUITests */ = {
@@ -205,6 +251,7 @@
 			buildConfigurationList = D61171475B3FE2835E331C49 /* Build configuration list for PBXNativeTarget "iosAppTests" */;
 			buildPhases = (
 				3CB0F17B3E63CC78541E1D6D /* Sources */,
+				1098AE7F69C59F747DBA2060 /* Resources */,
 				2FA9B8B888649C03AE70AEC0 /* Frameworks */,
 				DB4D8499C3EDCE0AB05CDE0F /* Copy Compose Resources */,
 			);
@@ -261,6 +308,23 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		1098AE7F69C59F747DBA2060 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FF8C7D1F731CFA522AB609DA /* testFoldersDark.1.png in Resources */,
+				6F98574BCA604BEBBECCD1EA /* testFoldersLight.1.png in Resources */,
+				14F35A687CED62099E44CA2A /* testHomeDark.1.png in Resources */,
+				4994C2B2A42F77CB31E816AC /* testHomeLight.1.png in Resources */,
+				CA871C9D94C5C34D4C568562 /* testLoginDark.1.png in Resources */,
+				2EDDFBB66CA0DCE054D44156 /* testLoginLight.1.png in Resources */,
+				75012C721FCA17755EF19EF5 /* testNoteDetailDark.1.png in Resources */,
+				74F2EF9C383472C94551F5C8 /* testNoteDetailLight.1.png in Resources */,
+				6C1012F708D4EDC48A87889E /* testSettingsDark.1.png in Resources */,
+				C8907CF25572C763F8891FE3 /* testSettingsLight.1.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1623B02D10928C8101C1F806 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -289,7 +353,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -euo pipefail\n\nif [[ \"${SDK_NAME:-}\" == iphoneos* ]]; then\n  RESOURCE_ARCH=\"iosArm64\"\nelse\n  RESOURCE_ARCH=\"iosSimulatorArm64\"\nfi\n\nSRC_RESOURCES=\"${SRCROOT}/../composeApp/build/kotlin-multiplatform-resources/aggregated-resources/${RESOURCE_ARCH}/composeResources\"\nDEST_RESOURCES=\"${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}/compose-resources/composeResources\"\n\nif [[ -d \"${SRC_RESOURCES}\" ]]; then\n  mkdir -p \"${DEST_RESOURCES}\"\n  rsync -a \"${SRC_RESOURCES}/\" \"${DEST_RESOURCES}/\"\nelse\n  echo \"error: Compose resources not found at ${SRC_RESOURCES}\"\n  exit 1\nfi\n";
+			shellScript = "set -euo pipefail\n\nif [[ \"${SDK_NAME:-}\" == iphoneos* ]]; then\n  ARCH_ORDER=\"iosArm64 iosSimulatorArm64 iosX64\"\nelse\n  ARCH_ORDER=\"iosSimulatorArm64 iosX64 iosArm64\"\nfi\n\nfind_resources() {\n  arch=\"$1\"\n  aggregated=\"${SRCROOT}/../composeApp/build/kotlin-multiplatform-resources/aggregated-resources/${arch}/composeResources\"\n  assembled=\"${SRCROOT}/../composeApp/build/kotlin-multiplatform-resources/assemble-hierarchically/${arch}ResolveSelfResources/composeResources\"\n  generated=\"${SRCROOT}/../composeApp/build/generated/compose/resourceGenerator/assembledResources/${arch}Main/composeResources\"\n\n  if [[ -d \"${aggregated}\" ]]; then\n    echo \"${aggregated}\"\n  elif [[ -d \"${assembled}\" ]]; then\n    echo \"${assembled}\"\n  elif [[ -d \"${generated}\" ]]; then\n    echo \"${generated}\"\n  fi\n}\n\nSRC_RESOURCES=\"\"\nfor arch in ${ARCH_ORDER}; do\n  SRC_RESOURCES=\"$(find_resources \"${arch}\")\"\n  if [[ -n \"${SRC_RESOURCES}\" ]]; then\n    if [[ \"${arch}\" != \"${ARCH_ORDER%% *}\" ]]; then\n      echo \"warning: Compose resources for ${ARCH_ORDER%% *} not found; using ${arch}.\"\n    fi\n    break\n  fi\ndone\n\nDEST_RESOURCES=\"${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}/compose-resources/composeResources\"\n\nif [[ -n \"${SRC_RESOURCES}\" && -d \"${SRC_RESOURCES}\" ]]; then\n  mkdir -p \"${DEST_RESOURCES}\"\n  rsync -a \"${SRC_RESOURCES}/\" \"${DEST_RESOURCES}/\"\nelse\n  echo \"error: Compose resources not found. Run ./gradlew -PSDK_NAME=${SDK_NAME:-iphonesimulator} :composeApp:packForXcode\"\n  exit 1\nfi\n";
 		};
 		843FA828E536075113B49B6E /* Crashlytics dSYM Upload */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -329,7 +393,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -euo pipefail\nif [[ -n \"${TEST_HOST:-}\" ]]; then\n  HOST_APP_DIR=\"${TEST_HOST%/*}\"\nelse\n  HOST_APP_DIR=\"${BUILT_PRODUCTS_DIR}/iosApp.app\"\nfi\n\nSRC_RESOURCES=\"${HOST_APP_DIR}/compose-resources/composeResources\"\n\nif [[ ! -d \"${SRC_RESOURCES}\" ]]; then\n  if [[ \"${SDK_NAME:-}\" == iphoneos* ]]; then\n    RESOURCE_ARCH=\"iosArm64\"\n  else\n    RESOURCE_ARCH=\"iosSimulatorArm64\"\n  fi\n  SRC_RESOURCES=\"${SRCROOT}/../composeApp/build/kotlin-multiplatform-resources/aggregated-resources/${RESOURCE_ARCH}/composeResources\"\nfi\nDEST_RESOURCES=\"${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}/compose-resources/composeResources\"\n\nif [[ -d \"${SRC_RESOURCES}\" ]]; then\n  mkdir -p \"${DEST_RESOURCES}\"\n  rsync -a \"${SRC_RESOURCES}/\" \"${DEST_RESOURCES}/\"\nelse\n  echo \"error: Compose resources not found at ${SRC_RESOURCES}\"\n  exit 1\nfi\n";
+			shellScript = "set -euo pipefail\nif [[ -n \"${TEST_HOST:-}\" ]]; then\n  HOST_APP_DIR=\"${TEST_HOST%/*}\"\nelse\n  HOST_APP_DIR=\"${BUILT_PRODUCTS_DIR}/iosApp.app\"\nfi\n\nSRC_RESOURCES=\"${HOST_APP_DIR}/compose-resources/composeResources\"\n\nif [[ ! -d \"${SRC_RESOURCES}\" ]]; then\n  if [[ \"${SDK_NAME:-}\" == iphoneos* ]]; then\n    ARCH_ORDER=\"iosArm64 iosSimulatorArm64 iosX64\"\n  else\n    ARCH_ORDER=\"iosSimulatorArm64 iosX64 iosArm64\"\n  fi\n\n  find_resources() {\n    arch=\"$1\"\n    aggregated=\"${SRCROOT}/../composeApp/build/kotlin-multiplatform-resources/aggregated-resources/${arch}/composeResources\"\n    assembled=\"${SRCROOT}/../composeApp/build/kotlin-multiplatform-resources/assemble-hierarchically/${arch}ResolveSelfResources/composeResources\"\n    generated=\"${SRCROOT}/../composeApp/build/generated/compose/resourceGenerator/assembledResources/${arch}Main/composeResources\"\n\n    if [[ -d \"${aggregated}\" ]]; then\n      echo \"${aggregated}\"\n    elif [[ -d \"${assembled}\" ]]; then\n      echo \"${assembled}\"\n    elif [[ -d \"${generated}\" ]]; then\n      echo \"${generated}\"\n    fi\n  }\n\n  SRC_RESOURCES=\"\"\n  for arch in ${ARCH_ORDER}; do\n    SRC_RESOURCES=\"$(find_resources \"${arch}\")\"\n    if [[ -n \"${SRC_RESOURCES}\" ]]; then\n      if [[ \"${arch}\" != \"${ARCH_ORDER%% *}\" ]]; then\n        echo \"warning: Compose resources for ${ARCH_ORDER%% *} not found; using ${arch}.\"\n      fi\n      break\n    fi\n  done\nfi\nDEST_RESOURCES=\"${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}/compose-resources/composeResources\"\n\nif [[ -n \"${SRC_RESOURCES}\" && -d \"${SRC_RESOURCES}\" ]]; then\n  mkdir -p \"${DEST_RESOURCES}\"\n  rsync -a \"${SRC_RESOURCES}/\" \"${DEST_RESOURCES}/\"\nelse\n  echo \"error: Compose resources not found. Run ./gradlew -PSDK_NAME=${SDK_NAME:-iphonesimulator} :composeApp:packForXcode\"\n  exit 1\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -426,7 +490,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -556,7 +620,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -605,9 +669,8 @@
 					"$(CONFIGURATION_BUILD_DIR)",
 					"$(SRCROOT)/Frameworks/$(CONFIGURATION)-iphonesimulator",
 				);
-				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = iosApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -627,8 +690,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Distribution";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = L4N9Z3Z82V;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -645,9 +707,8 @@
 					"$(CONFIGURATION_BUILD_DIR)",
 					"$(SRCROOT)/Frameworks/$(CONFIGURATION)-iphonesimulator",
 				);
-				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = iosApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -658,7 +719,6 @@
 					ComposeApp,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnote;
-				PROVISIONING_PROFILE_SPECIFIER = "$(IOS_PROFILE_NAME)";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

@@ -6,7 +6,7 @@ configs:
   Debug: debug
   Release: release
 settings:
-  IPHONEOS_DEPLOYMENT_TARGET: 16.0
+  IPHONEOS_DEPLOYMENT_TARGET: 17.2
   SWIFT_VERSION: 5.0
 packages:
   Firebase:
@@ -22,7 +22,7 @@ targets:
   iosApp:
     type: application
     platform: iOS
-    deploymentTarget: "16.0"
+    deploymentTarget: "17.2"
     sources:
       - path: iosApp
         excludes:
@@ -101,19 +101,45 @@ targets:
           set -euo pipefail
 
           if [[ "${SDK_NAME:-}" == iphoneos* ]]; then
-            RESOURCE_ARCH="iosArm64"
+            ARCH_ORDER="iosArm64 iosSimulatorArm64 iosX64"
           else
-            RESOURCE_ARCH="iosSimulatorArm64"
+            ARCH_ORDER="iosSimulatorArm64 iosX64 iosArm64"
           fi
 
-          SRC_RESOURCES="${SRCROOT}/../composeApp/build/kotlin-multiplatform-resources/aggregated-resources/${RESOURCE_ARCH}/composeResources"
+          find_resources() {
+            arch="$1"
+            aggregated="${SRCROOT}/../composeApp/build/kotlin-multiplatform-resources/aggregated-resources/${arch}/composeResources"
+            assembled="${SRCROOT}/../composeApp/build/kotlin-multiplatform-resources/assemble-hierarchically/${arch}ResolveSelfResources/composeResources"
+            generated="${SRCROOT}/../composeApp/build/generated/compose/resourceGenerator/assembledResources/${arch}Main/composeResources"
+
+            if [[ -d "${aggregated}" ]]; then
+              echo "${aggregated}"
+            elif [[ -d "${assembled}" ]]; then
+              echo "${assembled}"
+            elif [[ -d "${generated}" ]]; then
+              echo "${generated}"
+            fi
+          }
+
+          SRC_RESOURCES=""
+          for arch in ${ARCH_ORDER}; do
+            SRC_RESOURCES="$(find_resources "${arch}")"
+            if [[ -n "${SRC_RESOURCES}" ]]; then
+              if [[ "${arch}" != "${ARCH_ORDER%% *}" ]]; then
+                echo "warning: Compose resources for ${ARCH_ORDER%% *} not found; using ${arch}."
+              fi
+              break
+            fi
+          done
+
           DEST_RESOURCES="${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}/compose-resources/composeResources"
 
-          if [[ -d "${SRC_RESOURCES}" ]]; then
+          if [[ -n "${SRC_RESOURCES}" && -d "${SRC_RESOURCES}" ]]; then
             mkdir -p "${DEST_RESOURCES}"
             rsync -a "${SRC_RESOURCES}/" "${DEST_RESOURCES}/"
           else
-            echo "warning: Compose resources not found at ${SRC_RESOURCES}"
+            echo "error: Compose resources not found. Run ./gradlew -PSDK_NAME=${SDK_NAME:-iphonesimulator} :composeApp:packForXcode"
+            exit 1
           fi
     scheme:
       testTargets:
@@ -154,19 +180,45 @@ targets:
 
           if [[ ! -d "${SRC_RESOURCES}" ]]; then
             if [[ "${SDK_NAME:-}" == iphoneos* ]]; then
-              RESOURCE_ARCH="iosArm64"
+              ARCH_ORDER="iosArm64 iosSimulatorArm64 iosX64"
             else
-              RESOURCE_ARCH="iosSimulatorArm64"
+              ARCH_ORDER="iosSimulatorArm64 iosX64 iosArm64"
             fi
-            SRC_RESOURCES="${SRCROOT}/../composeApp/build/kotlin-multiplatform-resources/aggregated-resources/${RESOURCE_ARCH}/composeResources"
+
+            find_resources() {
+              arch="$1"
+              aggregated="${SRCROOT}/../composeApp/build/kotlin-multiplatform-resources/aggregated-resources/${arch}/composeResources"
+              assembled="${SRCROOT}/../composeApp/build/kotlin-multiplatform-resources/assemble-hierarchically/${arch}ResolveSelfResources/composeResources"
+              generated="${SRCROOT}/../composeApp/build/generated/compose/resourceGenerator/assembledResources/${arch}Main/composeResources"
+
+              if [[ -d "${aggregated}" ]]; then
+                echo "${aggregated}"
+              elif [[ -d "${assembled}" ]]; then
+                echo "${assembled}"
+              elif [[ -d "${generated}" ]]; then
+                echo "${generated}"
+              fi
+            }
+
+            SRC_RESOURCES=""
+            for arch in ${ARCH_ORDER}; do
+              SRC_RESOURCES="$(find_resources "${arch}")"
+              if [[ -n "${SRC_RESOURCES}" ]]; then
+                if [[ "${arch}" != "${ARCH_ORDER%% *}" ]]; then
+                  echo "warning: Compose resources for ${ARCH_ORDER%% *} not found; using ${arch}."
+                fi
+                break
+              fi
+            done
           fi
           DEST_RESOURCES="${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}/compose-resources/composeResources"
 
-          if [[ -d "${SRC_RESOURCES}" ]]; then
+          if [[ -n "${SRC_RESOURCES}" && -d "${SRC_RESOURCES}" ]]; then
             mkdir -p "${DEST_RESOURCES}"
             rsync -a "${SRC_RESOURCES}/" "${DEST_RESOURCES}/"
           else
-            echo "warning: Compose resources not found at ${SRC_RESOURCES}"
+            echo "error: Compose resources not found. Run ./gradlew -PSDK_NAME=${SDK_NAME:-iphonesimulator} :composeApp:packForXcode"
+            exit 1
           fi
   iosAppUITests:
     type: bundle.ui-testing
