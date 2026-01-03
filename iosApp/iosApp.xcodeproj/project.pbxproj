@@ -681,7 +681,6 @@
 					ComposeApp,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnote;
-				PROVISIONING_PROFILE_SPECIFIER = "$(IOS_PROFILE_NAME)";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -720,6 +719,7 @@
 					ComposeApp,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.edufelip.amazingnote;
+				PROVISIONING_PROFILE_SPECIFIER = "$(IOS_PROFILE_NAME)";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
