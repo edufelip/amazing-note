@@ -23,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,9 +72,16 @@ fun TrashTimeline(
     val selectedNotes = rememberSelectedNotes(selectedIds, notes)
     val now = remember { nowEpochMs() }
     val lineColor = MaterialTheme.colorScheme.outlineVariant
-    val grouped = notes
-        .sortedByDescending { it.updatedAt }
-        .groupBy { ((now - it.updatedAt).coerceAtLeast(0L) / DAY_IN_MILLIS).toInt() }
+    val grouped by remember(notes, now) {
+        derivedStateOf {
+            notes
+                .sortedByDescending { it.updatedAt }
+                .groupBy { ((now - it.updatedAt).coerceAtLeast(0L) / DAY_IN_MILLIS).toInt() }
+        }
+    }
+    val groupedKeys by remember(grouped) {
+        derivedStateOf { grouped.keys.sorted() }
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
@@ -85,7 +93,7 @@ fun TrashTimeline(
         ) {
             item { HeaderRow() }
 
-            grouped.keys.sorted().forEach { diffDays ->
+            groupedKeys.forEach { diffDays ->
                 val bucketNotes = grouped[diffDays].orEmpty()
                 item { DeletionHeader(label = deletionHeaderLabel(diffDays)) }
                 itemsIndexed(bucketNotes, key = { _, note -> note.id }) { index, note ->

@@ -87,15 +87,19 @@ fun HomeScreen(
     var showAccountSheet by rememberSaveable { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    val filteredNotes =
-        if (query.value.isBlank()) {
-            notes
-        } else {
-            notes.filter {
-                it.title.contains(query.value, ignoreCase = true) ||
-                    it.description.contains(query.value, ignoreCase = true)
+    val filteredNotes by remember(notes) {
+        derivedStateOf {
+            val queryText = query.value
+            if (queryText.isBlank()) {
+                notes
+            } else {
+                notes.filter {
+                    it.title.contains(queryText, ignoreCase = true) ||
+                        it.description.contains(queryText, ignoreCase = true)
+                }
             }
         }
+    }
 
     val hasNotes = notes.isNotEmpty()
     val tokens = designTokens()

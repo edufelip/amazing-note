@@ -39,6 +39,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -164,24 +165,39 @@ fun ListScreen(
                 }
 
                 val useUpdated = remember { mutableStateOf(appPrefs.isDateModeUpdated()) }
-                val now =
-                    notes.maxOfOrNull { if (useUpdated.value) it.updatedAt else it.createdAt } ?: 0L
+                val isUpdated = useUpdated.value
+                val grouped by remember(notes, isUpdated) {
+                    derivedStateOf {
+                        val now =
+                            notes.maxOfOrNull { if (isUpdated) it.updatedAt else it.createdAt } ?: 0L
 
-                fun bucket(ts: Long): Bucket {
-                    val oneDay = 24L * 60 * 60 * 1000
-                    val week = 7 * oneDay
-                    val month = 30 * oneDay
-                    val delta = now - ts
-                    return when {
-                        delta < oneDay -> Bucket.TODAY
-                        delta < week -> Bucket.THIS_WEEK
-                        delta < month -> Bucket.THIS_MONTH
-                        else -> Bucket.EARLIER
+                        fun bucket(ts: Long): Bucket {
+                            val oneDay = 24L * 60 * 60 * 1000
+                            val week = 7 * oneDay
+                            val month = 30 * oneDay
+                            val delta = now - ts
+                            return when {
+                                delta < oneDay -> Bucket.TODAY
+                                delta < week -> Bucket.THIS_WEEK
+                                delta < month -> Bucket.THIS_MONTH
+                                else -> Bucket.EARLIER
+                            }
+                        }
+
+                        notes.groupBy { bucket(if (isUpdated) it.updatedAt else it.createdAt) }
                     }
                 }
-
-                val grouped: Map<Bucket, List<Note>> =
-                    notes.groupBy { bucket(if (useUpdated.value) it.updatedAt else it.createdAt) }
+                val groupOrder = remember {
+                    listOf(
+                        Bucket.TODAY,
+                        Bucket.THIS_WEEK,
+                        Bucket.THIS_MONTH,
+                        Bucket.EARLIER,
+                    )
+                }
+                val orderedGroups by remember(grouped) {
+                    derivedStateOf { groupOrder.mapNotNull { b -> grouped[b]?.let { b to it } } }
+                }
                 val listBottomPadding = tokens.spacing.zero
                 val searchHorizontalPadding = tokens.spacing.md
                 LazyColumn(
@@ -255,7 +271,7 @@ fun ListScreen(
                                         ),
                                     ) {
                                         FilterChip(
-                                            selected = useUpdated.value,
+                                            selected = isUpdated,
                                             onClick = {
                                                 useUpdated.value = true
                                                 appPrefs.setDateModeUpdated(true)
@@ -268,7 +284,7 @@ fun ListScreen(
                                             modifier = Modifier.padding(end = tokens.spacing.sm),
                                         )
                                         FilterChip(
-                                            selected = !useUpdated.value,
+                                            selected = !isUpdated,
                                             onClick = {
                                                 useUpdated.value = false
                                                 appPrefs.setDateModeUpdated(false)
@@ -309,13 +325,6 @@ fun ListScreen(
                         }
                     }
 
-                    val groupOrder = listOf(
-                        Bucket.TODAY,
-                        Bucket.THIS_WEEK,
-                        Bucket.THIS_MONTH,
-                        Bucket.EARLIER,
-                    )
-                    val orderedGroups = groupOrder.mapNotNull { b -> grouped[b]?.let { b to it } }
                     orderedGroups.forEach { (section, itemsInGroup) ->
                         item {
                             Text(
@@ -337,7 +346,7 @@ fun ListScreen(
                             NoteRow(
                                 note = note,
                                 onClick = onNoteClick,
-                                showUpdated = useUpdated.value,
+                                showUpdated = isUpdated,
                                 modifier = Modifier.padding(
                                     horizontal = tokens.spacing.lg,
                                     vertical = tokens.spacing.sm,

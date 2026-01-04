@@ -3,6 +3,7 @@ package com.edufelip.shared.ui.app.effects
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import com.edufelip.shared.data.sync.NotesSyncManager
 import com.edufelip.shared.data.sync.SyncEvent
 import com.edufelip.shared.ui.app.state.AmazingNoteAppState
@@ -49,8 +50,9 @@ fun PlatformTabBarVisibilityEffect(
     onVisibilityChanged: (Boolean) -> Unit,
 ) {
     val isTabVisible = state.tabRouteVisible
+    val latestOnVisibilityChanged by rememberUpdatedState(onVisibilityChanged)
     LaunchedEffect(isTabVisible) {
-        onVisibilityChanged(isTabVisible)
+        latestOnVisibilityChanged(isTabVisible)
     }
 }
 
