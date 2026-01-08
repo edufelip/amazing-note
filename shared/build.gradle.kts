@@ -105,7 +105,7 @@ kotlin {
         t.binaries.framework {
             baseName = "Shared"
             isStatic = true
-            linkerOpts("-lsqlite3")
+            linkerOpts("-lsqlite3", "-framework", "SystemConfiguration")
         }
         t.configureFirebaseLinkerOpts()
         t.configureSwiftCompatibilityLinkerOpts()
