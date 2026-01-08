@@ -50,6 +50,7 @@ struct LiquidRoot: View {
             )
             .id(themeHostIdentifier)
             .ignoresSafeArea(edges: .vertical)
+            .tabBarVisibility(tabBar.isVisible)
             .tabItem { Label("Notes", systemImage: "note.text") }
             .tag(Tab.notes)
 
@@ -71,6 +72,7 @@ struct LiquidRoot: View {
             )
             .id(themeHostIdentifier)
             .ignoresSafeArea(edges: .vertical)
+            .tabBarVisibility(tabBar.isVisible)
             .tabItem { Label("Folders", systemImage: "folder") }
             .tag(Tab.folders)
 
@@ -92,6 +94,7 @@ struct LiquidRoot: View {
             )
             .id(themeHostIdentifier)
             .ignoresSafeArea(edges: .vertical)
+            .tabBarVisibility(tabBar.isVisible)
             .tabItem { Label("Settings", systemImage: "gearshape") }
             .tag(Tab.settings)
         }
@@ -100,7 +103,6 @@ struct LiquidRoot: View {
             // Keep the user on Settings after theme-triggered controller rebuilds.
             selection = .settings
         }
-        .toolbar(tabBar.isVisible ? .visible : .hidden, for: .tabBar)
         .animation(.easeInOut, value: tabBar.isVisible)
     }
 
@@ -289,5 +291,12 @@ private struct ComposeHost: UIViewControllerRepresentable {
             current = candidate.parent
         }
         return nil
+    }
+}
+
+private extension View {
+    func tabBarVisibility(_ isVisible: Bool) -> some View {
+        toolbar(isVisible ? .visible : .hidden, for: .tabBar)
+            .toolbar(isVisible ? .visible : .hidden, for: .navigationBar)
     }
 }
