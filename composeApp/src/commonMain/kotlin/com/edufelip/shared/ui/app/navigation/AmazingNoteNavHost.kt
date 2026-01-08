@@ -38,7 +38,6 @@ import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.util.platform.platformBehavior
 import com.edufelip.shared.ui.vm.NoteUiViewModel
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalLayoutApi::class)
 @Composable
@@ -57,12 +56,7 @@ fun AmazingNoteNavHost(
     val authUiState by state.authViewModel.uiState.collectWithLifecycle()
     val isUserAuthenticated = authUiState.user != null
     val logoutAndSync: () -> Unit = {
-        state.coroutineScope.launch {
-            if (state.authViewModel.uiState.value.user != null) {
-                runCatching { environment.notesSyncManager.syncLocalToRemoteOnly() }
-            }
-            state.authViewModel.logout()
-        }
+        state.authViewModel.logout()
     }
 
     val contentModifier = Modifier

@@ -3,6 +3,7 @@ package com.edufelip.shared.ui
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
@@ -11,6 +12,7 @@ import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.request.crossfade
 import com.edufelip.shared.data.auth.GoogleSignInConfig
+import com.edufelip.shared.data.network.LocalNetworkStatus
 import com.edufelip.shared.data.sync.LocalNotesSyncManager
 import com.edufelip.shared.db.NoteDatabase
 import com.edufelip.shared.di.getSharedKoin
@@ -18,6 +20,7 @@ import com.edufelip.shared.ui.app.chrome.AmazingNoteScaffold
 import com.edufelip.shared.ui.app.effects.BottomBarVisibilityEffect
 import com.edufelip.shared.ui.app.effects.PlatformTabBarVisibilityEffect
 import com.edufelip.shared.ui.app.effects.ScheduleInitialSync
+import com.edufelip.shared.ui.app.effects.SyncOnConnectivity
 import com.edufelip.shared.ui.app.effects.SyncEventNotifications
 import com.edufelip.shared.ui.app.effects.SyncOnUserChange
 import com.edufelip.shared.ui.app.navigation.AmazingNoteNavHost
@@ -78,16 +81,24 @@ fun AmazingNoteApp(
     )
     val environment = state.environment
     val darkTheme by state.darkThemeFlow.collectWithLifecycle(initial = state.darkTheme)
+    LaunchedEffect(environment.networkStatus, environment.notesSyncManager) {
+        resolvedAuthViewModel.bindLogoutDependencies(
+            networkStatus = environment.networkStatus,
+            syncManager = environment.notesSyncManager,
+        )
+    }
 
     CompositionLocalProvider(
         LocalSettings provides environment.settings,
         LocalAppPreferences provides environment.appPreferences,
         LocalNotesSyncManager provides environment.notesSyncManager,
+        LocalNetworkStatus provides environment.networkStatus,
     ) {
         ScheduleInitialSync(environment.notesSyncManager)
         if (isUserResolved && isUserAuthenticated) {
             SyncOnUserChange(state, environment.notesSyncManager)
         }
+        SyncOnConnectivity(state, environment.notesSyncManager, environment.networkStatus)
         SyncEventNotifications(environment.notesSyncManager)
         BottomBarVisibilityEffect(state)
         PlatformTabBarVisibilityEffect(state, onTabBarVisibilityChanged)

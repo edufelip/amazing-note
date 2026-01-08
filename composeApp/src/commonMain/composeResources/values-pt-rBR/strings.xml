@@ -61,6 +61,13 @@
     <!-- Autenticação - Diálogos de saída -->
     <string name="logout_confirm_title">Confirmar saída</string>
     <string name="logout_confirm_message">Tem certeza de que deseja sair?</string>
+    <string name="logout_pending_title">Alterações não sincronizadas</string>
+    <string name="logout_pending_message">Algumas alterações ainda não foram sincronizadas. Se você sair agora, elas podem não aparecer em outros dispositivos.</string>
+    <string name="logout_pending_confirm">Sair mesmo</string>
+    <string name="logout_pending_cancel">Continuar conectado</string>
+    <string name="logout_offline_title">Você está offline</string>
+    <string name="logout_offline_message">Conecte-se à internet para sair. Isso mantém suas notas em sincronia.</string>
+    <string name="logout_offline_confirm">OK</string>
     <string name="yes">Sim</string>
     <string name="no">Não</string>
     <string name="signing_out">Saindo</string>
@@ -184,7 +191,7 @@
     <string name="theme_option">Modo escuro</string>
     <string name="theme_subtitle">Alterne entre modo claro e escuro.</string>
     <string name="account_section">Conta</string>
-    <string name="delete_account">Excluir conta permanentemente</string>
+    <string name="delete_account">Excluir conta</string>
     <string name="delete_account_confirm_title">Excluir conta permanentemente</string>
     <string name="delete_account_confirm_message">Tem certeza de que deseja excluir sua conta? Esta ação não pode ser desfeita.</string>
     <string name="delete_account_confirm_email_label">Digite seu e-mail para confirmar</string>
@@ -197,6 +204,10 @@
     <string name="management_section">Atalhos</string>
     <string name="trash_subtitle">Notas excluídas recentemente</string>
     <string name="app_version_label">Versão do app</string>
+    <string name="sync_status_syncing">Sincronizando...</string>
+    <string name="sync_status_synced">Sincronizado %1$s</string>
+    <string name="sync_status_failed">Falha na sincronização</string>
+    <string name="sync_status_retry">Tentar sincronizar</string>
 
     <!-- Ações -->
     <string name="restore">Restaurar</string>

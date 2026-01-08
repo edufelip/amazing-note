@@ -25,6 +25,7 @@ import com.edufelip.shared.domain.model.toSummary
 import com.edufelip.shared.domain.model.withFallbacks
 import com.edufelip.shared.platform.deleteLocalAttachment
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,6 +35,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
 class NotesSyncManager(
@@ -107,18 +109,40 @@ class NotesSyncManager(
     suspend fun syncLocalToRemoteOnly() {
         if (paused) return
         val uid = awaitCurrentUid() ?: return
-        val pushedSomething = pushPendingFolderDeletions(uid) ||
-            pushPendingNoteDeletions(uid) ||
-            pushPendingAttachmentDeletions(uid) ||
-            pushDirtyFoldersNow(uid)
-        // Push only dirty rows to avoid unnecessary writes and reordering
-        val dirtyRows = db.noteQueries.selectDirty().executeAsList()
-        if (dirtyRows.isEmpty() && !pushedSomething) return
-        for (row in dirtyRows) {
-            val note = rowToNote(row)
-            cloud.upsertPreserveUpdatedAt(uid, note)
-            db.noteQueries.clearDirtyById(row.id)
+        if (!hasPendingLocalChanges()) return
+        emitSyncStarted()
+        val result = runCatching {
+            val pushedSomething = pushPendingFolderDeletions(uid) ||
+                pushPendingNoteDeletions(uid) ||
+                pushPendingAttachmentDeletions(uid) ||
+                pushDirtyFoldersNow(uid)
+            // Push only dirty rows to avoid unnecessary writes and reordering
+            val dirtyRows = db.noteQueries.selectDirty().executeAsList()
+            if (dirtyRows.isEmpty() && !pushedSomething) return@runCatching
+            for (row in dirtyRows) {
+                val note = rowToNote(row)
+                cloud.upsertPreserveUpdatedAt(uid, note)
+                db.noteQueries.clearDirtyById(row.id)
+            }
         }
+        if (result.isFailure) {
+            handleSyncError("local push", result.exceptionOrNull()!!)
+        } else {
+            emitSyncCompleted()
+        }
+    }
+
+    suspend fun hasPendingLocalChanges(): Boolean = withContext(Dispatchers.Default) {
+        val dirtyNotes = db.noteQueries.countDirtyNotes().executeAsOne()
+        if (dirtyNotes > 0) return@withContext true
+        val dirtyFolders = db.noteQueries.countDirtyFolders().executeAsOne()
+        if (dirtyFolders > 0) return@withContext true
+        val pendingNoteDeletions = db.noteQueries.countPendingNoteDeletions().executeAsOne()
+        if (pendingNoteDeletions > 0) return@withContext true
+        val pendingFolderDeletions = db.noteQueries.countPendingFolderDeletions().executeAsOne()
+        if (pendingFolderDeletions > 0) return@withContext true
+        val pendingAttachmentDeletions = db.noteQueries.countPendingAttachmentDeletions().executeAsOne()
+        pendingAttachmentDeletions > 0
     }
 
     private suspend fun pushDirtyFoldersNow(uid: String): Boolean {

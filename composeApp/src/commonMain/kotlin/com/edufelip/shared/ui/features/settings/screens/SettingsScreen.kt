@@ -1,8 +1,14 @@
 package com.edufelip.shared.ui.features.settings.screens
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
@@ -16,6 +22,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,6 +33,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -33,6 +41,7 @@ import androidx.compose.material.icons.filled.AutoDelete
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material3.AlertDialog
@@ -41,6 +50,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -51,6 +61,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,6 +71,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -70,7 +82,6 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.repository.AccountDeletionResult
@@ -91,6 +102,13 @@ import com.edufelip.shared.resources.login
 import com.edufelip.shared.resources.logout
 import com.edufelip.shared.resources.logout_confirm_message
 import com.edufelip.shared.resources.logout_confirm_title
+import com.edufelip.shared.resources.logout_offline_confirm
+import com.edufelip.shared.resources.logout_offline_message
+import com.edufelip.shared.resources.logout_offline_title
+import com.edufelip.shared.resources.logout_pending_cancel
+import com.edufelip.shared.resources.logout_pending_confirm
+import com.edufelip.shared.resources.logout_pending_message
+import com.edufelip.shared.resources.logout_pending_title
 import com.edufelip.shared.resources.management_section
 import com.edufelip.shared.resources.no
 import com.edufelip.shared.resources.personalize_subtitle
@@ -104,6 +122,8 @@ import com.edufelip.shared.resources.trash_subtitle
 import com.edufelip.shared.resources.welcome_message
 import com.edufelip.shared.resources.yes
 import com.edufelip.shared.ui.app.chrome.AmazingTopBar
+import com.edufelip.shared.ui.app.chrome.rememberSyncIndicatorState
+import com.edufelip.shared.ui.app.chrome.rememberSyncRetryAction
 import com.edufelip.shared.ui.components.atoms.common.AvatarImage
 import com.edufelip.shared.ui.components.organisms.settings.PersonalizeHeroIllustration
 import com.edufelip.shared.ui.designsystem.designTokens
@@ -114,7 +134,10 @@ import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.util.platform.Haptics
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.util.security.sanitizeUserDisplay
+import com.edufelip.shared.ui.vm.LogoutDecision
 import com.edufelip.shared.ui.vm.AuthViewModel
+import com.edufelip.shared.data.network.LocalNetworkStatus
+import com.edufelip.shared.data.sync.LocalNotesSyncManager
 import com.slapps.cupertino.CupertinoButtonDefaults
 import com.slapps.cupertino.adaptive.AdaptiveButton
 import com.slapps.cupertino.adaptive.ExperimentalAdaptiveApi
@@ -142,7 +165,17 @@ fun SettingsScreen(
     val itemsSpacing = tokens.spacing.lg
     val userEmail = userState?.email?.trim().orEmpty()
     val deleteFailureFallback = stringResource(Res.string.delete_account_failure_message)
+    val syncManager = LocalNotesSyncManager.current
+    val networkStatus = LocalNetworkStatus.current
+    val syncIndicator = rememberSyncIndicatorState(
+        syncManager = syncManager,
+        networkStatus = networkStatus,
+        isAuthenticated = userState != null,
+    )
+    val onSyncRetry = rememberSyncRetryAction(syncManager)
     var logoutDialogVisible by remember { mutableStateOf(false) }
+    var logoutPendingDialogVisible by remember { mutableStateOf(false) }
+    var logoutOfflineDialogVisible by remember { mutableStateOf(false) }
     var showAccountSheet by rememberSaveable { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val coroutineScope = rememberCoroutineScope()
@@ -151,7 +184,42 @@ fun SettingsScreen(
     var deleteEmailInput by rememberSaveable { mutableStateOf("") }
     var deleteInProgress by remember { mutableStateOf(false) }
     var deleteErrorMessage by remember { mutableStateOf<String?>(null) }
+    var accountExpanded by rememberSaveable { mutableStateOf(false) }
+    val accountChevronRotation by animateFloatAsState(
+        targetValue = if (accountExpanded) 180f else 0f,
+        animationSpec = tween(durationMillis = 240, easing = LinearOutSlowInEasing),
+        label = "account_chevron_rotation",
+    )
     val deleteSuccessMessage = stringResource(Res.string.delete_account_success_message)
+    val onLogoutRequested = {
+        coroutineScope.launch {
+            when (auth?.requestLogoutDecision() ?: LogoutDecision.Allowed) {
+                LogoutDecision.Offline -> {
+                    logoutDialogVisible = false
+                    logoutPendingDialogVisible = false
+                    logoutOfflineDialogVisible = true
+                }
+
+                LogoutDecision.PendingChanges -> {
+                    logoutDialogVisible = false
+                    logoutPendingDialogVisible = true
+                    logoutOfflineDialogVisible = false
+                }
+
+                LogoutDecision.Allowed -> {
+                    logoutPendingDialogVisible = false
+                    logoutOfflineDialogVisible = false
+                    logoutDialogVisible = true
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(userState) {
+        if (userState == null) {
+            accountExpanded = false
+        }
+    }
 
     Scaffold(
         modifier = modifier
@@ -160,6 +228,8 @@ fun SettingsScreen(
         topBar = {
             AmazingTopBar(
                 user = userState,
+                syncIndicator = syncIndicator,
+                onSyncRetry = onSyncRetry,
                 onAvatarClick = {
                     if (userState == null) {
                         onLogin()
@@ -233,9 +303,18 @@ fun SettingsScreen(
                                 tokens.colors.elevatedSurface,
                                 RoundedCornerShape(tokens.radius.lg + tokens.radius.sm),
                             )
+                            .animateContentSize(
+                                animationSpec = tween(
+                                    durationMillis = 260,
+                                    easing = LinearOutSlowInEasing,
+                                ),
+                            )
                             .padding(tokens.spacing.lg),
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
                             Surface(
                                 color = tokens.colors.accent.copy(alpha = 0.15f),
                                 shape = CircleShape,
@@ -262,66 +341,108 @@ fun SettingsScreen(
                                     color = tokens.colors.muted,
                                 )
                             }
+                            Spacer(modifier = Modifier.weight(1f))
+                            IconButton(
+                                onClick = {
+                                    Haptics.lightTap()
+                                    accountExpanded = !accountExpanded
+                                },
+                                modifier = Modifier
+                                    .size(tokens.spacing.xl + tokens.spacing.sm),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    tint = tokens.colors.muted,
+                                    modifier = Modifier.rotate(accountChevronRotation),
+                                )
+                            }
                         }
-                        Spacer(modifier = Modifier.height(tokens.spacing.md))
-                        AdaptiveButton(
-                            onClick = {
-                                Haptics.lightTap()
-                                logoutDialogVisible = true
-                            },
-                            modifier = Modifier.testTag(TestTags.Settings.LOGOUT_BUTTON),
-                            adaptation = {
-                                material {
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = tokens.colors.danger,
-                                        contentColor = tokens.colors.onDanger,
-                                    )
-                                }
-                                cupertino {
-                                    colors = CupertinoButtonDefaults.filledButtonColors(
-                                        containerColor = tokens.colors.danger,
-                                        contentColor = tokens.colors.onDanger,
-                                    )
-                                }
-                            },
-                        ) {
-                            Icon(
-                                painter = AdaptiveIcons.painter(
-                                    material = { Icons.AutoMirrored.Filled.Logout },
-                                    cupertino = { "rectangle.portrait.and.arrow.right" },
+                        AnimatedVisibility(
+                            visible = accountExpanded,
+                            enter = expandVertically(
+                                animationSpec = tween(
+                                    durationMillis = 220,
+                                    easing = LinearOutSlowInEasing,
                                 ),
-                                contentDescription = null,
-                            )
-                            Spacer(modifier = Modifier.width(tokens.spacing.sm))
-                            Text(text = stringResource(Res.string.logout))
-                        }
-                        Spacer(modifier = Modifier.height(tokens.spacing.md))
-                        OutlinedButton(
-                            onClick = {
-                                Haptics.lightTap()
-                                deleteEmailInput = ""
-                                deleteErrorMessage = null
-                                deleteDialogVisible = true
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag(TestTags.Settings.DELETE_ACCOUNT_BUTTON),
-                            contentPadding = PaddingValues(vertical = tokens.spacing.md),
-                            border = BorderStroke(1.dp, tokens.colors.danger),
-                        ) {
-                            Icon(
-                                painter = AdaptiveIcons.painter(
-                                    material = { Icons.Default.DeleteForever },
-                                    cupertino = { "person.crop.circle.badge.xmark" },
+                            ),
+                            exit = shrinkVertically(
+                                animationSpec = tween(
+                                    durationMillis = 200,
+                                    easing = LinearOutSlowInEasing,
                                 ),
-                                contentDescription = null,
-                                tint = tokens.colors.danger,
-                            )
-                            Spacer(modifier = Modifier.width(tokens.spacing.sm))
-                            Text(
-                                text = stringResource(Res.string.delete_account),
-                                color = tokens.colors.danger,
-                            )
+                            ),
+                        ) {
+                            Column {
+                                Spacer(modifier = Modifier.height(tokens.spacing.md))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(tokens.spacing.md),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    AdaptiveButton(
+                                        onClick = {
+                                            Haptics.lightTap()
+                                            onLogoutRequested()
+                                        },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .testTag(TestTags.Settings.LOGOUT_BUTTON),
+                                        adaptation = {
+                                            material {
+                                                colors = ButtonDefaults.buttonColors(
+                                                    containerColor = tokens.colors.danger,
+                                                    contentColor = tokens.colors.onDanger,
+                                                )
+                                            }
+                                            cupertino {
+                                                colors = CupertinoButtonDefaults.filledButtonColors(
+                                                    containerColor = tokens.colors.danger,
+                                                    contentColor = tokens.colors.onDanger,
+                                                )
+                                            }
+                                        },
+                                    ) {
+                                        Icon(
+                                            painter = AdaptiveIcons.painter(
+                                                material = { Icons.AutoMirrored.Filled.Logout },
+                                                cupertino = { "rectangle.portrait.and.arrow.right" },
+                                            ),
+                                            contentDescription = null,
+                                        )
+                                        Spacer(modifier = Modifier.width(tokens.spacing.sm))
+                                        Text(text = stringResource(Res.string.logout))
+                                    }
+                                    OutlinedButton(
+                                        onClick = {
+                                            Haptics.lightTap()
+                                            deleteEmailInput = ""
+                                            deleteErrorMessage = null
+                                            deleteDialogVisible = true
+                                        },
+                                        modifier = Modifier.testTag(TestTags.Settings.DELETE_ACCOUNT_BUTTON),
+                                        contentPadding = PaddingValues(
+                                            horizontal = tokens.spacing.md,
+                                            vertical = tokens.spacing.md,
+                                        ),
+                                        border = BorderStroke(1.dp, tokens.colors.danger),
+                                    ) {
+                                        Icon(
+                                            painter = AdaptiveIcons.painter(
+                                                material = { Icons.Default.DeleteForever },
+                                                cupertino = { "person.crop.circle.badge.xmark" },
+                                            ),
+                                            contentDescription = null,
+                                            tint = tokens.colors.danger,
+                                        )
+                                        Spacer(modifier = Modifier.width(tokens.spacing.sm))
+                                        Text(
+                                            text = stringResource(Res.string.delete_account),
+                                            color = tokens.colors.danger,
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -419,7 +540,7 @@ fun SettingsScreen(
                 OutlinedButton(
                     onClick = {
                         showAccountSheet = false
-                        logoutDialogVisible = true
+                        onLogoutRequested()
                     },
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(vertical = tokens.spacing.md),
@@ -436,6 +557,50 @@ fun SettingsScreen(
         }
     }
 
+    if (logoutOfflineDialogVisible) {
+        AlertDialog(
+            onDismissRequest = { logoutOfflineDialogVisible = false },
+            title = { Text(text = stringResource(Res.string.logout_offline_title)) },
+            text = { Text(text = stringResource(Res.string.logout_offline_message)) },
+            confirmButton = {
+                TextButton(onClick = { logoutOfflineDialogVisible = false }) {
+                    Text(text = stringResource(Res.string.logout_offline_confirm))
+                }
+            },
+        )
+    }
+
+    if (logoutPendingDialogVisible) {
+        AlertDialog(
+            onDismissRequest = { logoutPendingDialogVisible = false },
+            title = { Text(text = stringResource(Res.string.logout_pending_title)) },
+            text = { Text(text = stringResource(Res.string.logout_pending_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            val decision = auth?.requestLogoutDecision() ?: LogoutDecision.Allowed
+                            if (decision == LogoutDecision.Offline) {
+                                logoutPendingDialogVisible = false
+                                logoutOfflineDialogVisible = true
+                            } else {
+                                logoutPendingDialogVisible = false
+                                onLogout()
+                            }
+                        }
+                    },
+                ) {
+                    Text(text = stringResource(Res.string.logout_pending_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { logoutPendingDialogVisible = false }) {
+                    Text(text = stringResource(Res.string.logout_pending_cancel))
+                }
+            },
+        )
+    }
+
     if (logoutDialogVisible) {
         AlertDialog(
             onDismissRequest = { logoutDialogVisible = false },
@@ -444,8 +609,24 @@ fun SettingsScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        logoutDialogVisible = false
-                        onLogout()
+                        coroutineScope.launch {
+                            when (auth?.requestLogoutDecision() ?: LogoutDecision.Allowed) {
+                                LogoutDecision.Offline -> {
+                                    logoutDialogVisible = false
+                                    logoutOfflineDialogVisible = true
+                                }
+
+                                LogoutDecision.PendingChanges -> {
+                                    logoutDialogVisible = false
+                                    logoutPendingDialogVisible = true
+                                }
+
+                                LogoutDecision.Allowed -> {
+                                    logoutDialogVisible = false
+                                    onLogout()
+                                }
+                            }
+                        }
                     },
                 ) {
                     Text(text = stringResource(Res.string.yes))

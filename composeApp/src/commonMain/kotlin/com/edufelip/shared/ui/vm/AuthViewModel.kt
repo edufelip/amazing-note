@@ -1,6 +1,8 @@
 package com.edufelip.shared.ui.vm
 
 import com.edufelip.shared.data.auth.AuthUser
+import com.edufelip.shared.data.network.NetworkStatus
+import com.edufelip.shared.data.sync.NotesSyncManager
 import com.edufelip.shared.domain.repository.AccountDeletionResult
 import com.edufelip.shared.domain.usecase.AuthUseCases
 import com.edufelip.shared.domain.validation.CredentialValidationResult
@@ -51,6 +53,17 @@ sealed interface AuthError {
     data class Custom(val message: String) : AuthError
 }
 
+sealed interface LogoutDecision {
+    data object Allowed : LogoutDecision
+    data object Offline : LogoutDecision
+    data object PendingChanges : LogoutDecision
+}
+
+data class LogoutGuard(
+    val isOnline: StateFlow<Boolean>,
+    val hasPendingLocalChanges: suspend () -> Boolean,
+)
+
 class AuthViewModel(
     private val useCases: AuthUseCases,
     dispatcher: CoroutineDispatcher = Dispatchers.Main,
@@ -59,6 +72,7 @@ class AuthViewModel(
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
     private val _events = MutableSharedFlow<AuthEvent>(extraBufferCapacity = 1)
     val events: SharedFlow<AuthEvent> = _events.asSharedFlow()
+    private var logoutGuard: LogoutGuard? = null
 
     init {
         useCases.observeCurrentUser()
@@ -70,6 +84,30 @@ class AuthViewModel(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun bindLogoutDependencies(networkStatus: NetworkStatus, syncManager: NotesSyncManager) {
+        bindLogoutGuard(
+            LogoutGuard(
+                isOnline = networkStatus.isOnline,
+                hasPendingLocalChanges = { syncManager.hasPendingLocalChanges() },
+            ),
+        )
+    }
+
+    fun bindLogoutGuard(guard: LogoutGuard) {
+        logoutGuard = guard
+    }
+
+    suspend fun requestLogoutDecision(): LogoutDecision {
+        if (_uiState.value.user == null) return LogoutDecision.Allowed
+        val guard = logoutGuard ?: return LogoutDecision.Allowed
+        if (!guard.isOnline.value) return LogoutDecision.Offline
+        return if (guard.hasPendingLocalChanges()) {
+            LogoutDecision.PendingChanges
+        } else {
+            LogoutDecision.Allowed
+        }
     }
 
     fun setError(message: String) {
@@ -102,6 +140,11 @@ class AuthViewModel(
 
     fun logout() {
         launchInScope {
+            val decision = requestLogoutDecision()
+            if (decision != LogoutDecision.Allowed) {
+                debugLog("Logout blocked: $decision")
+                return@launchInScope
+            }
             val result = runCatching { useCases.logout() }
             if (result.isSuccess) {
                 _uiState.update {

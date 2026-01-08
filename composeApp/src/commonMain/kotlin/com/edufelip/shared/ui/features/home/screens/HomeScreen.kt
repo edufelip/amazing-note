@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,6 +27,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,6 +36,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,12 +47,22 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.data.sync.LocalNotesSyncManager
+import com.edufelip.shared.data.network.LocalNetworkStatus
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_clear_search
 import com.edufelip.shared.resources.cd_search
 import com.edufelip.shared.resources.logout
+import com.edufelip.shared.resources.logout_offline_confirm
+import com.edufelip.shared.resources.logout_offline_message
+import com.edufelip.shared.resources.logout_offline_title
+import com.edufelip.shared.resources.logout_pending_cancel
+import com.edufelip.shared.resources.logout_pending_confirm
+import com.edufelip.shared.resources.logout_pending_message
+import com.edufelip.shared.resources.logout_pending_title
 import com.edufelip.shared.ui.app.chrome.AmazingTopBar
+import com.edufelip.shared.ui.app.chrome.rememberSyncIndicatorState
+import com.edufelip.shared.ui.app.chrome.rememberSyncRetryAction
 import com.edufelip.shared.ui.components.atoms.common.AvatarImage
 import com.edufelip.shared.ui.components.organisms.common.NotesEmptyState
 import com.edufelip.shared.ui.designsystem.designTokens
@@ -59,6 +72,8 @@ import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.util.TestTags
 import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.vm.AuthViewModel
+import com.edufelip.shared.ui.vm.LogoutDecision
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
@@ -77,6 +92,7 @@ fun HomeScreen(
     val currentUserState = auth?.uiState?.collectWithLifecycle()?.value
     val currentUid = currentUserState?.user?.uid
     val syncManager = LocalNotesSyncManager.current
+    val networkStatus = LocalNetworkStatus.current
     val syncingState = syncManager?.syncing?.collectAsState()
     val syncing by remember(currentUid, syncingState?.value) {
         derivedStateOf { currentUid != null && (syncingState?.value == true) }
@@ -103,8 +119,38 @@ fun HomeScreen(
 
     val hasNotes = notes.isNotEmpty()
     val tokens = designTokens()
+    val syncIndicator = rememberSyncIndicatorState(
+        syncManager = syncManager,
+        networkStatus = networkStatus,
+        isAuthenticated = currentUserState?.user != null,
+    )
+    val onSyncRetry = rememberSyncRetryAction(syncManager)
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+    val coroutineScope = rememberCoroutineScope()
+    var logoutPendingDialogVisible by remember { mutableStateOf(false) }
+    var logoutOfflineDialogVisible by remember { mutableStateOf(false) }
+    val onLogoutRequested = {
+        coroutineScope.launch {
+            when (auth?.requestLogoutDecision() ?: LogoutDecision.Allowed) {
+                LogoutDecision.Offline -> {
+                    logoutPendingDialogVisible = false
+                    logoutOfflineDialogVisible = true
+                }
+
+                LogoutDecision.PendingChanges -> {
+                    logoutPendingDialogVisible = true
+                    logoutOfflineDialogVisible = false
+                }
+
+                LogoutDecision.Allowed -> {
+                    logoutPendingDialogVisible = false
+                    logoutOfflineDialogVisible = false
+                    onLogout()
+                }
+            }
+        }
+    }
     LaunchedEffect(hasNotes) {
         if (!hasNotes) {
             searchVisible = false
@@ -116,6 +162,8 @@ fun HomeScreen(
         topBar = {
             AmazingTopBar(
                 user = currentUserState?.user,
+                syncIndicator = syncIndicator,
+                onSyncRetry = onSyncRetry,
                 onAvatarClick = {
                     if (currentUserState?.user == null) {
                         onAvatarClick()
@@ -229,7 +277,7 @@ fun HomeScreen(
                 OutlinedButton(
                     onClick = {
                         showAccountSheet = false
-                        onLogout()
+                        onLogoutRequested()
                     },
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(vertical = tokens.spacing.md),
@@ -244,6 +292,50 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(tokens.spacing.md + 8.dp))
             }
         }
+    }
+
+    if (logoutOfflineDialogVisible) {
+        AlertDialog(
+            onDismissRequest = { logoutOfflineDialogVisible = false },
+            title = { Text(text = stringResource(Res.string.logout_offline_title)) },
+            text = { Text(text = stringResource(Res.string.logout_offline_message)) },
+            confirmButton = {
+                TextButton(onClick = { logoutOfflineDialogVisible = false }) {
+                    Text(text = stringResource(Res.string.logout_offline_confirm))
+                }
+            },
+        )
+    }
+
+    if (logoutPendingDialogVisible) {
+        AlertDialog(
+            onDismissRequest = { logoutPendingDialogVisible = false },
+            title = { Text(text = stringResource(Res.string.logout_pending_title)) },
+            text = { Text(text = stringResource(Res.string.logout_pending_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            val decision = auth?.requestLogoutDecision() ?: LogoutDecision.Allowed
+                            if (decision == LogoutDecision.Offline) {
+                                logoutPendingDialogVisible = false
+                                logoutOfflineDialogVisible = true
+                            } else {
+                                logoutPendingDialogVisible = false
+                                onLogout()
+                            }
+                        }
+                    },
+                ) {
+                    Text(text = stringResource(Res.string.logout_pending_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { logoutPendingDialogVisible = false }) {
+                    Text(text = stringResource(Res.string.logout_pending_cancel))
+                }
+            },
+        )
     }
 }
 

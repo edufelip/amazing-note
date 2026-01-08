@@ -175,7 +175,7 @@
     <string name="theme_option">Modo oscuro</string>
     <string name="theme_subtitle">Alterna entre el tema claro y oscuro.</string>
     <string name="account_section">Cuenta</string>
-    <string name="delete_account">Eliminar cuenta permanentemente</string>
+    <string name="delete_account">Eliminar cuenta</string>
     <string name="delete_account_confirm_title">Eliminar cuenta permanentemente</string>
     <string name="delete_account_confirm_message">¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.</string>
     <string name="delete_account_confirm_email_label">Escribe tu correo electrónico para confirmar</string>
@@ -188,6 +188,10 @@
     <string name="management_section">Accesos directos</string>
     <string name="trash_subtitle">Notas eliminadas recientemente</string>
     <string name="app_version_label">Versión de la app</string>
+    <string name="sync_status_syncing">Sincronizando...</string>
+    <string name="sync_status_synced">Sincronizado %1$s</string>
+    <string name="sync_status_failed">Error de sincronización</string>
+    <string name="sync_status_retry">Reintentar sincronización</string>
 
     <!-- Acciones -->
     <string name="restore">Restaurar</string>
@@ -197,6 +201,13 @@
     <!-- Autenticación - Diálogos de cierre de sesión -->
     <string name="logout_confirm_title">Confirmar cierre de sesión</string>
     <string name="logout_confirm_message">¿Estás seguro de que quieres cerrar sesión?</string>
+    <string name="logout_pending_title">Cambios sin sincronizar</string>
+    <string name="logout_pending_message">Algunos cambios aún no se han sincronizado. Si cierras sesión ahora, puede que no aparezcan en otros dispositivos.</string>
+    <string name="logout_pending_confirm">Cerrar sesión de todos modos</string>
+    <string name="logout_pending_cancel">Seguir conectado</string>
+    <string name="logout_offline_title">Sin conexión</string>
+    <string name="logout_offline_message">Conéctate a internet para cerrar sesión. Esto mantiene tus notas sincronizadas.</string>
+    <string name="logout_offline_confirm">OK</string>
     <string name="yes">Sí</string>
     <string name="no">No</string>
     <string name="signing_out">Cerrando sesión</string>

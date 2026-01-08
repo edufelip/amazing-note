@@ -52,6 +52,13 @@
     <!-- Authentication - Logout Dialogs -->
     <string name="logout_confirm_title">Confirm Logout</string>
     <string name="logout_confirm_message">Are you sure you want to log out?</string>
+    <string name="logout_pending_title">Unsynced changes</string>
+    <string name="logout_pending_message">Some changes haven't synced yet. If you log out now, they may not appear on your other devices.</string>
+    <string name="logout_pending_confirm">Logout anyway</string>
+    <string name="logout_pending_cancel">Stay logged in</string>
+    <string name="logout_offline_title">You're offline</string>
+    <string name="logout_offline_message">Connect to the internet to log out. This keeps your notes in sync.</string>
+    <string name="logout_offline_confirm">OK</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="signing_out">Signing out</string>
@@ -184,7 +191,7 @@
     <string name="theme_option">Dark mode</string>
     <string name="theme_subtitle">Switch between light and dark themes.</string>
     <string name="account_section">Account</string>
-    <string name="delete_account">Delete account permanently</string>
+    <string name="delete_account">Delete account</string>
     <string name="delete_account_confirm_title">Delete account permanently</string>
     <string name="delete_account_confirm_message">Are you sure you want to delete your account? This action cannot be undone.</string>
     <string name="delete_account_confirm_email_label">Type your email to confirm</string>
@@ -197,6 +204,10 @@
     <string name="management_section">Shortcuts</string>
     <string name="trash_subtitle">Recently deleted notes</string>
     <string name="app_version_label">App version</string>
+    <string name="sync_status_syncing">Syncing...</string>
+    <string name="sync_status_synced">Synced %1$s</string>
+    <string name="sync_status_failed">Sync failed</string>
+    <string name="sync_status_retry">Retry sync</string>
 
     <!-- Actions -->
     <string name="restore">Restore</string>
