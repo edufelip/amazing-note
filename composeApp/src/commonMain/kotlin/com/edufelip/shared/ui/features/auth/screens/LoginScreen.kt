@@ -274,11 +274,11 @@ fun LoginScreen(
 
     LaunchedEffect(error) {
         val currentError = error ?: return@LaunchedEffect
-        onClearError()
         if (forgotPasswordPending) {
             forgotPasswordPending = false
             forgotPasswordSubmitting = false
             forgotPasswordEmailError = forgotPasswordTryAgainText
+            onClearError()
         } else {
             val now = currentEpochMillis()
             lockoutUntil = rateLimiter.registerFailure(now)
@@ -337,11 +337,13 @@ fun LoginScreen(
                 onEmailChange = {
                     email = it
                     if (!emailTouched) emailTouched = true
+                    if (error != null) onClearError()
                 },
                 password = password,
                 onPasswordChange = {
                     password = it
                     if (!passwordTouched) passwordTouched = true
+                    if (error != null) onClearError()
                 },
                 passwordVisible = passwordVisible,
                 onTogglePasswordVisibility = { passwordVisible = !passwordVisible },

@@ -71,17 +71,11 @@ internal fun LoginCredentialsSection(
             .testTag(TestTags.Login.EMAIL_FIELD),
         label = { Text(stringResource(Res.string.email)) },
         singleLine = true,
-        isError = emailErrorMessage != null || showError,
+        isError = emailErrorMessage != null,
         supportingText = {
-            when {
-                emailErrorMessage != null -> Text(
-                    text = emailErrorMessage,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-
-                showError -> Text(
-                    text = errorMessage,
+            emailErrorMessage?.let {
+                Text(
+                    text = it,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
                 )
@@ -108,11 +102,17 @@ internal fun LoginCredentialsSection(
                 Icon(imageVector = icon, contentDescription = description)
             }
         },
-        isError = passwordErrorMessage != null,
+        isError = passwordErrorMessage != null || showError,
         supportingText = {
-            passwordErrorMessage?.let {
-                Text(
-                    text = it,
+            when {
+                passwordErrorMessage != null -> Text(
+                    text = passwordErrorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+
+                showError -> Text(
+                    text = errorMessage,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
                 )
