@@ -275,14 +275,14 @@ COMPOSE_ARCH_DIR=""
 COMPOSE_RESOURCE_TASK=""
 if [[ "$SDK_NAME" == iphoneos* ]]; then
   COMPOSE_ARCH_DIR="iosArm64Main"
-  COMPOSE_RESOURCE_TASK="prepareComposeResourcesTaskForIosArm64Main"
+  COMPOSE_RESOURCE_TASK="assembleIosArm64MainResources"
 else
   if [[ "$(uname -m)" == "x86_64" ]]; then
     COMPOSE_ARCH_DIR="iosX64Main"
-    COMPOSE_RESOURCE_TASK="prepareComposeResourcesTaskForIosX64Main"
+    COMPOSE_RESOURCE_TASK="assembleIosX64MainResources"
   else
     COMPOSE_ARCH_DIR="iosSimulatorArm64Main"
-    COMPOSE_RESOURCE_TASK="prepareComposeResourcesTaskForIosSimulatorArm64Main"
+    COMPOSE_RESOURCE_TASK="assembleIosSimulatorArm64MainResources"
   fi
 fi
 
