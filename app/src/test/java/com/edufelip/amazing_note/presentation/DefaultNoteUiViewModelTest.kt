@@ -58,6 +58,7 @@ class DefaultNoteUiViewModelTest {
     @Test
     fun insert_success_and_observeNotes() = runTest {
         vm.insert("Title", "Desc", emptySpans, emptyAttachments, null, emptyContent)
+        advanceUntilIdle()
         val notes = vm.state.first().notes
         assertThat(notes).hasSize(1)
         assertThat(notes.first().title).isEqualTo("Title")
