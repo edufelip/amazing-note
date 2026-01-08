@@ -47,12 +47,26 @@ class DefaultAuthRepositoryTest {
         assertEquals(1, service.signOutCount)
     }
 
+    @Test
+    fun signInWithAppleCallsService() = runTest {
+        repository.signInWithApple("token", "nonce")
+        assertEquals(listOf("token" to "nonce"), service.appleSignInCalls)
+    }
+
+    @Test
+    fun linkWithAppleCallsService() = runTest {
+        repository.linkWithApple("token", "nonce")
+        assertEquals(listOf("token" to "nonce"), service.appleLinkCalls)
+    }
+
     private class FakeAuthService : AuthService {
         val currentUserFlow = MutableStateFlow<AuthUser?>(null)
         override val currentUser: Flow<AuthUser?> = currentUserFlow
 
         val signInCalls = mutableListOf<Pair<String, String>>()
         val signUpCalls = mutableListOf<Pair<String, String>>()
+        val appleSignInCalls = mutableListOf<Pair<String, String>>()
+        val appleLinkCalls = mutableListOf<Pair<String, String>>()
         var signOutCount = 0
 
         override suspend fun signInWithEmailPassword(email: String, password: String) {
@@ -67,10 +81,22 @@ class DefaultAuthRepositoryTest {
 
         override suspend fun signInWithGoogle(idToken: String, accessToken: String?) {}
 
+        override suspend fun signInWithApple(idToken: String, rawNonce: String) {
+            appleSignInCalls += idToken to rawNonce
+        }
+
+        override suspend fun linkWithApple(idToken: String, rawNonce: String) {
+            appleLinkCalls += idToken to rawNonce
+        }
+
         override suspend fun signOut() {
             signOutCount++
         }
 
+        override suspend fun deleteCurrentUser() {}
+
         override suspend fun setUserName(name: String) {}
+
+        override suspend fun getIdToken(forceRefresh: Boolean): String? = null
     }
 }

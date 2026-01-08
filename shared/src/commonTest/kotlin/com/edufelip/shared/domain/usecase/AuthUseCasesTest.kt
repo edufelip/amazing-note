@@ -1,6 +1,8 @@
 package com.edufelip.shared.domain.usecase
 
 import com.edufelip.shared.data.auth.AuthUser
+import com.edufelip.shared.domain.repository.AccountDeletionRepository
+import com.edufelip.shared.domain.repository.AccountDeletionResult
 import com.edufelip.shared.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,12 +16,14 @@ import kotlin.test.assertTrue
 class AuthUseCasesTest {
 
     private lateinit var repository: FakeAuthRepository
+    private lateinit var deletionRepository: FakeAccountDeletionRepository
     private lateinit var useCases: AuthUseCases
 
     @BeforeTest
     fun setUp() {
         repository = FakeAuthRepository()
-        useCases = buildAuthUseCases(repository)
+        deletionRepository = FakeAccountDeletionRepository()
+        useCases = buildAuthUseCases(repository, deletionRepository)
     }
 
     @Test
@@ -40,6 +44,18 @@ class AuthUseCasesTest {
     fun signUpCallsRepository() = runTest {
         useCases.signUp("Name", "test@example.com", "password")
         assertEquals(listOf("test@example.com" to "password"), repository.signUpCalls)
+    }
+
+    @Test
+    fun signInWithAppleCallsRepository() = runTest {
+        useCases.signInWithApple("token", "nonce")
+        assertEquals(listOf("token" to "nonce"), repository.appleSignInCalls)
+    }
+
+    @Test
+    fun linkWithAppleCallsRepository() = runTest {
+        useCases.linkWithApple("token", "nonce")
+        assertEquals(listOf("token" to "nonce"), repository.appleLinkCalls)
     }
 
     @Test
@@ -68,6 +84,8 @@ class AuthUseCasesTest {
         val signUpCalls = mutableListOf<Pair<String, String>>()
         val resetPasswordCalls = mutableListOf<String>()
         val googleSignInCalls = mutableListOf<Pair<String, String?>>()
+        val appleSignInCalls = mutableListOf<Pair<String, String>>()
+        val appleLinkCalls = mutableListOf<Pair<String, String>>()
         val updateNameCalls = mutableListOf<String>()
         var signOutCount = 0
 
@@ -92,8 +110,20 @@ class AuthUseCasesTest {
             googleSignInCalls += idToken to accessToken
         }
 
+        override suspend fun signInWithApple(idToken: String, rawNonce: String) {
+            appleSignInCalls += idToken to rawNonce
+        }
+
+        override suspend fun linkWithApple(idToken: String, rawNonce: String) {
+            appleLinkCalls += idToken to rawNonce
+        }
+
         override suspend fun signOut() {
             signOutCount++
         }
+    }
+
+    private class FakeAccountDeletionRepository : AccountDeletionRepository {
+        override suspend fun deleteAccount(): AccountDeletionResult = AccountDeletionResult.Success
     }
 }

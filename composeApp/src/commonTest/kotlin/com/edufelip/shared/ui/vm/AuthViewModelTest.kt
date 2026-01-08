@@ -1,6 +1,8 @@
 package com.edufelip.shared.ui.vm
 
 import com.edufelip.shared.data.auth.AuthUser
+import com.edufelip.shared.domain.repository.AccountDeletionRepository
+import com.edufelip.shared.domain.repository.AccountDeletionResult
 import com.edufelip.shared.domain.repository.AuthRepository
 import com.edufelip.shared.domain.usecase.buildAuthUseCases
 import kotlinx.coroutines.CoroutineDispatcher
@@ -124,11 +126,59 @@ class AuthViewModelTest {
         assertEquals(AuthError.Custom("Passwords must match"), viewModel.uiState.value.error)
     }
 
+    @Test
+    fun signInWithAppleEmitsLoginSuccess() = runAuthTest { dispatcher ->
+        val repository = FakeAuthRepository()
+        val viewModel = createViewModel(repository, dispatcher)
+
+        val events = mutableListOf<AuthEvent>()
+        val job = launch { viewModel.events.collect { events += it } }
+
+        viewModel.signInWithAppleToken("token", "nonce", "Apple User", "apple@example.com")
+        advanceUntilIdle()
+        job.cancel()
+
+        assertTrue(events.contains(AuthEvent.LoginSuccess))
+        assertEquals(listOf("token" to "nonce"), repository.appleSignInRequests)
+    }
+
+    @Test
+    fun signInWithAppleAccountCollisionStoresPendingLink() = runAuthTest { dispatcher ->
+        val repository = FakeAuthRepository().apply {
+            appleSignInError = IllegalStateException("account-exists-with-different-credential")
+        }
+        val viewModel = createViewModel(repository, dispatcher)
+
+        viewModel.signInWithAppleToken("token", "nonce", "Apple User", "apple@example.com")
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.error is AuthError.Custom)
+        assertEquals("token", state.pendingAppleLink?.idToken)
+        assertEquals("nonce", state.pendingAppleLink?.rawNonce)
+    }
+
+    @Test
+    fun loginLinksPendingAppleCredential() = runAuthTest { dispatcher ->
+        val repository = FakeAuthRepository().apply {
+            appleSignInError = IllegalStateException("account-exists-with-different-credential")
+        }
+        val viewModel = createViewModel(repository, dispatcher)
+
+        viewModel.signInWithAppleToken("token", "nonce", "Apple User", "apple@example.com")
+        advanceUntilIdle()
+
+        viewModel.loginWithEmail("user@test.com", "Password123!")
+        advanceUntilIdle()
+
+        assertEquals(listOf("token" to "nonce"), repository.appleLinkRequests)
+    }
+
     private fun TestScope.createViewModel(
         repository: FakeAuthRepository,
         dispatcher: CoroutineDispatcher,
     ): AuthViewModel {
-        val useCases = buildAuthUseCases(repository)
+        val useCases = buildAuthUseCases(repository, FakeAccountDeletionRepository())
         return AuthViewModel(useCases, dispatcher)
     }
 }
@@ -148,10 +198,14 @@ private class FakeAuthRepository : AuthRepository {
 
     var loginError: Throwable? = null
     var signUpError: Throwable? = null
+    var appleSignInError: Throwable? = null
+    var appleLinkError: Throwable? = null
 
     val loginRequests = mutableListOf<Pair<String, String>>()
     val signUpRequests = mutableListOf<Pair<String, String>>()
     val resetRequests = mutableListOf<String>()
+    val appleSignInRequests = mutableListOf<Pair<String, String>>()
+    val appleLinkRequests = mutableListOf<Pair<String, String>>()
 
     override val currentUser: Flow<AuthUser?> = _currentUser
 
@@ -189,7 +243,27 @@ private class FakeAuthRepository : AuthRepository {
         )
     }
 
+    override suspend fun signInWithApple(idToken: String, rawNonce: String) {
+        appleSignInRequests += idToken to rawNonce
+        appleSignInError?.let { throw it }
+        _currentUser.value = AuthUser(
+            uid = "apple",
+            displayName = "Apple User",
+            email = null,
+            photoUrl = null,
+        )
+    }
+
+    override suspend fun linkWithApple(idToken: String, rawNonce: String) {
+        appleLinkRequests += idToken to rawNonce
+        appleLinkError?.let { throw it }
+    }
+
     override suspend fun signOut() {
         _currentUser.value = null
     }
+}
+
+private class FakeAccountDeletionRepository : AccountDeletionRepository {
+    override suspend fun deleteAccount(): AccountDeletionResult = AccountDeletionResult.Success
 }

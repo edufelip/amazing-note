@@ -9,6 +9,8 @@ import app.cash.sqldelight.db.SqlPreparedStatement
 import com.edufelip.shared.data.auth.AuthUser
 import com.edufelip.shared.data.sync.NotesSyncManager
 import com.edufelip.shared.db.NoteDatabase
+import com.edufelip.shared.domain.repository.AccountDeletionRepository
+import com.edufelip.shared.domain.repository.AccountDeletionResult
 import com.edufelip.shared.domain.repository.AuthRepository
 import com.edufelip.shared.domain.usecase.buildAuthUseCases
 import com.edufelip.shared.ui.app.core.AmazingNoteAppEnvironment
@@ -94,7 +96,7 @@ class AmazingNoteAppStateTest {
     ): AmazingNoteAppState {
         navController = NavigationController(initialRoute)
         val authRepository = TestAuthRepository()
-        val authUseCases = buildAuthUseCases(authRepository)
+        val authUseCases = buildAuthUseCases(authRepository, TestAccountDeletionRepository)
         val driver = NoOpSqlDriver
         val noteDatabase = NoteDatabase(driver)
         val syncManager = NotesSyncManager(
@@ -110,6 +112,7 @@ class AmazingNoteAppStateTest {
             notesSyncManager = syncManager,
             attachmentPicker = null,
             googleSignInLauncher = null,
+            appleSignInLauncher = null,
         )
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
         val authViewModel = AuthViewModel(authUseCases, dispatcher = Dispatchers.Unconfined)
@@ -137,7 +140,15 @@ class AmazingNoteAppStateTest {
 
         override suspend fun signInWithGoogle(idToken: String, accessToken: String?) {}
 
+        override suspend fun signInWithApple(idToken: String, rawNonce: String) {}
+
+        override suspend fun linkWithApple(idToken: String, rawNonce: String) {}
+
         override suspend fun signOut() {}
+    }
+
+    private object TestAccountDeletionRepository : AccountDeletionRepository {
+        override suspend fun deleteAccount(): AccountDeletionResult = AccountDeletionResult.Success
     }
 
     private class TestAppPreferences(private val settings: Settings) : AppPreferences {
