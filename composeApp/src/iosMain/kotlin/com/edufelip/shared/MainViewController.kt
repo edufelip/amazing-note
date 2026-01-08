@@ -68,6 +68,7 @@ fun createAmazingNoteViewController(
     tabBarVisibility: ((Boolean) -> Unit)? = null,
     onRouteChanged: ((String, Boolean) -> Unit)? = null,
 ): UIViewController {
+    installUnhandledExceptionHook()
     initKoin()
     val controller = ComposeUIViewController {
         val koin = remember { getSharedKoin() }

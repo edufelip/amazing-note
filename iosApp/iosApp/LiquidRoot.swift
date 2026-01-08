@@ -167,15 +167,28 @@ private struct ComposeHost: UIViewControllerRepresentable {
         context.coordinator.onRouteChanged = onRouteChanged
         context.coordinator.onTabBarVisibilityChanged = onTabBarVisibilityChanged
         context.coordinator.isActive = isActive
-        let controller = controllerFactory(context.coordinator.tabBarVisibilityHandler, context.coordinator.routeHandler)
-        applyTabBarVisibility(for: controller, coordinator: context.coordinator, visible: tabBar.isVisible)
-        return controller
+        let container = ComposeContainerViewController {
+            controllerFactory(
+                context.coordinator.tabBarVisibilityHandler,
+                context.coordinator.routeHandler
+            )
+        }
+        applyTabBarVisibility(for: container, coordinator: context.coordinator, visible: tabBar.isVisible)
+        return container
     }
 
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
         context.coordinator.onRouteChanged = onRouteChanged
         context.coordinator.onTabBarVisibilityChanged = onTabBarVisibilityChanged
         context.coordinator.isActive = isActive
+        if let container = uiViewController as? ComposeContainerViewController {
+            container.updateControllerFactory {
+                controllerFactory(
+                    context.coordinator.tabBarVisibilityHandler,
+                    context.coordinator.routeHandler
+                )
+            }
+        }
         applyTabBarVisibility(for: uiViewController, coordinator: context.coordinator, visible: tabBar.isVisible)
     }
 
@@ -224,8 +237,7 @@ private struct ComposeHost: UIViewControllerRepresentable {
         let targetHidden = !visible
 
         if #available(iOS 18.0, *) {
-            guard tabController.tabBar.isHidden != targetHidden else { return }
-            tabController.setTabBarHidden(targetHidden, animated: true)
+            // iOS 18+ handles tab bar visibility through SwiftUI .toolbar modifiers.
             return
         }
 

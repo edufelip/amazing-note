@@ -246,14 +246,101 @@ if [[ "$TARGET_TYPE" == "device" ]]; then
   EXTRA_ARGS+=(-allowProvisioningDeviceRegistration)
 fi
 
+SDK_FAMILY=""
+SDK_VERSION=""
+SDK_NAME=""
 if [[ "$TARGET_TYPE" == "device" ]]; then
-  SDK_SHORT="iphoneos"
+  SDK_FAMILY="iphoneos"
+  SDK_VERSION=$(xcodebuild -showsdks 2>/dev/null | awk '/iphoneos[0-9.]*$/ {print $NF}' | tail -n 1 | sed 's/^iphoneos//')
 else
-  SDK_SHORT="iphonesimulator"
+  SDK_FAMILY="iphonesimulator"
+  SDK_VERSION=$(python3 - <<'PY' "$TARGET"
+import json, sys
+target = json.loads(sys.argv[1])
+runtime = target.get("runtime", "")
+runtime = runtime.split("iOS-")[-1] if "iOS-" in runtime else ""
+runtime = runtime.replace("-", ".")
+print(runtime)
+PY
+  )
 fi
 
-log "Syncing Compose framework for $SDK_SHORT"
-(cd "$PROJECT_ROOT" && ./gradlew -PCONFIGURATION=Debug -PSDK_NAME="$SDK_SHORT" :composeApp:packForXcode :iosApp:packForXcode >/dev/null)
+if [[ -n "$SDK_VERSION" ]]; then
+  SDK_NAME="${SDK_FAMILY}${SDK_VERSION}"
+else
+  SDK_NAME="$SDK_FAMILY"
+fi
+
+COMPOSE_ARCH_DIR=""
+COMPOSE_RESOURCE_TASK=""
+if [[ "$SDK_NAME" == iphoneos* ]]; then
+  COMPOSE_ARCH_DIR="iosArm64Main"
+  COMPOSE_RESOURCE_TASK="prepareComposeResourcesTaskForIosArm64Main"
+else
+  if [[ "$(uname -m)" == "x86_64" ]]; then
+    COMPOSE_ARCH_DIR="iosX64Main"
+    COMPOSE_RESOURCE_TASK="prepareComposeResourcesTaskForIosX64Main"
+  else
+    COMPOSE_ARCH_DIR="iosSimulatorArm64Main"
+    COMPOSE_RESOURCE_TASK="prepareComposeResourcesTaskForIosSimulatorArm64Main"
+  fi
+fi
+
+log "Preparing Compose resources for $COMPOSE_ARCH_DIR"
+log "Syncing Compose framework for $SDK_NAME"
+(cd "$PROJECT_ROOT" && ./gradlew -PCONFIGURATION=Debug -PSDK_NAME="$SDK_NAME" :composeApp:"$COMPOSE_RESOURCE_TASK" :composeApp:packForXcode :iosApp:packForXcode >/dev/null)
+
+COMPOSE_SOURCE_DIR="$PROJECT_ROOT/composeApp/src/commonMain/composeResources"
+COMPOSE_GENERATED_BASE="$PROJECT_ROOT/composeApp/build/generated/compose/resourceGenerator/assembledResources"
+COMPOSE_STAMP_FILE=".stamp"
+
+resolve_compose_resources() {
+  local target_resources="${COMPOSE_GENERATED_BASE}/${COMPOSE_ARCH_DIR}/composeResources"
+  local resolved_resources="$target_resources"
+
+  COMPOSE_RESOURCES_DIR="$resolved_resources"
+}
+
+latest_mtime() {
+  local dir="$1"
+  find "$dir" -type f -print0 2>/dev/null | xargs -0 stat -f %m 2>/dev/null | sort -n | tail -1
+}
+
+compose_resources_stale() {
+  if [[ ! -d "$COMPOSE_RESOURCES_DIR" ]]; then
+    return 0
+  fi
+  if [[ ! -f "$COMPOSE_RESOURCES_DIR/$COMPOSE_STAMP_FILE" ]]; then
+    return 0
+  fi
+  if [[ -d "$COMPOSE_SOURCE_DIR" ]]; then
+    local latest_source=""
+    local latest_generated=""
+    latest_source=$(latest_mtime "$COMPOSE_SOURCE_DIR")
+    latest_generated=$(stat -f %m "$COMPOSE_RESOURCES_DIR/$COMPOSE_STAMP_FILE")
+    if [[ -n "$latest_source" && -n "$latest_generated" && "$latest_generated" -lt "$latest_source" ]]; then
+      return 0
+    fi
+  fi
+  return 1
+}
+
+resolve_compose_resources
+if [[ -d "$COMPOSE_RESOURCES_DIR" ]]; then
+  date +%s > "$COMPOSE_RESOURCES_DIR/$COMPOSE_STAMP_FILE"
+fi
+if compose_resources_stale; then
+  log "Compose resources appear stale; regenerating (rerun tasks)..."
+  (cd "$PROJECT_ROOT" && ./gradlew -PCONFIGURATION=Debug -PSDK_NAME="$SDK_NAME" --rerun-tasks :composeApp:"$COMPOSE_RESOURCE_TASK" :composeApp:packForXcode :iosApp:packForXcode >/dev/null)
+  resolve_compose_resources
+  if [[ ! -d "$COMPOSE_RESOURCES_DIR" ]]; then
+    die "Compose resources not found. Run ./gradlew -PSDK_NAME=$SDK_NAME :composeApp:packForXcode"
+  fi
+  date +%s > "$COMPOSE_RESOURCES_DIR/$COMPOSE_STAMP_FILE"
+  if compose_resources_stale; then
+    die "Compose resources are stale. Run ./gradlew -PSDK_NAME=$SDK_NAME :composeApp:packForXcode"
+  fi
+fi
 
 log "Building $SCHEME for $TARGET_NAME"
 XCODE_CMD=(
@@ -268,7 +355,7 @@ if [[ ${#EXTRA_ARGS[@]} -gt 0 ]]; then
   XCODE_CMD+=("${EXTRA_ARGS[@]}")
 fi
 XCODE_CMD+=(build)
-"${XCODE_CMD[@]}" >/dev/null
+"${XCODE_CMD[@]}"
 
 if [[ "$TARGET_TYPE" == "sim" ]]; then
   APP_PATH="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/iosApp.app"

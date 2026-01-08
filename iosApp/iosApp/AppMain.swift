@@ -1,9 +1,16 @@
 import SwiftUI
+import FirebaseCore
 import GoogleSignIn
 
 @main
 struct AmazingNoteiOSApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
+    init() {
+        if FirebaseApp.app() == nil {
+            FirebaseApp.configure()
+        }
+    }
 
     var body: some Scene {
         WindowGroup {

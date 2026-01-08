@@ -128,6 +128,11 @@ compose {
 
 val xcodeConfiguration = providers.gradleProperty("CONFIGURATION").orElse(System.getenv("CONFIGURATION") ?: "Debug")
 val xcodeSdk = providers.gradleProperty("SDK_NAME").orElse(System.getenv("SDK_NAME") ?: "iphonesimulator")
+val forceSyncComposeResourcesForIos = providers.gradleProperty("forceSyncComposeResourcesForIos").isPresent
+val isXcodeBuild =
+    providers.environmentVariable("XCODE_VERSION_ACTUAL").isPresent ||
+        providers.environmentVariable("XCODE_PRODUCT_BUILD_VERSION").isPresent ||
+        providers.environmentVariable("BUILT_PRODUCTS_DIR").isPresent
 
 tasks.register<Sync>("packForXcode") {
     val buildType = xcodeConfiguration.get()
@@ -139,6 +144,9 @@ tasks.register<Sync>("packForXcode") {
         }
     val framework = target.binaries.getFramework(buildType)
     dependsOn(framework.linkTaskProvider)
+    if (isXcodeBuild || forceSyncComposeResourcesForIos) {
+        dependsOn("syncComposeResourcesForIos")
+    }
     val destinationDir = layout.buildDirectory.dir("xcode-frameworks/$buildType/$sdkName")
     from({ framework.outputDirectory })
     into(destinationDir)

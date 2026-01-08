@@ -7,7 +7,7 @@ configs:
   Release: release
 settings:
   IPHONEOS_DEPLOYMENT_TARGET: 17.2
-  SWIFT_VERSION: 5.0
+  SWIFT_VERSION: 5.9
 packages:
   Firebase:
     url: https://github.com/firebase/firebase-ios-sdk
@@ -23,6 +23,7 @@ targets:
     type: application
     platform: iOS
     deploymentTarget: "17.2"
+    entitlements: iosApp/iosApp.entitlements
     sources:
       - path: iosApp
         excludes:
@@ -35,6 +36,7 @@ targets:
     settings:
       INFOPLIST_FILE: iosApp/Info.plist
       PRODUCT_BUNDLE_IDENTIFIER: com.edufelip.amazingnote
+      CODE_SIGN_ENTITLEMENTS: iosApp/iosApp.entitlements
       FRAMEWORK_SEARCH_PATHS:
         - "$(inherited)"
         - "$(CONFIGURATION_BUILD_DIR)"
@@ -64,6 +66,73 @@ targets:
       - package: GoogleSignIn
         product: GoogleSignIn
       - sdk: libsqlite3.tbd
+    prebuildScripts:
+      - name: Generate Compose Resources
+        shellPath: /bin/sh
+        script: |
+          set -euo pipefail
+          ROOT_DIR="${SRCROOT}/.."
+          GRADLEW="${ROOT_DIR}/gradlew"
+          GRADLE_USER_HOME="${ROOT_DIR}/.gradle-xcode"
+          KONAN_DATA_DIR="${ROOT_DIR}/.konan"
+          KOTLIN_VERSION=$(awk -F'=' '/^kotlin[[:space:]]*=/{gsub(/"/,"",$2); gsub(/[[:space:]]/,"",$2); print $2; exit}' "${ROOT_DIR}/gradle/libs.versions.toml" || true)
+          KONAN_ARCH="x64"
+          if [[ "$(uname -m)" == "arm64" ]]; then
+            KONAN_ARCH="aarch64"
+          fi
+          KONAN_HOME=""
+          if [[ -n "${KOTLIN_VERSION}" ]]; then
+            KONAN_HOME="${KONAN_DATA_DIR}/kotlin-native-prebuilt-macos-${KONAN_ARCH}-${KOTLIN_VERSION}"
+          fi
+          KONAN_HOME_ARG=""
+          if [[ -n "${KONAN_HOME}" ]]; then
+            KONAN_HOME_ARG="-Pkotlin.native.home=${KONAN_HOME}"
+          fi
+          mkdir -p "${GRADLE_USER_HOME}" "${KONAN_DATA_DIR}"
+          SDK_NAME_VALUE="${SDK_NAME:-iphonesimulator}"
+          STAMP_FILE=".stamp"
+          SOURCE_DIR="${ROOT_DIR}/composeApp/src/commonMain/composeResources"
+          GENERATED_BASE="${ROOT_DIR}/composeApp/build/generated/compose/resourceGenerator/assembledResources"
+
+          if [[ "${SDK_NAME_VALUE}" == iphoneos* ]]; then
+            ARCH_DIR="iosArm64Main"
+          else
+            if [[ "${ARCHS:-}" == *"x86_64"* && "${ARCHS:-}" != *"arm64"* ]]; then
+              ARCH_DIR="iosX64Main"
+            else
+              ARCH_DIR="iosSimulatorArm64Main"
+            fi
+          fi
+
+          TARGET_RESOURCES="${GENERATED_BASE}/${ARCH_DIR}/composeResources"
+          NEED_RUN=0
+
+          if [[ ! -d "${TARGET_RESOURCES}" ]]; then
+            NEED_RUN=1
+          elif [[ -d "${SOURCE_DIR}" ]]; then
+            LATEST_SOURCE=$(find "${SOURCE_DIR}" -type f -print0 | xargs -0 stat -f %m | sort -n | tail -1 || true)
+            if [[ -f "${TARGET_RESOURCES}/${STAMP_FILE}" ]]; then
+              LATEST_GENERATED=$(stat -f %m "${TARGET_RESOURCES}/${STAMP_FILE}")
+            else
+              LATEST_GENERATED=$(find "${TARGET_RESOURCES}" -type f -print0 | xargs -0 stat -f %m | sort -n | tail -1)
+            fi
+            if [[ -n "${LATEST_SOURCE}" && -n "${LATEST_GENERATED}" && "${LATEST_GENERATED}" -lt "${LATEST_SOURCE}" ]]; then
+              NEED_RUN=1
+            fi
+          fi
+
+          if [[ "${NEED_RUN}" -eq 1 ]]; then
+            if [[ ! -x "${GRADLEW}" ]]; then
+              echo "error: Gradle wrapper not found at ${GRADLEW}."
+              exit 1
+            fi
+            KONAN_DATA_DIR="${KONAN_DATA_DIR}" GRADLE_USER_HOME="${GRADLE_USER_HOME}" "${GRADLEW}" ${KONAN_HOME_ARG} -PSDK_NAME="${SDK_NAME_VALUE}" :composeApp:packForXcode
+            if [[ ! -d "${TARGET_RESOURCES}" ]]; then
+              echo "error: Compose resources not found. Run ./gradlew -PSDK_NAME=${SDK_NAME_VALUE} :composeApp:packForXcode"
+              exit 1
+            fi
+            date +%s > "${TARGET_RESOURCES}/${STAMP_FILE}"
+          fi
     postbuildScripts:
       - name: Crashlytics dSYM Upload
         shellPath: /bin/sh
@@ -101,46 +170,40 @@ targets:
           set -euo pipefail
 
           if [[ "${SDK_NAME:-}" == iphoneos* ]]; then
-            ARCH_ORDER="iosArm64 iosSimulatorArm64 iosX64"
+            ARCH_DIR="iosArm64Main"
           else
-            ARCH_ORDER="iosSimulatorArm64 iosX64 iosArm64"
+            if [[ "${ARCHS:-}" == *"x86_64"* && "${ARCHS:-}" != *"arm64"* ]]; then
+              ARCH_DIR="iosX64Main"
+            else
+              ARCH_DIR="iosSimulatorArm64Main"
+            fi
           fi
 
-          find_resources() {
-            arch="$1"
-            aggregated="${SRCROOT}/../composeApp/build/kotlin-multiplatform-resources/aggregated-resources/${arch}/composeResources"
-            assembled="${SRCROOT}/../composeApp/build/kotlin-multiplatform-resources/assemble-hierarchically/${arch}ResolveSelfResources/composeResources"
-            generated="${SRCROOT}/../composeApp/build/generated/compose/resourceGenerator/assembledResources/${arch}Main/composeResources"
+          SRC_RESOURCES="${SRCROOT}/../composeApp/build/generated/compose/resourceGenerator/assembledResources/${ARCH_DIR}/composeResources"
 
-            if [[ -d "${aggregated}" ]]; then
-              echo "${aggregated}"
-            elif [[ -d "${assembled}" ]]; then
-              echo "${assembled}"
-            elif [[ -d "${generated}" ]]; then
-              echo "${generated}"
-            fi
-          }
-
-          SRC_RESOURCES=""
-          for arch in ${ARCH_ORDER}; do
-            SRC_RESOURCES="$(find_resources "${arch}")"
-            if [[ -n "${SRC_RESOURCES}" ]]; then
-              if [[ "${arch}" != "${ARCH_ORDER%% *}" ]]; then
-                echo "warning: Compose resources for ${ARCH_ORDER%% *} not found; using ${arch}."
-              fi
-              break
-            fi
-          done
-
-          DEST_RESOURCES="${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}/compose-resources/composeResources"
-
-          if [[ -n "${SRC_RESOURCES}" && -d "${SRC_RESOURCES}" ]]; then
-            mkdir -p "${DEST_RESOURCES}"
-            rsync -a "${SRC_RESOURCES}/" "${DEST_RESOURCES}/"
-          else
+          if [[ ! -d "${SRC_RESOURCES}" ]]; then
             echo "error: Compose resources not found. Run ./gradlew -PSDK_NAME=${SDK_NAME:-iphonesimulator} :composeApp:packForXcode"
             exit 1
           fi
+
+          STAMP_FILE=".stamp"
+          SOURCE_DIR="${SRCROOT}/../composeApp/src/commonMain/composeResources"
+          if [[ -d "${SOURCE_DIR}" ]]; then
+            LATEST_SOURCE=$(find "${SOURCE_DIR}" -type f -print0 | xargs -0 stat -f %m | sort -n | tail -1)
+            if [[ -f "${SRC_RESOURCES}/${STAMP_FILE}" ]]; then
+              LATEST_GENERATED=$(stat -f %m "${SRC_RESOURCES}/${STAMP_FILE}")
+            else
+              LATEST_GENERATED=$(find "${SRC_RESOURCES}" -type f -print0 | xargs -0 stat -f %m | sort -n | tail -1)
+            fi
+            if [[ -n "${LATEST_SOURCE}" && -n "${LATEST_GENERATED}" && "${LATEST_GENERATED}" -lt "${LATEST_SOURCE}" ]]; then
+              echo "error: Compose resources are stale. Run ./gradlew -PSDK_NAME=${SDK_NAME:-iphonesimulator} :composeApp:packForXcode"
+              exit 1
+            fi
+          fi
+
+          DEST_RESOURCES="${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}/compose-resources/composeResources"
+          mkdir -p "${DEST_RESOURCES}"
+          rsync -a "${SRC_RESOURCES}/" "${DEST_RESOURCES}/"
     scheme:
       testTargets:
         - iosAppTests
@@ -180,46 +243,40 @@ targets:
 
           if [[ ! -d "${SRC_RESOURCES}" ]]; then
             if [[ "${SDK_NAME:-}" == iphoneos* ]]; then
-              ARCH_ORDER="iosArm64 iosSimulatorArm64 iosX64"
+              ARCH_DIR="iosArm64Main"
             else
-              ARCH_ORDER="iosSimulatorArm64 iosX64 iosArm64"
+              if [[ "${ARCHS:-}" == *"x86_64"* && "${ARCHS:-}" != *"arm64"* ]]; then
+                ARCH_DIR="iosX64Main"
+              else
+                ARCH_DIR="iosSimulatorArm64Main"
+              fi
             fi
 
-            find_resources() {
-              arch="$1"
-              aggregated="${SRCROOT}/../composeApp/build/kotlin-multiplatform-resources/aggregated-resources/${arch}/composeResources"
-              assembled="${SRCROOT}/../composeApp/build/kotlin-multiplatform-resources/assemble-hierarchically/${arch}ResolveSelfResources/composeResources"
-              generated="${SRCROOT}/../composeApp/build/generated/compose/resourceGenerator/assembledResources/${arch}Main/composeResources"
-
-              if [[ -d "${aggregated}" ]]; then
-                echo "${aggregated}"
-              elif [[ -d "${assembled}" ]]; then
-                echo "${assembled}"
-              elif [[ -d "${generated}" ]]; then
-                echo "${generated}"
-              fi
-            }
-
-            SRC_RESOURCES=""
-            for arch in ${ARCH_ORDER}; do
-              SRC_RESOURCES="$(find_resources "${arch}")"
-              if [[ -n "${SRC_RESOURCES}" ]]; then
-                if [[ "${arch}" != "${ARCH_ORDER%% *}" ]]; then
-                  echo "warning: Compose resources for ${ARCH_ORDER%% *} not found; using ${arch}."
-                fi
-                break
-              fi
-            done
+            SRC_RESOURCES="${SRCROOT}/../composeApp/build/generated/compose/resourceGenerator/assembledResources/${ARCH_DIR}/composeResources"
           fi
-          DEST_RESOURCES="${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}/compose-resources/composeResources"
-
-          if [[ -n "${SRC_RESOURCES}" && -d "${SRC_RESOURCES}" ]]; then
-            mkdir -p "${DEST_RESOURCES}"
-            rsync -a "${SRC_RESOURCES}/" "${DEST_RESOURCES}/"
-          else
+          if [[ ! -d "${SRC_RESOURCES}" ]]; then
             echo "error: Compose resources not found. Run ./gradlew -PSDK_NAME=${SDK_NAME:-iphonesimulator} :composeApp:packForXcode"
             exit 1
           fi
+
+          STAMP_FILE=".stamp"
+          SOURCE_DIR="${SRCROOT}/../composeApp/src/commonMain/composeResources"
+          if [[ -d "${SOURCE_DIR}" ]]; then
+            LATEST_SOURCE=$(find "${SOURCE_DIR}" -type f -print0 | xargs -0 stat -f %m | sort -n | tail -1)
+            if [[ -f "${SRC_RESOURCES}/${STAMP_FILE}" ]]; then
+              LATEST_GENERATED=$(stat -f %m "${SRC_RESOURCES}/${STAMP_FILE}")
+            else
+              LATEST_GENERATED=$(find "${SRC_RESOURCES}" -type f -print0 | xargs -0 stat -f %m | sort -n | tail -1)
+            fi
+            if [[ -n "${LATEST_SOURCE}" && -n "${LATEST_GENERATED}" && "${LATEST_GENERATED}" -lt "${LATEST_SOURCE}" ]]; then
+              echo "error: Compose resources are stale. Run ./gradlew -PSDK_NAME=${SDK_NAME:-iphonesimulator} :composeApp:packForXcode"
+              exit 1
+            fi
+          fi
+
+          DEST_RESOURCES="${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}/compose-resources/composeResources"
+          mkdir -p "${DEST_RESOURCES}"
+          rsync -a "${SRC_RESOURCES}/" "${DEST_RESOURCES}/"
   iosAppUITests:
     type: bundle.ui-testing
     platform: iOS
