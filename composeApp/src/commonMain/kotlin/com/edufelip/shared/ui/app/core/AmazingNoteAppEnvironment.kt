@@ -2,8 +2,10 @@ package com.edufelip.shared.ui.app.core
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import com.edufelip.shared.data.auth.AppleSignInLauncher
 import com.edufelip.shared.data.auth.GoogleSignInConfig
 import com.edufelip.shared.data.auth.GoogleSignInLauncher
+import com.edufelip.shared.data.auth.rememberAppleSignInLauncher
 import com.edufelip.shared.data.auth.rememberGoogleSignInLauncher
 import com.edufelip.shared.data.db.DatabaseDriverFactory
 import com.edufelip.shared.data.db.createDatabase
@@ -26,6 +28,7 @@ data class AmazingNoteAppEnvironment(
     val notesSyncManager: NotesSyncManager,
     val attachmentPicker: AttachmentPicker?,
     val googleSignInLauncher: GoogleSignInLauncher?,
+    val appleSignInLauncher: AppleSignInLauncher?,
 )
 
 @Composable
@@ -42,6 +45,7 @@ fun rememberAmazingNoteAppEnvironment(
     googleSignInLauncherProvider: @Composable (GoogleSignInConfig) -> GoogleSignInLauncher? = {
         rememberGoogleSignInLauncher(it)
     },
+    appleSignInLauncherProvider: @Composable () -> AppleSignInLauncher? = { rememberAppleSignInLauncher() },
     noteDatabase: NoteDatabase? = null,
     notesSyncManager: NotesSyncManager? = null,
 ): AmazingNoteAppEnvironment {
@@ -57,6 +61,7 @@ fun rememberAmazingNoteAppEnvironment(
 
     val resolvedAttachmentPicker = attachmentPickerProvider()
     val resolvedGoogleSignInLauncher = googleSignInLauncherProvider(googleSignInConfig)
+    val resolvedAppleSignInLauncher = appleSignInLauncherProvider()
 
     return remember(
         resolvedSettings,
@@ -65,6 +70,7 @@ fun rememberAmazingNoteAppEnvironment(
         resolvedSyncManager,
         resolvedAttachmentPicker,
         resolvedGoogleSignInLauncher,
+        resolvedAppleSignInLauncher,
     ) {
         AmazingNoteAppEnvironment(
             settings = resolvedSettings,
@@ -73,6 +79,7 @@ fun rememberAmazingNoteAppEnvironment(
             notesSyncManager = resolvedSyncManager,
             attachmentPicker = resolvedAttachmentPicker,
             googleSignInLauncher = resolvedGoogleSignInLauncher,
+            appleSignInLauncher = resolvedAppleSignInLauncher,
         )
     }
 }

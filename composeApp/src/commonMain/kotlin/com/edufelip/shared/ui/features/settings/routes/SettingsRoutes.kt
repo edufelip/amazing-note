@@ -33,6 +33,14 @@ fun SettingsRoute(
                 authViewModel.logout()
             }
         },
+        onDeleteAccount = {
+            syncManager.pause()
+            try {
+                authViewModel.deleteAccount()
+            } finally {
+                syncManager.resume()
+            }
+        },
         onOpenTrash = { onNavigate(AppRoutes.Trash) },
         onOpenPrivacy = { onNavigate(AppRoutes.Privacy) },
         appVersion = appVersion,

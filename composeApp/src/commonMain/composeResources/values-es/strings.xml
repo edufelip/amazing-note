@@ -11,6 +11,7 @@
     <string name="logout">Cerrar sesión</string>
     <string name="google_sign_in">Iniciar con Google</string>
     <string name="continue_with_google">Continuar con Google</string>
+    <string name="continue_with_apple">Continuar con Apple</string>
     <string name="login_title">Inicia sesión en tu cuenta</string>
     <string name="name">Nombre</string>
     <string name="email">Correo electrónico</string>
@@ -174,6 +175,16 @@
     <string name="theme_option">Modo oscuro</string>
     <string name="theme_subtitle">Alterna entre el tema claro y oscuro.</string>
     <string name="account_section">Cuenta</string>
+    <string name="delete_account">Eliminar cuenta permanentemente</string>
+    <string name="delete_account_confirm_title">Eliminar cuenta permanentemente</string>
+    <string name="delete_account_confirm_message">¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.</string>
+    <string name="delete_account_confirm_email_label">Escribe tu correo electrónico para confirmar</string>
+    <string name="delete_account_confirm_email_mismatch">El correo no coincide.</string>
+    <string name="delete_account_confirm_button">Eliminar cuenta</string>
+    <string name="delete_account_success_title">Cuenta eliminada</string>
+    <string name="delete_account_success_message">Tu cuenta y tus datos han sido eliminados.</string>
+    <string name="delete_account_failure_title">No se pudo eliminar la cuenta</string>
+    <string name="delete_account_failure_message">Inténtalo de nuevo.</string>
     <string name="management_section">Accesos directos</string>
     <string name="trash_subtitle">Notas eliminadas recientemente</string>
     <string name="app_version_label">Versión de la app</string>

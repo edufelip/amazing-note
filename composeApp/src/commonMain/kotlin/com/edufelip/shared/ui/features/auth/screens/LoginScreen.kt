@@ -1,5 +1,6 @@
 package com.edufelip.shared.ui.features.auth.screens
 
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,6 +32,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.edufelip.shared.data.auth.AppleSignInLauncher
 import com.edufelip.shared.data.auth.GoogleSignInLauncher
 import com.edufelip.shared.domain.validation.EmailValidationError
 import com.edufelip.shared.domain.validation.PasswordValidationError
@@ -38,6 +42,7 @@ import com.edufelip.shared.domain.validation.validatePassword
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.auth_generic_validation_error
 import com.edufelip.shared.resources.auth_network_error
+import com.edufelip.shared.resources.continue_with_apple
 import com.edufelip.shared.resources.continue_with_google
 import com.edufelip.shared.resources.email_invalid_format
 import com.edufelip.shared.resources.email_required
@@ -55,6 +60,7 @@ import com.edufelip.shared.resources.sign_up_success
 import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.effects.toast.rememberToastController
 import com.edufelip.shared.ui.effects.toast.show
+import com.edufelip.shared.ui.features.auth.components.AppleButton
 import com.edufelip.shared.ui.features.auth.components.ForgotPasswordDialog
 import com.edufelip.shared.ui.features.auth.components.ForgotPasswordSuccessDialog
 import com.edufelip.shared.ui.features.auth.components.GoogleButton
@@ -85,10 +91,12 @@ fun LoginScreen(
     state: AuthUiState,
     onBack: () -> Unit,
     googleSignInLauncher: GoogleSignInLauncher? = null,
+    appleSignInLauncher: AppleSignInLauncher? = null,
     onOpenSignUp: () -> Unit,
     showLocalSuccessToast: Boolean,
     onLogin: (String, String) -> Unit,
     onGoogleSignIn: (String, String?) -> Unit,
+    onAppleSignIn: (String, String, String?, String?) -> Unit,
     onSendPasswordReset: (String) -> Unit,
     onClearError: () -> Unit,
     onSetError: (String) -> Unit,
@@ -193,7 +201,7 @@ fun LoginScreen(
     val lockoutRemainingMillis = lockoutTicker
     val isLockedOut = lockoutRemainingMillis > 0L
     val lockoutSeconds = ((lockoutRemainingMillis + 999) / 1000).toInt()
-    val isSubmitEnabled = emailValidation.isValid && passwordValidation.isValid && !loading && !isLockedOut
+    val isSubmitEnabled = password.length >= 6
     val attemptLogin: () -> Unit = l@{
         val now = currentEpochMillis()
         if (!rateLimiter.canAttempt(now)) {
@@ -295,11 +303,17 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(tokens.spacing.lg))
-            LoginIllustration(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(4f / 3f),
-            )
+            BoxWithConstraints(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                val illustrationWidth = if (maxWidth >= 500.dp) maxWidth * 0.7f else maxWidth
+                LoginIllustration(
+                    modifier = Modifier
+                        .width(illustrationWidth)
+                        .aspectRatio(4f / 3f),
+                )
+            }
             Spacer(modifier = Modifier.height(tokens.spacing.xl))
             Text(
                 text = stringResource(Res.string.login_headline),
@@ -386,6 +400,33 @@ fun LoginScreen(
                     }
                 },
             )
+            if (appleSignInLauncher != null) {
+                Spacer(modifier = Modifier.height(tokens.spacing.md))
+                AppleButton(
+                    text = stringResource(Res.string.continue_with_apple),
+                    enabled = !loading && !isLockedOut,
+                    onClick = {
+                        scope.launch {
+                            val result = appleSignInLauncher.signIn()
+                            when {
+                                !result.idToken.isNullOrBlank() && !result.rawNonce.isNullOrBlank() -> {
+                                    onAppleSignIn(
+                                        result.idToken,
+                                        result.rawNonce,
+                                        result.fullName,
+                                        result.email,
+                                    )
+                                }
+                                !result.errorMessage.isNullOrBlank() -> {
+                                    onSetError(result.errorMessage)
+                                    toastController.show(result.errorMessage)
+                                }
+                                else -> Unit // user dismissed; no toast
+                            }
+                        }
+                    },
+                )
+            }
             Spacer(modifier = Modifier.height(tokens.spacing.lg))
             TextButton(
                 onClick = {
@@ -456,10 +497,12 @@ private fun LoginScreenPreview() {
             state = AuthUiState(),
             onBack = {},
             googleSignInLauncher = null,
+            appleSignInLauncher = null,
             onOpenSignUp = {},
             showLocalSuccessToast = true,
             onLogin = { _, _ -> },
             onGoogleSignIn = { _, _ -> },
+            onAppleSignIn = { _, _, _, _ -> },
             onSendPasswordReset = {},
             onClearError = {},
             onSetError = {},

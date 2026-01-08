@@ -130,6 +130,9 @@ kotlin {
                 implementation(libs.sqldelight.runtime)
                 implementation(libs.sqldelight.coroutines)
                 implementation(libs.kotlinx.serialization.json)
+                implementation(libs.ktor.client.core)
+                implementation(libs.ktor.client.content.negotiation)
+                implementation(libs.ktor.serialization.kotlinx.json)
                 implementation(libs.gitlive.firestore)
                 implementation(libs.gitlive.auth)
                 implementation(libs.gitlive.storage)
@@ -149,11 +152,13 @@ kotlin {
                 implementation(libs.firebase.crashlytics)
                 implementation(libs.sqldelight.android.driver)
                 implementation(libs.android.security.crypto)
+                implementation(libs.ktor.client.okhttp)
             }
         }
         iosMain {
             dependencies {
                 implementation(libs.sqldelight.native.driver)
+                implementation(libs.ktor.client.darwin)
             }
         }
     }

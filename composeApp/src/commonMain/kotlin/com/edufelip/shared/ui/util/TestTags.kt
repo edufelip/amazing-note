@@ -9,6 +9,7 @@ object TestTags {
         const val PASSWORD_FIELD = "login_password_field"
         const val SUBMIT_BUTTON = "login_submit_button"
         const val GOOGLE_BUTTON = "login_google_button"
+        const val APPLE_BUTTON = "login_apple_button"
         const val SIGN_UP_BUTTON = "login_signup_button"
         const val FORGOT_PASSWORD_BUTTON = "login_forgot_password_button"
     }
@@ -39,6 +40,9 @@ object TestTags {
         const val THEME_TOGGLE = "settings_theme_toggle"
         const val LOGIN_BUTTON = "settings_login_button"
         const val LOGOUT_BUTTON = "settings_logout_button"
+        const val DELETE_ACCOUNT_BUTTON = "settings_delete_account_button"
+        const val DELETE_ACCOUNT_EMAIL_FIELD = "settings_delete_account_email_field"
+        const val DELETE_ACCOUNT_CONFIRM_BUTTON = "settings_delete_account_confirm_button"
         const val TRASH_BUTTON = "settings_trash_button"
         const val PRIVACY_BUTTON = "settings_privacy_button"
     }

@@ -153,6 +153,7 @@ fun AmazingNoteNavHost(
                     state = state,
                     viewModel = viewModel,
                     googleSignInLauncher = environment.googleSignInLauncher,
+                    appleSignInLauncher = environment.appleSignInLauncher,
                     onNavigate = state::navigate,
                     onBack = { state.popBack() },
                 )

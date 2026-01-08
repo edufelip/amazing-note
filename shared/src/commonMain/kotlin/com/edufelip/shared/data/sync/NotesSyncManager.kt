@@ -46,6 +46,8 @@ class NotesSyncManager(
     private var lastUid: String? = null
     private var lastRemoteHash: Long? = null
 
+    private var paused: Boolean = false
+
     private var mergingDisabled: Boolean = false
     private var storedRemoteHash: Long? = null
     private val _events = MutableSharedFlow<SyncEvent>(
@@ -57,9 +59,18 @@ class NotesSyncManager(
     private val _syncing = MutableStateFlow(false)
     val syncing: StateFlow<Boolean> = _syncing.asStateFlow()
 
+    fun pause() {
+        paused = true
+    }
+
+    fun resume() {
+        paused = false
+    }
+
     fun start() {
         scope.launch {
             currentUser.uid.collect { uid ->
+                if (paused) return@collect
                 if (uid != lastUid) {
                     if (lastUid != null) clearLocal()
                     lastUid = uid
@@ -74,6 +85,7 @@ class NotesSyncManager(
     }
 
     suspend fun syncNow(uid: String? = null) {
+        if (paused) return
         val uid = uid ?: awaitCurrentUid() ?: return
         emitSyncStarted()
         resetMergeThrottle()
@@ -93,6 +105,7 @@ class NotesSyncManager(
     }
 
     suspend fun syncLocalToRemoteOnly() {
+        if (paused) return
         val uid = awaitCurrentUid() ?: return
         val pushedSomething = pushPendingFolderDeletions(uid) ||
             pushPendingNoteDeletions(uid) ||
@@ -195,6 +208,7 @@ class NotesSyncManager(
     }
 
     private suspend fun mergeRemoteIntoLocalAndPushLocalNewer(uid: String, payload: RemoteSyncPayload) {
+        if (paused) return
         var syncStarted = false
         fun ensureSyncStarted() {
             if (!syncStarted) {

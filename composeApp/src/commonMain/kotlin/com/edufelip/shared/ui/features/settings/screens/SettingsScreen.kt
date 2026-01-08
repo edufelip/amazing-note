@@ -3,6 +3,7 @@ package com.edufelip.shared.ui.features.settings.screens
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AutoDelete
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PrivacyTip
@@ -42,6 +44,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -51,6 +54,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -66,11 +70,23 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.edufelip.shared.domain.repository.AccountDeletionResult
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.account_section
 import com.edufelip.shared.resources.app_version_label
 import com.edufelip.shared.resources.appearance_section
+import com.edufelip.shared.resources.delete_account
+import com.edufelip.shared.resources.delete_account_confirm_button
+import com.edufelip.shared.resources.delete_account_confirm_email_label
+import com.edufelip.shared.resources.delete_account_confirm_email_mismatch
+import com.edufelip.shared.resources.delete_account_confirm_message
+import com.edufelip.shared.resources.delete_account_confirm_title
+import com.edufelip.shared.resources.delete_account_failure_message
+import com.edufelip.shared.resources.delete_account_success_message
+import com.edufelip.shared.resources.dialog_cancel
 import com.edufelip.shared.resources.login
 import com.edufelip.shared.resources.logout
 import com.edufelip.shared.resources.logout_confirm_message
@@ -91,6 +107,8 @@ import com.edufelip.shared.ui.app.chrome.AmazingTopBar
 import com.edufelip.shared.ui.components.atoms.common.AvatarImage
 import com.edufelip.shared.ui.components.organisms.settings.PersonalizeHeroIllustration
 import com.edufelip.shared.ui.designsystem.designTokens
+import com.edufelip.shared.ui.effects.toast.rememberToastController
+import com.edufelip.shared.ui.effects.toast.show
 import com.edufelip.shared.ui.util.TestTags
 import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.util.platform.Haptics
@@ -101,6 +119,7 @@ import com.slapps.cupertino.CupertinoButtonDefaults
 import com.slapps.cupertino.adaptive.AdaptiveButton
 import com.slapps.cupertino.adaptive.ExperimentalAdaptiveApi
 import com.slapps.cupertino.adaptive.icons.AdaptiveIcons
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalAdaptiveApi::class, ExperimentalMaterial3Api::class)
@@ -111,6 +130,7 @@ fun SettingsScreen(
     auth: AuthViewModel?,
     onLogin: () -> Unit,
     onLogout: () -> Unit,
+    onDeleteAccount: suspend () -> AccountDeletionResult,
     onOpenTrash: () -> Unit,
     onOpenPrivacy: () -> Unit,
     appVersion: String,
@@ -120,9 +140,18 @@ fun SettingsScreen(
     val userState = auth?.uiState?.collectWithLifecycle()?.value?.user
     val tokens = designTokens()
     val itemsSpacing = tokens.spacing.lg
+    val userEmail = userState?.email?.trim().orEmpty()
+    val deleteFailureFallback = stringResource(Res.string.delete_account_failure_message)
     var logoutDialogVisible by remember { mutableStateOf(false) }
     var showAccountSheet by rememberSaveable { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val coroutineScope = rememberCoroutineScope()
+    val toastController = rememberToastController()
+    var deleteDialogVisible by remember { mutableStateOf(false) }
+    var deleteEmailInput by rememberSaveable { mutableStateOf("") }
+    var deleteInProgress by remember { mutableStateOf(false) }
+    var deleteErrorMessage by remember { mutableStateOf<String?>(null) }
+    val deleteSuccessMessage = stringResource(Res.string.delete_account_success_message)
 
     Scaffold(
         modifier = modifier
@@ -266,6 +295,34 @@ fun SettingsScreen(
                             Spacer(modifier = Modifier.width(tokens.spacing.sm))
                             Text(text = stringResource(Res.string.logout))
                         }
+                        Spacer(modifier = Modifier.height(tokens.spacing.md))
+                        OutlinedButton(
+                            onClick = {
+                                Haptics.lightTap()
+                                deleteEmailInput = ""
+                                deleteErrorMessage = null
+                                deleteDialogVisible = true
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(TestTags.Settings.DELETE_ACCOUNT_BUTTON),
+                            contentPadding = PaddingValues(vertical = tokens.spacing.md),
+                            border = BorderStroke(1.dp, tokens.colors.danger),
+                        ) {
+                            Icon(
+                                painter = AdaptiveIcons.painter(
+                                    material = { Icons.Default.DeleteForever },
+                                    cupertino = { "person.crop.circle.badge.xmark" },
+                                ),
+                                contentDescription = null,
+                                tint = tokens.colors.danger,
+                            )
+                            Spacer(modifier = Modifier.width(tokens.spacing.sm))
+                            Text(
+                                text = stringResource(Res.string.delete_account),
+                                color = tokens.colors.danger,
+                            )
+                        }
                     }
                 }
             }
@@ -401,6 +458,107 @@ fun SettingsScreen(
             },
         )
     }
+
+    if (deleteDialogVisible && userState != null) {
+        val emailMatches = userEmail.isNotBlank() &&
+            deleteEmailInput.trim().equals(userEmail, ignoreCase = true)
+        val canDelete = emailMatches && !deleteInProgress
+        val showMismatch = deleteEmailInput.isNotBlank() && !emailMatches
+
+        AlertDialog(
+            onDismissRequest = {
+                if (!deleteInProgress) {
+                    deleteDialogVisible = false
+                    deleteErrorMessage = null
+                    deleteEmailInput = ""
+                }
+            },
+            title = { Text(text = stringResource(Res.string.delete_account_confirm_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(tokens.spacing.sm)) {
+                    Text(text = stringResource(Res.string.delete_account_confirm_message))
+                    OutlinedTextField(
+                        value = deleteEmailInput,
+                        onValueChange = { value ->
+                            deleteEmailInput = value
+                            deleteErrorMessage = null
+                        },
+                        enabled = !deleteInProgress,
+                        singleLine = true,
+                        label = { Text(text = stringResource(Res.string.delete_account_confirm_email_label)) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag(TestTags.Settings.DELETE_ACCOUNT_EMAIL_FIELD),
+                    )
+                    if (showMismatch) {
+                        Text(
+                            text = stringResource(Res.string.delete_account_confirm_email_mismatch),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                    deleteErrorMessage?.let { message ->
+                        Text(
+                            text = message,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (!canDelete) return@TextButton
+                        deleteInProgress = true
+                        deleteErrorMessage = null
+                        coroutineScope.launch {
+                            val result = runCatching { onDeleteAccount() }
+                                .getOrElse { AccountDeletionResult.Failure(deleteFailureFallback) }
+                            when (result) {
+                                AccountDeletionResult.Success -> {
+                                    deleteInProgress = false
+                                    deleteDialogVisible = false
+                                    deleteEmailInput = ""
+                                    toastController.show(deleteSuccessMessage)
+                                }
+
+                                AccountDeletionResult.NotAuthenticated -> {
+                                    deleteInProgress = false
+                                    deleteErrorMessage = deleteFailureFallback
+                                }
+
+                                is AccountDeletionResult.Failure -> {
+                                    deleteInProgress = false
+                                    deleteErrorMessage = result.message
+                                        ?: deleteFailureFallback
+                                }
+                            }
+                        }
+                    },
+                    enabled = canDelete,
+                    modifier = Modifier.testTag(TestTags.Settings.DELETE_ACCOUNT_CONFIRM_BUTTON),
+                ) {
+                    Text(text = stringResource(Res.string.delete_account_confirm_button))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        if (!deleteInProgress) {
+                            deleteDialogVisible = false
+                            deleteErrorMessage = null
+                            deleteEmailInput = ""
+                        }
+                    },
+                ) {
+                    Text(text = stringResource(Res.string.dialog_cancel))
+                }
+            },
+        )
+    }
+
 }
 
 @Composable

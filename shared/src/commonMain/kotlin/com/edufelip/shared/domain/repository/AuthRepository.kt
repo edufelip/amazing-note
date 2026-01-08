@@ -10,5 +10,7 @@ interface AuthRepository {
     suspend fun setUserName(name: String)
     suspend fun sendPasswordResetEmail(email: String)
     suspend fun signInWithGoogle(idToken: String, accessToken: String?)
+    suspend fun signInWithApple(idToken: String, rawNonce: String)
+    suspend fun linkWithApple(idToken: String, rawNonce: String)
     suspend fun signOut()
 }

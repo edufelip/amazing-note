@@ -1,6 +1,8 @@
 package com.edufelip.shared.domain.usecase
 
 import com.edufelip.shared.data.auth.AuthUser
+import com.edufelip.shared.domain.repository.AccountDeletionRepository
+import com.edufelip.shared.domain.repository.AccountDeletionResult
 import com.edufelip.shared.domain.repository.AuthRepository
 import com.edufelip.shared.domain.validation.CredentialValidationResult
 import com.edufelip.shared.domain.validation.EmailValidationResult
@@ -58,8 +60,20 @@ class SignInWithGoogle(private val repository: AuthRepository) {
     suspend operator fun invoke(idToken: String, accessToken: String?) = repository.signInWithGoogle(idToken, accessToken)
 }
 
+class SignInWithApple(private val repository: AuthRepository) {
+    suspend operator fun invoke(idToken: String, rawNonce: String) = repository.signInWithApple(idToken, rawNonce)
+}
+
+class LinkWithApple(private val repository: AuthRepository) {
+    suspend operator fun invoke(idToken: String, rawNonce: String) = repository.linkWithApple(idToken, rawNonce)
+}
+
 class UpdateUserName(private val repository: AuthRepository) {
     suspend operator fun invoke(name: String) = repository.setUserName(name)
+}
+
+class DeleteAccount(private val repository: AccountDeletionRepository) {
+    suspend operator fun invoke(): AccountDeletionResult = repository.deleteAccount()
 }
 
 data class AuthUseCases(
@@ -69,15 +83,19 @@ data class AuthUseCases(
     val sendPasswordReset: SendPasswordReset,
     val logout: Logout,
     val signInWithGoogle: SignInWithGoogle,
+    val signInWithApple: SignInWithApple,
+    val linkWithApple: LinkWithApple,
     val validateEmail: ValidateEmail,
     val validatePassword: ValidatePassword,
     val validateCredentials: ValidateCredentials,
     val validatePasswordConfirmation: ValidatePasswordConfirmation,
     val updateUserName: UpdateUserName,
+    val deleteAccount: DeleteAccount,
 )
 
 fun buildAuthUseCases(
     repository: AuthRepository,
+    accountDeletionRepository: AccountDeletionRepository,
 ): AuthUseCases {
     val validateEmail = ValidateEmail()
     val validatePassword = ValidatePassword()
@@ -88,10 +106,13 @@ fun buildAuthUseCases(
         sendPasswordReset = SendPasswordReset(repository),
         logout = Logout(repository),
         signInWithGoogle = SignInWithGoogle(repository),
+        signInWithApple = SignInWithApple(repository),
+        linkWithApple = LinkWithApple(repository),
         validateEmail = validateEmail,
         validatePassword = validatePassword,
         validateCredentials = ValidateCredentials(validateEmail, validatePassword),
         validatePasswordConfirmation = ValidatePasswordConfirmation(),
         updateUserName = UpdateUserName(repository),
+        deleteAccount = DeleteAccount(accountDeletionRepository),
     )
 }

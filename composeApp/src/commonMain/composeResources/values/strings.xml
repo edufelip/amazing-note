@@ -11,6 +11,7 @@
     <string name="logout">Logout</string>
     <string name="google_sign_in">Sign in with Google</string>
     <string name="continue_with_google">Continue with Google</string>
+    <string name="continue_with_apple">Continue with Apple</string>
     <string name="login_title">Login to your account</string>
     <string name="name">Name</string>
     <string name="email">Email</string>
@@ -183,6 +184,16 @@
     <string name="theme_option">Dark mode</string>
     <string name="theme_subtitle">Switch between light and dark themes.</string>
     <string name="account_section">Account</string>
+    <string name="delete_account">Delete account permanently</string>
+    <string name="delete_account_confirm_title">Delete account permanently</string>
+    <string name="delete_account_confirm_message">Are you sure you want to delete your account? This action cannot be undone.</string>
+    <string name="delete_account_confirm_email_label">Type your email to confirm</string>
+    <string name="delete_account_confirm_email_mismatch">Email does not match.</string>
+    <string name="delete_account_confirm_button">Delete account</string>
+    <string name="delete_account_success_title">Account deleted</string>
+    <string name="delete_account_success_message">Your account and data have been deleted.</string>
+    <string name="delete_account_failure_title">Account deletion failed</string>
+    <string name="delete_account_failure_message">Please try again.</string>
     <string name="management_section">Shortcuts</string>
     <string name="trash_subtitle">Recently deleted notes</string>
     <string name="app_version_label">App version</string>

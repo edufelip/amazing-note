@@ -1,6 +1,7 @@
 package com.edufelip.shared.ui.vm
 
 import com.edufelip.shared.data.auth.AuthUser
+import com.edufelip.shared.domain.repository.AccountDeletionResult
 import com.edufelip.shared.domain.usecase.AuthUseCases
 import com.edufelip.shared.domain.validation.CredentialValidationResult
 import com.edufelip.shared.domain.validation.EmailValidationError
@@ -10,6 +11,7 @@ import com.edufelip.shared.domain.validation.PasswordConfirmationResult
 import com.edufelip.shared.domain.validation.PasswordValidationError
 import com.edufelip.shared.ui.util.security.SecurityLogger
 import com.edufelip.shared.util.debugLog
+import dev.gitlive.firebase.auth.FirebaseAuthUserCollisionException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +28,14 @@ data class AuthUiState(
     val isUserResolved: Boolean = false,
     val loading: Boolean = false,
     val error: AuthError? = null,
+    val pendingAppleLink: PendingAppleLink? = null,
+)
+
+data class PendingAppleLink(
+    val idToken: String,
+    val rawNonce: String,
+    val fullName: String?,
+    val email: String?,
 )
 
 sealed class AuthEvent {
@@ -79,7 +89,10 @@ class AuthViewModel(
                 useCases.login(validation.email.sanitized, validation.password.sanitized)
             }
             if (result.isSuccess) {
-                _events.emit(AuthEvent.LoginSuccess)
+                val linked = linkPendingAppleIfNeeded()
+                if (linked) {
+                    _events.emit(AuthEvent.LoginSuccess)
+                }
             } else {
                 publishError(result.exceptionOrNull()!!)
             }
@@ -91,11 +104,38 @@ class AuthViewModel(
         launchInScope {
             val result = runCatching { useCases.logout() }
             if (result.isSuccess) {
-                _uiState.update { it.copy(user = null, loading = false, error = null, isUserResolved = true) }
+                _uiState.update {
+                    it.copy(
+                        user = null,
+                        loading = false,
+                        error = null,
+                        isUserResolved = true,
+                        pendingAppleLink = null,
+                    )
+                }
             } else {
                 publishError(result.exceptionOrNull()!!)
             }
         }
+    }
+
+    suspend fun deleteAccount(): AccountDeletionResult {
+        val result = runCatching { useCases.deleteAccount() }
+            .getOrElse { throwable ->
+                AccountDeletionResult.Failure(throwable.message ?: "Account deletion failed.")
+            }
+        if (result is AccountDeletionResult.Success) {
+            _uiState.update {
+                it.copy(
+                    user = null,
+                    loading = false,
+                    error = null,
+                    isUserResolved = true,
+                    pendingAppleLink = null,
+                )
+            }
+        }
+        return result
     }
 
     fun signInWithGoogleToken(idToken: String, accessToken: String?) {
@@ -114,11 +154,63 @@ class AuthViewModel(
         launchInScope {
             val result = runCatching { useCases.signInWithGoogle(idToken, accessToken) }
             if (result.isSuccess) {
-                _events.emit(AuthEvent.LoginSuccess)
+                val linked = linkPendingAppleIfNeeded()
+                if (linked) {
+                    _events.emit(AuthEvent.LoginSuccess)
+                }
             } else {
                 val error = result.exceptionOrNull()!!
                 debugLog("Firebase Google sign-in failed: ${error.message ?: "no message"}")
                 publishError(error)
+            }
+            stopLoading()
+        }
+    }
+
+    fun signInWithAppleToken(
+        idToken: String,
+        rawNonce: String,
+        fullName: String?,
+        email: String?,
+    ) {
+        if (_uiState.value.loading) return
+        if (idToken.isBlank() || rawNonce.isBlank()) {
+            SecurityLogger.logValidationFailure(
+                flow = "apple_sign_in",
+                field = "token",
+                reason = "EMPTY",
+                rawSample = "",
+            )
+            _uiState.update { it.copy(error = AuthError.Custom("Missing Apple credentials")) }
+            return
+        }
+        _uiState.update { it.copy(pendingAppleLink = null) }
+        setLoading()
+        launchInScope {
+            val result = runCatching { useCases.signInWithApple(idToken, rawNonce) }
+            if (result.isSuccess) {
+                updateDisplayNameIfNeeded(fullName)
+                _events.emit(AuthEvent.LoginSuccess)
+            } else {
+                val error = result.exceptionOrNull()!!
+                if (error.isAccountLinkingError()) {
+                    _uiState.update {
+                        it.copy(
+                            pendingAppleLink = PendingAppleLink(
+                                idToken = idToken,
+                                rawNonce = rawNonce,
+                                fullName = fullName,
+                                email = email,
+                            ),
+                            error = AuthError.Custom(
+                                "Account already exists. Sign in with your existing method to link Apple.",
+                            ),
+                        )
+                    }
+                } else {
+                    debugLog("Firebase Apple sign-in failed: ${error.message ?: "no message"}")
+                    publishError(error)
+                }
             }
             stopLoading()
         }
@@ -151,7 +243,7 @@ class AuthViewModel(
                 _uiState.update { current ->
                     val updatedUser = current.user?.copy(displayName = name)
                         ?: current.user
-                    current.copy(user = updatedUser)
+                    current.copy(user = updatedUser, pendingAppleLink = null)
                 }
                 _events.emit(AuthEvent.SignUpSuccess)
             } else {
@@ -186,6 +278,41 @@ class AuthViewModel(
 
     private fun stopLoading() {
         _uiState.update { it.copy(loading = false) }
+    }
+
+    private suspend fun linkPendingAppleIfNeeded(): Boolean {
+        val pending = _uiState.value.pendingAppleLink ?: return true
+        val result = runCatching {
+            useCases.linkWithApple(pending.idToken, pending.rawNonce)
+        }
+        return if (result.isSuccess) {
+            updateDisplayNameIfNeeded(pending.fullName)
+            _uiState.update { it.copy(pendingAppleLink = null) }
+            true
+        } else {
+            val error = result.exceptionOrNull()!!
+            debugLog("Firebase Apple link failed: ${error.message ?: "no message"}")
+            publishError(error)
+            val signOutResult = runCatching { useCases.logout() }
+            _uiState.update { current ->
+                current.copy(
+                    user = if (signOutResult.isSuccess) null else current.user,
+                    pendingAppleLink = null,
+                )
+            }
+            false
+        }
+    }
+
+    private suspend fun updateDisplayNameIfNeeded(name: String?) {
+        val sanitized = name?.trim()?.takeIf { it.isNotBlank() } ?: return
+        val currentName = _uiState.value.user?.displayName
+        if (!currentName.isNullOrBlank()) return
+        runCatching { useCases.updateUserName(sanitized) }
+        _uiState.update { current ->
+            val updatedUser = current.user?.copy(displayName = sanitized) ?: current.user
+            current.copy(user = updatedUser)
+        }
     }
 
     private fun publishError(error: Throwable) {
@@ -309,6 +436,11 @@ private fun Throwable.isNetworkError(): Boolean {
     return false
 }
 
+private fun Throwable.isAccountLinkingError(): Boolean {
+    if (this is FirebaseAuthUserCollisionException) return true
+    return messageMatches(accountLinkingHints)
+}
+
 private fun Throwable.messageMatches(hints: List<String>): Boolean {
     var current: Throwable? = this
     while (current != null) {
@@ -338,4 +470,13 @@ private val networkErrorHints = listOf(
     "connection reset",
     "timed out",
     "timeout",
+)
+
+private val accountLinkingHints = listOf(
+    "account exists with different credential",
+    "account-exists-with-different-credential",
+    "user collision",
+    "email already in use",
+    "credential already in use",
+    "already associated with a different user",
 )
