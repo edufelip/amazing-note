@@ -1,5 +1,6 @@
 import { onRequest } from "firebase-functions/v2/https";
 import { setGlobalOptions } from "firebase-functions/v2";
+import { region } from "firebase-functions/v1";
 import * as admin from "firebase-admin";
 import type { DocumentData, DocumentReference, QueryDocumentSnapshot } from "firebase-admin/firestore";
 
@@ -28,19 +29,9 @@ export const deleteAccount = onRequest({ cors: true }, async (req, res) => {
     const decoded = await admin.auth().verifyIdToken(tokenMatch[1]);
     const uid = decoded.uid;
 
-    const db = admin.firestore();
-    const userRef = db.collection("users").doc(uid);
-    const [notesSnap, foldersSnap, userDoc] = await Promise.all([
-      userRef.collection("notes").get(),
-      userRef.collection("folders").get(),
-      userRef.get(),
-    ]);
-
-    const storagePaths = collectStoragePaths(notesSnap.docs, userDoc.data() ?? null);
-
     const errors: string[] = [];
-    await safeRun(async () => deleteStorageFiles(storagePaths), errors, "storage");
-    await safeRun(async () => deleteUserDocuments(userRef, notesSnap.docs, foldersSnap.docs), errors, "firestore");
+    const purgeErrors = await purgeUserData(uid);
+    errors.push(...purgeErrors);
     await safeRun(async () => deleteAuthUser(uid), errors, "auth");
 
     if (errors.length > 0) {
@@ -54,6 +45,43 @@ export const deleteAccount = onRequest({ cors: true }, async (req, res) => {
     res.status(401).json({ error: "Invalid auth token" });
   }
 });
+
+export const onAuthUserDeleted = region("us-central1").auth.user().onDelete(async (authUser) => {
+  const uid = authUser.uid;
+  if (!uid) return;
+  const errors = await purgeUserData(uid);
+  if (errors.length > 0) {
+    throw new Error(`Account deletion failed: ${errors.join(", ")}`);
+  }
+});
+
+async function purgeUserData(uid: string): Promise<string[]> {
+  const db = admin.firestore();
+  const userRef = db.collection("users").doc(uid);
+  const [notesSnap, foldersSnap] = await Promise.all([
+    userRef.collection("notes").get(),
+    userRef.collection("folders").get(),
+  ]);
+
+  const shouldScanStoragePaths = process.env.ENABLE_STORAGE_PATH_SCAN === "true";
+  const shouldScanLegacyPaths = process.env.ENABLE_LEGACY_STORAGE_PATH_SCAN === "true";
+  let storagePaths = new Set<string>();
+  if (shouldScanStoragePaths || shouldScanLegacyPaths) {
+    const userDoc = shouldScanLegacyPaths ? await userRef.get() : null;
+    storagePaths = collectStoragePaths(
+      notesSnap.docs,
+      userDoc?.data() ?? null,
+      shouldScanStoragePaths,
+      shouldScanLegacyPaths,
+    );
+  }
+
+  const errors: string[] = [];
+  await safeRun(async () => deleteStoragePrefix(uid), errors, "storage-prefix");
+  await safeRun(async () => deleteStorageFiles(storagePaths), errors, "storage");
+  await safeRun(async () => deleteUserDocuments(userRef, notesSnap.docs, foldersSnap.docs), errors, "firestore");
+  return errors;
+}
 
 async function deleteUserDocuments(
   userRef: DocumentReference<DocumentData>,
@@ -70,16 +98,22 @@ async function deleteUserDocuments(
 function collectStoragePaths(
   notes: QueryDocumentSnapshot<DocumentData>[],
   userData: DocumentData | null,
+  includeNotes: boolean,
+  includeLegacy: boolean,
 ): Set<string> {
   const paths = new Set<string>();
-  notes.forEach((doc) => addStoragePathsFromNote(paths, doc.data()));
-  const legacyNotes = userData?.notes;
-  if (legacyNotes && typeof legacyNotes === "object") {
-    Object.values(legacyNotes as Record<string, unknown>).forEach((note) => {
-      if (note && typeof note === "object") {
-        addStoragePathsFromNote(paths, note as Record<string, unknown>);
-      }
-    });
+  if (includeNotes) {
+    notes.forEach((doc) => addStoragePathsFromNote(paths, doc.data()));
+  }
+  if (includeLegacy) {
+    const legacyNotes = userData?.notes;
+    if (legacyNotes && typeof legacyNotes === "object") {
+      Object.values(legacyNotes as Record<string, unknown>).forEach((note) => {
+        if (note && typeof note === "object") {
+          addStoragePathsFromNote(paths, note as Record<string, unknown>);
+        }
+      });
+    }
   }
   return paths;
 }
@@ -137,6 +171,16 @@ function addIfStoragePath(paths: Set<string>, raw: unknown) {
   paths.add(trimmed);
 }
 
+async function deleteStoragePrefix(uid: string) {
+  const prefix = `notes/${uid}/`;
+  const bucket = admin.storage().bucket();
+  await withRetries(() => bucket.deleteFiles({ prefix }), {
+    attempts: 3,
+    baseDelayMs: 250,
+    label: "storage-prefix",
+  });
+}
+
 async function deleteStorageFiles(paths: Set<string>) {
   if (paths.size === 0) return;
   const bucket = admin.storage().bucket();
@@ -170,4 +214,28 @@ async function safeRun(task: () => Promise<void>, errors: string[], label: strin
     console.error("Account deletion step failed", label, error);
     errors.push(label);
   }
+}
+
+async function withRetries<T>(
+  task: () => Promise<T>,
+  options: { attempts: number; baseDelayMs: number; label?: string },
+): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= options.attempts; attempt++) {
+    try {
+      return await task();
+    } catch (error) {
+      lastError = error;
+      if (attempt < options.attempts) {
+        const delay = options.baseDelayMs * attempt;
+        console.warn(`Retrying ${options.label ?? "task"} after failure`, error);
+        await sleep(delay);
+      }
+    }
+  }
+  throw lastError;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
