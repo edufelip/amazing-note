@@ -42,6 +42,11 @@ import com.edufelip.shared.domain.validation.validatePassword
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.auth_generic_validation_error
 import com.edufelip.shared.resources.auth_network_error
+import com.edufelip.shared.resources.auth_email_already_in_use
+import com.edufelip.shared.resources.auth_weak_password
+import com.edufelip.shared.resources.auth_too_many_requests
+import com.edufelip.shared.resources.auth_user_disabled
+import com.edufelip.shared.resources.auth_unknown_error
 import com.edufelip.shared.resources.continue_with_apple
 import com.edufelip.shared.resources.continue_with_google
 import com.edufelip.shared.resources.email_invalid_format
@@ -112,6 +117,11 @@ fun LoginScreen(
         AuthError.GenericValidation -> stringResource(Res.string.auth_generic_validation_error)
         AuthError.Network -> stringResource(Res.string.auth_network_error)
         AuthError.InvalidCredentials -> stringResource(Res.string.login_error_invalid_credentials)
+        AuthError.EmailAlreadyInUse -> stringResource(Res.string.auth_email_already_in_use)
+        AuthError.WeakPassword -> stringResource(Res.string.auth_weak_password)
+        AuthError.TooManyRequests -> stringResource(Res.string.auth_too_many_requests)
+        AuthError.UserDisabled -> stringResource(Res.string.auth_user_disabled)
+        AuthError.Unknown -> stringResource(Res.string.auth_unknown_error)
         is AuthError.Custom -> error.message
         null -> null
     }
@@ -129,6 +139,7 @@ fun LoginScreen(
     var passwordHasFocus by remember { mutableStateOf(false) }
     var emailTouched by remember { mutableStateOf(false) }
     var passwordTouched by remember { mutableStateOf(false) }
+    var submissionAttempted by remember { mutableStateOf(false) }
     var emailImmediateValidation by remember { mutableStateOf(false) }
     var passwordImmediateValidation by remember { mutableStateOf(false) }
     var emailValidation by remember { mutableStateOf(validateEmail(email)) }
@@ -161,13 +172,13 @@ fun LoginScreen(
         }
     }
 
-    val showEmailError = emailTouched && !emailHasFocus && emailValidation.error != null
-    val showPasswordError = passwordTouched && !passwordHasFocus && passwordValidation.error != null
+    val showEmailError = (submissionAttempted || (emailTouched && !emailHasFocus)) && emailValidation.error != null
+    val showPasswordError = (submissionAttempted || (passwordTouched && !passwordHasFocus)) && passwordValidation.error != null
     val emailErrorText = if (showEmailError) {
         when (emailValidation.error) {
             EmailValidationError.REQUIRED -> stringResource(Res.string.email_required)
             EmailValidationError.INVALID_FORMAT -> stringResource(Res.string.email_invalid_format)
-            null -> null
+            else -> null
         }
     } else {
         null
@@ -181,7 +192,7 @@ fun LoginScreen(
             PasswordValidationError.MISSING_DIGIT,
             PasswordValidationError.MISSING_SYMBOL,
             -> stringResource(Res.string.password_requirements)
-            null -> null
+            else -> null
         }
     } else {
         null
@@ -212,6 +223,7 @@ fun LoginScreen(
             }
             return@l
         }
+        submissionAttempted = true
         emailTouched = true
         passwordTouched = true
         emailImmediateValidation = true

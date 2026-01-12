@@ -43,6 +43,11 @@
     <string name="guest">Invitado</string>
     <string name="auth_generic_validation_error">Verifica tus credenciales e inténtalo de nuevo.</string>
     <string name="auth_network_error">Revisa tu conexión a internet e inténtalo nuevamente.</string>
+    <string name="auth_email_already_in_use">Este correo ya está registrado.</string>
+    <string name="auth_weak_password">La contraseña es muy débil. Elige una más segura.</string>
+    <string name="auth_too_many_requests">Demasiados intentos. Inténtalo más tarde.</string>
+    <string name="auth_user_disabled">Esta cuenta ha sido desactivada.</string>
+    <string name="auth_unknown_error">Algo salió mal. Inténtalo de nuevo.</string>
     <string name="name_required">El nombre es obligatorio.</string>
     <string name="email_required">El correo electrónico es obligatorio.</string>
     <string name="email_invalid_format">Ingresa un correo electrónico válido.</string>

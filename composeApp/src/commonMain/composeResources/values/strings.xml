@@ -30,6 +30,11 @@
     <string name="guest">Guest</string>
     <string name="auth_generic_validation_error">Verify your credentials and try again.</string>
     <string name="auth_network_error">Check your internet connection and try again.</string>
+    <string name="auth_email_already_in_use">This email is already registered.</string>
+    <string name="auth_weak_password">Password is too weak. Please choose a stronger password.</string>
+    <string name="auth_too_many_requests">Too many attempts. Please try again later.</string>
+    <string name="auth_user_disabled">This account has been disabled.</string>
+    <string name="auth_unknown_error">Something went wrong. Please try again.</string>
     <string name="name_required">Name is required.</string>
 
     <!-- Authentication - Sign Up Screen -->

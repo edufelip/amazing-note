@@ -40,6 +40,11 @@
     <string name="guest">Convidado</string>
     <string name="auth_generic_validation_error">Verifique suas credenciais e tente novamente.</string>
     <string name="auth_network_error">Verifique sua conexão com a internet e tente novamente.</string>
+    <string name="auth_email_already_in_use">Este e-mail já está cadastrado.</string>
+    <string name="auth_weak_password">Senha muito fraca. Escolha uma senha mais forte.</string>
+    <string name="auth_too_many_requests">Muitas tentativas. Tente novamente mais tarde.</string>
+    <string name="auth_user_disabled">Esta conta foi desativada.</string>
+    <string name="auth_unknown_error">Algo deu errado. Tente novamente.</string>
     <string name="name_required">O nome é obrigatório.</string>
     <string name="email_required">E-mail é obrigatório.</string>
     <string name="email_invalid_format">Informe um e-mail válido.</string>

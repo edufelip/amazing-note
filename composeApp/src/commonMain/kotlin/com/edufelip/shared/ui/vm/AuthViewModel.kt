@@ -50,6 +50,11 @@ sealed interface AuthError {
     data object GenericValidation : AuthError
     data object Network : AuthError
     data object InvalidCredentials : AuthError
+    data object EmailAlreadyInUse : AuthError
+    data object WeakPassword : AuthError
+    data object TooManyRequests : AuthError
+    data object UserDisabled : AuthError
+    data object Unknown : AuthError
     data class Custom(val message: String) : AuthError
 }
 
@@ -363,7 +368,11 @@ class AuthViewModel(
         val resolvedError = when {
             error.isInvalidCredentialError() -> AuthError.InvalidCredentials
             error.isNetworkError() -> AuthError.Network
-            else -> error.firstNonBlankMessage()?.let { AuthError.Custom(it) } ?: AuthError.GenericValidation
+            error.isEmailAlreadyInUseError() -> AuthError.EmailAlreadyInUse
+            error.isWeakPasswordError() -> AuthError.WeakPassword
+            error.isTooManyRequestsError() -> AuthError.TooManyRequests
+            error.isUserDisabledError() -> AuthError.UserDisabled
+            else -> AuthError.Unknown
         }
         _uiState.update { it.copy(error = resolvedError) }
     }
@@ -484,6 +493,14 @@ private fun Throwable.isAccountLinkingError(): Boolean {
     return messageMatches(accountLinkingHints)
 }
 
+private fun Throwable.isEmailAlreadyInUseError(): Boolean = messageMatches(emailAlreadyInUseHints)
+
+private fun Throwable.isWeakPasswordError(): Boolean = messageMatches(weakPasswordHints)
+
+private fun Throwable.isTooManyRequestsError(): Boolean = messageMatches(tooManyRequestsHints)
+
+private fun Throwable.isUserDisabledError(): Boolean = messageMatches(userDisabledHints)
+
 private fun Throwable.messageMatches(hints: List<String>): Boolean {
     var current: Throwable? = this
     while (current != null) {
@@ -522,4 +539,34 @@ private val accountLinkingHints = listOf(
     "email already in use",
     "credential already in use",
     "already associated with a different user",
+)
+
+private val emailAlreadyInUseHints = listOf(
+    "email already in use",
+    "email-already-in-use",
+    "email address is already in use",
+    "account already exists",
+)
+
+private val weakPasswordHints = listOf(
+    "weak password",
+    "password is too weak",
+    "weak-password",
+    "password should be at least",
+)
+
+private val tooManyRequestsHints = listOf(
+    "too many requests",
+    "too-many-requests",
+    "blocked all requests",
+    "unusual activity",
+    "try again later",
+    "quota exceeded",
+)
+
+private val userDisabledHints = listOf(
+    "user disabled",
+    "user-disabled",
+    "account has been disabled",
+    "user has been disabled",
 )

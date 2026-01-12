@@ -64,6 +64,11 @@ import com.edufelip.shared.domain.validation.validatePassword
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.auth_generic_validation_error
 import com.edufelip.shared.resources.auth_network_error
+import com.edufelip.shared.resources.auth_email_already_in_use
+import com.edufelip.shared.resources.auth_weak_password
+import com.edufelip.shared.resources.auth_too_many_requests
+import com.edufelip.shared.resources.auth_user_disabled
+import com.edufelip.shared.resources.auth_unknown_error
 import com.edufelip.shared.resources.cd_back
 import com.edufelip.shared.resources.cd_hide_password
 import com.edufelip.shared.resources.cd_show_password
@@ -218,6 +223,11 @@ fun SignUpScreen(
         AuthError.GenericValidation -> stringResource(Res.string.auth_generic_validation_error)
         AuthError.Network -> stringResource(Res.string.auth_network_error)
         AuthError.InvalidCredentials -> stringResource(Res.string.login_error_invalid_credentials)
+        AuthError.EmailAlreadyInUse -> stringResource(Res.string.auth_email_already_in_use)
+        AuthError.WeakPassword -> stringResource(Res.string.auth_weak_password)
+        AuthError.TooManyRequests -> stringResource(Res.string.auth_too_many_requests)
+        AuthError.UserDisabled -> stringResource(Res.string.auth_user_disabled)
+        AuthError.Unknown -> stringResource(Res.string.auth_unknown_error)
         is AuthError.Custom -> error.message
         null -> null
     }
