@@ -7,6 +7,7 @@ import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlPreparedStatement
 import com.edufelip.shared.data.auth.AuthUser
+import com.edufelip.shared.data.network.NetworkStatus
 import com.edufelip.shared.data.sync.NotesSyncManager
 import com.edufelip.shared.db.NoteDatabase
 import com.edufelip.shared.domain.repository.AccountDeletionRepository
@@ -110,6 +111,7 @@ class AmazingNoteAppStateTest {
             appPreferences = appPreferences,
             noteDatabase = noteDatabase,
             notesSyncManager = syncManager,
+            networkStatus = TestNetworkStatus,
             attachmentPicker = null,
             googleSignInLauncher = null,
             appleSignInLauncher = null,
@@ -149,6 +151,10 @@ class AmazingNoteAppStateTest {
 
     private object TestAccountDeletionRepository : AccountDeletionRepository {
         override suspend fun deleteAccount(): AccountDeletionResult = AccountDeletionResult.Success
+    }
+
+    private object TestNetworkStatus : NetworkStatus {
+        override val isOnline: StateFlow<Boolean> = MutableStateFlow(true)
     }
 
     private class TestAppPreferences(private val settings: Settings) : AppPreferences {
