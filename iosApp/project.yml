@@ -205,8 +205,12 @@ targets:
           rsync -a "${SRC_RESOURCES}/" "${DEST_RESOURCES}/"
     scheme:
       testTargets:
-        - iosAppTests
-        - iosAppUITests
+        - name: iosAppTests
+          parallelizable: false
+          randomExecutionOrder: false
+        - name: iosAppUITests
+          parallelizable: false
+          randomExecutionOrder: false
       gatherCoverageData: false
   iosAppTests:
     type: bundle.unit-test
