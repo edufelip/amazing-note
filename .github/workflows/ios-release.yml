@@ -2,7 +2,7 @@ name: iOS Release
 
 on:
   push:
-    branch:
+    branches:
       - "main"
   workflow_dispatch:
     inputs:

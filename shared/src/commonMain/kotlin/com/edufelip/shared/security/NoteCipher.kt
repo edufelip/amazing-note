@@ -32,9 +32,6 @@ object NoteCipher {
         val result = runCatching { decryptPayload(activeKey(), payload) }
         if (result.isSuccess) return result.getOrThrow().decodeToString()
 
-        val error = result.exceptionOrNull()
-        if (error?.message == "Authentication failed") return value
-
         return (legacyDecrypt(payload) ?: return value).decodeToString()
     }
 
