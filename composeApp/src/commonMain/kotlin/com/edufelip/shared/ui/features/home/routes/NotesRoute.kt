@@ -18,6 +18,8 @@ fun NotesRoute(
     onNavigate: (AppRoutes) -> Unit,
     attachmentPicker: AttachmentPicker?,
     isUserAuthenticated: Boolean,
+    onAvatarClick: () -> Unit,
+    onLogout: () -> Unit,
 ) {
     val notesState by viewModel.state.collectWithLifecycle()
     val notes = notesState.notes
@@ -34,6 +36,8 @@ fun NotesRoute(
         syncManager = syncManager,
         onNavigate = onNavigate,
         isUserAuthenticated = isUserAuthenticated,
+        onAvatarClick = onAvatarClick,
+        onLogout = onLogout,
     )
 }
 
@@ -48,4 +52,6 @@ expect fun PlatformNotesRoute(
     syncManager: NotesSyncManager,
     onNavigate: (AppRoutes) -> Unit,
     isUserAuthenticated: Boolean,
+    onAvatarClick: () -> Unit,
+    onLogout: () -> Unit,
 )

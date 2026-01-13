@@ -109,6 +109,7 @@ service cloud.firestore {
 Minimal CI steps you can copy into your pipeline:
 
 - Android (GitHub Actions job snippet)
+<!-- CI trigger: noop documentation update. -->
 ```
     - name: Set up JDK 21
       uses: actions/setup-java@v4

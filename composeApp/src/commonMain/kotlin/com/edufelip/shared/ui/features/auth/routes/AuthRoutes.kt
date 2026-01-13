@@ -2,6 +2,7 @@ package com.edufelip.shared.ui.features.auth.routes
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import com.edufelip.shared.data.auth.AppleSignInLauncher
 import com.edufelip.shared.data.auth.GoogleSignInLauncher
 import com.edufelip.shared.ui.app.state.AmazingNoteAppState
 import com.edufelip.shared.ui.features.auth.screens.LoginScreen
@@ -15,28 +16,39 @@ fun LoginRoute(
     state: AmazingNoteAppState,
     viewModel: NoteUiViewModel,
     googleSignInLauncher: GoogleSignInLauncher?,
+    appleSignInLauncher: AppleSignInLauncher?,
     onNavigate: (AppRoutes) -> Unit,
     onBack: () -> Unit,
     showLocalSuccessToast: Boolean = true,
 ) {
     val auth = state.authViewModel
-    val syncManager = state.environment.notesSyncManager
     val uiState by auth.uiState.collectWithLifecycle()
 
     LoginScreen(
         state = uiState,
         onBack = onBack,
         googleSignInLauncher = googleSignInLauncher,
+        appleSignInLauncher = appleSignInLauncher,
         onOpenSignUp = { onNavigate(AppRoutes.SignUp) },
         showLocalSuccessToast = showLocalSuccessToast,
         onLogin = { email, password -> auth.loginWithEmail(email, password) },
-        onGoogleSignIn = { token -> auth.signInWithGoogleToken(token) },
+        onGoogleSignIn = { idToken, accessToken -> auth.signInWithGoogleToken(idToken, accessToken) },
+        onAppleSignIn = { idToken, rawNonce, fullName, email ->
+            auth.signInWithAppleToken(
+                idToken = idToken,
+                rawNonce = rawNonce,
+                fullName = fullName,
+                email = email,
+            )
+        },
         onSendPasswordReset = { email -> auth.sendPasswordReset(email) },
         onClearError = { auth.clearError() },
         onSetError = { auth.setError(it) },
         events = auth.events,
         onLoginSuccess = {
-            state.setRoot(AppRoutes.Notes)
+            if (!state.popBack()) {
+                state.setRoot(AppRoutes.Notes)
+            }
         },
     )
 }

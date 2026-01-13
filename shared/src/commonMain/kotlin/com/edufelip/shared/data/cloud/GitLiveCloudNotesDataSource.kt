@@ -187,7 +187,9 @@ private suspend fun Note.withResolvedStorageUrls(): Note {
             val resolved = block.resolveDownloadUrls()
             if (resolved !== block) mutated = true
             resolved
-        } else block
+        } else {
+            block
+        }
     }
     if (!mutated) return this
     val updatedContent = content.copy(blocks = updatedBlocks)

@@ -16,16 +16,21 @@ class NavigationController(initialRoute: AppRoutes) {
     val backStack: SnapshotStateList<AppRoutes>
         get() = _backStack
 
+    val stackDepth: Int
+        get() = _backStack.size
+
     fun navigate(destination: AppRoutes, singleTop: Boolean = true) {
         if (singleTop && _backStack.lastOrNull() == destination) return
         _backStack.add(destination)
         _currentRoute = destination
+        println("NavController: navigate -> $destination (depth=${_backStack.size})")
     }
 
     fun popBack(): Boolean {
         if (_backStack.size <= 1) return false
         _backStack.removeLastOrNull()
         _currentRoute = _backStack.last()
+        println("NavController: popBack -> $_currentRoute (depth=${_backStack.size})")
         return true
     }
 
@@ -33,6 +38,7 @@ class NavigationController(initialRoute: AppRoutes) {
         if (_backStack.size <= 1) return
         while (_backStack.size > 1) _backStack.removeLastOrNull()
         _currentRoute = _backStack.last()
+        println("NavController: popToRoot -> $_currentRoute (depth=${_backStack.size})")
     }
 
     fun setRoot(destination: AppRoutes) {
@@ -40,5 +46,6 @@ class NavigationController(initialRoute: AppRoutes) {
         _backStack.clear()
         _backStack.add(destination)
         _currentRoute = destination
+        println("NavController: setRoot -> $destination (depth=${_backStack.size})")
     }
 }

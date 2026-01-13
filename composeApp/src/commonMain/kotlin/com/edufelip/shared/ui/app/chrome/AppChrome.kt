@@ -19,12 +19,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -39,6 +45,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.edufelip.shared.data.auth.AuthUser
@@ -47,9 +54,14 @@ import com.edufelip.shared.resources.bottom_folders
 import com.edufelip.shared.resources.bottom_notes
 import com.edufelip.shared.resources.bottom_settings
 import com.edufelip.shared.resources.guest
+import com.edufelip.shared.resources.sync_status_failed
+import com.edufelip.shared.resources.sync_status_retry
+import com.edufelip.shared.resources.sync_status_synced
+import com.edufelip.shared.resources.sync_status_syncing
 import com.edufelip.shared.ui.components.atoms.common.AvatarImage
 import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.nav.AppRoutes
+import com.edufelip.shared.ui.util.TestTags
 import com.edufelip.shared.ui.util.platform.Haptics
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.util.security.sanitizeUserDisplay
@@ -61,13 +73,15 @@ import com.slapps.cupertino.adaptive.ExperimentalAdaptiveApi
 import com.slapps.cupertino.adaptive.icons.AdaptiveIcons
 import org.jetbrains.compose.resources.stringResource
 
-object AppChromeDefaults {
-    val bottomBarHeight get() = platformChromeStrategy().bottomBarHeight
-}
-
 @OptIn(ExperimentalAdaptiveApi::class)
 @Composable
-fun AmazingTopBar(user: AuthUser?) {
+fun AmazingTopBar(
+    user: AuthUser?,
+    syncIndicator: SyncIndicatorState? = null,
+    onSyncRetry: () -> Unit = {},
+    actions: @Composable RowScope.() -> Unit = {},
+    onAvatarClick: () -> Unit = {},
+) {
     val name = sanitizeUserDisplay(
         user?.displayName?.takeIf { it.isNotBlank() }
             ?: user?.email?.takeIf { it.isNotBlank() }
@@ -79,12 +93,15 @@ fun AmazingTopBar(user: AuthUser?) {
     val topBarModifier = with(chrome) {
         Modifier
             .fillMaxWidth()
-            .applyTopBarStatusPadding()
+            .statusBarsPadding()
+            .padding(vertical = 8.dp)
     }
+
+    val providedActions = actions
 
     AdaptiveTopAppBar(
         modifier = topBarModifier,
-        windowInsets = chrome.topBarWindowInsets,
+        windowInsets = WindowInsets(),
         navigationIcon = {
             Row(
                 modifier = Modifier.padding(start = tokens.spacing.xl, end = tokens.spacing.sm),
@@ -93,6 +110,7 @@ fun AmazingTopBar(user: AuthUser?) {
                 AvatarImage(
                     photoUrl = user?.photoUrl,
                     size = tokens.spacing.xl + tokens.spacing.sm,
+                    modifier = Modifier.clickable(onClick = onAvatarClick),
                 )
             }
         },
@@ -104,7 +122,15 @@ fun AmazingTopBar(user: AuthUser?) {
                 modifier = Modifier.padding(vertical = tokens.spacing.xs),
             )
         },
-        actions = {},
+        actions = {
+            if (syncIndicator != null) {
+                SyncStatusIndicator(
+                    state = syncIndicator,
+                    onRetry = onSyncRetry,
+                )
+            }
+            providedActions()
+        },
     ) {
         material {
             colors = TopAppBarDefaults.topAppBarColors(
@@ -123,6 +149,59 @@ fun AmazingTopBar(user: AuthUser?) {
             )
             isTranslucent = true
         }
+    }
+}
+
+@Composable
+private fun SyncStatusIndicator(
+    state: SyncIndicatorState,
+    onRetry: () -> Unit,
+) {
+    val tokens = designTokens()
+    val text = when (state) {
+        SyncIndicatorState.Syncing -> stringResource(Res.string.sync_status_syncing)
+        is SyncIndicatorState.Success -> stringResource(Res.string.sync_status_synced, state.formatted)
+        SyncIndicatorState.Failed -> stringResource(Res.string.sync_status_failed)
+    }
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = tokens.colors.muted,
+        )
+        Spacer(modifier = Modifier.width(tokens.spacing.xs))
+        when (state) {
+            SyncIndicatorState.Syncing -> {
+                CircularProgressIndicator(
+                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(tokens.spacing.md + tokens.spacing.xs),
+                    color = tokens.colors.muted,
+                )
+            }
+            is SyncIndicatorState.Success -> {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = tokens.colors.success,
+                    modifier = Modifier.size(tokens.spacing.md + tokens.spacing.xs),
+                )
+            }
+            SyncIndicatorState.Failed -> {
+                IconButton(
+                    onClick = onRetry,
+                    modifier = Modifier.size(tokens.spacing.lg + tokens.spacing.xs),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = stringResource(Res.string.sync_status_retry),
+                        tint = tokens.colors.muted,
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.width(tokens.spacing.sm))
     }
 }
 
@@ -167,7 +246,9 @@ fun AmazingBottomBar(
 
     if (platformChromeStrategy().useCupertinoLook) {
         AdaptiveNavigationBar(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag(TestTags.BOTTOM_BAR),
             windowInsets = windowInsets,
             adaptation = {
                 material {
@@ -237,6 +318,7 @@ private fun GlassBottomBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .testTag(TestTags.BOTTOM_BAR)
             .padding(
                 start = tokens.spacing.xl,
                 end = tokens.spacing.xl,

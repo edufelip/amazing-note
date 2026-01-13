@@ -2,11 +2,13 @@ package com.edufelip.shared.ui.app.navigation
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -20,6 +22,7 @@ import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import com.edufelip.shared.ui.app.state.AmazingNoteAppState
 import com.edufelip.shared.ui.features.auth.routes.LoginRoute
@@ -34,7 +37,6 @@ import com.edufelip.shared.ui.features.trash.routes.TrashRoute
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.util.platform.platformBehavior
-import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.vm.NoteUiViewModel
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalLayoutApi::class)
@@ -50,22 +52,21 @@ fun AmazingNoteNavHost(
 ) {
     val environment = state.environment
     val layoutDirection = LocalLayoutDirection.current
-    val chrome = platformChromeStrategy()
     val platformBehavior = platformBehavior()
     val authUiState by state.authViewModel.uiState.collectWithLifecycle()
     val isUserAuthenticated = authUiState.user != null
-
-    val contentModifier = with(chrome) {
-        Modifier
-            .fillMaxSize()
-            .consumeWindowInsets(padding)
-            .padding(
-                start = padding.startPadding(layoutDirection),
-                top = padding.topPadding(),
-                end = padding.endPadding(layoutDirection),
-            )
-            .applyAdditionalContentPadding(state.topBarVisible)
+    val logoutAndSync: () -> Unit = {
+        state.authViewModel.logout()
     }
+
+    val contentModifier = Modifier
+        .fillMaxSize()
+        .consumeWindowInsets(padding)
+        .padding(
+            start = padding.startPadding(layoutDirection),
+            top = padding.topPadding(),
+            end = padding.endPadding(layoutDirection),
+        )
 
     @Composable
     fun SceneContent(scene: NavScene) {
@@ -78,6 +79,12 @@ fun AmazingNoteNavHost(
                     onNavigate = state::navigate,
                     attachmentPicker = environment.attachmentPicker,
                     isUserAuthenticated = isUserAuthenticated,
+                    onAvatarClick = {
+                        if (!isUserAuthenticated) {
+                            state.navigate(AppRoutes.Login)
+                        }
+                    },
+                    onLogout = logoutAndSync,
                 )
 
                 AppRoutes.Folders -> FoldersRoute(
@@ -87,6 +94,12 @@ fun AmazingNoteNavHost(
                     isDarkTheme = darkTheme,
                     authViewModel = state.authViewModel,
                     isUserAuthenticated = isUserAuthenticated,
+                    onAvatarClick = {
+                        if (!isUserAuthenticated) {
+                            state.navigate(AppRoutes.Login)
+                        }
+                    },
+                    onLogout = logoutAndSync,
                 )
 
                 AppRoutes.Settings -> SettingsRoute(
@@ -101,6 +114,10 @@ fun AmazingNoteNavHost(
                     viewModel = viewModel,
                     syncManager = environment.notesSyncManager,
                     onNavigate = state::navigate,
+                    onAddNote = {
+                        // Always push a fresh note editor; avoid singleTop skips.
+                        state.navigate(AppRoutes.NoteDetail(id = null, folderId = route.id), singleTop = false)
+                    },
                     onBack = { state.popBack() },
                     isUserAuthenticated = isUserAuthenticated,
                 )
@@ -130,6 +147,7 @@ fun AmazingNoteNavHost(
                     state = state,
                     viewModel = viewModel,
                     googleSignInLauncher = environment.googleSignInLauncher,
+                    appleSignInLauncher = environment.appleSignInLauncher,
                     onNavigate = state::navigate,
                     onBack = { state.popBack() },
                 )
@@ -142,24 +160,34 @@ fun AmazingNoteNavHost(
         }
     }
 
-    val targetScene = NavScene(state.currentRoute, themeKey)
-
-    if (!platformBehavior.supportsContentTransitions) {
-        Box(modifier = contentModifier.then(modifier)) {
-            SceneContent(targetScene)
-        }
-        return
-    }
+    val targetScene = NavScene(state.currentRoute, themeKey, state.stackDepth)
 
     key(themeKey) {
         AnimatedContent(
             modifier = contentModifier.then(modifier),
             targetState = targetScene,
             contentKey = { scene -> scene.route to scene.themeVersion },
+            label = "nav_host_transition",
             transitionSpec = {
-                val fadeDuration = 200
-                fadeIn(animationSpec = tween(fadeDuration)) togetherWith
-                    fadeOut(animationSpec = tween(fadeDuration))
+                val isForward = targetState.depth > initialState.depth
+                val slideSpec = tween<IntOffset>(durationMillis = 700)
+                val fadeSpec = tween<Float>(durationMillis = 220)
+
+                val enterOffset: (Int) -> Int = { fullWidth -> if (isForward) fullWidth else -fullWidth }
+                val exitOffset: (Int) -> Int = { fullWidth -> if (isForward) -fullWidth else fullWidth }
+
+                (
+                    slideInHorizontally(
+                        initialOffsetX = enterOffset,
+                        animationSpec = slideSpec,
+                    ) + fadeIn(animationSpec = fadeSpec)
+                    ) togetherWith
+                    (
+                        slideOutHorizontally(
+                            targetOffsetX = exitOffset,
+                            animationSpec = slideSpec,
+                        ) + fadeOut(animationSpec = fadeSpec)
+                        ) using SizeTransform(clip = false)
             },
         ) { scene ->
             SceneContent(scene)
@@ -167,7 +195,7 @@ fun AmazingNoteNavHost(
     }
 }
 
-private data class NavScene(val route: AppRoutes, val themeVersion: Boolean)
+private data class NavScene(val route: AppRoutes, val themeVersion: Boolean, val depth: Int)
 
 private fun PaddingValues.topPadding(): Dp = calculateTopPadding()
 

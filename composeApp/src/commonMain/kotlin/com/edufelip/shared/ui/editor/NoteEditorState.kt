@@ -21,6 +21,7 @@ import com.edufelip.shared.domain.model.NoteContent
 import com.edufelip.shared.domain.model.NoteTextSpan
 import com.edufelip.shared.domain.model.TextBlock
 import com.edufelip.shared.domain.model.insertImageAtCaret
+import com.edufelip.shared.domain.model.normalizedForEditor
 
 class NoteEditorState internal constructor(initialContent: NoteContent) {
     internal val blockList = mutableStateListOf<NoteBlock>()
@@ -45,13 +46,14 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
     private val undoStack = ArrayDeque<DocOp>()
     private val redoStack = ArrayDeque<DocOp>()
     private var suppressHistory = false
+    private var preserveImageSelectionOnNextFocus = false
 
     init {
         setContent(initialContent)
     }
 
     val content: NoteContent
-        get() = NoteContent(blockList.toList())
+        get() = NoteContent(blocks = blockList.toList())
 
     fun textFieldValueFor(block: TextBlock): TextFieldValue {
         val existing = textFieldValues[block.id]
@@ -91,7 +93,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
                 return
             }
         }
-        val normalized = newContent.normalizedBlocks()
+        val normalized = newContent.normalizedForEditor().blocks
         if (blockList.sameAs(normalized)) return
         blockList.clear()
         blockList.addAll(normalized)
@@ -144,9 +146,11 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         setCaretFrom(Caret(blockId, selectionStart, selectionEnd))
     }
 
-    fun markFocus(blockId: String) {
+    fun markFocus(blockId: String, preserveImageSelection: Boolean = false) {
         focusedBlockId = blockId
-        clearImageSelection()
+        if (!preserveImageSelection) {
+            clearImageSelection()
+        }
         if (pendingFocusId == blockId) {
             pendingFocusId = null
         }
@@ -156,6 +160,18 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
                 setCaretFrom(Caret(blockId, block.text.length))
             }
         }
+    }
+
+    fun clearFocus(blockId: String) {
+        if (focusedBlockId == blockId) {
+            focusedBlockId = null
+        }
+    }
+
+    fun consumePreserveImageSelectionOnNextFocus(): Boolean {
+        val preserve = preserveImageSelectionOnNextFocus
+        preserveImageSelectionOnNextFocus = false
+        return preserve
     }
 
     fun requestFocus(blockId: String) {
@@ -186,6 +202,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         selectedImageBlockId = if (selectedImageBlockId == blockId) {
             null
         } else {
+            preserveImageSelectionOnNextFocus = true
             focusTextAdjacentTo(blockId)
             blockId
         }
@@ -197,42 +214,8 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
 
     fun isImageSelected(blockId: String): Boolean = selectedImageBlockId == blockId
 
-    fun copySelectedBlocks(): Boolean {
-        val selectedId = selectedImageBlockId ?: return false
-        val block = blockList.firstOrNull { it.id == selectedId } as? ImageBlock ?: return false
-        EditorClipboard.storeImages(listOf(block))
-        return true
-    }
-
-    fun cutSelectedBlocks(): Boolean {
-        val copied = copySelectedBlocks()
-        if (!copied) return false
-        return removeSelectedImage()
-    }
-
-    fun pasteBlocks(): Boolean {
-        val payload = EditorClipboard.spawnImages() ?: return false
-        var updated = false
-        payload.forEach { block ->
-            val sourceUri = block.localUri ?: block.storagePath
-            if (sourceUri.isNullOrBlank()) return@forEach
-            insertImageAtCaret(
-                uri = sourceUri,
-                width = block.width,
-                height = block.height,
-                alt = block.alt,
-                mimeType = block.mimeType,
-                fileName = block.fileName,
-                thumbnailUri = block.thumbnailUri,
-                localUri = block.localUri,
-                storagePath = block.storagePath,
-                syncState = block.syncState,
-                thumbnailStoragePath = block.thumbnailStoragePath,
-            )
-            updated = true
-        }
-        return updated
-    }
+    val isTextFieldFocused: Boolean
+        get() = focusedBlockId != null
 
     fun moveBlockBy(blockId: String, delta: Int): Boolean {
         if (delta == 0) return false
@@ -248,6 +231,27 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
         blockList.removeAt(currentIndex)
         blockList.add(targetIndex, block)
         refreshTextFieldState()
+        if (!suppressHistory) {
+            recordOperation(
+                ContentReplaceOp(
+                    beforeContent = beforeContent,
+                    afterContent = content,
+                    beforeCaret = beforeCaret,
+                    afterCaret = caret,
+                ),
+            )
+        }
+        return true
+    }
+
+    fun resizeImageBlock(blockId: String, width: Int, height: Int): Boolean {
+        val index = blockList.indexOfFirst { it.id == blockId }
+        if (index == -1) return false
+        val block = blockList[index] as? ImageBlock ?: return false
+        if (block.width == width && block.height == height) return false
+        val beforeContent = content
+        val beforeCaret = caret
+        blockList[index] = block.copy(width = width, height = height)
         if (!suppressHistory) {
             recordOperation(
                 ContentReplaceOp(
@@ -300,7 +304,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
             ),
         )
         blockList.clear()
-        blockList.addAll(result.content.normalizedBlocks())
+        blockList.addAll(result.content.normalizedForEditor().blocks)
         refreshTextFieldState()
         setCaretFrom(result.nextCaret)
         focusedBlockId = result.nextCaret.blockId
@@ -439,16 +443,20 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
     }
 
     private fun ensureTrailingBlankLine() {
-        val lastIndex = blockList.indexOfLast { it is TextBlock }
-        if (lastIndex == -1) return
-        val block = blockList[lastIndex] as TextBlock
-        if (!block.text.endsWith("\n")) {
-            val updated = block.copy(text = block.text + "\n")
-            blockList[lastIndex] = updated
-            refreshTextFieldState()
-            setCaretFrom(Caret(updated.id, updated.text.length))
-            focusedBlockId = updated.id
-            requestFocus(updated.id)
+        val last = blockList.lastOrNull() ?: return
+        when (last) {
+            is TextBlock -> {
+                // Keep text blocks as-is; don't append synthetic blank lines that create phantom caret rows on iOS.
+            }
+            is ImageBlock -> {
+                // Provide a text block after trailing image so the caret has a place to land.
+                val newBlock = TextBlock(text = "")
+                blockList += newBlock
+                refreshTextFieldState()
+                setCaretFrom(Caret(newBlock.id, 0))
+                focusedBlockId = newBlock.id
+                requestFocus(newBlock.id)
+            }
         }
     }
 
@@ -513,7 +521,7 @@ class NoteEditorState internal constructor(initialContent: NoteContent) {
 
     internal fun replaceContentFromHistory(contentSnapshot: NoteContent, caretSnapshot: Caret?) {
         blockList.clear()
-        blockList.addAll(contentSnapshot.normalizedBlocks())
+        blockList.addAll(contentSnapshot.normalizedForEditor().blocks)
         refreshTextFieldState()
         setCaretFrom(caretSnapshot)
         focusedBlockId = caretSnapshot?.blockId
@@ -586,12 +594,6 @@ fun rememberNoteEditorState(
     return state
 }
 
-private fun NoteContent.normalizedBlocks(): List<NoteBlock> {
-    val sanitized = blocks.ifEmpty { listOf(TextBlock(text = "")) }
-    val last = sanitized.lastOrNull()
-    return if (last is TextBlock) sanitized else sanitized + TextBlock(text = "")
-}
-
 private fun List<NoteBlock>.sameAs(other: List<NoteBlock>): Boolean {
     if (size != other.size) return false
     for (i in indices) {
@@ -625,7 +627,9 @@ private fun List<NoteBlock>.sameAs(other: List<NoteBlock>): Boolean {
                     a.alt != otherImage.alt ||
                     a.fileName != otherImage.fileName ||
                     a.syncState != otherImage.syncState
-                ) return false
+                ) {
+                    return false
+                }
             }
         }
     }

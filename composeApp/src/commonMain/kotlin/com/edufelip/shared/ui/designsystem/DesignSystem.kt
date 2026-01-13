@@ -6,8 +6,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
-import kotlin.math.max
-import kotlin.math.min
 
 val LocalDesignTypography = staticCompositionLocalOf { AmazingTypography }
 
@@ -48,9 +46,5 @@ fun ProvideDesignSystem(
 @Composable
 fun designTokens(): DesignTokens = LocalDesignTokens.current
 
-private fun dividerAlpha(outline: Color): Float {
-    val maxChannel = max(outline.red, max(outline.green, outline.blue))
-    val minChannel = min(outline.red, min(outline.green, outline.blue))
-    val luminance = (maxChannel + minChannel) / 2f
-    return if (luminance > 0.5f) 0.12f else 0.18f
-}
+@Suppress("UNUSED_PARAMETER")
+private fun dividerAlpha(outline: Color): Float = 0.20f

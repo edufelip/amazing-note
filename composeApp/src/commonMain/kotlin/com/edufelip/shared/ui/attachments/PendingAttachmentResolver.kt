@@ -49,9 +49,7 @@ suspend fun NoteContent.resolvePendingImageAttachments(
     return if (mutated) copy(blocks = updatedBlocks) else this
 }
 
-private fun ImageBlock.requiresUpload(): Boolean {
-    return storagePath.isNullOrBlank() || syncState != ImageSyncState.Synced
-}
+private fun ImageBlock.requiresUpload(): Boolean = storagePath.isNullOrBlank() || syncState != ImageSyncState.Synced
 
 data class UploadedImage(
     val remoteUrl: String,

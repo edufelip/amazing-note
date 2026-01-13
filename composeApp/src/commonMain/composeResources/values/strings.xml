@@ -11,6 +11,7 @@
     <string name="logout">Logout</string>
     <string name="google_sign_in">Sign in with Google</string>
     <string name="continue_with_google">Continue with Google</string>
+    <string name="continue_with_apple">Continue with Apple</string>
     <string name="login_title">Login to your account</string>
     <string name="name">Name</string>
     <string name="email">Email</string>
@@ -29,6 +30,11 @@
     <string name="guest">Guest</string>
     <string name="auth_generic_validation_error">Verify your credentials and try again.</string>
     <string name="auth_network_error">Check your internet connection and try again.</string>
+    <string name="auth_email_already_in_use">This email is already registered.</string>
+    <string name="auth_weak_password">Password is too weak. Please choose a stronger password.</string>
+    <string name="auth_too_many_requests">Too many attempts. Please try again later.</string>
+    <string name="auth_user_disabled">This account has been disabled.</string>
+    <string name="auth_unknown_error">Something went wrong. Please try again.</string>
     <string name="name_required">Name is required.</string>
 
     <!-- Authentication - Sign Up Screen -->
@@ -51,6 +57,13 @@
     <!-- Authentication - Logout Dialogs -->
     <string name="logout_confirm_title">Confirm Logout</string>
     <string name="logout_confirm_message">Are you sure you want to log out?</string>
+    <string name="logout_pending_title">Unsynced changes</string>
+    <string name="logout_pending_message">Some changes haven't synced yet. If you log out now, they may not appear on your other devices.</string>
+    <string name="logout_pending_confirm">Logout anyway</string>
+    <string name="logout_pending_cancel">Stay logged in</string>
+    <string name="logout_offline_title">You're offline</string>
+    <string name="logout_offline_message">Connect to the internet to log out. This keeps your notes in sync.</string>
+    <string name="logout_offline_confirm">OK</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="signing_out">Signing out</string>
@@ -66,15 +79,15 @@
     <string name="note_discard_title">Discard note?</string>
     <string name="note_discard_message">You have unsaved changes. If you leave now, they will be lost.</string>
     <string name="note_discard_confirm">Discard</string>
+    <string name="note_delete_title">Delete note?</string>
+    <string name="note_delete_message">This will move the note to trash.</string>
+    <string name="note_delete_confirm">Delete</string>
     <string name="attachment_uploading">Uploading %1$s… %2$d%%</string>
     <string name="attachment_upload_failed">Attachment upload failed.</string>
     <string name="attachment_upload_failed_with_detail">Attachment upload failed: %1$s</string>
     <string name="attachment_generic_name">attachment</string>
     <string name="attachments_label">Attachments</string>
     <string name="editor_add_image">Add Image</string>
-    <string name="editor_copy_image">Copy Image</string>
-    <string name="editor_cut_image">Cut Image</string>
-    <string name="editor_paste_image">Paste Image</string>
 
     <!-- Notes - Empty States -->
     <string name="empty_notes_greeting">Good morning</string>
@@ -176,7 +189,6 @@
 
     <!-- Settings -->
     <string name="settings_header">Settings</string>
-    <string name="settings_review_reminder_title">Review reminder date</string>
     <string name="personalize_title">Personalize your notes</string>
     <string name="personalize_subtitle">Make the app yours by tweaking the look and feel.</string>
     <string name="welcome_message">Sign in to sync across devices.</string>
@@ -184,9 +196,23 @@
     <string name="theme_option">Dark mode</string>
     <string name="theme_subtitle">Switch between light and dark themes.</string>
     <string name="account_section">Account</string>
+    <string name="delete_account">Delete account</string>
+    <string name="delete_account_confirm_title">Delete account permanently</string>
+    <string name="delete_account_confirm_message">Are you sure you want to delete your account? This action cannot be undone.</string>
+    <string name="delete_account_confirm_email_label">Type your email to confirm</string>
+    <string name="delete_account_confirm_email_mismatch">Email does not match.</string>
+    <string name="delete_account_confirm_button">Delete account</string>
+    <string name="delete_account_success_title">Account deleted</string>
+    <string name="delete_account_success_message">Your account and data have been deleted.</string>
+    <string name="delete_account_failure_title">Account deletion failed</string>
+    <string name="delete_account_failure_message">Please try again.</string>
     <string name="management_section">Shortcuts</string>
     <string name="trash_subtitle">Recently deleted notes</string>
     <string name="app_version_label">App version</string>
+    <string name="sync_status_syncing">Syncing...</string>
+    <string name="sync_status_synced">Synced %1$s</string>
+    <string name="sync_status_failed">Sync failed</string>
+    <string name="sync_status_retry">Retry sync</string>
 
     <!-- Actions -->
     <string name="restore">Restore</string>

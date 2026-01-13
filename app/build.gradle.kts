@@ -31,6 +31,7 @@ android {
         targetSdk = 36
         versionName = gitVersionName
         versionCode = gitVersionName.toVersionCode()
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     val releaseStoreFile = envOrProperty("RELEASE_STORE_FILE")
@@ -39,6 +40,18 @@ android {
     val releaseKeyPassword = envOrProperty("RELEASE_KEY_PASSWORD")
 
     signingConfigs {
+        val debugStoreFile =
+            rootProject.layout.projectDirectory
+                .file("keystores/debug.keystore")
+                .asFile
+        getByName("debug") {
+            if (debugStoreFile.exists()) {
+                storeFile = debugStoreFile
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+        }
         val hasReleaseKeystore =
             listOf(releaseStoreFile, releaseStorePassword, releaseKeyAlias, releaseKeyPassword).all {
                 !it.isNullOrBlank()
@@ -135,6 +148,13 @@ dependencies {
     testImplementation(libs.arch.core.testing)
     testImplementation(libs.kotlin.coroutines.test)
     testImplementation(libs.truth)
+
+    // Android UI Tests (Compose)
+    androidTestImplementation(libs.androidx.test.core.ktx)
+    androidTestImplementation(libs.androidx.test.ext.junit.ktx)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     // Firebase Auth (Android) via BoM
     implementation(platform(libs.firebase.bom))

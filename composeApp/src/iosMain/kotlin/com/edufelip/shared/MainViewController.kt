@@ -13,6 +13,7 @@ import com.edufelip.shared.ui.AmazingNoteApp
 import com.edufelip.shared.ui.app.navigation.currentRouteAsState
 import com.edufelip.shared.ui.indication.NoFeedbackIndication
 import com.edufelip.shared.ui.nav.AppRoutes
+import com.edufelip.shared.ui.nav.TabRoutePolicy
 import com.edufelip.shared.ui.settings.AppPreferences
 import com.edufelip.shared.ui.settings.Settings
 import com.edufelip.shared.ui.vm.AuthViewModel
@@ -23,17 +24,17 @@ import platform.UIKit.systemBackgroundColor
 
 fun MainViewController(
     tabBarVisibility: ((Boolean) -> Unit)? = null,
-    onRouteChanged: ((String) -> Unit)? = null,
+    onRouteChanged: ((String, Boolean) -> Unit)? = null,
 ): UIViewController = createAmazingNoteViewController(
     initialRoute = AppRoutes.Notes,
-    showBottomBar = false,
+    showBottomBar = false, // hide Compose bottom bar; native tab bar is managed in Swift
     tabBarVisibility = tabBarVisibility,
     onRouteChanged = onRouteChanged,
 )
 
 fun makeNotesViewController(
     tabBarVisibility: ((Boolean) -> Unit)? = null,
-    onRouteChanged: ((String) -> Unit)? = null,
+    onRouteChanged: ((String, Boolean) -> Unit)? = null,
 ): UIViewController = createAmazingNoteViewController(
     initialRoute = AppRoutes.Notes,
     showBottomBar = false,
@@ -43,7 +44,7 @@ fun makeNotesViewController(
 
 fun makeFoldersViewController(
     tabBarVisibility: ((Boolean) -> Unit)? = null,
-    onRouteChanged: ((String) -> Unit)? = null,
+    onRouteChanged: ((String, Boolean) -> Unit)? = null,
 ): UIViewController = createAmazingNoteViewController(
     initialRoute = AppRoutes.Folders,
     showBottomBar = false,
@@ -53,7 +54,7 @@ fun makeFoldersViewController(
 
 fun makeSettingsViewController(
     tabBarVisibility: ((Boolean) -> Unit)? = null,
-    onRouteChanged: ((String) -> Unit)? = null,
+    onRouteChanged: ((String, Boolean) -> Unit)? = null,
 ): UIViewController = createAmazingNoteViewController(
     initialRoute = AppRoutes.Settings,
     showBottomBar = false,
@@ -65,8 +66,9 @@ fun createAmazingNoteViewController(
     initialRoute: AppRoutes,
     showBottomBar: Boolean,
     tabBarVisibility: ((Boolean) -> Unit)? = null,
-    onRouteChanged: ((String) -> Unit)? = null,
+    onRouteChanged: ((String, Boolean) -> Unit)? = null,
 ): UIViewController {
+    installUnhandledExceptionHook()
     initKoin()
     val controller = ComposeUIViewController {
         val koin = remember { getSharedKoin() }
@@ -78,7 +80,8 @@ fun createAmazingNoteViewController(
         CompositionLocalProvider(LocalIndication provides NoFeedbackIndication) {
             val currentRoute by currentRouteAsState()
             LaunchedEffect(currentRoute) {
-                onRouteChanged?.invoke(currentRoute)
+                val bottomBarVisible = TabRoutePolicy.isTabRouteId(currentRoute)
+                onRouteChanged?.invoke(currentRoute, bottomBarVisible)
             }
             AmazingNoteApp(
                 viewModel = vm,

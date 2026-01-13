@@ -1,8 +1,14 @@
 package com.edufelip.shared.ui.features.notes.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.Center
 import androidx.compose.foundation.layout.Box
@@ -10,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,11 +34,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,7 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.platform.testTag
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_add
@@ -61,7 +69,7 @@ import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.settings.LocalAppPreferences
-import com.edufelip.shared.ui.util.platform.platformChromeStrategy
+import com.edufelip.shared.ui.util.TestTags
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
@@ -79,6 +87,7 @@ fun ListScreen(
     onSearchQueryChange: (String) -> Unit,
     title: String? = null,
     showTopAppBar: Boolean = true,
+    searchVisible: Boolean = true,
     hasAnyNotes: Boolean = true,
     headerContent: (@Composable () -> Unit)? = null,
     emptyContent: (@Composable () -> Unit)? = null,
@@ -86,7 +95,9 @@ fun ListScreen(
 ) {
     val appPrefs = LocalAppPreferences.current
     var showFilters by rememberSaveable { mutableStateOf(false) }
-    val chrome = platformChromeStrategy()
+    LaunchedEffect(searchVisible) {
+        if (!searchVisible) showFilters = false
+    }
     val tokens = designTokens()
 
     @Composable
@@ -99,7 +110,7 @@ fun ListScreen(
         Scaffold(
             modifier = Modifier.fillMaxSize().background(scaffoldContainerColor),
             containerColor = Color.Transparent,
-            contentWindowInsets = chrome.contentWindowInsets,
+            contentWindowInsets = WindowInsets(),
             topBar = if (showTopAppBar) {
                 (
                     {
@@ -121,13 +132,10 @@ fun ListScreen(
             },
             floatingActionButton = {
                 if (showFab && hasAnyNotes) {
-                    val navigationBottom = chrome.navigationBarBottomInset()
-                    val fabBottomPadding = when {
-                        chrome.bottomBarHeight == tokens.spacing.zero -> tokens.spacing.lg
-                        else -> chrome.bottomBarHeight + (navigationBottom * 2)
-                    }
                     FloatingActionButton(
-                        modifier = Modifier.padding(bottom = fabBottomPadding),
+                        modifier = Modifier
+                            .padding(bottom = tokens.spacing.xxxl)
+                            .testTag(TestTags.Home.ADD_NOTE_BUTTON),
                         onClick = onAddClick,
                         containerColor = tokens.colors.accent,
                         contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -140,7 +148,7 @@ fun ListScreen(
                     }
                 }
             },
-        ) { padding ->
+        ) { _ ->
             Box(
                 modifier = Modifier.fillMaxSize(),
             ) {
@@ -157,28 +165,45 @@ fun ListScreen(
                 }
 
                 val useUpdated = remember { mutableStateOf(appPrefs.isDateModeUpdated()) }
-                val now =
-                    notes.maxOfOrNull { if (useUpdated.value) it.updatedAt else it.createdAt } ?: 0L
+                val isUpdated = useUpdated.value
+                val grouped by remember(notes, isUpdated) {
+                    derivedStateOf {
+                        val now =
+                            notes.maxOfOrNull { if (isUpdated) it.updatedAt else it.createdAt } ?: 0L
 
-                fun bucket(ts: Long): Bucket {
-                    val oneDay = 24L * 60 * 60 * 1000
-                    val week = 7 * oneDay
-                    val month = 30 * oneDay
-                    val delta = now - ts
-                    return when {
-                        delta < oneDay -> Bucket.TODAY
-                        delta < week -> Bucket.THIS_WEEK
-                        delta < month -> Bucket.THIS_MONTH
-                        else -> Bucket.EARLIER
+                        fun bucket(ts: Long): Bucket {
+                            val oneDay = 24L * 60 * 60 * 1000
+                            val week = 7 * oneDay
+                            val month = 30 * oneDay
+                            val delta = now - ts
+                            return when {
+                                delta < oneDay -> Bucket.TODAY
+                                delta < week -> Bucket.THIS_WEEK
+                                delta < month -> Bucket.THIS_MONTH
+                                else -> Bucket.EARLIER
+                            }
+                        }
+
+                        notes.groupBy { bucket(if (isUpdated) it.updatedAt else it.createdAt) }
                     }
                 }
-
-                val grouped: Map<Bucket, List<Note>> =
-                    notes.groupBy { bucket(if (useUpdated.value) it.updatedAt else it.createdAt) }
+                val groupOrder = remember {
+                    listOf(
+                        Bucket.TODAY,
+                        Bucket.THIS_WEEK,
+                        Bucket.THIS_MONTH,
+                        Bucket.EARLIER,
+                    )
+                }
+                val orderedGroups by remember(grouped) {
+                    derivedStateOf { groupOrder.mapNotNull { b -> grouped[b]?.let { b to it } } }
+                }
                 val listBottomPadding = tokens.spacing.zero
                 val searchHorizontalPadding = tokens.spacing.md
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .testTag(TestTags.Home.NOTES_LIST),
                     contentPadding = PaddingValues(bottom = listBottomPadding),
                 ) {
                     headerContent?.let { content ->
@@ -194,17 +219,24 @@ fun ListScreen(
                         }
                     }
                     stickyHeader {
-                        Surface(
-                            shadowElevation = tokens.elevation.card / 2f,
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(tokens.colors.surface)
+                                .animateContentSize(animationSpec = tween(durationMillis = 220, easing = LinearEasing)),
                         ) {
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
+                            AnimatedVisibility(
+                                visible = searchVisible,
+                                enter = slideInVertically(initialOffsetY = { -it }, animationSpec = tween(durationMillis = 220, easing = LinearEasing)) + fadeIn(tween(durationMillis = 220, easing = LinearEasing)),
+                                exit = shrinkVertically(animationSpec = tween(durationMillis = 220, easing = LinearEasing)) + fadeOut(tween(durationMillis = 220, easing = LinearEasing)),
                             ) {
                                 Box(
-                                    modifier = Modifier.fillMaxWidth().padding(
-                                        horizontal = searchHorizontalPadding,
-                                        vertical = tokens.spacing.sm,
-                                    ),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(
+                                            horizontal = searchHorizontalPadding,
+                                            vertical = tokens.spacing.sm,
+                                        ),
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     MaterialSearchBar(
@@ -214,54 +246,55 @@ fun ListScreen(
                                         filtersActive = showFilters,
                                     )
                                 }
-                                AnimatedVisibility(
-                                    visible = showFilters,
-                                    enter = expandVertically(),
-                                    exit = shrinkVertically(),
-                                ) {
-                                    Column(modifier = Modifier.fillMaxWidth()) {
-                                        // Label for order mode
-                                        Text(
-                                            text = stringResource(Res.string.order_by),
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.padding(
-                                                horizontal = tokens.spacing.lg,
-                                                vertical = tokens.spacing.xs,
+                            }
+
+                            AnimatedVisibility(
+                                visible = searchVisible && showFilters,
+                                enter = expandVertically(animationSpec = tween(durationMillis = 220, easing = LinearEasing)) + fadeIn(tween(durationMillis = 220, easing = LinearEasing)),
+                                exit = shrinkVertically(animationSpec = tween(durationMillis = 220, easing = LinearEasing)) + fadeOut(tween(durationMillis = 220, easing = LinearEasing)),
+                            ) {
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    // Label for order mode
+                                    Text(
+                                        text = stringResource(Res.string.order_by),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(
+                                            horizontal = tokens.spacing.lg,
+                                            vertical = tokens.spacing.xs,
+                                        ),
+                                    )
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(
+                                            horizontal = tokens.spacing.lg,
+                                            vertical = tokens.spacing.xs,
+                                        ),
+                                    ) {
+                                        FilterChip(
+                                            selected = isUpdated,
+                                            onClick = {
+                                                useUpdated.value = true
+                                                appPrefs.setDateModeUpdated(true)
+                                            },
+                                            label = { Text(stringResource(Res.string.updated)) },
+                                            colors = FilterChipDefaults.filterChipColors(
+                                                selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                                selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                            ),
+                                            modifier = Modifier.padding(end = tokens.spacing.sm),
+                                        )
+                                        FilterChip(
+                                            selected = !isUpdated,
+                                            onClick = {
+                                                useUpdated.value = false
+                                                appPrefs.setDateModeUpdated(false)
+                                            },
+                                            label = { Text(stringResource(Res.string.created)) },
+                                            colors = FilterChipDefaults.filterChipColors(
+                                                selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                                selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
                                             ),
                                         )
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth().padding(
-                                                horizontal = tokens.spacing.lg,
-                                                vertical = tokens.spacing.xs,
-                                            ),
-                                        ) {
-                                            FilterChip(
-                                                selected = useUpdated.value,
-                                                onClick = {
-                                                    useUpdated.value = true
-                                                    appPrefs.setDateModeUpdated(true)
-                                                },
-                                                label = { Text(stringResource(Res.string.updated)) },
-                                                colors = FilterChipDefaults.filterChipColors(
-                                                    selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                                    selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                ),
-                                                modifier = Modifier.padding(end = tokens.spacing.sm),
-                                            )
-                                            FilterChip(
-                                                selected = !useUpdated.value,
-                                                onClick = {
-                                                    useUpdated.value = false
-                                                    appPrefs.setDateModeUpdated(false)
-                                                },
-                                                label = { Text(stringResource(Res.string.created)) },
-                                                colors = FilterChipDefaults.filterChipColors(
-                                                    selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                                    selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                ),
-                                            )
-                                        }
                                     }
                                 }
                             }
@@ -292,13 +325,6 @@ fun ListScreen(
                         }
                     }
 
-                    val groupOrder = listOf(
-                        Bucket.TODAY,
-                        Bucket.THIS_WEEK,
-                        Bucket.THIS_MONTH,
-                        Bucket.EARLIER,
-                    )
-                    val orderedGroups = groupOrder.mapNotNull { b -> grouped[b]?.let { b to it } }
                     orderedGroups.forEach { (section, itemsInGroup) ->
                         item {
                             Text(
@@ -312,7 +338,7 @@ fun ListScreen(
                                 color = tokens.colors.onSurface,
                                 modifier = Modifier.padding(
                                     horizontal = tokens.spacing.xl,
-                                    vertical = tokens.spacing.sm,
+                                    vertical = tokens.spacing.md,
                                 ),
                             )
                         }
@@ -320,7 +346,7 @@ fun ListScreen(
                             NoteRow(
                                 note = note,
                                 onClick = onNoteClick,
-                                showUpdated = useUpdated.value,
+                                showUpdated = isUpdated,
                                 modifier = Modifier.padding(
                                     horizontal = tokens.spacing.lg,
                                     vertical = tokens.spacing.sm,
@@ -329,7 +355,7 @@ fun ListScreen(
                         }
                     }
                     item {
-                        Spacer(modifier = Modifier.height(chrome.bottomBarHeight))
+                        Spacer(modifier = Modifier.height(tokens.spacing.xxxl))
                     }
                 }
             }

@@ -121,7 +121,7 @@ class DefaultNoteUiViewModel(
         spans: List<NoteTextSpan>?,
         attachments: List<NoteAttachment>?,
         folderId: Long?,
-        content: NoteContent?
+        content: NoteContent?,
     ) {
         viewModelScope.launch {
             useCases.updateNote(

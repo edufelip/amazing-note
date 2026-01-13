@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.google.services) apply false
     alias(libs.plugins.git.versioner)
     alias(libs.plugins.spotless)
+    alias(libs.plugins.kover)
 }
 
 versioner {

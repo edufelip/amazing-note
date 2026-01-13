@@ -8,6 +8,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+.android/
  
 # Gradle build outputs (all modules)
 **/build/
@@ -26,11 +27,14 @@ iosApp/Frameworks/
 *.xcuserstate
 /.kotlin
 AGENTS.md
-.project_context
+GEMINI.md
 .gradle-alt
 .gradle-cache
 .gradle-user
 .gradle-home
+keystores/
+.gradle-xcode/
+.konan/
 
 # Local documentation
 docs/
@@ -38,3 +42,10 @@ docs/
 GoogleService-Info.plist
 google-services.json
 iosApp/xcodebuild-debug.log
+
+# Firebase Functions
+functions/node_modules/
+functions/lib/
+functions/.npm-cache/
+.firebase/
+firebase-debug.log

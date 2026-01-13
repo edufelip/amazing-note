@@ -3,8 +3,12 @@ package com.edufelip.shared.ui.app.effects
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import com.edufelip.shared.data.sync.NotesSyncManager
 import com.edufelip.shared.data.sync.SyncEvent
+import com.edufelip.shared.data.network.NetworkStatus
 import com.edufelip.shared.ui.app.state.AmazingNoteAppState
 import com.edufelip.shared.ui.effects.toast.rememberToastController
 import com.edufelip.shared.ui.effects.toast.show
@@ -30,6 +34,27 @@ fun SyncOnUserChange(state: AmazingNoteAppState, syncManager: NotesSyncManager) 
 }
 
 @Composable
+fun SyncOnConnectivity(
+    state: AmazingNoteAppState,
+    syncManager: NotesSyncManager,
+    networkStatus: NetworkStatus,
+) {
+    val authUiState by state.authViewModel.uiState.collectWithLifecycle()
+    val user = authUiState.user
+    val isOnline by networkStatus.isOnline.collectWithLifecycle()
+    val wasOnlineState = remember { mutableStateOf(isOnline) }
+
+    LaunchedEffect(isOnline, user?.uid, authUiState.isUserResolved) {
+        if (!authUiState.isUserResolved) return@LaunchedEffect
+        val wasOnline = wasOnlineState.value
+        wasOnlineState.value = isOnline
+        if (!wasOnline && isOnline && user != null && syncManager.hasPendingLocalChanges()) {
+            syncManager.syncLocalToRemoteOnly()
+        }
+    }
+}
+
+@Composable
 fun BottomBarVisibilityEffect(state: AmazingNoteAppState) {
     LaunchedEffect(state.isBottomBarEnabled, state.bottomBarTargetVisible) {
         if (state.isBottomBarEnabled) {
@@ -48,9 +73,10 @@ fun PlatformTabBarVisibilityEffect(
     state: AmazingNoteAppState,
     onVisibilityChanged: (Boolean) -> Unit,
 ) {
-    val isTabVisible = state.isTab(state.currentRoute)
+    val isTabVisible = state.tabRouteVisible
+    val latestOnVisibilityChanged by rememberUpdatedState(onVisibilityChanged)
     LaunchedEffect(isTabVisible) {
-        onVisibilityChanged(isTabVisible)
+        latestOnVisibilityChanged(isTabVisible)
     }
 }
 

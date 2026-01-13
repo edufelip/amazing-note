@@ -9,6 +9,8 @@ plugins {
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.kover)
+    alias(libs.plugins.roborazzi)
 }
 
 lateinit var iosArm64Target: KotlinNativeTarget
@@ -45,6 +47,7 @@ kotlin {
             implementation(libs.compose.material3.adaptive)
             implementation(libs.compose.material3.window.size)
             implementation(libs.koin.android)
+            implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -71,9 +74,23 @@ kotlin {
             implementation(kotlin("test"))
             implementation(libs.kotlin.coroutines.test)
         }
+
+        val androidUnitTest by getting {
+            dependencies {
+                implementation(libs.junit)
+                implementation(libs.robolectric)
+                implementation(libs.roborazzi)
+                implementation(libs.roborazzi.compose)
+                implementation(libs.roborazzi.rule)
+                implementation(libs.androidx.compose.ui.test.junit4)
+                implementation(libs.androidx.test.core.ktx)
+                implementation(libs.androidx.test.ext.junit.ktx)
+            }
+        }
         iosMain.dependencies {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+            implementation(libs.ktor.client.darwin)
         }
     }
 }
@@ -84,6 +101,17 @@ android {
 
     defaultConfig {
         minSdk = 30
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            force("com.android.tools:common:31.4.2")
+        }
+    }
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
     }
 
     compileOptions {
@@ -100,6 +128,11 @@ compose {
 
 val xcodeConfiguration = providers.gradleProperty("CONFIGURATION").orElse(System.getenv("CONFIGURATION") ?: "Debug")
 val xcodeSdk = providers.gradleProperty("SDK_NAME").orElse(System.getenv("SDK_NAME") ?: "iphonesimulator")
+val forceSyncComposeResourcesForIos = providers.gradleProperty("forceSyncComposeResourcesForIos").isPresent
+val isXcodeBuild =
+    providers.environmentVariable("XCODE_VERSION_ACTUAL").isPresent ||
+        providers.environmentVariable("XCODE_PRODUCT_BUILD_VERSION").isPresent ||
+        providers.environmentVariable("BUILT_PRODUCTS_DIR").isPresent
 
 tasks.register<Sync>("packForXcode") {
     val buildType = xcodeConfiguration.get()
@@ -111,6 +144,9 @@ tasks.register<Sync>("packForXcode") {
         }
     val framework = target.binaries.getFramework(buildType)
     dependsOn(framework.linkTaskProvider)
+    if (isXcodeBuild || forceSyncComposeResourcesForIos) {
+        dependsOn("syncComposeResourcesForIos")
+    }
     val destinationDir = layout.buildDirectory.dir("xcode-frameworks/$buildType/$sdkName")
     from({ framework.outputDirectory })
     into(destinationDir)

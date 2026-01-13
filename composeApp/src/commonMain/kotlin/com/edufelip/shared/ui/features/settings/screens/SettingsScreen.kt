@@ -1,8 +1,15 @@
 package com.edufelip.shared.ui.features.settings.screens
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -11,8 +18,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,59 +33,88 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AutoDelete
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.edufelip.shared.domain.repository.AccountDeletionResult
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.account_section
 import com.edufelip.shared.resources.app_version_label
 import com.edufelip.shared.resources.appearance_section
+import com.edufelip.shared.resources.delete_account
+import com.edufelip.shared.resources.delete_account_confirm_button
+import com.edufelip.shared.resources.delete_account_confirm_email_label
+import com.edufelip.shared.resources.delete_account_confirm_email_mismatch
+import com.edufelip.shared.resources.delete_account_confirm_message
+import com.edufelip.shared.resources.delete_account_confirm_title
+import com.edufelip.shared.resources.delete_account_failure_message
+import com.edufelip.shared.resources.delete_account_success_message
+import com.edufelip.shared.resources.dialog_cancel
 import com.edufelip.shared.resources.login
 import com.edufelip.shared.resources.logout
 import com.edufelip.shared.resources.logout_confirm_message
 import com.edufelip.shared.resources.logout_confirm_title
+import com.edufelip.shared.resources.logout_offline_confirm
+import com.edufelip.shared.resources.logout_offline_message
+import com.edufelip.shared.resources.logout_offline_title
+import com.edufelip.shared.resources.logout_pending_cancel
+import com.edufelip.shared.resources.logout_pending_confirm
+import com.edufelip.shared.resources.logout_pending_message
+import com.edufelip.shared.resources.logout_pending_title
 import com.edufelip.shared.resources.management_section
 import com.edufelip.shared.resources.no
 import com.edufelip.shared.resources.personalize_subtitle
 import com.edufelip.shared.resources.personalize_title
 import com.edufelip.shared.resources.privacy_policy
 import com.edufelip.shared.resources.settings_header
-import com.edufelip.shared.resources.settings_review_reminder_title
 import com.edufelip.shared.resources.theme_option
 import com.edufelip.shared.resources.theme_subtitle
 import com.edufelip.shared.resources.trash
@@ -83,23 +122,30 @@ import com.edufelip.shared.resources.trash_subtitle
 import com.edufelip.shared.resources.welcome_message
 import com.edufelip.shared.resources.yes
 import com.edufelip.shared.ui.app.chrome.AmazingTopBar
+import com.edufelip.shared.ui.app.chrome.rememberSyncIndicatorState
+import com.edufelip.shared.ui.app.chrome.rememberSyncRetryAction
+import com.edufelip.shared.ui.components.atoms.common.AvatarImage
 import com.edufelip.shared.ui.components.organisms.settings.PersonalizeHeroIllustration
 import com.edufelip.shared.ui.designsystem.designTokens
-import com.edufelip.shared.ui.ios.IosDatePicker
-import com.edufelip.shared.ui.settings.LocalSettings
+import com.edufelip.shared.ui.effects.toast.rememberToastController
+import com.edufelip.shared.ui.effects.toast.show
+import com.edufelip.shared.ui.util.TestTags
 import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.util.platform.Haptics
-import com.edufelip.shared.ui.util.platform.currentEpochMillis
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.util.security.sanitizeUserDisplay
+import com.edufelip.shared.ui.vm.LogoutDecision
 import com.edufelip.shared.ui.vm.AuthViewModel
+import com.edufelip.shared.data.network.LocalNetworkStatus
+import com.edufelip.shared.data.sync.LocalNotesSyncManager
 import com.slapps.cupertino.CupertinoButtonDefaults
 import com.slapps.cupertino.adaptive.AdaptiveButton
 import com.slapps.cupertino.adaptive.ExperimentalAdaptiveApi
 import com.slapps.cupertino.adaptive.icons.AdaptiveIcons
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalAdaptiveApi::class)
+@OptIn(ExperimentalAdaptiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     darkTheme: Boolean,
@@ -107,6 +153,7 @@ fun SettingsScreen(
     auth: AuthViewModel?,
     onLogin: () -> Unit,
     onLogout: () -> Unit,
+    onDeleteAccount: suspend () -> AccountDeletionResult,
     onOpenTrash: () -> Unit,
     onOpenPrivacy: () -> Unit,
     appVersion: String,
@@ -116,29 +163,91 @@ fun SettingsScreen(
     val userState = auth?.uiState?.collectWithLifecycle()?.value?.user
     val tokens = designTokens()
     val itemsSpacing = tokens.spacing.lg
-    val settingsStore = LocalSettings.current
-    val reviewDateKey = "daily_review_epoch"
-    var reviewReminder by rememberSaveable(reviewDateKey) {
-        mutableStateOf(
-            settingsStore.getString(reviewDateKey, "").toLongOrNull() ?: currentEpochMillis(),
-        )
-    }
+    val userEmail = userState?.email?.trim().orEmpty()
+    val deleteFailureFallback = stringResource(Res.string.delete_account_failure_message)
+    val syncManager = LocalNotesSyncManager.current
+    val networkStatus = LocalNetworkStatus.current
+    val syncIndicator = rememberSyncIndicatorState(
+        syncManager = syncManager,
+        networkStatus = networkStatus,
+        isAuthenticated = userState != null,
+    )
+    val onSyncRetry = rememberSyncRetryAction(syncManager)
     var logoutDialogVisible by remember { mutableStateOf(false) }
-    LaunchedEffect(reviewReminder) {
-        settingsStore.setString(reviewDateKey, reviewReminder.toString())
+    var logoutPendingDialogVisible by remember { mutableStateOf(false) }
+    var logoutOfflineDialogVisible by remember { mutableStateOf(false) }
+    var showAccountSheet by rememberSaveable { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val coroutineScope = rememberCoroutineScope()
+    val toastController = rememberToastController()
+    var deleteDialogVisible by remember { mutableStateOf(false) }
+    var deleteEmailInput by rememberSaveable { mutableStateOf("") }
+    var deleteInProgress by remember { mutableStateOf(false) }
+    var deleteErrorMessage by remember { mutableStateOf<String?>(null) }
+    var accountExpanded by rememberSaveable { mutableStateOf(false) }
+    val accountChevronRotation by animateFloatAsState(
+        targetValue = if (accountExpanded) 180f else 0f,
+        animationSpec = tween(durationMillis = 240, easing = LinearOutSlowInEasing),
+        label = "account_chevron_rotation",
+    )
+    val deleteSuccessMessage = stringResource(Res.string.delete_account_success_message)
+    val onLogoutRequested = {
+        coroutineScope.launch {
+            when (auth?.requestLogoutDecision() ?: LogoutDecision.Allowed) {
+                LogoutDecision.Offline -> {
+                    logoutDialogVisible = false
+                    logoutPendingDialogVisible = false
+                    logoutOfflineDialogVisible = true
+                }
+
+                LogoutDecision.PendingChanges -> {
+                    logoutDialogVisible = false
+                    logoutPendingDialogVisible = true
+                    logoutOfflineDialogVisible = false
+                }
+
+                LogoutDecision.Allowed -> {
+                    logoutPendingDialogVisible = false
+                    logoutOfflineDialogVisible = false
+                    logoutDialogVisible = true
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(userState) {
+        if (userState == null) {
+            accountExpanded = false
+        }
     }
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = { AmazingTopBar(user = userState) },
+        modifier = modifier
+            .fillMaxSize()
+            .testTag(TestTags.Settings.ROOT),
+        topBar = {
+            AmazingTopBar(
+                user = userState,
+                syncIndicator = syncIndicator,
+                onSyncRetry = onSyncRetry,
+                onAvatarClick = {
+                    if (userState == null) {
+                        onLogin()
+                    } else {
+                        showAccountSheet = true
+                    }
+                },
+            )
+        },
         containerColor = tokens.colors.canvas,
-        contentWindowInsets = chrome.contentWindowInsets,
+        contentWindowInsets = WindowInsets(),
     ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = tokens.spacing.lg),
+                .padding(horizontal = tokens.spacing.lg)
+                .testTag(TestTags.Settings.LIST),
             verticalArrangement = Arrangement.spacedBy(itemsSpacing),
         ) {
             item {
@@ -169,35 +278,10 @@ fun SettingsScreen(
                                 Haptics.lightTap()
                                 onToggleDarkTheme(checked)
                             },
+                            modifier = Modifier.testTag(TestTags.Settings.THEME_TOGGLE),
                         )
                     },
                 )
-            }
-
-            if (chrome.useCupertinoLook) {
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                tokens.colors.elevatedSurface,
-                                RoundedCornerShape(tokens.radius.lg + tokens.radius.sm),
-                            )
-                            .padding(tokens.spacing.lg),
-                        verticalArrangement = Arrangement.spacedBy(tokens.spacing.md),
-                    ) {
-                        Text(
-                            text = stringResource(Res.string.settings_review_reminder_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = tokens.colors.onSurface,
-                        )
-                        IosDatePicker(
-                            epochMillis = reviewReminder,
-                            onChange = { reviewReminder = it },
-                        )
-                    }
-                }
             }
 
             item { SectionTitle(text = stringResource(Res.string.account_section)) }
@@ -209,6 +293,7 @@ fun SettingsScreen(
                         materialIcon = Icons.AutoMirrored.Filled.Login,
                         cupertinoSymbol = "rectangle.portrait.and.arrow.forward",
                         onClick = onLogin,
+                        modifier = Modifier.testTag(TestTags.Settings.LOGIN_BUTTON),
                     )
                 } else {
                     Column(
@@ -218,9 +303,18 @@ fun SettingsScreen(
                                 tokens.colors.elevatedSurface,
                                 RoundedCornerShape(tokens.radius.lg + tokens.radius.sm),
                             )
+                            .animateContentSize(
+                                animationSpec = tween(
+                                    durationMillis = 260,
+                                    easing = LinearOutSlowInEasing,
+                                ),
+                            )
                             .padding(tokens.spacing.lg),
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
                             Surface(
                                 color = tokens.colors.accent.copy(alpha = 0.15f),
                                 shape = CircleShape,
@@ -247,37 +341,108 @@ fun SettingsScreen(
                                     color = tokens.colors.muted,
                                 )
                             }
+                            Spacer(modifier = Modifier.weight(1f))
+                            IconButton(
+                                onClick = {
+                                    Haptics.lightTap()
+                                    accountExpanded = !accountExpanded
+                                },
+                                modifier = Modifier
+                                    .size(tokens.spacing.xl + tokens.spacing.sm),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    tint = tokens.colors.muted,
+                                    modifier = Modifier.rotate(accountChevronRotation),
+                                )
+                            }
                         }
-                        Spacer(modifier = Modifier.height(tokens.spacing.md))
-                        AdaptiveButton(
-                            onClick = {
-                                Haptics.lightTap()
-                                logoutDialogVisible = true
-                            },
-                            adaptation = {
-                                material {
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = tokens.colors.danger,
-                                        contentColor = tokens.colors.onDanger,
-                                    )
-                                }
-                                cupertino {
-                                    colors = CupertinoButtonDefaults.filledButtonColors(
-                                        containerColor = tokens.colors.danger,
-                                        contentColor = tokens.colors.onDanger,
-                                    )
-                                }
-                            },
-                        ) {
-                            Icon(
-                                painter = AdaptiveIcons.painter(
-                                    material = { Icons.AutoMirrored.Filled.Logout },
-                                    cupertino = { "rectangle.portrait.and.arrow.right" },
+                        AnimatedVisibility(
+                            visible = accountExpanded,
+                            enter = expandVertically(
+                                animationSpec = tween(
+                                    durationMillis = 220,
+                                    easing = LinearOutSlowInEasing,
                                 ),
-                                contentDescription = null,
-                            )
-                            Spacer(modifier = Modifier.width(tokens.spacing.sm))
-                            Text(text = stringResource(Res.string.logout))
+                            ),
+                            exit = shrinkVertically(
+                                animationSpec = tween(
+                                    durationMillis = 200,
+                                    easing = LinearOutSlowInEasing,
+                                ),
+                            ),
+                        ) {
+                            Column {
+                                Spacer(modifier = Modifier.height(tokens.spacing.md))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(tokens.spacing.md),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    AdaptiveButton(
+                                        onClick = {
+                                            Haptics.lightTap()
+                                            onLogoutRequested()
+                                        },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .testTag(TestTags.Settings.LOGOUT_BUTTON),
+                                        adaptation = {
+                                            material {
+                                                colors = ButtonDefaults.buttonColors(
+                                                    containerColor = tokens.colors.danger,
+                                                    contentColor = tokens.colors.onDanger,
+                                                )
+                                            }
+                                            cupertino {
+                                                colors = CupertinoButtonDefaults.filledButtonColors(
+                                                    containerColor = tokens.colors.danger,
+                                                    contentColor = tokens.colors.onDanger,
+                                                )
+                                            }
+                                        },
+                                    ) {
+                                        Icon(
+                                            painter = AdaptiveIcons.painter(
+                                                material = { Icons.AutoMirrored.Filled.Logout },
+                                                cupertino = { "rectangle.portrait.and.arrow.right" },
+                                            ),
+                                            contentDescription = null,
+                                        )
+                                        Spacer(modifier = Modifier.width(tokens.spacing.sm))
+                                        Text(text = stringResource(Res.string.logout))
+                                    }
+                                    OutlinedButton(
+                                        onClick = {
+                                            Haptics.lightTap()
+                                            deleteEmailInput = ""
+                                            deleteErrorMessage = null
+                                            deleteDialogVisible = true
+                                        },
+                                        modifier = Modifier.testTag(TestTags.Settings.DELETE_ACCOUNT_BUTTON),
+                                        contentPadding = PaddingValues(
+                                            horizontal = tokens.spacing.md,
+                                            vertical = tokens.spacing.md,
+                                        ),
+                                        border = BorderStroke(1.dp, tokens.colors.danger),
+                                    ) {
+                                        Icon(
+                                            painter = AdaptiveIcons.painter(
+                                                material = { Icons.Default.DeleteForever },
+                                                cupertino = { "person.crop.circle.badge.xmark" },
+                                            ),
+                                            contentDescription = null,
+                                            tint = tokens.colors.danger,
+                                        )
+                                        Spacer(modifier = Modifier.width(tokens.spacing.sm))
+                                        Text(
+                                            text = stringResource(Res.string.delete_account),
+                                            color = tokens.colors.danger,
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -291,6 +456,7 @@ fun SettingsScreen(
                     materialIcon = Icons.Default.AutoDelete,
                     cupertinoSymbol = "trash",
                     onClick = onOpenTrash,
+                    modifier = Modifier.testTag(TestTags.Settings.TRASH_BUTTON),
                 )
             }
             item {
@@ -300,6 +466,7 @@ fun SettingsScreen(
                     materialIcon = Icons.Default.PrivacyTip,
                     cupertinoSymbol = "lock.shield",
                     onClick = onOpenPrivacy,
+                    modifier = Modifier.testTag(TestTags.Settings.PRIVACY_BUTTON),
                 )
             }
 
@@ -325,11 +492,113 @@ fun SettingsScreen(
                         Modifier
                             .fillMaxWidth()
                             .applyNavigationBarsPadding()
-                            .padding(bottom = chrome.bottomBarHeight)
+                            .padding(bottom = tokens.spacing.xxxl)
                     },
                 )
             }
         }
+    }
+
+    if (showAccountSheet && userState != null) {
+        ModalBottomSheet(
+            onDismissRequest = { showAccountSheet = false },
+            sheetState = sheetState,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(tokens.spacing.xl),
+                verticalArrangement = Arrangement.spacedBy(tokens.spacing.md),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(tokens.spacing.md),
+                ) {
+                    AvatarImage(
+                        photoUrl = userState.photoUrl,
+                        size = tokens.spacing.xxl,
+                    )
+                    Column {
+                        Text(
+                            text = userState.displayName?.takeIf { it.isNotBlank() }
+                                ?: userState.email.orEmpty(),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = tokens.colors.onSurface,
+                        )
+                        userState.email?.let {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = tokens.colors.muted,
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(tokens.spacing.xxl))
+
+                OutlinedButton(
+                    onClick = {
+                        showAccountSheet = false
+                        onLogoutRequested()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(vertical = tokens.spacing.md),
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Logout,
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = tokens.spacing.sm),
+                    )
+                    Text(text = stringResource(Res.string.logout))
+                }
+                Spacer(modifier = Modifier.height(tokens.spacing.md + 8.dp))
+            }
+        }
+    }
+
+    if (logoutOfflineDialogVisible) {
+        AlertDialog(
+            onDismissRequest = { logoutOfflineDialogVisible = false },
+            title = { Text(text = stringResource(Res.string.logout_offline_title)) },
+            text = { Text(text = stringResource(Res.string.logout_offline_message)) },
+            confirmButton = {
+                TextButton(onClick = { logoutOfflineDialogVisible = false }) {
+                    Text(text = stringResource(Res.string.logout_offline_confirm))
+                }
+            },
+        )
+    }
+
+    if (logoutPendingDialogVisible) {
+        AlertDialog(
+            onDismissRequest = { logoutPendingDialogVisible = false },
+            title = { Text(text = stringResource(Res.string.logout_pending_title)) },
+            text = { Text(text = stringResource(Res.string.logout_pending_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            val decision = auth?.requestLogoutDecision() ?: LogoutDecision.Allowed
+                            if (decision == LogoutDecision.Offline) {
+                                logoutPendingDialogVisible = false
+                                logoutOfflineDialogVisible = true
+                            } else {
+                                logoutPendingDialogVisible = false
+                                onLogout()
+                            }
+                        }
+                    },
+                ) {
+                    Text(text = stringResource(Res.string.logout_pending_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { logoutPendingDialogVisible = false }) {
+                    Text(text = stringResource(Res.string.logout_pending_cancel))
+                }
+            },
+        )
     }
 
     if (logoutDialogVisible) {
@@ -340,8 +609,24 @@ fun SettingsScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        logoutDialogVisible = false
-                        onLogout()
+                        coroutineScope.launch {
+                            when (auth?.requestLogoutDecision() ?: LogoutDecision.Allowed) {
+                                LogoutDecision.Offline -> {
+                                    logoutDialogVisible = false
+                                    logoutOfflineDialogVisible = true
+                                }
+
+                                LogoutDecision.PendingChanges -> {
+                                    logoutDialogVisible = false
+                                    logoutPendingDialogVisible = true
+                                }
+
+                                LogoutDecision.Allowed -> {
+                                    logoutDialogVisible = false
+                                    onLogout()
+                                }
+                            }
+                        }
                     },
                 ) {
                     Text(text = stringResource(Res.string.yes))
@@ -354,6 +639,107 @@ fun SettingsScreen(
             },
         )
     }
+
+    if (deleteDialogVisible && userState != null) {
+        val emailMatches = userEmail.isNotBlank() &&
+            deleteEmailInput.trim().equals(userEmail, ignoreCase = true)
+        val canDelete = emailMatches && !deleteInProgress
+        val showMismatch = deleteEmailInput.isNotBlank() && !emailMatches
+
+        AlertDialog(
+            onDismissRequest = {
+                if (!deleteInProgress) {
+                    deleteDialogVisible = false
+                    deleteErrorMessage = null
+                    deleteEmailInput = ""
+                }
+            },
+            title = { Text(text = stringResource(Res.string.delete_account_confirm_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(tokens.spacing.sm)) {
+                    Text(text = stringResource(Res.string.delete_account_confirm_message))
+                    OutlinedTextField(
+                        value = deleteEmailInput,
+                        onValueChange = { value ->
+                            deleteEmailInput = value
+                            deleteErrorMessage = null
+                        },
+                        enabled = !deleteInProgress,
+                        singleLine = true,
+                        label = { Text(text = stringResource(Res.string.delete_account_confirm_email_label)) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag(TestTags.Settings.DELETE_ACCOUNT_EMAIL_FIELD),
+                    )
+                    if (showMismatch) {
+                        Text(
+                            text = stringResource(Res.string.delete_account_confirm_email_mismatch),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                    deleteErrorMessage?.let { message ->
+                        Text(
+                            text = message,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (!canDelete) return@TextButton
+                        deleteInProgress = true
+                        deleteErrorMessage = null
+                        coroutineScope.launch {
+                            val result = runCatching { onDeleteAccount() }
+                                .getOrElse { AccountDeletionResult.Failure(deleteFailureFallback) }
+                            when (result) {
+                                AccountDeletionResult.Success -> {
+                                    deleteInProgress = false
+                                    deleteDialogVisible = false
+                                    deleteEmailInput = ""
+                                    toastController.show(deleteSuccessMessage)
+                                }
+
+                                AccountDeletionResult.NotAuthenticated -> {
+                                    deleteInProgress = false
+                                    deleteErrorMessage = deleteFailureFallback
+                                }
+
+                                is AccountDeletionResult.Failure -> {
+                                    deleteInProgress = false
+                                    deleteErrorMessage = result.message
+                                        ?: deleteFailureFallback
+                                }
+                            }
+                        }
+                    },
+                    enabled = canDelete,
+                    modifier = Modifier.testTag(TestTags.Settings.DELETE_ACCOUNT_CONFIRM_BUTTON),
+                ) {
+                    Text(text = stringResource(Res.string.delete_account_confirm_button))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        if (!deleteInProgress) {
+                            deleteDialogVisible = false
+                            deleteErrorMessage = null
+                            deleteEmailInput = ""
+                        }
+                    },
+                ) {
+                    Text(text = stringResource(Res.string.dialog_cancel))
+                }
+            },
+        )
+    }
+
 }
 
 @Composable
@@ -486,6 +872,7 @@ private fun SettingRow(
     onClick: (() -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
     enabled: Boolean = true,
+    modifier: Modifier = Modifier,
 ) {
     val chrome = platformChromeStrategy()
     val tokens = designTokens()
@@ -517,6 +904,7 @@ private fun SettingRow(
         Modifier
     }
     Surface(
+        modifier = modifier,
         shape = shape,
         tonalElevation = tokens.elevation.card,
     ) {

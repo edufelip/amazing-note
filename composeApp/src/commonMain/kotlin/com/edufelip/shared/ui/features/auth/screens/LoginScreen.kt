@@ -1,5 +1,6 @@
 package com.edufelip.shared.ui.features.auth.screens
 
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,9 +28,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.edufelip.shared.data.auth.AppleSignInLauncher
 import com.edufelip.shared.data.auth.GoogleSignInLauncher
 import com.edufelip.shared.domain.validation.EmailValidationError
 import com.edufelip.shared.domain.validation.PasswordValidationError
@@ -37,13 +42,18 @@ import com.edufelip.shared.domain.validation.validatePassword
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.auth_generic_validation_error
 import com.edufelip.shared.resources.auth_network_error
+import com.edufelip.shared.resources.auth_email_already_in_use
+import com.edufelip.shared.resources.auth_weak_password
+import com.edufelip.shared.resources.auth_too_many_requests
+import com.edufelip.shared.resources.auth_user_disabled
+import com.edufelip.shared.resources.auth_unknown_error
+import com.edufelip.shared.resources.continue_with_apple
 import com.edufelip.shared.resources.continue_with_google
 import com.edufelip.shared.resources.email_invalid_format
 import com.edufelip.shared.resources.email_required
 import com.edufelip.shared.resources.forgot_password
 import com.edufelip.shared.resources.forgot_password_invalid_email
 import com.edufelip.shared.resources.forgot_password_try_again
-import com.edufelip.shared.resources.google_sign_in_canceled
 import com.edufelip.shared.resources.login_error_invalid_credentials
 import com.edufelip.shared.resources.login_headline
 import com.edufelip.shared.resources.login_rate_limit
@@ -55,6 +65,7 @@ import com.edufelip.shared.resources.sign_up_success
 import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.effects.toast.rememberToastController
 import com.edufelip.shared.ui.effects.toast.show
+import com.edufelip.shared.ui.features.auth.components.AppleButton
 import com.edufelip.shared.ui.features.auth.components.ForgotPasswordDialog
 import com.edufelip.shared.ui.features.auth.components.ForgotPasswordSuccessDialog
 import com.edufelip.shared.ui.features.auth.components.GoogleButton
@@ -65,6 +76,7 @@ import com.edufelip.shared.ui.features.auth.components.LoginIllustration
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
 import com.edufelip.shared.ui.util.OnSystemBack
+import com.edufelip.shared.ui.util.TestTags
 import com.edufelip.shared.ui.util.platform.currentEpochMillis
 import com.edufelip.shared.ui.util.security.AuthRateLimiter
 import com.edufelip.shared.ui.util.security.SecurityLogger
@@ -84,10 +96,12 @@ fun LoginScreen(
     state: AuthUiState,
     onBack: () -> Unit,
     googleSignInLauncher: GoogleSignInLauncher? = null,
+    appleSignInLauncher: AppleSignInLauncher? = null,
     onOpenSignUp: () -> Unit,
     showLocalSuccessToast: Boolean,
     onLogin: (String, String) -> Unit,
-    onGoogleSignIn: (String) -> Unit,
+    onGoogleSignIn: (String, String?) -> Unit,
+    onAppleSignIn: (String, String, String?, String?) -> Unit,
     onSendPasswordReset: (String) -> Unit,
     onClearError: () -> Unit,
     onSetError: (String) -> Unit,
@@ -103,6 +117,11 @@ fun LoginScreen(
         AuthError.GenericValidation -> stringResource(Res.string.auth_generic_validation_error)
         AuthError.Network -> stringResource(Res.string.auth_network_error)
         AuthError.InvalidCredentials -> stringResource(Res.string.login_error_invalid_credentials)
+        AuthError.EmailAlreadyInUse -> stringResource(Res.string.auth_email_already_in_use)
+        AuthError.WeakPassword -> stringResource(Res.string.auth_weak_password)
+        AuthError.TooManyRequests -> stringResource(Res.string.auth_too_many_requests)
+        AuthError.UserDisabled -> stringResource(Res.string.auth_user_disabled)
+        AuthError.Unknown -> stringResource(Res.string.auth_unknown_error)
         is AuthError.Custom -> error.message
         null -> null
     }
@@ -120,6 +139,7 @@ fun LoginScreen(
     var passwordHasFocus by remember { mutableStateOf(false) }
     var emailTouched by remember { mutableStateOf(false) }
     var passwordTouched by remember { mutableStateOf(false) }
+    var submissionAttempted by remember { mutableStateOf(false) }
     var emailImmediateValidation by remember { mutableStateOf(false) }
     var passwordImmediateValidation by remember { mutableStateOf(false) }
     var emailValidation by remember { mutableStateOf(validateEmail(email)) }
@@ -152,13 +172,13 @@ fun LoginScreen(
         }
     }
 
-    val showEmailError = emailTouched && !emailHasFocus && emailValidation.error != null
-    val showPasswordError = passwordTouched && !passwordHasFocus && passwordValidation.error != null
+    val showEmailError = (submissionAttempted || (emailTouched && !emailHasFocus)) && emailValidation.error != null
+    val showPasswordError = (submissionAttempted || (passwordTouched && !passwordHasFocus)) && passwordValidation.error != null
     val emailErrorText = if (showEmailError) {
         when (emailValidation.error) {
             EmailValidationError.REQUIRED -> stringResource(Res.string.email_required)
             EmailValidationError.INVALID_FORMAT -> stringResource(Res.string.email_invalid_format)
-            null -> null
+            else -> null
         }
     } else {
         null
@@ -172,7 +192,7 @@ fun LoginScreen(
             PasswordValidationError.MISSING_DIGIT,
             PasswordValidationError.MISSING_SYMBOL,
             -> stringResource(Res.string.password_requirements)
-            null -> null
+            else -> null
         }
     } else {
         null
@@ -192,7 +212,7 @@ fun LoginScreen(
     val lockoutRemainingMillis = lockoutTicker
     val isLockedOut = lockoutRemainingMillis > 0L
     val lockoutSeconds = ((lockoutRemainingMillis + 999) / 1000).toInt()
-    val isSubmitEnabled = emailValidation.isValid && passwordValidation.isValid && !loading && !isLockedOut
+    val isSubmitEnabled = password.length >= 6
     val attemptLogin: () -> Unit = l@{
         val now = currentEpochMillis()
         if (!rateLimiter.canAttempt(now)) {
@@ -203,6 +223,7 @@ fun LoginScreen(
             }
             return@l
         }
+        submissionAttempted = true
         emailTouched = true
         passwordTouched = true
         emailImmediateValidation = true
@@ -265,11 +286,11 @@ fun LoginScreen(
 
     LaunchedEffect(error) {
         val currentError = error ?: return@LaunchedEffect
-        onClearError()
         if (forgotPasswordPending) {
             forgotPasswordPending = false
             forgotPasswordSubmitting = false
             forgotPasswordEmailError = forgotPasswordTryAgainText
+            onClearError()
         } else {
             val now = currentEpochMillis()
             lockoutUntil = rateLimiter.registerFailure(now)
@@ -289,15 +310,22 @@ fun LoginScreen(
                 .padding(padding)
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(horizontal = tokens.spacing.xl, vertical = tokens.spacing.lg),
+                .padding(horizontal = tokens.spacing.xl, vertical = tokens.spacing.lg)
+                .testTag(TestTags.Login.ROOT),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(tokens.spacing.lg))
-            LoginIllustration(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(4f / 3f),
-            )
+            BoxWithConstraints(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                val illustrationWidth = if (maxWidth >= 500.dp) maxWidth * 0.7f else maxWidth
+                LoginIllustration(
+                    modifier = Modifier
+                        .width(illustrationWidth)
+                        .aspectRatio(4f / 3f),
+                )
+            }
             Spacer(modifier = Modifier.height(tokens.spacing.xl))
             Text(
                 text = stringResource(Res.string.login_headline),
@@ -321,11 +349,13 @@ fun LoginScreen(
                 onEmailChange = {
                     email = it
                     if (!emailTouched) emailTouched = true
+                    if (error != null) onClearError()
                 },
                 password = password,
                 onPasswordChange = {
                     password = it
                     if (!passwordTouched) passwordTouched = true
+                    if (error != null) onClearError()
                 },
                 passwordVisible = passwordVisible,
                 onTogglePasswordVisibility = { passwordVisible = !passwordVisible },
@@ -364,7 +394,6 @@ fun LoginScreen(
                 )
             }
             Spacer(modifier = Modifier.height(tokens.spacing.lg))
-            val googleCanceledText = stringResource(Res.string.google_sign_in_canceled)
             GoogleButton(
                 text = stringResource(Res.string.continue_with_google),
                 enabled = googleSignInLauncher != null && !loading && !isLockedOut,
@@ -374,17 +403,44 @@ fun LoginScreen(
                         val result = launcher.signIn()
                         when {
                             !result.idToken.isNullOrBlank() -> {
-                                onGoogleSignIn(result.idToken)
+                                onGoogleSignIn(result.idToken, result.accessToken)
                             }
                             !result.errorMessage.isNullOrBlank() -> {
                                 onSetError(result.errorMessage)
                                 toastController.show(result.errorMessage)
                             }
-                            else -> toastController.show(googleCanceledText)
+                            else -> Unit // user dismissed; no toast
                         }
                     }
                 },
             )
+            if (appleSignInLauncher != null) {
+                Spacer(modifier = Modifier.height(tokens.spacing.md))
+                AppleButton(
+                    text = stringResource(Res.string.continue_with_apple),
+                    enabled = !loading && !isLockedOut,
+                    onClick = {
+                        scope.launch {
+                            val result = appleSignInLauncher.signIn()
+                            when {
+                                !result.idToken.isNullOrBlank() && !result.rawNonce.isNullOrBlank() -> {
+                                    onAppleSignIn(
+                                        result.idToken,
+                                        result.rawNonce,
+                                        result.fullName,
+                                        result.email,
+                                    )
+                                }
+                                !result.errorMessage.isNullOrBlank() -> {
+                                    onSetError(result.errorMessage)
+                                    toastController.show(result.errorMessage)
+                                }
+                                else -> Unit // user dismissed; no toast
+                            }
+                        }
+                    },
+                )
+            }
             Spacer(modifier = Modifier.height(tokens.spacing.lg))
             TextButton(
                 onClick = {
@@ -396,6 +452,7 @@ fun LoginScreen(
                 },
                 enabled = !loading && !isLockedOut,
                 contentPadding = PaddingValues(Dp.Hairline),
+                modifier = Modifier.testTag(TestTags.Login.FORGOT_PASSWORD_BUTTON),
             ) {
                 Text(
                     text = stringResource(Res.string.forgot_password),
@@ -454,10 +511,12 @@ private fun LoginScreenPreview() {
             state = AuthUiState(),
             onBack = {},
             googleSignInLauncher = null,
+            appleSignInLauncher = null,
             onOpenSignUp = {},
             showLocalSuccessToast = true,
             onLogin = { _, _ -> },
-            onGoogleSignIn = {},
+            onGoogleSignIn = { _, _ -> },
+            onAppleSignIn = { _, _, _, _ -> },
             onSendPasswordReset = {},
             onClearError = {},
             onSetError = {},

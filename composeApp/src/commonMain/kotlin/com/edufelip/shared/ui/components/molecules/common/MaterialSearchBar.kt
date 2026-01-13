@@ -17,6 +17,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.cd_clear_search
 import com.edufelip.shared.resources.cd_search
@@ -38,6 +40,8 @@ fun MaterialSearchBar(
     filtersActive: Boolean = false,
 ) {
     val tokens = designTokens()
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
     DockedSearchBar(
         modifier = modifier,
         expanded = false,
@@ -46,7 +50,10 @@ fun MaterialSearchBar(
             SearchBarDefaults.InputField(
                 query = query,
                 onQueryChange = onQueryChange,
-                onSearch = {},
+                onSearch = {
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
+                },
                 expanded = false,
                 onExpandedChange = {},
                 leadingIcon = {

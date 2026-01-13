@@ -44,7 +44,7 @@ class InsertNote(
         content: NoteContent = NoteContent(),
         stableId: String? = null,
     ): NoteActionResult {
-        val errors = validateNoteInput(title, description, rules)
+        val errors = validateNoteInput(title, description, attachments.size, rules)
         if (errors.isNotEmpty()) return NoteActionResult.Invalid(errors)
         val finalContent = if (content.blocks.isEmpty()) NoteContent() else content
         repository.insert(title, description, folderId, spans, attachments, finalContent, stableId)
@@ -66,7 +66,7 @@ class UpdateNote(
         attachments: List<NoteAttachment>,
         content: NoteContent = NoteContent(),
     ): NoteActionResult {
-        val errors = validateNoteInput(title, description, rules)
+        val errors = validateNoteInput(title, description, attachments.size, rules)
         if (errors.isNotEmpty()) return NoteActionResult.Invalid(errors)
         val finalContent = if (content.blocks.isEmpty()) NoteContent() else content
         repository.update(id, title, description, deleted, folderId, spans, attachments, finalContent)

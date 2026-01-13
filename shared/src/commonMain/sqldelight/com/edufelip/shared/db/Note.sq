@@ -100,6 +100,11 @@ FROM note
 WHERE local_dirty = 1
 ORDER BY updated_at DESC, id DESC;
 
+countDirtyNotes:
+SELECT COUNT(*)
+FROM note
+WHERE local_dirty = 1;
+
 clearDirtyById:
 UPDATE note SET local_dirty = 0 WHERE id = ?;
 
@@ -128,6 +133,11 @@ SELECT *
 FROM folder
 WHERE local_dirty = 1
 ORDER BY updated_at DESC, id DESC;
+
+countDirtyFolders:
+SELECT COUNT(*)
+FROM folder
+WHERE local_dirty = 1;
 
 selectFolderById:
 SELECT *
@@ -173,6 +183,10 @@ SELECT *
 FROM note_pending_deletion
 ORDER BY deleted_at ASC;
 
+countPendingNoteDeletions:
+SELECT COUNT(*)
+FROM note_pending_deletion;
+
 deletePendingNoteDeletionById:
 DELETE FROM note_pending_deletion WHERE id = ?;
 
@@ -184,6 +198,10 @@ selectPendingFolderDeletions:
 SELECT *
 FROM folder_pending_deletion
 ORDER BY deleted_at ASC;
+
+countPendingFolderDeletions:
+SELECT COUNT(*)
+FROM folder_pending_deletion;
 
 deletePendingFolderDeletionById:
 DELETE FROM folder_pending_deletion WHERE id = ?;
@@ -205,6 +223,10 @@ selectPendingAttachmentDeletions:
 SELECT path
 FROM attachment_pending_deletion
 ORDER BY path ASC;
+
+countPendingAttachmentDeletions:
+SELECT COUNT(*)
+FROM attachment_pending_deletion;
 
 deletePendingAttachmentDeletionByPath:
 DELETE FROM attachment_pending_deletion WHERE path = ?;

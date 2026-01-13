@@ -2,8 +2,8 @@ package com.edufelip.shared.ui.app.state
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -16,6 +16,7 @@ import com.edufelip.shared.ui.app.core.rememberAmazingNoteAppEnvironment
 import com.edufelip.shared.ui.app.navigation.reportRoute
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.nav.NavigationController
+import com.edufelip.shared.ui.nav.TabRoutePolicy
 import com.edufelip.shared.ui.settings.AppPreferences
 import com.edufelip.shared.ui.settings.DefaultAppPreferences
 import com.edufelip.shared.ui.settings.Settings
@@ -30,8 +31,6 @@ class AmazingNoteAppState internal constructor(
     val authViewModel: AuthViewModel,
     private val navigationController: NavigationController,
 ) {
-    private val tabRoutes = listOf(AppRoutes.Notes, AppRoutes.Folders, AppRoutes.Settings)
-
     val currentRoute: AppRoutes
         get() = navigationController.currentRoute
 
@@ -40,17 +39,31 @@ class AmazingNoteAppState internal constructor(
     val darkTheme: Boolean
         get() = darkThemeFlow.value
 
+    private var hasReportedInitialRoute = false
+
     var isBottomBarEnabled by mutableStateOf(showBottomBar)
         private set
 
-    var isBottomBarVisible by mutableStateOf(isBottomBarEnabled && initialRoute in tabRoutes)
+    var isBottomBarVisible by mutableStateOf(isBottomBarEnabled && TabRoutePolicy.isTabRoute(initialRoute))
         private set
 
     val bottomBarTargetVisible: Boolean
-        get() = isBottomBarEnabled && navigationController.currentRoute in tabRoutes
+        get() = isBottomBarEnabled && TabRoutePolicy.isTabRoute(navigationController.currentRoute)
+
+    val tabRouteVisible: Boolean
+        get() = TabRoutePolicy.isTabRoute(navigationController.currentRoute)
+
+    val stackDepth: Int
+        get() = navigationController.stackDepth
 
     val topBarVisible: Boolean
-        get() = if (isBottomBarEnabled) isBottomBarVisible else navigationController.currentRoute in tabRoutes
+        get() = if (isBottomBarEnabled) isBottomBarVisible else TabRoutePolicy.isTabRoute(navigationController.currentRoute)
+
+    fun reportInitialRouteIfNeeded() {
+        if (hasReportedInitialRoute) return
+        hasReportedInitialRoute = true
+        reportRoute(currentRoute)
+    }
 
     fun navigate(route: AppRoutes, singleTop: Boolean = true) {
         navigationController.navigate(route, singleTop)
@@ -86,7 +99,7 @@ class AmazingNoteAppState internal constructor(
         isBottomBarVisible = visible
     }
 
-    fun isTab(route: AppRoutes): Boolean = route in tabRoutes
+    fun isTab(route: AppRoutes): Boolean = TabRoutePolicy.isTabRoute(route)
 }
 
 @Composable
@@ -115,7 +128,7 @@ fun rememberAmazingNoteAppState(
         onDispose { authViewModel.clear() }
     }
 
-    return remember(environment, navigationController, showBottomBar) {
+    val state = remember(environment, navigationController, showBottomBar) {
         AmazingNoteAppState(
             environment = environment,
             initialRoute = initialRoute,
@@ -125,4 +138,12 @@ fun rememberAmazingNoteAppState(
             navigationController = navigationController,
         )
     }
+
+    // Ensure the current route is reported once on launch so hosts (e.g., iOS tab bar) receive
+    // the correct initial screen instead of the default "notes". Avoid resetting navigation on recomposition.
+    LaunchedEffect(state) {
+        state.reportInitialRouteIfNeeded()
+    }
+
+    return state
 }

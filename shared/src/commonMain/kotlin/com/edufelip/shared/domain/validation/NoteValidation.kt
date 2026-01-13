@@ -15,11 +15,12 @@ sealed class NoteValidationError {
 fun validateNoteInput(
     title: String,
     description: String,
+    attachmentsCount: Int = 0,
     rules: NoteValidationRules = NoteValidationRules(),
 ): List<NoteValidationError> {
     val errors = mutableListOf<NoteValidationError>()
     if (title.isBlank()) errors += NoteValidationError.EmptyTitle
-    if (description.isBlank()) errors += NoteValidationError.EmptyDescription
+    if (description.isBlank() && attachmentsCount == 0) errors += NoteValidationError.EmptyDescription
     if (title.length > rules.maxTitleLength) errors += NoteValidationError.TitleTooLong(rules.maxTitleLength)
     if (description.length > rules.maxDescriptionLength) errors += NoteValidationError.DescriptionTooLong(rules.maxDescriptionLength)
     return errors

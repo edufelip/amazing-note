@@ -14,6 +14,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.edufelip.shared.domain.model.Folder
@@ -52,8 +53,10 @@ import com.edufelip.shared.ui.attachments.resolvePendingImageAttachments
 import com.edufelip.shared.ui.editor.rememberNoteEditorState
 import com.edufelip.shared.ui.effects.toast.rememberToastController
 import com.edufelip.shared.ui.effects.toast.show
+import com.edufelip.shared.ui.features.notes.dialogs.DeleteNoteDialog
 import com.edufelip.shared.ui.features.notes.dialogs.DiscardNoteDialog
 import com.edufelip.shared.ui.util.OnSystemBack
+import com.edufelip.shared.ui.util.TestTags
 import com.edufelip.shared.ui.util.security.SecurityLogger
 import com.edufelip.shared.ui.util.security.sanitizeInlineInput
 import com.edufelip.shared.ui.util.security.sanitizeMultilineInput
@@ -147,6 +150,7 @@ fun NoteDetailScreen(
     }
     val isNewNote = id == null
     var discardDialogVisible by remember(noteKey) { mutableStateOf(false) }
+    var deleteDialogVisible by remember(noteKey) { mutableStateOf(false) }
     val pendingLocalAttachments = remember(noteKey) { mutableStateListOf<String>() }
     var persistedCachedUris by remember(noteKey) { mutableStateOf(currentContent.cachedFileUris()) }
 
@@ -219,6 +223,7 @@ fun NoteDetailScreen(
                 val validationErrors = validateNoteInput(
                     title = sanitizedTitle.value,
                     description = validationDescription.value,
+                    attachmentsCount = validationSummary.attachments.size,
                     rules = noteValidationRules,
                 )
                 if (validationErrors.isNotEmpty()) {
@@ -286,53 +291,58 @@ fun NoteDetailScreen(
     val addImageHandler = attachmentPicker?.let { picker ->
         {
             scope.launch {
-                picker.pickImage()?.let { attachment ->
-                    val processed = attachmentProcessor?.let { processor ->
-                        runCatching {
-                            processor.process(
-                                AttachmentProcessingRequest(
-                                    sourceUri = attachment.downloadUrl,
-                                    mimeType = attachment.mimeType,
-                                    width = attachment.width,
-                                    height = attachment.height,
-                                ),
-                            )
-                        }.getOrNull()
-                    }
-
-                    val displayRendition = processed?.display ?: processed?.original
-                    val insertUri = displayRendition?.localUri ?: attachment.downloadUrl
-                    val insertWidth = displayRendition?.width ?: attachment.width
-                    val insertHeight = displayRendition?.height ?: attachment.height
-                    val insertMime = displayRendition?.mimeType ?: attachment.mimeType
-                    val tinyUri = processed?.tiny?.localUri
-                    processed?.let { pendingRenditions[insertUri] = it }
-                    val canonicalLocalUri = when {
-                        !isRemoteUri(insertUri) -> insertUri
-                        !isRemoteUri(attachment.downloadUrl) -> attachment.downloadUrl
-                        else -> processed?.display?.localUri ?: processed?.original?.localUri
-                    }
-
-                    editorState.insertImageAtCaret(
-                        uri = insertUri,
-                        width = insertWidth,
-                        height = insertHeight,
-                        alt = attachment.fileName,
-                        mimeType = insertMime,
-                        fileName = attachment.fileName,
-                        thumbnailUri = tinyUri,
-                        localUri = canonicalLocalUri,
-                        syncState = ImageSyncState.PendingUpload,
-                    )
-
-                    buildSet {
-                        add(insertUri)
-                        add(attachment.downloadUrl)
-                        tinyUri?.let { add(it) }
-                        processed?.display?.localUri?.let { add(it) }
-                        processed?.original?.localUri?.let { add(it) }
-                    }.forEach { registerLocalAttachment(it) }
+                val result = runCatching { picker.pickImage() }
+                val attachment = result.getOrNull()
+                if (attachment == null) {
+                    result.exceptionOrNull()?.let { toastController.show(it.message ?: "Failed to pick image") }
+                    return@launch
                 }
+
+                val processed = attachmentProcessor?.let { processor ->
+                    runCatching {
+                        processor.process(
+                            AttachmentProcessingRequest(
+                                sourceUri = attachment.downloadUrl,
+                                mimeType = attachment.mimeType,
+                                width = attachment.width,
+                                height = attachment.height,
+                            ),
+                        )
+                    }.getOrNull()
+                }
+
+                val displayRendition = processed?.display ?: processed?.original
+                val insertUri = displayRendition?.localUri ?: attachment.downloadUrl
+                val insertWidth = displayRendition?.width ?: attachment.width
+                val insertHeight = displayRendition?.height ?: attachment.height
+                val insertMime = displayRendition?.mimeType ?: attachment.mimeType
+                val tinyUri = processed?.tiny?.localUri
+                processed?.let { pendingRenditions[insertUri] = it }
+                val canonicalLocalUri = when {
+                    !isRemoteUri(insertUri) -> insertUri
+                    !isRemoteUri(attachment.downloadUrl) -> attachment.downloadUrl
+                    else -> processed?.display?.localUri ?: processed?.original?.localUri
+                }
+
+                editorState.insertImageAtCaret(
+                    uri = insertUri,
+                    width = insertWidth,
+                    height = insertHeight,
+                    alt = attachment.fileName,
+                    mimeType = insertMime,
+                    fileName = attachment.fileName,
+                    thumbnailUri = tinyUri,
+                    localUri = canonicalLocalUri,
+                    syncState = ImageSyncState.PendingUpload,
+                )
+
+                buildSet {
+                    add(insertUri)
+                    add(attachment.downloadUrl)
+                    tinyUri?.let { add(it) }
+                    processed?.display?.localUri?.let { add(it) }
+                    processed?.original?.localUri?.let { add(it) }
+                }.forEach { registerLocalAttachment(it) }
             }
             Unit
         }
@@ -349,8 +359,7 @@ fun NoteDetailScreen(
         onSave = { launchSave(navigateBack = true) },
         onDelete = id?.let { noteId ->
             {
-                onDelete(noteId)
-                latestOnBack()
+                deleteDialogVisible = true
             }
         },
         onAddImage = addImageHandler,
@@ -358,7 +367,9 @@ fun NoteDetailScreen(
         titleError = titleError,
         contentError = contentError,
         isSaving = isSaving,
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag(TestTags.NoteDetail.ROOT),
     )
 
     LaunchedEffect(noteKey, uploadContext) {
@@ -383,6 +394,17 @@ fun NoteDetailScreen(
             onConfirm = {
                 discardDialogVisible = false
                 cleanupPendingLocalAttachments(deleteFiles = true)
+                latestOnBack()
+            },
+        )
+    }
+
+    if (deleteDialogVisible && id != null) {
+        DeleteNoteDialog(
+            onDismiss = { deleteDialogVisible = false },
+            onConfirm = {
+                deleteDialogVisible = false
+                onDelete(id)
                 latestOnBack()
             },
         )

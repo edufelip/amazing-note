@@ -1,7 +1,9 @@
 package com.edufelip.shared.di
 
 import com.edufelip.shared.data.auth.AuthService
+import com.edufelip.shared.data.repository.DefaultAccountDeletionRepository
 import com.edufelip.shared.data.repository.DefaultAuthRepository
+import com.edufelip.shared.domain.repository.AccountDeletionRepository
 import com.edufelip.shared.domain.repository.AuthRepository
 import com.edufelip.shared.domain.usecase.AuthUseCases
 import com.edufelip.shared.domain.usecase.NoteUseCases
@@ -21,7 +23,8 @@ import kotlin.native.concurrent.ThreadLocal
 
 private val coreModule = module {
     single<AuthRepository> { DefaultAuthRepository(get<AuthService>()) }
-    single<AuthUseCases> { buildAuthUseCases(get()) }
+    single<AccountDeletionRepository> { DefaultAccountDeletionRepository(get(), get()) }
+    single<AuthUseCases> { buildAuthUseCases(get(), get()) }
     single<NoteUseCases> { buildNoteUseCases(get(), NoteValidationRules()) }
     single { AuthViewModel(get()) }
     single<NoteUiViewModel> { DefaultNoteUiViewModel(get()) }

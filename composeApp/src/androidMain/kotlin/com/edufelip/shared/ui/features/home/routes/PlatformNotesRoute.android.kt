@@ -51,6 +51,8 @@ actual fun PlatformNotesRoute(
     syncManager: NotesSyncManager,
     onNavigate: (AppRoutes) -> Unit,
     isUserAuthenticated: Boolean,
+    onAvatarClick: () -> Unit,
+    onLogout: () -> Unit,
 ) {
     CollectNoteSyncEvents(
         viewModel = viewModel,
@@ -64,14 +66,6 @@ actual fun PlatformNotesRoute(
         configuration.screenWidthDp < 600
     }
 
-    val onDelete: (Note) -> Unit = { note ->
-        viewModel.setDeleted(
-            id = note.id,
-            deleted = true,
-            syncAfter = isUserAuthenticated,
-        )
-    }
-
     if (isCompactWidth) {
         HomeScreen(
             notes = notes,
@@ -80,7 +74,8 @@ actual fun PlatformNotesRoute(
                 onNavigate(AppRoutes.NoteDetail(note.id, note.folderId))
             },
             onAdd = { onNavigate(AppRoutes.NoteDetail(null, null)) },
-            onDelete = onDelete,
+            onAvatarClick = onAvatarClick,
+            onLogout = onLogout,
         )
         return
     }
@@ -94,13 +89,14 @@ actual fun PlatformNotesRoute(
             NotesListPane(
                 notes = notes,
                 authViewModel = authViewModel,
+                onAvatarClick = onAvatarClick,
+                onLogout = onLogout,
                 onNavigateToDetail = { destination ->
                     navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, destination)
                 },
                 onCreateNote = {
                     navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, NotesPaneDestination())
                 },
-                onDelete = onDelete,
             )
         },
         detailPane = {
@@ -124,9 +120,10 @@ actual fun PlatformNotesRoute(
 private fun NotesListPane(
     notes: List<Note>,
     authViewModel: AuthViewModel,
+    onAvatarClick: () -> Unit,
+    onLogout: () -> Unit,
     onNavigateToDetail: (NotesPaneDestination) -> Unit,
     onCreateNote: () -> Unit,
-    onDelete: (Note) -> Unit,
 ) {
     HomeScreen(
         notes = notes,
@@ -140,7 +137,8 @@ private fun NotesListPane(
             )
         },
         onAdd = onCreateNote,
-        onDelete = onDelete,
+        onAvatarClick = onAvatarClick,
+        onLogout = onLogout,
     )
 }
 

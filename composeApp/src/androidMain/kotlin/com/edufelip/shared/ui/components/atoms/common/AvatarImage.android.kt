@@ -27,6 +27,8 @@ actual fun AvatarImage(photoUrl: String?, size: Dp, modifier: Modifier) {
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = shapeMod,
+            placeholder = painterResource(Res.drawable.user_placeholder),
+            error = painterResource(Res.drawable.user_placeholder),
         )
     } else {
         Box(modifier = shapeMod.background(MaterialTheme.colorScheme.surfaceVariant)) {

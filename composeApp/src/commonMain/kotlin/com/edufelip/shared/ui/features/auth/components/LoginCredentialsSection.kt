@@ -24,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -37,6 +38,7 @@ import com.edufelip.shared.resources.password
 import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.util.TestTags
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -65,20 +67,15 @@ internal fun LoginCredentialsSection(
         onValueChange = onEmailChange,
         modifier = modifier
             .fillMaxWidth()
-            .onFocusChanged { onEmailFocusChanged(it.isFocused) },
+            .onFocusChanged { onEmailFocusChanged(it.isFocused) }
+            .testTag(TestTags.Login.EMAIL_FIELD),
         label = { Text(stringResource(Res.string.email)) },
         singleLine = true,
-        isError = emailErrorMessage != null || showError,
+        isError = emailErrorMessage != null,
         supportingText = {
-            when {
-                emailErrorMessage != null -> Text(
-                    text = emailErrorMessage,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-
-                showError -> Text(
-                    text = errorMessage,
+            emailErrorMessage?.let {
+                Text(
+                    text = it,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
                 )
@@ -90,7 +87,8 @@ internal fun LoginCredentialsSection(
         onValueChange = onPasswordChange,
         modifier = Modifier
             .fillMaxWidth()
-            .onFocusChanged { onPasswordFocusChanged(it.isFocused) },
+            .onFocusChanged { onPasswordFocusChanged(it.isFocused) }
+            .testTag(TestTags.Login.PASSWORD_FIELD),
         label = { Text(stringResource(Res.string.password)) },
         singleLine = true,
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -104,11 +102,17 @@ internal fun LoginCredentialsSection(
                 Icon(imageVector = icon, contentDescription = description)
             }
         },
-        isError = passwordErrorMessage != null,
+        isError = passwordErrorMessage != null || showError,
         supportingText = {
-            passwordErrorMessage?.let {
-                Text(
-                    text = it,
+            when {
+                passwordErrorMessage != null -> Text(
+                    text = passwordErrorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+
+                showError -> Text(
+                    text = errorMessage,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
                 )
@@ -121,7 +125,8 @@ internal fun LoginCredentialsSection(
         enabled = isSubmitEnabled,
         modifier = Modifier
             .fillMaxWidth()
-            .height(tokens.spacing.xxl + tokens.spacing.xl),
+            .height(tokens.spacing.xxl + tokens.spacing.xl)
+            .testTag(TestTags.Login.SUBMIT_BUTTON),
         shape = MaterialTheme.shapes.extraLarge,
     ) {
         if (loading) {

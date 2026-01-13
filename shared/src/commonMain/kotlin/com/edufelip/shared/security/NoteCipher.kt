@@ -11,7 +11,7 @@ private val ENC_LABEL = "note/enc".encodeToByteArray()
 private val MAC_LABEL = "note/mac".encodeToByteArray()
 
 object NoteCipher {
-    private val keyStore = SecureKeyStore()
+    private val keyStore by lazy { SecureKeyStore() }
     private val realKey: ByteArray by lazy { ensureKeyLength(keyStore.getOrCreateKey()) }
 
     private var overrideKey: ByteArray? = null
@@ -29,9 +29,10 @@ object NoteCipher {
         if (value.isEmpty() || !value.startsWith(PREFIX)) return value
         val payload = runCatching { Base64.Default.decode(value.removePrefix(PREFIX)) }
             .getOrElse { return value }
-        val plaintext = runCatching { decryptPayload(activeKey(), payload) }
-            .getOrElse { legacyDecrypt(payload) ?: return value }
-        return plaintext.decodeToString()
+        val result = runCatching { decryptPayload(activeKey(), payload) }
+        if (result.isSuccess) return result.getOrThrow().decodeToString()
+
+        return (legacyDecrypt(payload) ?: return value).decodeToString()
     }
 
     internal fun overrideKeyForTests(testKey: ByteArray) {

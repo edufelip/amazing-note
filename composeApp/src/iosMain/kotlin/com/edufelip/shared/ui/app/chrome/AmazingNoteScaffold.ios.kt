@@ -2,6 +2,7 @@ package com.edufelip.shared.ui.app.chrome
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -9,6 +10,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -40,27 +42,31 @@ actual fun AmazingNoteScaffold(
             .fillMaxSize()
             .background(tokens.colors.canvas),
         containerColor = Color.Transparent,
-        contentWindowInsets = chrome.contentWindowInsets,
+        contentWindowInsets = WindowInsets(),
         topBar = topBar,
         bottomBar = {
-            if (state.isBottomBarEnabled) {
+            val shouldShowBottomBar = state.isBottomBarEnabled &&
+                state.isBottomBarVisible &&
+                state.isTab(state.currentRoute)
+
+            if (shouldShowBottomBar) {
                 val bottomBarModifier = with(chrome) {
                     Modifier
                         .fillMaxWidth()
-                        .heightIn(min = AppChromeDefaults.bottomBarHeight)
+                        .heightIn(min = tokens.spacing.xxxl)
                         .applyNavigationBarsPadding()
                 }
                 Box(modifier = bottomBarModifier) {
                     AnimatedVisibility(
-                        visible = state.isBottomBarVisible,
+                        visible = true,
                         enter = slideInVertically(
                             initialOffsetY = { it },
-                            animationSpec = tweenSpec(),
-                        ) + fadeIn(animationSpec = tweenSpec()),
+                            animationSpec = tween(durationMillis = 320),
+                        ) + fadeIn(animationSpec = tween(durationMillis = 320)),
                         exit = slideOutVertically(
                             targetOffsetY = { it },
-                            animationSpec = tweenSpec(),
-                        ) + fadeOut(animationSpec = tweenSpec()),
+                            animationSpec = tween(durationMillis = 320),
+                        ) + fadeOut(animationSpec = tween(durationMillis = 320)),
                     ) {
                         AmazingBottomBar(
                             current = state.currentRoute,
@@ -71,14 +77,6 @@ actual fun AmazingNoteScaffold(
             }
         },
     ) { padding ->
-        val bottomHeight = if (state.isBottomBarEnabled && state.isBottomBarVisible) {
-            AppChromeDefaults.bottomBarHeight
-        } else {
-            Dp.Zero
-        }
-        content(padding, bottomHeight)
+        content(padding, tokens.spacing.xxxl)
     }
 }
-
-@Composable
-private fun tweenSpec() = androidx.compose.animation.core.tween(durationMillis = 320)

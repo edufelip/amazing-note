@@ -6,9 +6,16 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.jvm.JvmName
+
+internal const val NOTE_CONTENT_SCHEMA_VERSION = 1
+internal const val LEGACY_NOTE_CONTENT_SCHEMA_VERSION = 0
 
 private val noteContentJson = Json {
     ignoreUnknownKeys = true
@@ -19,8 +26,18 @@ private val noteContentJson = Json {
 
 private val jsonFormatter = Json { ignoreUnknownKeys = true }
 
+/**
+ * Canonical editor content stored as ordered block list.
+ *
+ * Editor invariants:
+ * - At least one TextBlock exists.
+ * - The last block is always a TextBlock so the caret has a landing spot.
+ */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class NoteContent(
+    @EncodeDefault(EncodeDefault.Mode.ALWAYS)
+    val schemaVersion: Int = NOTE_CONTENT_SCHEMA_VERSION,
     val blocks: List<NoteBlock> = emptyList(),
 ) {
     companion object
@@ -28,15 +45,46 @@ data class NoteContent(
 
 fun NoteContent.Companion.empty(): NoteContent = NoteContent()
 
-fun NoteContent.toJson(): String = noteContentJson.encodeToString(NoteContent.serializer(), this)
+fun NoteContent.toJson(): String = noteContentJson.encodeToString(
+    NoteContent.serializer(),
+    withSchemaVersion(),
+)
 
 fun noteContentFromJson(raw: String?): NoteContent = raw
     ?.takeIf { it.isNotBlank() }
     ?.let { json ->
-        runCatching { noteContentJson.decodeFromString(NoteContent.serializer(), json) }.getOrNull()
+        val hasSchema = json.hasSchemaVersion()
+        val decoded = runCatching { noteContentJson.decodeFromString(NoteContent.serializer(), json) }.getOrNull()
+        decoded?.let { content ->
+            if (hasSchema) content else content.copy(schemaVersion = LEGACY_NOTE_CONTENT_SCHEMA_VERSION)
+        }
     }
     ?.normalizedForSync()
     ?: NoteContent()
+
+fun NoteContent.withSchemaVersion(version: Int = NOTE_CONTENT_SCHEMA_VERSION): NoteContent = if (schemaVersion == version) this else copy(schemaVersion = version)
+
+fun NoteContent.migrateToLatestSchema(): NoteContent {
+    if (schemaVersion >= NOTE_CONTENT_SCHEMA_VERSION) {
+        return if (schemaVersion == NOTE_CONTENT_SCHEMA_VERSION) this else copy(schemaVersion = NOTE_CONTENT_SCHEMA_VERSION)
+    }
+    return copy(schemaVersion = NOTE_CONTENT_SCHEMA_VERSION)
+}
+
+fun NoteContent.normalizedForEditor(): NoteContent {
+    val sanitized = blocks.ifEmpty { listOf(TextBlock(text = "")) }
+    val last = sanitized.lastOrNull()
+    val normalizedBlocks = if (last is TextBlock) sanitized else sanitized + TextBlock(text = "")
+    return if (normalizedBlocks == blocks) this else copy(blocks = normalizedBlocks)
+}
+
+private fun String.hasSchemaVersion(): Boolean = runCatching {
+    noteContentJson.parseToJsonElement(this)
+        .jsonObject["schemaVersion"]
+        ?.jsonPrimitive
+        ?.content
+        ?.toIntOrNull() != null
+}.getOrDefault(false)
 
 @Serializable
 data class NoteAttachment(
@@ -208,10 +256,9 @@ fun NoteContent.mergeCachedImages(other: NoteContent): NoteContent {
     )
 }
 
-private fun keyForImage(image: ImageBlock): String =
-    image.storagePath
-        ?: image.thumbnailStoragePath
-        ?: image.id
+private fun keyForImage(image: ImageBlock): String = image.storagePath
+    ?: image.thumbnailStoragePath
+    ?: image.id
 
 fun NoteContent.trimEmptyTextBlocks(): NoteContent = copy(
     blocks = blocks.filterNot { block ->

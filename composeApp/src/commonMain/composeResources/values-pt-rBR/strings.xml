@@ -11,6 +11,7 @@
     <string name="logout">Sair</string>
     <string name="google_sign_in">Entrar com o Google</string>
     <string name="continue_with_google">Continuar com o Google</string>
+    <string name="continue_with_apple">Continuar com a Apple</string>
     <string name="login_title">Entre na sua conta</string>
     <string name="name">Nome</string>
     <string name="email">E-mail</string>
@@ -18,6 +19,10 @@
     <string name="forgot_password">Esqueceu a senha?</string>
     <string name="forgot_password_description">Digite seu e-mail para receber um link de redefinição.</string>
     <string name="forgot_password_send_email">Enviar e-mail de redefinição</string>
+    <string name="sign_up_title">Crie sua conta</string>
+    <string name="sign_up_subtitle">Junte-se à nossa comunidade de anotadores!</string>
+    <string name="sign_up_need_help">Precisa de ajuda?</string>
+    <string name="sign_up_primary_cta">Criar conta</string>
     <string name="sign_up">Criar conta</string>
     <string name="reset_email_sent">E-mail de redefinição enviado</string>
     <string name="sign_up_success">Conta criada com sucesso</string>
@@ -26,10 +31,20 @@
     <string name="login_error_invalid_credentials">Verifique se e-mail e senha estão corretos.</string>
     <string name="google_sign_in_canceled">Login com Google cancelado</string>
     <string name="logout_canceled">Saída cancelada</string>
+    <string name="login_headline">Bem-vindo de volta!</string>
+    <string name="login_subheadline">Entre para continuar gerenciando suas notas.</string>
+    <string name="login_dont_have_account">Não tem uma conta?</string>
+    <string name="login_signup_cta">Cadastre-se</string>
+    <string name="login_help">Precisa de ajuda?</string>
     <string name="welcome_user">Bem-vindo, %1$s</string>
     <string name="guest">Convidado</string>
     <string name="auth_generic_validation_error">Verifique suas credenciais e tente novamente.</string>
     <string name="auth_network_error">Verifique sua conexão com a internet e tente novamente.</string>
+    <string name="auth_email_already_in_use">Este e-mail já está cadastrado.</string>
+    <string name="auth_weak_password">Senha muito fraca. Escolha uma senha mais forte.</string>
+    <string name="auth_too_many_requests">Muitas tentativas. Tente novamente mais tarde.</string>
+    <string name="auth_user_disabled">Esta conta foi desativada.</string>
+    <string name="auth_unknown_error">Algo deu errado. Tente novamente.</string>
     <string name="name_required">O nome é obrigatório.</string>
     <string name="email_required">E-mail é obrigatório.</string>
     <string name="email_invalid_format">Informe um e-mail válido.</string>
@@ -42,7 +57,6 @@
     <string name="login_rate_limit">Muitas tentativas. Tente novamente em %1$d segundos.</string>
 
     <!-- Autenticação - Tela de cadastro -->
-    <string name="sign_up_title">Crie sua conta</string>
     <string name="confirm_password">Confirmar senha</string>
     <string name="password_requirements">Mín. 8 caracteres, maiúscula, minúscula, dígito, símbolo</string>
     <string name="passwords_do_not_match">As senhas não coincidem</string>
@@ -52,6 +66,13 @@
     <!-- Autenticação - Diálogos de saída -->
     <string name="logout_confirm_title">Confirmar saída</string>
     <string name="logout_confirm_message">Tem certeza de que deseja sair?</string>
+    <string name="logout_pending_title">Alterações não sincronizadas</string>
+    <string name="logout_pending_message">Algumas alterações ainda não foram sincronizadas. Se você sair agora, elas podem não aparecer em outros dispositivos.</string>
+    <string name="logout_pending_confirm">Sair mesmo</string>
+    <string name="logout_pending_cancel">Continuar conectado</string>
+    <string name="logout_offline_title">Você está offline</string>
+    <string name="logout_offline_message">Conecte-se à internet para sair. Isso mantém suas notas em sincronia.</string>
+    <string name="logout_offline_confirm">OK</string>
     <string name="yes">Sim</string>
     <string name="no">Não</string>
     <string name="signing_out">Saindo</string>
@@ -67,15 +88,15 @@
     <string name="note_discard_title">Descartar nota?</string>
     <string name="note_discard_message">Você tem alterações não salvas. Se sair agora, elas serão perdidas.</string>
     <string name="note_discard_confirm">Descartar</string>
+    <string name="note_delete_title">Excluir nota?</string>
+    <string name="note_delete_message">Isso moverá a nota para a lixeira.</string>
+    <string name="note_delete_confirm">Excluir</string>
     <string name="attachment_uploading">Enviando %1$s… %2$d%%</string>
     <string name="attachment_upload_failed">Falha ao enviar o arquivo.</string>
     <string name="attachment_upload_failed_with_detail">Falha ao enviar o arquivo: %1$s</string>
     <string name="attachment_generic_name">arquivo</string>
     <string name="attachments_label">Anexos</string>
     <string name="editor_add_image">Adicionar imagem</string>
-    <string name="editor_copy_image">Copiar imagem</string>
-    <string name="editor_cut_image">Recortar imagem</string>
-    <string name="editor_paste_image">Colar imagem</string>
 
     <!-- Notas - Estados vazios -->
     <string name="empty_notes_greeting">Bom dia</string>
@@ -124,6 +145,9 @@
     <string name="cd_search">Pesquisar</string>
     <string name="cd_clear_search">Limpar pesquisa</string>
     <string name="cd_toggle_dark_theme">Alternar tema escuro</string>
+    <string name="cd_help">Ajuda</string>
+    <string name="folder_layout_list_content_description">Mudar para visualização em lista</string>
+    <string name="folder_layout_grid_content_description">Mudar para visualização em grade</string>
 
     <!-- Erros e Validação -->
     <string name="error_title_required">Título é obrigatório</string>
@@ -148,6 +172,9 @@
     <string name="folders_header_title">Pastas</string>
     <string name="folders_header_subtitle">Organize suas notas em pastas.</string>
     <string name="folders_view_all">Ver tudo</string>
+    <string name="search_hint_folders">Buscar pastas</string>
+    <string name="search_reset">Redefinir busca</string>
+    <string name="search_no_results">Nenhuma pasta encontrada</string>
     <string name="home_new_folder">Nova pasta</string>
     <string name="folder_note_count_one">1 nota</string>
     <string name="folder_note_count_other">%1$d notas</string>
@@ -158,10 +185,10 @@
     <string name="no_folder_label">Sem pasta</string>
     <string name="folder_field_label">Pasta</string>
     <string name="unassigned_notes">Sem pasta</string>
+    <string name="contact_us">Fale conosco</string>
 
     <!-- Configurações -->
     <string name="settings_header">Configurações</string>
-    <string name="settings_review_reminder_title">Data do lembrete de revisão</string>
     <string name="personalize_title">Personalize suas notas</string>
     <string name="personalize_subtitle">Deixe o app com a sua cara.</string>
     <string name="welcome_message">Entre para sincronizar em todos os dispositivos.</string>
@@ -169,9 +196,23 @@
     <string name="theme_option">Modo escuro</string>
     <string name="theme_subtitle">Alterne entre modo claro e escuro.</string>
     <string name="account_section">Conta</string>
+    <string name="delete_account">Excluir conta</string>
+    <string name="delete_account_confirm_title">Excluir conta permanentemente</string>
+    <string name="delete_account_confirm_message">Tem certeza de que deseja excluir sua conta? Esta ação não pode ser desfeita.</string>
+    <string name="delete_account_confirm_email_label">Digite seu e-mail para confirmar</string>
+    <string name="delete_account_confirm_email_mismatch">O e-mail não confere.</string>
+    <string name="delete_account_confirm_button">Excluir conta</string>
+    <string name="delete_account_success_title">Conta excluída</string>
+    <string name="delete_account_success_message">Sua conta e seus dados foram excluídos.</string>
+    <string name="delete_account_failure_title">Não foi possível excluir a conta</string>
+    <string name="delete_account_failure_message">Tente novamente.</string>
     <string name="management_section">Atalhos</string>
     <string name="trash_subtitle">Notas excluídas recentemente</string>
     <string name="app_version_label">Versão do app</string>
+    <string name="sync_status_syncing">Sincronizando...</string>
+    <string name="sync_status_synced">Sincronizado %1$s</string>
+    <string name="sync_status_failed">Falha na sincronização</string>
+    <string name="sync_status_retry">Tentar sincronizar</string>
 
     <!-- Ações -->
     <string name="restore">Restaurar</string>

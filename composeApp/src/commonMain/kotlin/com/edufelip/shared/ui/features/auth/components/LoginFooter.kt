@@ -9,11 +9,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import com.edufelip.shared.resources.Res
 import com.edufelip.shared.resources.login_dont_have_account
 import com.edufelip.shared.resources.login_signup_cta
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.util.TestTags
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -32,7 +34,10 @@ internal fun LoginFooter(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        TextButton(onClick = onOpenSignUp) {
+        TextButton(
+            onClick = onOpenSignUp,
+            modifier = Modifier.testTag(TestTags.Login.SIGN_UP_BUTTON),
+        ) {
             Text(
                 text = stringResource(Res.string.login_signup_cta),
                 style = MaterialTheme.typography.bodyMedium,

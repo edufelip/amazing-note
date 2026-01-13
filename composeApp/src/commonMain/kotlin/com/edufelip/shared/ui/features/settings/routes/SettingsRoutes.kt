@@ -7,7 +7,6 @@ import com.edufelip.shared.ui.app.state.AmazingNoteAppState
 import com.edufelip.shared.ui.features.settings.screens.PrivacyScreen
 import com.edufelip.shared.ui.features.settings.screens.SettingsScreen
 import com.edufelip.shared.ui.nav.AppRoutes
-import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsRoute(
@@ -17,7 +16,6 @@ fun SettingsRoute(
     onNavigate: (AppRoutes) -> Unit,
 ) {
     val authViewModel = state.authViewModel
-    val scope = state.coroutineScope
     val syncManager = state.environment.notesSyncManager
 
     SettingsScreen(
@@ -26,11 +24,14 @@ fun SettingsRoute(
         auth = authViewModel,
         onLogin = { onNavigate(AppRoutes.Login) },
         onLogout = {
-            scope.launch {
-                if (authViewModel.uiState.value.user != null) {
-                    runCatching { syncManager.syncLocalToRemoteOnly() }
-                }
-                authViewModel.logout()
+            authViewModel.logout()
+        },
+        onDeleteAccount = {
+            syncManager.pause()
+            try {
+                authViewModel.deleteAccount()
+            } finally {
+                syncManager.resume()
             }
         },
         onOpenTrash = { onNavigate(AppRoutes.Trash) },

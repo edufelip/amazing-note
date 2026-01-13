@@ -37,7 +37,6 @@ import com.edufelip.shared.resources.empty_notes_hint
 import com.edufelip.shared.resources.empty_notes_title
 import com.edufelip.shared.resources.notes_empty_action
 import com.edufelip.shared.resources.notes_empty_unlock_label
-import com.edufelip.shared.ui.app.chrome.AppChromeDefaults
 import com.edufelip.shared.ui.designsystem.designTokens
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
@@ -62,7 +61,7 @@ fun NotesEmptyState(
                 .fillMaxSize()
                 .applyNavigationBarsPadding()
                 .padding(horizontal = tokens.spacing.xl)
-                .padding(bottom = AppChromeDefaults.bottomBarHeight)
+                .padding(bottom = tokens.spacing.xxl)
         },
         contentAlignment = Alignment.Center,
     ) {

@@ -8,7 +8,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,23 +21,34 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CreateNewFolder
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,23 +56,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.edufelip.shared.domain.model.Folder
 import com.edufelip.shared.domain.model.Note
 import com.edufelip.shared.resources.Res
+import com.edufelip.shared.resources.cd_clear_search
+import com.edufelip.shared.resources.cd_search
 import com.edufelip.shared.resources.delete_folder_message
 import com.edufelip.shared.resources.folders_empty_hint
 import com.edufelip.shared.resources.folders_empty_title
 import com.edufelip.shared.resources.folders_empty_unlock_label
 import com.edufelip.shared.resources.home_new_folder
+import com.edufelip.shared.resources.logout
+import com.edufelip.shared.resources.logout_offline_confirm
+import com.edufelip.shared.resources.logout_offline_message
+import com.edufelip.shared.resources.logout_offline_title
+import com.edufelip.shared.resources.logout_pending_cancel
+import com.edufelip.shared.resources.logout_pending_confirm
+import com.edufelip.shared.resources.logout_pending_message
+import com.edufelip.shared.resources.logout_pending_title
 import com.edufelip.shared.resources.new_folder
 import com.edufelip.shared.resources.rename_folder
 import com.edufelip.shared.resources.search_no_results
 import com.edufelip.shared.resources.search_reset
 import com.edufelip.shared.ui.app.chrome.AmazingTopBar
-import com.edufelip.shared.ui.app.chrome.AppChromeDefaults
+import com.edufelip.shared.ui.app.chrome.rememberSyncIndicatorState
+import com.edufelip.shared.ui.app.chrome.rememberSyncRetryAction
+import com.edufelip.shared.ui.components.atoms.common.AvatarImage
 import com.edufelip.shared.ui.components.organisms.notes.FolderLayout
 import com.edufelip.shared.ui.components.organisms.notes.FoldersGrid
 import com.edufelip.shared.ui.components.organisms.notes.FoldersHeader
@@ -68,9 +97,14 @@ import com.edufelip.shared.ui.features.notes.dialogs.DeleteFolderDialog
 import com.edufelip.shared.ui.features.notes.dialogs.FolderNameDialog
 import com.edufelip.shared.ui.preview.DevicePreviewContainer
 import com.edufelip.shared.ui.preview.DevicePreviews
+import com.edufelip.shared.ui.util.TestTags
 import com.edufelip.shared.ui.util.lifecycle.collectWithLifecycle
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
 import com.edufelip.shared.ui.vm.AuthViewModel
+import com.edufelip.shared.ui.vm.LogoutDecision
+import com.edufelip.shared.data.network.LocalNetworkStatus
+import com.edufelip.shared.data.sync.LocalNotesSyncManager
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
@@ -89,6 +123,8 @@ fun FoldersScreen(
     onCreateFolder: (String) -> Unit,
     onRenameFolder: (Folder, String) -> Unit,
     onDeleteFolder: (Folder) -> Unit,
+    onAvatarClick: () -> Unit = {},
+    onLogout: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val notesByFolder =
@@ -96,6 +132,9 @@ fun FoldersScreen(
     val hasFolders = folders.isNotEmpty()
 
     var searchQuery by rememberSaveable { mutableStateOf("") }
+    var searchVisible by rememberSaveable { mutableStateOf(false) }
+    var showAccountSheet by rememberSaveable { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val filteredFolders = remember(folders, searchQuery) {
         if (searchQuery.isBlank()) {
@@ -105,6 +144,40 @@ fun FoldersScreen(
         }
     }
     val hasFilteredContent = filteredFolders.isNotEmpty()
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+    val syncManager = LocalNotesSyncManager.current
+    val networkStatus = LocalNetworkStatus.current
+    val coroutineScope = rememberCoroutineScope()
+    var logoutPendingDialogVisible by remember { mutableStateOf(false) }
+    var logoutOfflineDialogVisible by remember { mutableStateOf(false) }
+    val onLogoutRequested = {
+        coroutineScope.launch {
+            when (auth?.requestLogoutDecision() ?: LogoutDecision.Allowed) {
+                LogoutDecision.Offline -> {
+                    logoutPendingDialogVisible = false
+                    logoutOfflineDialogVisible = true
+                }
+
+                LogoutDecision.PendingChanges -> {
+                    logoutPendingDialogVisible = true
+                    logoutOfflineDialogVisible = false
+                }
+
+                LogoutDecision.Allowed -> {
+                    logoutPendingDialogVisible = false
+                    logoutOfflineDialogVisible = false
+                    onLogout()
+                }
+            }
+        }
+    }
+    LaunchedEffect(hasFolders) {
+        if (!hasFolders) {
+            searchVisible = false
+            searchQuery = ""
+        }
+    }
 
     var createDialogVisible by rememberSaveable { mutableStateOf(false) }
     var renameTarget by remember { mutableStateOf<Folder?>(null) }
@@ -133,24 +206,69 @@ fun FoldersScreen(
     )
 
     val currentUserState = auth?.uiState?.collectWithLifecycle()?.value
+    val syncIndicator = rememberSyncIndicatorState(
+        syncManager = syncManager,
+        networkStatus = networkStatus,
+        isAuthenticated = currentUserState?.user != null,
+    )
+    val onSyncRetry = rememberSyncRetryAction(syncManager)
 
     val isEmpty = folders.isEmpty()
     val chrome = platformChromeStrategy()
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = { AmazingTopBar(user = currentUserState?.user) },
+        modifier = modifier
+            .fillMaxSize()
+            .testTag(TestTags.Folders.ROOT),
+        topBar = {
+            AmazingTopBar(
+                user = currentUserState?.user,
+                syncIndicator = syncIndicator,
+                onSyncRetry = onSyncRetry,
+                onAvatarClick = {
+                    if (currentUserState?.user == null) {
+                        onAvatarClick()
+                    } else {
+                        showAccountSheet = true
+                    }
+                },
+                actions = {
+                    if (hasFolders) {
+                        IconButton(
+                            onClick = {
+                                if (searchVisible) {
+                                    searchVisible = false
+                                    searchQuery = ""
+                                    keyboardController?.hide()
+                                    focusManager.clearFocus()
+                                } else {
+                                    searchVisible = true
+                                }
+                            },
+                        ) {
+                            val isOpen = searchVisible
+                            Icon(
+                                imageVector = if (isOpen) Icons.Filled.Close else Icons.Filled.Search,
+                                contentDescription = if (isOpen) {
+                                    stringResource(Res.string.cd_clear_search)
+                                } else {
+                                    stringResource(Res.string.cd_search)
+                                },
+                                tint = tokens.colors.onSurface,
+                            )
+                        }
+                    }
+                },
+            )
+        },
         containerColor = tokens.colors.canvas,
-        contentWindowInsets = chrome.contentWindowInsets,
+        contentWindowInsets = WindowInsets(),
         floatingActionButton = {
             if (!isEmpty) {
-                val navigationBottom = chrome.navigationBarBottomInset()
-                val fabBottomPadding = when {
-                    chrome.bottomBarHeight == tokens.spacing.zero -> tokens.spacing.lg
-                    else -> chrome.bottomBarHeight + (navigationBottom * 2)
-                }
                 ExtendedFloatingActionButton(
-                    modifier = Modifier.padding(bottom = fabBottomPadding, end = tokens.spacing.sm),
+                    modifier = Modifier
+                        .padding(bottom = tokens.spacing.xxxl, end = tokens.spacing.sm)
+                        .testTag(TestTags.Folders.ADD_FOLDER_BUTTON),
                     onClick = { openCreate() },
                     icon = {
                         Icon(
@@ -198,6 +316,7 @@ fun FoldersScreen(
                             }
                             onLayoutChange(next)
                         },
+                        showSearchBar = searchVisible,
                     )
                 }
 
@@ -212,7 +331,9 @@ fun FoldersScreen(
                             when (activeLayout) {
                                 FolderLayout.Grid -> {
                                     FoldersGrid(
-                                        modifier = Modifier.fillMaxSize(),
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .testTag(TestTags.Folders.GRID),
                                         folders = filteredFolders,
                                         notesByFolder = notesByFolder,
                                         accentPalette = accentPalette,
@@ -229,6 +350,7 @@ fun FoldersScreen(
 
                                 FolderLayout.List -> {
                                     FoldersList(
+                                        modifier = Modifier.testTag(TestTags.Folders.LIST),
                                         folders = filteredFolders,
                                         notesByFolder = notesByFolder,
                                         accentPalette = accentPalette,
@@ -294,6 +416,108 @@ fun FoldersScreen(
             },
         )
     }
+
+    if (showAccountSheet && currentUserState?.user != null) {
+        ModalBottomSheet(
+            onDismissRequest = { showAccountSheet = false },
+            sheetState = sheetState,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(tokens.spacing.xl),
+                verticalArrangement = Arrangement.spacedBy(tokens.spacing.md),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(tokens.spacing.md),
+                ) {
+                    AvatarImage(
+                        photoUrl = currentUserState.user.photoUrl,
+                        size = tokens.spacing.xxl,
+                    )
+                    Column {
+                        Text(
+                            text = currentUserState.user.displayName?.takeIf { it.isNotBlank() }
+                                ?: currentUserState.user.email.orEmpty(),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = tokens.colors.onSurface,
+                        )
+                        currentUserState.user.email?.let {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = tokens.colors.muted,
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(tokens.spacing.xxl))
+
+                OutlinedButton(
+                    onClick = {
+                        showAccountSheet = false
+                        onLogoutRequested()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(vertical = tokens.spacing.md),
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Logout,
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = tokens.spacing.sm),
+                    )
+                    Text(text = stringResource(Res.string.logout))
+                }
+                Spacer(modifier = Modifier.height(tokens.spacing.md + 8.dp))
+            }
+        }
+    }
+
+    if (logoutOfflineDialogVisible) {
+        AlertDialog(
+            onDismissRequest = { logoutOfflineDialogVisible = false },
+            title = { Text(text = stringResource(Res.string.logout_offline_title)) },
+            text = { Text(text = stringResource(Res.string.logout_offline_message)) },
+            confirmButton = {
+                TextButton(onClick = { logoutOfflineDialogVisible = false }) {
+                    Text(text = stringResource(Res.string.logout_offline_confirm))
+                }
+            },
+        )
+    }
+
+    if (logoutPendingDialogVisible) {
+        AlertDialog(
+            onDismissRequest = { logoutPendingDialogVisible = false },
+            title = { Text(text = stringResource(Res.string.logout_pending_title)) },
+            text = { Text(text = stringResource(Res.string.logout_pending_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            val decision = auth?.requestLogoutDecision() ?: LogoutDecision.Allowed
+                            if (decision == LogoutDecision.Offline) {
+                                logoutPendingDialogVisible = false
+                                logoutOfflineDialogVisible = true
+                            } else {
+                                logoutPendingDialogVisible = false
+                                onLogout()
+                            }
+                        }
+                    },
+                ) {
+                    Text(text = stringResource(Res.string.logout_pending_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { logoutPendingDialogVisible = false }) {
+                    Text(text = stringResource(Res.string.logout_pending_cancel))
+                }
+            },
+        )
+    }
 }
 
 @Composable
@@ -356,7 +580,7 @@ private fun EmptyFoldersState(
             modifier
                 .padding(horizontal = tokens.spacing.xl)
                 .applyNavigationBarsPadding()
-                .padding(bottom = AppChromeDefaults.bottomBarHeight)
+                .padding(bottom = tokens.spacing.xxxl)
         },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -482,6 +706,7 @@ internal fun FoldersScreenPreview(
             onCreateFolder = {},
             onRenameFolder = { _, _ -> },
             onDeleteFolder = {},
+            onAvatarClick = {},
         )
     }
 }

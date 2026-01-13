@@ -51,13 +51,13 @@ fun insertImageAtCaret(
     val blocks = content.blocks
     if (blocks.isEmpty()) {
         val trailing = TextBlock(text = "")
-        val updated = NoteContent(listOf(imageBlock, trailing))
+        val updated = NoteContent(blocks = listOf(imageBlock, trailing))
         return InsertImageResult(updated, Caret(trailing.id, 0))
     }
     val index = blocks.indexOfFirst { it.id == caret.blockId }
     if (index < 0) {
         val trailing = TextBlock(text = "")
-        val updated = NoteContent(blocks + listOf(imageBlock, trailing))
+        val updated = NoteContent(blocks = blocks + listOf(imageBlock, trailing))
         return InsertImageResult(updated, Caret(trailing.id, 0))
     }
     val target = blocks[index]
@@ -85,7 +85,7 @@ fun insertImageAtCaret(
                 add(trailingBlock)
                 val remaining = blocks.drop(index + 1)
                 if (remaining.isNotEmpty()) addAll(remaining)
-                return InsertImageResult(NoteContent(this), Caret(trailingBlock.id, 0))
+                return InsertImageResult(NoteContent(blocks = this), Caret(trailingBlock.id, 0))
             }
 
             is ImageBlock -> {
@@ -99,13 +99,16 @@ fun insertImageAtCaret(
                 val tail = if (trailing in blocks) blocks.drop(index + 2) else blocks.drop(index + 1)
                 if (trailing !in this) add(trailing)
                 addAll(tail)
-                return InsertImageResult(NoteContent(this), Caret(trailing.id, 0))
+                return InsertImageResult(NoteContent(blocks = this), Caret(trailing.id, 0))
             }
         }
     }
     // Should never reach here, but return safe fallback
     val fallbackTrailing = TextBlock(text = "")
-    return InsertImageResult(NoteContent(blocks + listOf(imageBlock, fallbackTrailing)), Caret(fallbackTrailing.id, 0))
+    return InsertImageResult(
+        NoteContent(blocks = blocks + listOf(imageBlock, fallbackTrailing)),
+        Caret(fallbackTrailing.id, 0),
+    )
 }
 
 private fun List<NoteTextSpan>.clipRange(start: Int, end: Int): List<NoteTextSpan> = buildList {

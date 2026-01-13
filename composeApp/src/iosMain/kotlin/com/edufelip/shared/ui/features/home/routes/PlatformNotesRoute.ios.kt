@@ -14,14 +14,16 @@ import com.edufelip.shared.ui.vm.NoteUiViewModel
 @Composable
 actual fun PlatformNotesRoute(
     notes: List<Note>,
-    _folders: List<Folder>,
-    _trash: List<Note>,
+    folders: List<Folder>,
+    trash: List<Note>,
     authViewModel: AuthViewModel,
-    _attachmentPicker: AttachmentPicker?,
+    attachmentPicker: AttachmentPicker?,
     viewModel: NoteUiViewModel,
     syncManager: NotesSyncManager,
     onNavigate: (AppRoutes) -> Unit,
     isUserAuthenticated: Boolean,
+    onAvatarClick: () -> Unit,
+    onLogout: () -> Unit,
 ) {
     CollectNoteSyncEvents(
         viewModel = viewModel,
@@ -35,12 +37,7 @@ actual fun PlatformNotesRoute(
             onNavigate(AppRoutes.NoteDetail(note.id, note.folderId))
         },
         onAdd = { onNavigate(AppRoutes.NoteDetail(null, null)) },
-        onDelete = { note ->
-            viewModel.setDeleted(
-                id = note.id,
-                deleted = true,
-                syncAfter = isUserAuthenticated,
-            )
-        },
+        onAvatarClick = onAvatarClick,
+        onLogout = onLogout,
     )
 }

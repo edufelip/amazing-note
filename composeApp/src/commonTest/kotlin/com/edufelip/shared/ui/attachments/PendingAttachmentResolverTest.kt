@@ -11,9 +11,9 @@ import kotlin.test.assertSame
 class PendingAttachmentResolverTest {
     @Test
     fun resolvesPendingImages() = runTest {
-        val pending = ImageBlock(localUri = "file://local/image", legacyUri = "file://local/image", syncState = ImageSyncState.PendingUpload)
+        val pending = ImageBlock(localUri = "/local/image", syncState = ImageSyncState.PendingUpload)
         val remote = ImageBlock(storagePath = "images/user/remote", syncState = ImageSyncState.Synced)
-        val content = NoteContent(listOf(pending, remote))
+        val content = NoteContent(blocks = listOf(pending, remote))
         val cleaned = mutableListOf<String>()
 
         val result = content.resolvePendingImageAttachments(
@@ -34,13 +34,13 @@ class PendingAttachmentResolverTest {
         assertEquals(ImageSyncState.Synced, updatedPending.syncState)
         val untouched = result.blocks[1] as ImageBlock
         assertEquals(remote, untouched)
-        assertEquals(listOf("file://local/image"), cleaned)
+        assertEquals(listOf("/local/image"), cleaned)
     }
 
     @Test
     fun returnsSameContentWhenNoPendingImages() = runTest {
-        val remote = ImageBlock(storagePath = "images/cdn/image", legacyUri = "https://cdn/image", syncState = ImageSyncState.Synced)
-        val content = NoteContent(listOf(remote))
+        val remote = ImageBlock(storagePath = "images/cdn/image", syncState = ImageSyncState.Synced)
+        val content = NoteContent(blocks = listOf(remote))
 
         val result = content.resolvePendingImageAttachments(
             uploader = { error("should not be called") },

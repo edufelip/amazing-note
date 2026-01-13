@@ -14,8 +14,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.interop.UIKitView
+import androidx.compose.ui.viewinterop.UIKitView
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.ObjCSignatureOverride
 import platform.Foundation.NSError
 import platform.Foundation.NSURL
 import platform.Foundation.NSURLRequest
@@ -27,14 +28,14 @@ import platform.darwin.NSObject
 @Composable
 actual fun WebView(url: String, modifier: Modifier) {
     var isLoading by remember(url) { mutableStateOf(true) }
-    val navigationDelegate = remember { ComposeNavigationDelegate(onFinished = { isLoading = false }) { isLoading = true } }
+    val delegate = remember { ComposeNavigationDelegate(onFinished = { isLoading = false }) { isLoading = true } }
 
     Box(modifier = modifier) {
         UIKitView(
             modifier = Modifier.fillMaxSize(),
             factory = {
                 WKWebView().apply {
-                    navigationDelegate = navigationDelegate
+                    navigationDelegate = delegate
                     val nsUrl = NSURL.URLWithString(url)
                     if (nsUrl != null) {
                         loadRequest(NSURLRequest.requestWithURL(nsUrl))
@@ -42,7 +43,7 @@ actual fun WebView(url: String, modifier: Modifier) {
                 }
             },
             update = { webView ->
-                webView.navigationDelegate = navigationDelegate
+                webView.navigationDelegate = delegate
                 val nsUrl = NSURL.URLWithString(url)
                 if (nsUrl != null) {
                     isLoading = true
@@ -66,14 +67,17 @@ private class ComposeNavigationDelegate(
     private val onStarted: () -> Unit,
 ) : NSObject(),
     WKNavigationDelegateProtocol {
+    @ObjCSignatureOverride
     override fun webView(webView: WKWebView, didStartProvisionalNavigation: WKNavigation?) {
         onStarted()
     }
 
+    @ObjCSignatureOverride
     override fun webView(webView: WKWebView, didFinishNavigation: WKNavigation?) {
         onFinished()
     }
 
+    @ObjCSignatureOverride
     override fun webView(
         webView: WKWebView,
         didFailProvisionalNavigation: WKNavigation?,
@@ -82,10 +86,12 @@ private class ComposeNavigationDelegate(
         onFinished()
     }
 
+    @ObjCSignatureOverride
     override fun webView(webView: WKWebView, didFailNavigation: WKNavigation?, withError: NSError) {
         onFinished()
     }
 
+    @ObjCSignatureOverride
     override fun webViewWebContentProcessDidTerminate(webView: WKWebView) {
         onFinished()
     }
