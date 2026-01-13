@@ -23,7 +23,6 @@ targets:
     type: application
     platform: iOS
     deploymentTarget: "17.2"
-    entitlements: iosApp/iosApp.entitlements
     sources:
       - path: iosApp
         excludes:
