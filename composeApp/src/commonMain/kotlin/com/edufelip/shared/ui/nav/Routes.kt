@@ -1,19 +1,23 @@
 package com.edufelip.shared.ui.nav
 
+private const val TAB_ROUTE_NOTES = "notes"
+private const val TAB_ROUTE_FOLDERS = "folders"
+private const val TAB_ROUTE_SETTINGS = "settings"
+
 sealed interface AppRoutes {
     sealed class TabDestination(
         val animationOrder: Int,
         val routeId: String,
     ) : AppRoutes {
-        data object Notes : TabDestination(animationOrder = 0, routeId = "notes")
-        data object Folders : TabDestination(animationOrder = 1, routeId = "folders")
-        data object Settings : TabDestination(animationOrder = 2, routeId = "settings")
+        data object Notes : TabDestination(animationOrder = 0, routeId = TAB_ROUTE_NOTES)
+        data object Folders : TabDestination(animationOrder = 1, routeId = TAB_ROUTE_FOLDERS)
+        data object Settings : TabDestination(animationOrder = 2, routeId = TAB_ROUTE_SETTINGS)
 
         companion object {
             val routeIds: Set<String> = setOf(
-                Notes.routeId,
-                Folders.routeId,
-                Settings.routeId,
+                TAB_ROUTE_NOTES,
+                TAB_ROUTE_FOLDERS,
+                TAB_ROUTE_SETTINGS,
             )
 
             fun isTabRouteId(routeId: String): Boolean = routeId in routeIds
