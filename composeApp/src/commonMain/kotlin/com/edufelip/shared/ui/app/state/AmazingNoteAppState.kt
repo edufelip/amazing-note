@@ -13,10 +13,10 @@ import com.edufelip.shared.data.sync.NotesSyncManager
 import com.edufelip.shared.db.NoteDatabase
 import com.edufelip.shared.ui.app.core.AmazingNoteAppEnvironment
 import com.edufelip.shared.ui.app.core.rememberAmazingNoteAppEnvironment
+import com.edufelip.shared.ui.app.navigation.AppLayout
 import com.edufelip.shared.ui.app.navigation.reportRoute
 import com.edufelip.shared.ui.nav.AppRoutes
 import com.edufelip.shared.ui.nav.NavigationController
-import com.edufelip.shared.ui.nav.TabRoutePolicy
 import com.edufelip.shared.ui.settings.AppPreferences
 import com.edufelip.shared.ui.settings.DefaultAppPreferences
 import com.edufelip.shared.ui.settings.Settings
@@ -44,20 +44,32 @@ class AmazingNoteAppState internal constructor(
     var isBottomBarEnabled by mutableStateOf(showBottomBar)
         private set
 
-    var isBottomBarVisible by mutableStateOf(isBottomBarEnabled && TabRoutePolicy.isTabRoute(initialRoute))
+    private val defaultTabRoute: AppRoutes.TabDestination =
+        (initialRoute as? AppRoutes.TabDestination) ?: AppRoutes.TabDestination.Notes
+
+    var currentTabRoute by mutableStateOf(defaultTabRoute)
+        private set
+
+    var isBottomBarVisible by mutableStateOf(isBottomBarEnabled)
         private set
 
     val bottomBarTargetVisible: Boolean
-        get() = isBottomBarEnabled && TabRoutePolicy.isTabRoute(navigationController.currentRoute)
+        get() = isBottomBarEnabled
 
     val tabRouteVisible: Boolean
-        get() = TabRoutePolicy.isTabRoute(navigationController.currentRoute)
+        get() = currentRoute is AppRoutes.TabDestination
+
+    val layout: AppLayout
+        get() = when (val route = currentRoute) {
+            is AppRoutes.TabDestination -> AppLayout.Tabs(route)
+            is AppRoutes.DetailDestination -> AppLayout.Detail(route)
+        }
 
     val stackDepth: Int
         get() = navigationController.stackDepth
 
     val topBarVisible: Boolean
-        get() = if (isBottomBarEnabled) isBottomBarVisible else TabRoutePolicy.isTabRoute(navigationController.currentRoute)
+        get() = if (isBottomBarEnabled) isBottomBarVisible else currentRoute is AppRoutes.TabDestination
 
     fun reportInitialRouteIfNeeded() {
         if (hasReportedInitialRoute) return
@@ -68,22 +80,28 @@ class AmazingNoteAppState internal constructor(
     fun navigate(route: AppRoutes, singleTop: Boolean = true) {
         navigationController.navigate(route, singleTop)
         reportRoute(navigationController.currentRoute)
+        updateTabRouteIfNeeded(navigationController.currentRoute)
     }
 
     fun popBack(): Boolean {
         val popped = navigationController.popBack()
-        if (popped) reportRoute(navigationController.currentRoute)
+        if (popped) {
+            reportRoute(navigationController.currentRoute)
+            updateTabRouteIfNeeded(navigationController.currentRoute)
+        }
         return popped
     }
 
     fun popToRoot() {
         navigationController.popToRoot()
         reportRoute(navigationController.currentRoute)
+        updateTabRouteIfNeeded(navigationController.currentRoute)
     }
 
     fun setRoot(destination: AppRoutes) {
         navigationController.setRoot(destination)
         reportRoute(navigationController.currentRoute)
+        updateTabRouteIfNeeded(navigationController.currentRoute)
     }
 
     fun toggleTheme(enabled: Boolean? = null) {
@@ -99,7 +117,11 @@ class AmazingNoteAppState internal constructor(
         isBottomBarVisible = visible
     }
 
-    fun isTab(route: AppRoutes): Boolean = TabRoutePolicy.isTabRoute(route)
+    private fun updateTabRouteIfNeeded(route: AppRoutes) {
+        if (route is AppRoutes.TabDestination) {
+            currentTabRoute = route
+        }
+    }
 }
 
 @Composable
@@ -107,7 +129,7 @@ fun rememberAmazingNoteAppState(
     googleSignInConfig: GoogleSignInConfig,
     settings: Settings,
     appPreferences: AppPreferences = DefaultAppPreferences(settings),
-    initialRoute: AppRoutes = AppRoutes.Notes,
+    initialRoute: AppRoutes = AppRoutes.TabDestination.Notes,
     showBottomBar: Boolean,
     noteDatabase: NoteDatabase? = null,
     existingSyncManager: NotesSyncManager? = null,

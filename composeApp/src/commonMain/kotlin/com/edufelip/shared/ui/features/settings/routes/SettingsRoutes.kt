@@ -22,7 +22,7 @@ fun SettingsRoute(
         darkTheme = darkTheme,
         onToggleDarkTheme = { enabled -> state.toggleTheme(enabled) },
         auth = authViewModel,
-        onLogin = { onNavigate(AppRoutes.Login) },
+        onLogin = { onNavigate(AppRoutes.DetailDestination.Login) },
         onLogout = {
             authViewModel.logout()
         },
@@ -34,8 +34,8 @@ fun SettingsRoute(
                 syncManager.resume()
             }
         },
-        onOpenTrash = { onNavigate(AppRoutes.Trash) },
-        onOpenPrivacy = { onNavigate(AppRoutes.Privacy) },
+        onOpenTrash = { onNavigate(AppRoutes.DetailDestination.Trash) },
+        onOpenPrivacy = { onNavigate(AppRoutes.DetailDestination.Privacy) },
         appVersion = appVersion,
     )
 }

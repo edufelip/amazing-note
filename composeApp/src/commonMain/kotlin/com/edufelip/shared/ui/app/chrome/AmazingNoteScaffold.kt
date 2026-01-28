@@ -12,6 +12,6 @@ expect fun AmazingNoteScaffold(
     state: AmazingNoteAppState,
     modifier: Modifier = Modifier,
     topBar: @Composable () -> Unit,
-    onTabSelected: (AppRoutes) -> Unit,
+    onTabSelected: (AppRoutes.TabDestination) -> Unit,
     content: @Composable (PaddingValues, Dp) -> Unit,
 )

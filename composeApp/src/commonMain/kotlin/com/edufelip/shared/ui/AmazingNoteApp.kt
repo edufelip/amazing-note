@@ -1,6 +1,5 @@
 package com.edufelip.shared.ui
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -16,14 +15,13 @@ import com.edufelip.shared.data.network.LocalNetworkStatus
 import com.edufelip.shared.data.sync.LocalNotesSyncManager
 import com.edufelip.shared.db.NoteDatabase
 import com.edufelip.shared.di.getSharedKoin
-import com.edufelip.shared.ui.app.chrome.AmazingNoteScaffold
 import com.edufelip.shared.ui.app.effects.BottomBarVisibilityEffect
 import com.edufelip.shared.ui.app.effects.PlatformTabBarVisibilityEffect
 import com.edufelip.shared.ui.app.effects.ScheduleInitialSync
 import com.edufelip.shared.ui.app.effects.SyncOnConnectivity
 import com.edufelip.shared.ui.app.effects.SyncEventNotifications
 import com.edufelip.shared.ui.app.effects.SyncOnUserChange
-import com.edufelip.shared.ui.app.navigation.AmazingNoteNavHost
+import com.edufelip.shared.ui.app.navigation.AmazingNoteLayoutHost
 import com.edufelip.shared.ui.app.state.rememberAmazingNoteAppState
 import com.edufelip.shared.ui.images.platformConfigImageLoader
 import com.edufelip.shared.ui.nav.AppRoutes
@@ -50,7 +48,7 @@ fun AmazingNoteApp(
     appPreferences: AppPreferences = DefaultAppPreferences(settings),
     noteDatabase: NoteDatabase? = null,
     appVersion: String = "1.0.0",
-    initialRoute: AppRoutes = AppRoutes.Notes,
+    initialRoute: AppRoutes = AppRoutes.TabDestination.Notes,
     showBottomBar: Boolean = platformChromeStrategy().defaultShowBottomBar,
     onTabBarVisibilityChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
@@ -107,25 +105,18 @@ fun AmazingNoteApp(
             AmazingNoteTheme(darkTheme = darkTheme) {
                 OnSystemBack {
                     if (!state.popBack()) {
-                        state.setRoot(AppRoutes.Notes)
+                        state.setRoot(AppRoutes.TabDestination.Notes)
                     }
                 }
 
-                AmazingNoteScaffold(
-                    state = state,
+                AmazingNoteLayoutHost(
                     modifier = modifier,
-                    topBar = {},
-                    onTabSelected = { route -> state.setRoot(route) },
-                ) { padding: PaddingValues, _ ->
-                    AmazingNoteNavHost(
-                        padding = padding,
-                        state = state,
-                        viewModel = viewModel,
-                        appVersion = appVersion,
-                        darkTheme = darkTheme,
-                        themeKey = darkTheme,
-                    )
-                }
+                    state = state,
+                    viewModel = viewModel,
+                    appVersion = appVersion,
+                    darkTheme = darkTheme,
+                    themeKey = darkTheme,
+                )
             }
         }
     }

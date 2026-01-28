@@ -13,15 +13,15 @@ func makeSnapshotController(screen: SnapshotScreen, style: UIUserInterfaceStyle)
     let route: AppRoutes
     switch screen {
     case .login:
-        route = AppRoutesLogin()
+        route = AppRoutesDetailDestination.Login.shared
     case .notes:
-        route = AppRoutesNotes()
+        route = AppRoutesTabDestination.Notes.shared
     case .noteDetail:
-        route = AppRoutesNoteDetail(id: nil, folderId: nil)
+        route = AppRoutesDetailDestination.NoteDetail(id: nil, folderId: nil)
     case .folders:
-        route = AppRoutesFolders()
+        route = AppRoutesTabDestination.Folders.shared
     case .settings:
-        route = AppRoutesSettings()
+        route = AppRoutesTabDestination.Settings.shared
     }
 
     let controller = MainViewControllerKt.createAmazingNoteViewController(

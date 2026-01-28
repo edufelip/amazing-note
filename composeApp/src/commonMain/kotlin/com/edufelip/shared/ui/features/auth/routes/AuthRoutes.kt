@@ -29,7 +29,7 @@ fun LoginRoute(
         onBack = onBack,
         googleSignInLauncher = googleSignInLauncher,
         appleSignInLauncher = appleSignInLauncher,
-        onOpenSignUp = { onNavigate(AppRoutes.SignUp) },
+        onOpenSignUp = { onNavigate(AppRoutes.DetailDestination.SignUp) },
         showLocalSuccessToast = showLocalSuccessToast,
         onLogin = { email, password -> auth.loginWithEmail(email, password) },
         onGoogleSignIn = { idToken, accessToken -> auth.signInWithGoogleToken(idToken, accessToken) },
@@ -47,7 +47,7 @@ fun LoginRoute(
         events = auth.events,
         onLoginSuccess = {
             if (!state.popBack()) {
-                state.setRoot(AppRoutes.Notes)
+                state.setRoot(AppRoutes.TabDestination.Notes)
             }
         },
     )
@@ -69,6 +69,6 @@ fun SignUpRoute(
         loading = uiState.loading,
         error = uiState.error,
         events = authViewModel.events,
-        onSignUpSuccess = { state.setRoot(AppRoutes.Notes) },
+        onSignUpSuccess = { state.setRoot(AppRoutes.TabDestination.Notes) },
     )
 }

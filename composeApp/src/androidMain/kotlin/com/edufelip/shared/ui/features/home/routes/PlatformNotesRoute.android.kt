@@ -71,9 +71,9 @@ actual fun PlatformNotesRoute(
             notes = notes,
             auth = authViewModel,
             onOpenNote = { note ->
-                onNavigate(AppRoutes.NoteDetail(note.id, note.folderId))
+                onNavigate(AppRoutes.DetailDestination.NoteDetail(note.id, note.folderId))
             },
-            onAdd = { onNavigate(AppRoutes.NoteDetail(null, null)) },
+            onAdd = { onNavigate(AppRoutes.DetailDestination.NoteDetail(null, null)) },
             onAvatarClick = onAvatarClick,
             onLogout = onLogout,
         )

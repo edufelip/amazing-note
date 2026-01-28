@@ -5,7 +5,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import com.edufelip.shared.ui.nav.AppRoutes
 
-private val routeState = mutableStateOf(AppRoutes.Notes.toRouteId())
+private val routeState = mutableStateOf(AppRoutes.TabDestination.Notes.toRouteId())
 
 /**
  * Minimal facade to expose the current route as State<String>.
@@ -25,13 +25,11 @@ internal fun reportRoute(route: AppRoutes) {
 }
 
 private fun AppRoutes.toRouteId(): String = when (this) {
-    AppRoutes.Notes -> "notes"
-    AppRoutes.Folders -> "folders"
-    AppRoutes.Settings -> "settings"
-    is AppRoutes.NoteDetail -> if (id == null) "note/new" else "note/$id"
-    is AppRoutes.FolderDetail -> "folder/${id ?: "unassigned"}"
-    AppRoutes.Trash -> "trash"
-    AppRoutes.Login -> "login"
-    AppRoutes.SignUp -> "signup"
-    AppRoutes.Privacy -> "privacy"
+    is AppRoutes.TabDestination -> routeId
+    is AppRoutes.DetailDestination.NoteDetail -> if (id == null) "note/new" else "note/$id"
+    is AppRoutes.DetailDestination.FolderDetail -> "folder/${id ?: "unassigned"}"
+    AppRoutes.DetailDestination.Trash -> "trash"
+    AppRoutes.DetailDestination.Login -> "login"
+    AppRoutes.DetailDestination.SignUp -> "signup"
+    AppRoutes.DetailDestination.Privacy -> "privacy"
 }

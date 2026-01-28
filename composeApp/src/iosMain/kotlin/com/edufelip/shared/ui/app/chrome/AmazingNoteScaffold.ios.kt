@@ -31,7 +31,7 @@ actual fun AmazingNoteScaffold(
     state: AmazingNoteAppState,
     modifier: Modifier,
     topBar: @Composable () -> Unit,
-    onTabSelected: (AppRoutes) -> Unit,
+    onTabSelected: (AppRoutes.TabDestination) -> Unit,
     content: @Composable (PaddingValues, Dp) -> Unit,
 ) {
     val chrome = platformChromeStrategy()
@@ -45,9 +45,7 @@ actual fun AmazingNoteScaffold(
         contentWindowInsets = WindowInsets(),
         topBar = topBar,
         bottomBar = {
-            val shouldShowBottomBar = state.isBottomBarEnabled &&
-                state.isBottomBarVisible &&
-                state.isTab(state.currentRoute)
+            val shouldShowBottomBar = state.isBottomBarEnabled && state.isBottomBarVisible
 
             if (shouldShowBottomBar) {
                 val bottomBarModifier = with(chrome) {
@@ -69,7 +67,7 @@ actual fun AmazingNoteScaffold(
                         ) + fadeOut(animationSpec = tween(durationMillis = 320)),
                     ) {
                         AmazingBottomBar(
-                            current = state.currentRoute,
+                            current = state.currentTabRoute,
                             onSelect = onTabSelected,
                         )
                     }

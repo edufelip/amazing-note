@@ -50,7 +50,7 @@ fun FoldersRoute(
         layoutMode = layoutMode,
         onLayoutChange = { appPreferences.setFolderLayout(it) },
         onOpenFolder = { folder ->
-            onNavigate(AppRoutes.FolderDetail(folder.id))
+            onNavigate(AppRoutes.DetailDestination.FolderDetail(folder.id))
         },
         onAvatarClick = onAvatarClick,
         onCreateFolder = { name ->
@@ -87,7 +87,7 @@ fun FoldersRoute(
 
 @Composable
 fun FolderDetailRoute(
-    route: AppRoutes.FolderDetail,
+    route: AppRoutes.DetailDestination.FolderDetail,
     viewModel: NoteUiViewModel,
     syncManager: NotesSyncManager,
     onNavigate: (AppRoutes) -> Unit,
@@ -119,7 +119,7 @@ fun FolderDetailRoute(
         notes = folderNotes,
         onBack = onBack,
         onOpenNote = { note ->
-            onNavigate(AppRoutes.NoteDetail(note.id, note.folderId))
+            onNavigate(AppRoutes.DetailDestination.NoteDetail(note.id, note.folderId))
         },
         onAddNote = onAddNote,
         onRenameFolder = folderId?.let { id ->
@@ -148,7 +148,7 @@ fun FolderDetailRoute(
 
 @Composable
 fun NoteDetailRoute(
-    route: AppRoutes.NoteDetail,
+    route: AppRoutes.DetailDestination.NoteDetail,
     viewModel: NoteUiViewModel,
     syncManager: NotesSyncManager,
     attachmentPicker: AttachmentPicker?,

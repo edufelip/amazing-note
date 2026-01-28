@@ -60,7 +60,7 @@ import com.edufelip.shared.resources.sync_status_synced
 import com.edufelip.shared.resources.sync_status_syncing
 import com.edufelip.shared.ui.components.atoms.common.AvatarImage
 import com.edufelip.shared.ui.designsystem.designTokens
-import com.edufelip.shared.ui.nav.AppRoutes
+import com.edufelip.shared.ui.nav.AppRoutes.TabDestination
 import com.edufelip.shared.ui.util.TestTags
 import com.edufelip.shared.ui.util.platform.Haptics
 import com.edufelip.shared.ui.util.platform.platformChromeStrategy
@@ -206,7 +206,7 @@ private fun SyncStatusIndicator(
 }
 
 internal data class BottomNavItem(
-    val route: AppRoutes,
+    val route: TabDestination,
     val materialIcon: ImageVector,
     val cupertinoSymbol: String,
     val label: String,
@@ -215,19 +215,19 @@ internal data class BottomNavItem(
 @Composable
 internal fun bottomNavigationItems(): List<BottomNavItem> = listOf(
     BottomNavItem(
-        route = AppRoutes.Notes,
+        route = TabDestination.Notes,
         materialIcon = Icons.Outlined.Description,
         cupertinoSymbol = "doc.text",
         label = stringResource(Res.string.bottom_notes),
     ),
     BottomNavItem(
-        route = AppRoutes.Folders,
+        route = TabDestination.Folders,
         materialIcon = Icons.Outlined.Folder,
         cupertinoSymbol = "folder",
         label = stringResource(Res.string.bottom_folders),
     ),
     BottomNavItem(
-        route = AppRoutes.Settings,
+        route = TabDestination.Settings,
         materialIcon = Icons.Outlined.Settings,
         cupertinoSymbol = "gearshape",
         label = stringResource(Res.string.bottom_settings),
@@ -237,8 +237,8 @@ internal fun bottomNavigationItems(): List<BottomNavItem> = listOf(
 @OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 fun AmazingBottomBar(
-    current: AppRoutes,
-    onSelect: (AppRoutes) -> Unit,
+    current: TabDestination,
+    onSelect: (TabDestination) -> Unit,
     windowInsets: WindowInsets = WindowInsets.navigationBars,
 ) {
     val tokens = designTokens()
@@ -303,8 +303,8 @@ fun AmazingBottomBar(
 @Composable
 private fun GlassBottomBar(
     items: List<BottomNavItem>,
-    current: AppRoutes,
-    onSelect: (AppRoutes) -> Unit,
+    current: TabDestination,
+    onSelect: (TabDestination) -> Unit,
     windowInsets: WindowInsets,
 ) {
     val tokens = designTokens()
