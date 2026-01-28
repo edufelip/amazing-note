@@ -44,6 +44,26 @@ class TestNoteDriver : SqlDriver {
         println("ExecuteQuery: $normalized")
         val statement = binders?.let { TestPreparedStatement().apply(it) }
         return when {
+            normalized.contains(COUNT_DIRTY_NOTES) -> mapper(
+                ScalarCursor(notes.values.count { it.local_dirty == 1L }.toLong()),
+            )
+            normalized.contains(COUNT_DIRTY_FOLDERS) -> mapper(
+                ScalarCursor(folders.values.count { it.local_dirty == 1L }.toLong()),
+            )
+            normalized.contains(COUNT_PENDING_NOTE_DELETIONS) -> mapper(
+                ScalarCursor(pendingNoteDeletions.size.toLong()),
+            )
+            normalized.contains(COUNT_PENDING_FOLDER_DELETIONS) -> mapper(
+                ScalarCursor(pendingFolderDeletions.size.toLong()),
+            )
+            normalized.contains(COUNT_PENDING_ATTACHMENT_DELETIONS) -> mapper(
+                ScalarCursor(pendingAttachmentDeletions.size.toLong()),
+            )
+            normalized.contains(COUNT_NOTES_IN_FOLDER) -> {
+                val folderId = statement?.long(0)
+                val count = notes.values.count { it.folder_id == folderId }
+                mapper(ScalarCursor(count.toLong()))
+            }
             normalized.contains(SELECT_PENDING_NOTE_DELETIONS) -> mapper(
                 PendingDeletionCursor(
                     pendingNoteDeletions.map { (id, data) -> PendingDeletionRow(id, data.deletedAt, data.stableId, data.storagePaths) },
@@ -365,10 +385,12 @@ class TestNoteDriver : SqlDriver {
         private const val SELECT_NOTES_ACTIVE = "FROM NOTE WHERE DELETED = 0"
         private const val SELECT_NOTES_DELETED = "FROM NOTE WHERE DELETED = 1"
         private const val SELECT_NOTES_DIRTY = "FROM NOTE WHERE LOCAL_DIRTY = 1"
+        private const val COUNT_DIRTY_NOTES = "COUNT(*) FROM NOTE WHERE LOCAL_DIRTY = 1"
         private const val SELECT_NOTE_BY_ID = "FROM NOTE WHERE ID = ?"
         private const val SELECT_FOLDERS_ACTIVE = "FROM FOLDER WHERE DELETED = 0"
         private const val SELECT_FOLDERS_ALL = "FROM FOLDER ORDER BY UPDATED_AT DESC, ID DESC"
         private const val SELECT_FOLDERS_DIRTY = "FROM FOLDER WHERE LOCAL_DIRTY = 1"
+        private const val COUNT_DIRTY_FOLDERS = "COUNT(*) FROM FOLDER WHERE LOCAL_DIRTY = 1"
         private const val SELECT_FOLDER_BY_ID = "FROM FOLDER WHERE ID = ?"
         private const val SELECT_LAST_INSERT_ID = "LAST_INSERT_ROWID()"
         private const val INSERT_NOTE = "INSERT INTO NOTE(TITLE, DESCRIPTION, DESCRIPTION_SPANS, ATTACHMENTS, BLOCKS, CONTENT_JSON, DELETED, CREATED_AT, UPDATED_AT, LOCAL_DIRTY, LOCAL_UPDATED_AT, FOLDER_ID, STABLE_ID)"
@@ -392,7 +414,9 @@ class TestNoteDriver : SqlDriver {
         private const val SET_NOTE_FOLDER = "UPDATE NOTE SET FOLDER_ID = ?, UPDATED_AT = ?, LOCAL_DIRTY = 1, LOCAL_UPDATED_AT = ?"
         private const val CLEAR_FOLDER_ASSIGNMENT = "UPDATE NOTE SET FOLDER_ID = NULL, UPDATED_AT = ?, LOCAL_DIRTY = 1, LOCAL_UPDATED_AT = ? WHERE FOLDER_ID = ?"
         private const val SELECT_PENDING_NOTE_DELETIONS = "FROM NOTE_PENDING_DELETION"
+        private const val COUNT_PENDING_NOTE_DELETIONS = "COUNT(*) FROM NOTE_PENDING_DELETION"
         private const val SELECT_PENDING_FOLDER_DELETIONS = "FROM FOLDER_PENDING_DELETION"
+        private const val COUNT_PENDING_FOLDER_DELETIONS = "COUNT(*) FROM FOLDER_PENDING_DELETION"
         private const val INSERT_PENDING_NOTE_DELETION = "INTO NOTE_PENDING_DELETION(ID, DELETED_AT, STABLE_ID, STORAGE_PATHS)"
         private const val DELETE_PENDING_NOTE_DELETION = "DELETE FROM NOTE_PENDING_DELETION WHERE ID = ?"
         private const val INSERT_PENDING_FOLDER_DELETION = "INTO FOLDER_PENDING_DELETION(ID, DELETED_AT)"
@@ -400,9 +424,11 @@ class TestNoteDriver : SqlDriver {
         private const val DELETE_ALL_PENDING_NOTE_DELETIONS = "DELETE FROM NOTE_PENDING_DELETION"
         private const val DELETE_ALL_PENDING_FOLDER_DELETIONS = "DELETE FROM FOLDER_PENDING_DELETION"
         private const val SELECT_PENDING_ATTACHMENT_DELETIONS = "FROM ATTACHMENT_PENDING_DELETION"
+        private const val COUNT_PENDING_ATTACHMENT_DELETIONS = "COUNT(*) FROM ATTACHMENT_PENDING_DELETION"
         private const val DELETE_PENDING_ATTACHMENT_DELETION = "DELETE FROM ATTACHMENT_PENDING_DELETION WHERE PATH = ?"
         private const val INSERT_PENDING_ATTACHMENT_DELETION = "INTO ATTACHMENT_PENDING_DELETION(PATH)"
         private const val DELETE_ALL_PENDING_ATTACHMENT_DELETIONS = "DELETE FROM ATTACHMENT_PENDING_DELETION"
+        private const val COUNT_NOTES_IN_FOLDER = "COUNT(*) FROM NOTE WHERE FOLDER_ID = ?"
 
         private val DESCENDING_NOTES = compareByDescending<com.edufelip.shared.db.Note> { it.updated_at }
             .thenByDescending { it.id }
