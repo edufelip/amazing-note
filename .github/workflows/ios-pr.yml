@@ -46,28 +46,12 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Write GoogleService-Info.plist (placeholder)
+      - name: Write GoogleService-Info.plist
+        env:
+          IOS_GOOGLE_SERVICE_INFO_PLIST_BASE64: ${{ secrets.IOS_GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
         run: |
-          cat <<'EOF' > iosApp/iosApp/GoogleService-Info.plist
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>GOOGLE_APP_ID</key>
-            <string>1:000000000000:ios:0000000000000000</string>
-            <key>GCM_SENDER_ID</key>
-            <string>000000000000</string>
-            <key>API_KEY</key>
-            <string>CI_PLACEHOLDER</string>
-            <key>PROJECT_ID</key>
-            <string>amazing-note-ci</string>
-            <key>BUNDLE_ID</key>
-            <string>com.edufelip.amazingnote</string>
-            <key>STORAGE_BUCKET</key>
-            <string>amazing-note-ci.appspot.com</string>
-          </dict>
-          </plist>
-          EOF
+          mkdir -p iosApp/iosApp
+          echo "$IOS_GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 --decode > iosApp/iosApp/GoogleService-Info.plist
 
       - name: Generate Compose resources (iOS simulator)
         run: ./gradlew :composeApp:iosSimulatorArm64AggregateResources --stacktrace
