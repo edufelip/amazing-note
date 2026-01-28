@@ -18,7 +18,8 @@ else
 fi
 
 PKG_DIR="$DERIVED_DATA/Build/Products/${CONFIG}-${SDK_NAME_SHORT}/PackageFrameworks"
-if [[ ! -d "$PKG_DIR" ]]; then
+PRODUCTS_DIR="$DERIVED_DATA/Build/Products/${CONFIG}-${SDK_NAME_SHORT}"
+if [[ ! -d "$PKG_DIR" || -z "$(ls -A "$PKG_DIR" 2>/dev/null)" ]]; then
   xcodebuild -project iosApp/iosApp.xcodeproj \
     -scheme "$SCHEME" \
     -configuration "$CONFIG" \
@@ -28,9 +29,17 @@ if [[ ! -d "$PKG_DIR" ]]; then
     build >/dev/null
 fi
 
-if [[ ! -d "$PKG_DIR" ]]; then
-  echo "ERROR: PackageFrameworks not found at $PKG_DIR" >&2
-  exit 1
+if [[ -d "$PKG_DIR" && -n "$(ls -A "$PKG_DIR" 2>/dev/null)" ]]; then
+  echo "$PKG_DIR"
+  exit 0
 fi
 
-echo "$PKG_DIR"
+if [[ -d "$PRODUCTS_DIR" && -n "$(ls -A "$PRODUCTS_DIR" 2>/dev/null)" ]]; then
+  echo "$PRODUCTS_DIR"
+  exit 0
+fi
+
+if [[ ! -d "$PKG_DIR" && ! -d "$PRODUCTS_DIR" ]]; then
+  echo "ERROR: PackageFrameworks or Products directory not found under $DERIVED_DATA/Build/Products" >&2
+  exit 1
+fi
