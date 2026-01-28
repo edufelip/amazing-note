@@ -72,6 +72,9 @@ jobs:
       - name: Generate Compose resources (iOS simulator)
         run: ./gradlew :composeApp:iosSimulatorArm64AggregateResources --stacktrace
 
+      - name: Sync ComposeApp framework (iOS simulator)
+        run: ./gradlew :iosApp:packForXcode -PSDK_NAME=iphonesimulator -PCONFIGURATION=Debug --stacktrace
+
       - name: Install XcodeGen
         run: brew install xcodegen
 
