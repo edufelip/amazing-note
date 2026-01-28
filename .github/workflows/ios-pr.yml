@@ -77,9 +77,14 @@ jobs:
 
       - name: Resolve SwiftPM frameworks dir
         id: firebase-frameworks
+        env:
+          DERIVED_DATA: iosApp/build/DerivedData
+          CONFIG: Debug
+          PLATFORM_NAME: iphonesimulator
+          SCHEME: iosApp
         run: echo "dir=$(./scripts/resolve_spm_frameworks_dir.sh)" >> "$GITHUB_OUTPUT"
 
       - name: Run shared tests
         env:
           FIREBASE_IOS_FRAMEWORKS_DIR: ${{ steps.firebase-frameworks.outputs.dir }}
-        run: ./gradlew :shared:allTests --stacktrace
+        run: ./gradlew :shared:allTests -Pfirebase.ios.frameworks.dir="${{ steps.firebase-frameworks.outputs.dir }}" --stacktrace
