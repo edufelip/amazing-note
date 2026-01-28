@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.Framework
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.konan.target.KonanTarget
+import java.io.File
 
 plugins {
     id("com.android.library")
@@ -31,48 +32,56 @@ kotlin {
     }
 
     fun KotlinNativeTarget.configureFirebaseLinkerOpts() {
+        val firebaseFrameworksRoot = firebaseIosFrameworksDir?.let { path ->
+            val candidate = File(path)
+            if (candidate.isAbsolute) candidate else rootProject.file(path)
+        }
+        val hasFirebaseFrameworks = firebaseFrameworksRoot?.resolve("FirebaseCore.framework")?.exists() == true
+        val shouldLinkFirebase = hasFirebaseFrameworks
         binaries.all {
-            linkerOpts(
-                "-framework",
-                "FirebaseCore",
-                "-framework",
-                "FirebaseAuth",
-                "-framework",
-                "FirebaseAuthInterop",
-                "-framework",
-                "FirebaseFirestore",
-                "-framework",
-                "FirebaseAppCheckInterop",
-                "-framework",
-                "FirebaseFirestoreInternal",
-                "-framework",
-                "FirebaseStorage",
-                "-framework",
-                "FirebaseCrashlytics",
-                "-framework",
-                "FirebaseCoreExtension",
-                "-framework",
-                "FirebaseCoreInternal",
-                "-framework",
-                "absl",
-                "-framework",
-                "grpc",
-                "-framework",
-                "grpcpp",
-                "-framework",
-                "GTMSessionFetcher",
-                "-framework",
-                "GoogleUtilities",
-                "-framework",
-                "leveldb",
-                "-framework",
-                "nanopb",
-                "-framework",
-                "openssl_grpc",
-                "-framework",
-                "RecaptchaInterop",
-            )
-            firebaseIosFrameworksDir?.let { linkerOpts("-F", it) }
+            if (shouldLinkFirebase) {
+                linkerOpts(
+                    "-framework",
+                    "FirebaseCore",
+                    "-framework",
+                    "FirebaseAuth",
+                    "-framework",
+                    "FirebaseAuthInterop",
+                    "-framework",
+                    "FirebaseFirestore",
+                    "-framework",
+                    "FirebaseAppCheckInterop",
+                    "-framework",
+                    "FirebaseFirestoreInternal",
+                    "-framework",
+                    "FirebaseStorage",
+                    "-framework",
+                    "FirebaseCrashlytics",
+                    "-framework",
+                    "FirebaseCoreExtension",
+                    "-framework",
+                    "FirebaseCoreInternal",
+                    "-framework",
+                    "absl",
+                    "-framework",
+                    "grpc",
+                    "-framework",
+                    "grpcpp",
+                    "-framework",
+                    "GTMSessionFetcher",
+                    "-framework",
+                    "GoogleUtilities",
+                    "-framework",
+                    "leveldb",
+                    "-framework",
+                    "nanopb",
+                    "-framework",
+                    "openssl_grpc",
+                    "-framework",
+                    "RecaptchaInterop",
+                )
+                firebaseIosFrameworksDir?.let { linkerOpts("-F", it) }
+            }
         }
     }
 
