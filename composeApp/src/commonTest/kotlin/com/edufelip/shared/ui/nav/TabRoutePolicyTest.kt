@@ -8,28 +8,39 @@ class TabRoutePolicyTest {
 
     @Test
     fun tabRoutesAreMarkedAsTabs() {
-        assertTrue(TabRoutePolicy.isTabRoute(AppRoutes.Notes))
-        assertTrue(TabRoutePolicy.isTabRoute(AppRoutes.Folders))
-        assertTrue(TabRoutePolicy.isTabRoute(AppRoutes.Settings))
+        val notes: AppRoutes = AppRoutes.TabDestination.Notes
+        val folders: AppRoutes = AppRoutes.TabDestination.Folders
+        val settings: AppRoutes = AppRoutes.TabDestination.Settings
+
+        assertTrue(notes is AppRoutes.TabDestination)
+        assertTrue(folders is AppRoutes.TabDestination)
+        assertTrue(settings is AppRoutes.TabDestination)
     }
 
     @Test
     fun nonTabRoutesAreNotMarkedAsTabs() {
-        assertFalse(TabRoutePolicy.isTabRoute(AppRoutes.Login))
-        assertFalse(TabRoutePolicy.isTabRoute(AppRoutes.SignUp))
-        assertFalse(TabRoutePolicy.isTabRoute(AppRoutes.Privacy))
-        assertFalse(TabRoutePolicy.isTabRoute(AppRoutes.Trash))
-        assertFalse(TabRoutePolicy.isTabRoute(AppRoutes.NoteDetail(id = 1, folderId = null)))
-        assertFalse(TabRoutePolicy.isTabRoute(AppRoutes.FolderDetail(id = 2)))
+        val login: AppRoutes = AppRoutes.DetailDestination.Login
+        val signUp: AppRoutes = AppRoutes.DetailDestination.SignUp
+        val privacy: AppRoutes = AppRoutes.DetailDestination.Privacy
+        val trash: AppRoutes = AppRoutes.DetailDestination.Trash
+        val noteDetail: AppRoutes = AppRoutes.DetailDestination.NoteDetail(id = 1, folderId = null)
+        val folderDetail: AppRoutes = AppRoutes.DetailDestination.FolderDetail(id = 2)
+
+        assertFalse(login is AppRoutes.TabDestination)
+        assertFalse(signUp is AppRoutes.TabDestination)
+        assertFalse(privacy is AppRoutes.TabDestination)
+        assertFalse(trash is AppRoutes.TabDestination)
+        assertFalse(noteDetail is AppRoutes.TabDestination)
+        assertFalse(folderDetail is AppRoutes.TabDestination)
     }
 
     @Test
     fun tabRouteIdsAreRecognized() {
-        assertTrue(TabRoutePolicy.isTabRouteId("notes"))
-        assertTrue(TabRoutePolicy.isTabRouteId("folders"))
-        assertTrue(TabRoutePolicy.isTabRouteId("settings"))
-        assertFalse(TabRoutePolicy.isTabRouteId("note/123"))
-        assertFalse(TabRoutePolicy.isTabRouteId("folder/123"))
-        assertFalse(TabRoutePolicy.isTabRouteId("login"))
+        assertTrue(AppRoutes.TabDestination.isTabRouteId("notes"))
+        assertTrue(AppRoutes.TabDestination.isTabRouteId("folders"))
+        assertTrue(AppRoutes.TabDestination.isTabRouteId("settings"))
+        assertFalse(AppRoutes.TabDestination.isTabRouteId("note/123"))
+        assertFalse(AppRoutes.TabDestination.isTabRouteId("folder/123"))
+        assertFalse(AppRoutes.TabDestination.isTabRouteId("login"))
     }
 }
