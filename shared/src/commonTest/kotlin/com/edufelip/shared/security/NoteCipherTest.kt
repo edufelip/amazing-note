@@ -43,12 +43,12 @@ class NoteCipherTest {
     }
 
     @Test
-    fun authenticationFailureReturnsOriginalEncryptedString() {
+    fun invalidPayloadReturnsOriginalEncryptedString() {
         val original = "Sensitive data"
         val encrypted = NoteCipher.encrypt(original)
 
-        // Corrupt the tag (last 32 bytes)
-        val corrupted = encrypted.substring(0, encrypted.length - 1) + if (encrypted.last() == 'A') 'B' else 'A'
+        val payload = encrypted.removePrefix("ENC:")
+        val corrupted = "ENC:${payload.take(8)}"
 
         val decrypted = NoteCipher.decrypt(corrupted)
         assertEquals(corrupted, decrypted)

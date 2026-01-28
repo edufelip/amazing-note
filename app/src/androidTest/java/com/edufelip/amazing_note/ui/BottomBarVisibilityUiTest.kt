@@ -13,7 +13,6 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import com.edufelip.shared.ui.app.chrome.AmazingBottomBar
 import com.edufelip.shared.ui.nav.AppRoutes
-import com.edufelip.shared.ui.nav.TabRoutePolicy
 import com.edufelip.shared.ui.theme.AmazingNoteTheme
 import com.edufelip.shared.ui.util.TestTags
 import org.junit.Before
@@ -25,7 +24,7 @@ class BottomBarVisibilityUiTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-    private val currentRoute = mutableStateOf<AppRoutes>(AppRoutes.Notes)
+    private val currentRoute = mutableStateOf<AppRoutes>(AppRoutes.TabDestination.Notes)
 
     @Before
     fun setUp() {
@@ -36,22 +35,22 @@ class BottomBarVisibilityUiTest {
 
     @Test
     fun bottomBarIsVisibleOnTabRoutes() {
-        updateRoute(AppRoutes.Notes)
+        updateRoute(AppRoutes.TabDestination.Notes)
         composeRule.onNodeWithTag(TestTags.BOTTOM_BAR).assertIsDisplayed()
 
-        updateRoute(AppRoutes.Folders)
+        updateRoute(AppRoutes.TabDestination.Folders)
         composeRule.onNodeWithTag(TestTags.BOTTOM_BAR).assertIsDisplayed()
 
-        updateRoute(AppRoutes.Settings)
+        updateRoute(AppRoutes.TabDestination.Settings)
         composeRule.onNodeWithTag(TestTags.BOTTOM_BAR).assertIsDisplayed()
     }
 
     @Test
     fun bottomBarIsHiddenOnNonTabRoutes() {
-        updateRoute(AppRoutes.Login)
+        updateRoute(AppRoutes.DetailDestination.Login)
         composeRule.onAllNodes(hasTestTag(TestTags.BOTTOM_BAR)).assertCountEquals(0)
 
-        updateRoute(AppRoutes.NoteDetail(id = 1, folderId = null))
+        updateRoute(AppRoutes.DetailDestination.NoteDetail(id = 1, folderId = null))
         composeRule.onAllNodes(hasTestTag(TestTags.BOTTOM_BAR)).assertCountEquals(0)
     }
 
@@ -65,7 +64,7 @@ class BottomBarVisibilityUiTest {
 @Composable
 private fun BottomBarTestContent(route: AppRoutes) {
     AmazingNoteTheme(darkTheme = false) {
-        if (TabRoutePolicy.isTabRoute(route)) {
+        if (route is AppRoutes.TabDestination) {
             AmazingBottomBar(
                 current = route,
                 onSelect = {},

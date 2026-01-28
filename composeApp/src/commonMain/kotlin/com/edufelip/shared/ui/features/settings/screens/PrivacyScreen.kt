@@ -1,6 +1,7 @@
 package com.edufelip.shared.ui.features.settings.screens
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -35,6 +36,7 @@ fun PrivacyScreen(
 ) {
     val isInPreview = LocalInspectionMode.current
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             Surface(tonalElevation = 2.dp, shadowElevation = 1.dp) {
                 TopAppBar(

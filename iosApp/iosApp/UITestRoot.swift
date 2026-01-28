@@ -72,15 +72,15 @@ struct UITestRootView: View {
     private func resolveRoute() -> AppRoutes {
         switch screen {
         case "login":
-            return AppRoutesLogin()
+            return AppRoutesDetailDestination.Login.shared
         case "noteDetail":
-            return AppRoutesNoteDetail(id: nil, folderId: nil)
+            return AppRoutesDetailDestination.NoteDetail(id: nil, folderId: nil)
         case "folders":
-            return AppRoutesFolders()
+            return AppRoutesTabDestination.Folders.shared
         case "settings":
-            return AppRoutesSettings()
+            return AppRoutesTabDestination.Settings.shared
         default:
-            return AppRoutesNotes()
+            return AppRoutesTabDestination.Notes.shared
         }
     }
 }

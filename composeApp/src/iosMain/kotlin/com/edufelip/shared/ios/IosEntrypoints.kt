@@ -8,7 +8,7 @@ import platform.UIKit.UIViewController
 fun makeAppViewControllerWithRouteCallback(
     onRouteChanged: (String, Boolean) -> Unit,
 ): UIViewController = createAmazingNoteViewController(
-    initialRoute = AppRoutes.Notes,
+    initialRoute = AppRoutes.TabDestination.Notes,
     showBottomBar = false,
     onRouteChanged = onRouteChanged,
 )

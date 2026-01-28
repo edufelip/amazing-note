@@ -52,7 +52,7 @@ actual fun AmazingNoteScaffold(
     state: AmazingNoteAppState,
     modifier: Modifier,
     topBar: @Composable () -> Unit,
-    onTabSelected: (AppRoutes) -> Unit,
+    onTabSelected: (AppRoutes.TabDestination) -> Unit,
     content: @Composable (PaddingValues, Dp) -> Unit,
 ) {
     val chrome = platformChromeStrategy()
@@ -110,7 +110,7 @@ actual fun AmazingNoteScaffold(
                             ) + fadeOut(animationSpec = androidx.compose.animation.core.tween(durationMillis = 320)),
                         ) {
                             AmazingBottomBar(
-                                current = state.currentRoute,
+                                current = state.currentTabRoute,
                                 onSelect = onTabSelected,
                             )
                         }
@@ -141,7 +141,7 @@ actual fun AmazingNoteScaffold(
                         header = {},
                     ) {
                         navItems.forEach { item ->
-                            val selected = state.currentRoute == item.route
+                            val selected = state.currentTabRoute == item.route
                             NavigationRailItem(
                                 selected = selected,
                                 onClick = {

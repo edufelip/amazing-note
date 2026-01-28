@@ -2,7 +2,7 @@ package com.edufelip.shared.ui.app.chrome
 
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
-import com.edufelip.shared.ui.nav.AppRoutes
+import com.edufelip.shared.ui.nav.AppRoutes.TabDestination
 import com.edufelip.shared.ui.testing.ProvideTestComposeResources
 import com.edufelip.shared.ui.theme.AmazingNoteTheme
 import com.github.takahirom.roborazzi.RoborazziRule
@@ -34,35 +34,35 @@ class BottomBarGoldenTest {
 
     @Test
     fun captureBottomBarNotesLight() {
-        renderBottomBar(route = AppRoutes.Notes, darkTheme = false)
+        renderBottomBar(route = TabDestination.Notes, darkTheme = false)
     }
 
     @Test
     fun captureBottomBarNotesDark() {
-        renderBottomBar(route = AppRoutes.Notes, darkTheme = true)
+        renderBottomBar(route = TabDestination.Notes, darkTheme = true)
     }
 
     @Test
     fun captureBottomBarFoldersLight() {
-        renderBottomBar(route = AppRoutes.Folders, darkTheme = false)
+        renderBottomBar(route = TabDestination.Folders, darkTheme = false)
     }
 
     @Test
     fun captureBottomBarFoldersDark() {
-        renderBottomBar(route = AppRoutes.Folders, darkTheme = true)
+        renderBottomBar(route = TabDestination.Folders, darkTheme = true)
     }
 
     @Test
     fun captureBottomBarSettingsLight() {
-        renderBottomBar(route = AppRoutes.Settings, darkTheme = false)
+        renderBottomBar(route = TabDestination.Settings, darkTheme = false)
     }
 
     @Test
     fun captureBottomBarSettingsDark() {
-        renderBottomBar(route = AppRoutes.Settings, darkTheme = true)
+        renderBottomBar(route = TabDestination.Settings, darkTheme = true)
     }
 
-    private fun renderBottomBar(route: AppRoutes, darkTheme: Boolean) {
+    private fun renderBottomBar(route: TabDestination, darkTheme: Boolean) {
         composeTestRule.setContent {
             ProvideTestComposeResources {
                 AmazingNoteTheme(darkTheme = darkTheme) {

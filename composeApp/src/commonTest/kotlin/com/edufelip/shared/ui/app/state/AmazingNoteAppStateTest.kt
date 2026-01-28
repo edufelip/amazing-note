@@ -40,33 +40,36 @@ class AmazingNoteAppStateTest {
 
     @Test
     fun navigateAddsDestination() {
-        val state = createState(initialRoute = AppRoutes.Notes)
+        val state = createState(initialRoute = AppRoutes.TabDestination.Notes)
 
-        state.navigate(AppRoutes.Folders)
+        state.navigate(AppRoutes.TabDestination.Folders)
 
-        assertEquals(listOf(AppRoutes.Notes, AppRoutes.Folders), navController.backStack.toList())
+        assertEquals(
+            listOf(AppRoutes.TabDestination.Notes, AppRoutes.TabDestination.Folders),
+            navController.backStack.toList(),
+        )
     }
 
     @Test
     fun popBackRemovesLastRoute() {
-        val state = createState(initialRoute = AppRoutes.Notes)
-        state.navigate(AppRoutes.Folders)
+        val state = createState(initialRoute = AppRoutes.TabDestination.Notes)
+        state.navigate(AppRoutes.TabDestination.Folders)
 
         val popped = state.popBack()
 
         assertTrue(popped)
-        assertEquals(listOf(AppRoutes.Notes), navController.backStack.toList())
+        assertEquals(listOf(AppRoutes.TabDestination.Notes), navController.backStack.toList())
     }
 
     @Test
     fun setRootClearsBackStack() {
-        val state = createState(initialRoute = AppRoutes.Notes)
-        state.navigate(AppRoutes.Folders)
-        state.navigate(AppRoutes.Settings)
+        val state = createState(initialRoute = AppRoutes.TabDestination.Notes)
+        state.navigate(AppRoutes.TabDestination.Folders)
+        state.navigate(AppRoutes.TabDestination.Settings)
 
-        state.setRoot(AppRoutes.Settings)
+        state.setRoot(AppRoutes.TabDestination.Settings)
 
-        assertEquals(listOf(AppRoutes.Settings), navController.backStack.toList())
+        assertEquals(listOf(AppRoutes.TabDestination.Settings), navController.backStack.toList())
     }
 
     @Test
@@ -90,7 +93,7 @@ class AmazingNoteAppStateTest {
     }
 
     private fun createState(
-        initialRoute: AppRoutes = AppRoutes.Notes,
+        initialRoute: AppRoutes = AppRoutes.TabDestination.Notes,
         showBottomBar: Boolean = true,
         settings: Settings = InMemorySettings(),
         appPreferences: AppPreferences = TestAppPreferences(settings),
